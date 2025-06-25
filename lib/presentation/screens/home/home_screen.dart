@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/selection_drawer.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/stats_widget.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/test_container.dart';
+import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
-
-import '../../widgets/action_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,7 +16,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       drawer: SelectionDrawer(),
       drawerEdgeDragWidth: 150,
-      appBar: AppBar(title: Text('Dashboard')),
+      appBar: AppBar(title: Text('Dashboard', style: AppTexts.titleTextStyle)),
       body: SingleChildScrollView(
         child: Padding(
           padding: AppPaddings.defaultPadding,

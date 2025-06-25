@@ -7,6 +7,7 @@ class ActionButton extends StatelessWidget {
 
   final String text;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -22,7 +23,7 @@ class ActionButton extends StatelessWidget {
           text,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 15.sp,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w400,
           ),
         ),

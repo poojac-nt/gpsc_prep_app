@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/test/mcq_test_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 final List<GoRoute> appRoutes = [
@@ -17,6 +18,10 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.login,
     pageBuilder: (context, state) => _slideTransition(LoginScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.testScreen,
+    pageBuilder: (context, state) => _slideTransition(MCQTestScreen(), state),
   ),
 ];
 
