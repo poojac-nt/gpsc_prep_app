@@ -3,13 +3,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class CustomTextField extends StatelessWidget {
-  const CustomTextField({super.key, required this.text, this.prefixIcon});
+  const CustomTextField({
+    super.key,
+    required this.text,
+    this.prefixIcon,
+    this.maxline = 1,
+  });
   final String text;
   final IconData? prefixIcon;
+  final int maxline;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      maxLines: maxline,
       decoration: InputDecoration(
         hintText: text,
         hintStyle: TextStyle(color: Colors.grey),

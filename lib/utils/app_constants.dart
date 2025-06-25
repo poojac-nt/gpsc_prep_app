@@ -33,7 +33,7 @@ abstract class AppBorders {
 abstract class AppTexts {
   static TextStyle labelTextStyle = TextStyle(
     fontSize: 14.sp,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.bold,
   );
   static TextStyle title = TextStyle(
     fontSize: 15.sp,
