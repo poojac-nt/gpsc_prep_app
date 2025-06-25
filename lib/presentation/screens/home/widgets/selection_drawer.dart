@@ -26,8 +26,8 @@ class SelectionDrawer extends StatelessWidget {
   final List<String> routePaths = [
     AppRoutes.home,
     AppRoutes.testScreen,
-    AppRoutes.home,
-    AppRoutes.home,
+    AppRoutes.answerWriting,
+    AppRoutes.profile,
     AppRoutes.home,
     AppRoutes.home,
   ];
