@@ -91,7 +91,7 @@ class MCQTestScreen extends StatelessWidget {
               icon: Icons.file_download_outlined,
               cards: [
                 BorderedContainer(
-                  padding: EdgeInsetsGeometry.all(5),
+                  padding: EdgeInsets.all(5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -103,7 +103,7 @@ class MCQTestScreen extends StatelessWidget {
                 ),
                 10.hGap,
                 BorderedContainer(
-                  padding: EdgeInsetsGeometry.all(5),
+                  padding: EdgeInsets.all(5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

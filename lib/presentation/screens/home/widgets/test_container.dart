@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
 import '../../../widgets/action_button.dart';
@@ -33,7 +34,7 @@ class TestContainer extends StatelessWidget {
         Text(
           description,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14.sp, color: Colors.black54),
+          // style: AppTexts.descriptionTextStyle,
         ),
         10.hGap,
         ActionButton(text: buttonTitle, onTap: () {}),
