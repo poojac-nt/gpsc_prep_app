@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/presentation/screens/home/widgets/selection_drawer
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/stats_widget.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/test_container.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
 import '../../widgets/action_button.dart';
@@ -20,14 +21,14 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(title: Text('Dashboard')),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: AppPaddings.defaultPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 decoration: BoxDecoration(
                   color: Colors.black,
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: AppBorders.borderRadius,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(25.0),
@@ -62,8 +63,12 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: BorderedContainer(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 15.h,
+                      ),
                       child: StatsWidget(
-                        text: 'Test taken',
+                        text: 'Test taken ',
                         num: '24',
                         icon: Icons.radar,
                         iconColor: Colors.green,
@@ -73,6 +78,10 @@ class HomeScreen extends StatelessWidget {
                   10.wGap,
                   Expanded(
                     child: BorderedContainer(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 15.h,
+                      ),
                       child: StatsWidget(
                         text: 'Avg Score',
                         num: '78%',
@@ -88,6 +97,10 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: BorderedContainer(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 15.h,
+                      ),
                       child: StatsWidget(
                         text: 'Study Streak',
                         num: '12 days',
@@ -99,6 +112,10 @@ class HomeScreen extends StatelessWidget {
                   10.wGap,
                   Expanded(
                     child: BorderedContainer(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 15.h,
+                      ),
                       child: StatsWidget(
                         text: 'Improvement',
                         num: '+15%',
@@ -109,54 +126,51 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              20.hGap,
+              10.hGap,
               BorderedContainer(
-                child: Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.bar_chart),
-                          10.wGap,
-                          Text(
-                            "Performance Overview",
-                            style: TextStyle(
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.bar_chart),
+                        10.wGap,
+                        Text(
+                          "Performance Overview",
+                          style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
-                      10.hGap,
-                      CustomProgressBar(
-                        text: 'General Studies',
-                        value: 0.9,
-                        percentageText: '90%',
-                      ),
-                      10.hGap,
-                      CustomProgressBar(
-                        text: 'Current Affairs',
-                        value: 0.6,
-                        percentageText: '60%',
-                      ),
-                      10.hGap,
-                      CustomProgressBar(
-                        text: 'Reasoning',
-                        value: 0.8,
-                        percentageText: '80%',
-                      ),
-                      10.hGap,
-                      CustomProgressBar(
-                        text: 'Mathematics',
-                        value: 0.7,
-                        percentageText: '70%',
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                    10.hGap,
+                    CustomProgressBar(
+                      text: 'General Studies',
+                      value: 0.9,
+                      percentageText: '90%',
+                    ),
+                    10.hGap,
+                    CustomProgressBar(
+                      text: 'Current Affairs',
+                      value: 0.6,
+                      percentageText: '60%',
+                    ),
+                    10.hGap,
+                    CustomProgressBar(
+                      text: 'Reasoning',
+                      value: 0.8,
+                      percentageText: '80%',
+                    ),
+                    10.hGap,
+                    CustomProgressBar(
+                      text: 'Mathematics',
+                      value: 0.7,
+                      percentageText: '70%',
+                    ),
+                  ],
                 ),
               ),
-              20.hGap,
+              10.hGap,
               BorderedContainer(
                 child: TestContainer(
                   title: "Daily Test",
@@ -189,14 +203,14 @@ class HomeScreen extends StatelessWidget {
               10.hGap,
               Text(
                 'Answer Writing Practice',
-                textAlign: TextAlign.left,
                 style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
               ),
               10.hGap,
               BorderedContainer(
                 child: TestContainer(
                   title: "Daily Writing Practice",
-                  description: "Practice descriptive answers",
+                  description:
+                      "Practice descriptive answers and improve overall performance",
                   iconColor: Colors.purple,
                   icon: Icons.menu_book,
                   buttonTitle: 'Start Writing',

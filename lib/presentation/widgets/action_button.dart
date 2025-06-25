@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class ActionButton extends StatelessWidget {
   const ActionButton({super.key, required this.text, required this.onTap});
@@ -15,9 +16,7 @@ class ActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           padding: EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.r),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppBorders.borderRadius),
         ),
         child: Text(
           text,
