@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 abstract class AppThemeData {
   static ThemeData themData = ThemeData(
@@ -20,6 +21,19 @@ abstract class AppThemeData {
   );
 }
 
+abstract class AppPaddings {
+  static EdgeInsets defaultPadding = const EdgeInsets.all(12);
+}
+
+abstract class AppBorders {
+  static BorderRadius borderRadius = BorderRadius.circular(8.r);
+}
+
+abstract class AppTexts {
+  static TextStyle labelTextStyle = TextStyle(
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w500,
+  );
 abstract class AppRoutes {
   static const String splash = '/splash';
   static const String auth = '/auth';

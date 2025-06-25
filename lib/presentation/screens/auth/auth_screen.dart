@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
+import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/custom_text_field.dart';
 
@@ -28,19 +29,13 @@ class AuthScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Exam",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text("Exam", style: AppTexts.labelTextStyle),
                 5.hGap,
                 DropdownMenu(
                   width: double.infinity,
                   inputDecorationTheme: InputDecorationTheme(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: AppBorders.borderRadius,
                     ),
                     isDense: true,
                     isCollapsed: true,
@@ -62,65 +57,35 @@ class AuthScreen extends StatelessWidget {
                   ),
                 ),
                 20.hGap,
-                Text(
-                  "Full Name",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text("Full Name", style: AppTexts.labelTextStyle),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your name",
                   prefixIcon: Icons.person_2,
                 ),
                 20.hGap,
-                Text(
-                  "Mobile Number",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text("Mobile Number", style: AppTexts.labelTextStyle),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your mobile number",
                   prefixIcon: Icons.phone,
                 ),
                 20.hGap,
-                Text(
-                  "Address",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text("Address", style: AppTexts.labelTextStyle),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your address",
                   prefixIcon: Icons.place_rounded,
                 ),
                 20.hGap,
-                Text(
-                  "Email",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text("Email", style: AppTexts.labelTextStyle),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your email",
                   prefixIcon: Icons.email,
                 ),
                 20.hGap,
-                Text(
-                  "Password",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text("Password", style: AppTexts.labelTextStyle),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your password",

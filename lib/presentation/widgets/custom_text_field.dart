@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({super.key, required this.text, this.prefixIcon});
@@ -16,12 +17,12 @@ class CustomTextField extends StatelessWidget {
         labelStyle: TextStyle(color: Colors.black),
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         prefixIconColor: Colors.grey.shade700,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: BorderSide(color: Colors.black, width: 2),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: AppBorders.borderRadius,
+          borderSide: BorderSide(color: Colors.black, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: AppBorders.borderRadius,
           borderSide: BorderSide(color: Colors.black, width: 2),
         ),
       ),
