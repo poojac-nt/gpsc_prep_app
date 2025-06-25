@@ -46,7 +46,7 @@ abstract class AppTexts {
     color: Colors.grey[700],
   );
   static TextStyle heading = TextStyle(
-    fontSize: 22.sp,
+    fontSize: 18.sp,
     fontWeight: FontWeight.bold,
   );
   static TextStyle titleTextStyle = TextStyle(
