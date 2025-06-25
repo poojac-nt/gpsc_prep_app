@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
 import '../../../utils/app_constants.dart';
@@ -94,11 +94,7 @@ class AuthScreen extends StatelessWidget {
                 30.hGap,
                 ActionButton(
                   text: "Sign Up",
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
-                      ),
+                  onTap: () => context.go(AppRoutes.home),
                 ),
                 20.hGap,
                 Padding(
@@ -122,12 +118,7 @@ class AuthScreen extends StatelessWidget {
                           recognizer:
                               TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LoginScreen(),
-                                    ),
-                                  );
+                                  context.push(AppRoutes.login);
                                 },
                         ),
                       ],

@@ -34,4 +34,9 @@ abstract class AppTexts {
     fontSize: 14.sp,
     fontWeight: FontWeight.w500,
   );
+abstract class AppRoutes {
+  static const String splash = '/splash';
+  static const String auth = '/auth';
+  static const String home = '/home';
+  static const String login = '/login';
 }
