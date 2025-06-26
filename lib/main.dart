@@ -6,7 +6,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/secrets/secrets.dart';
+import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {

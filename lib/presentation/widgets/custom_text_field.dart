@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -7,16 +6,19 @@ class CustomTextField extends StatelessWidget {
     super.key,
     required this.text,
     this.prefixIcon,
-    required this.controller,
+    this.controller,
+    this.maxline = 1,
   });
 
   final String text;
   final IconData? prefixIcon;
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final int maxline;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      maxLines: maxline,
       controller: controller,
       decoration: InputDecoration(
         hintText: text,
