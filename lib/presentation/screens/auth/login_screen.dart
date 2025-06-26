@@ -27,20 +27,14 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Email",
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-              ),
+              Text("Email", style: AppTexts.labelTextStyle),
               5.hGap,
               CustomTextField(
                 text: "Enter your email",
                 prefixIcon: Icons.email,
               ),
               20.hGap,
-              Text(
-                "Password",
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-              ),
+              Text("Password", style: AppTexts.labelTextStyle),
               5.hGap,
               CustomTextField(
                 text: "Enter your password",
@@ -48,7 +42,7 @@ class LoginScreen extends StatelessWidget {
               ),
               30.hGap,
               ActionButton(
-                text: "Sign in",
+                text: "Sign In",
                 onTap: () => context.go(AppRoutes.home),
               ),
               20.hGap,
@@ -58,14 +52,7 @@ class LoginScreen extends StatelessWidget {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: "Don't have an account ? ",
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontSize: 13.sp,
-                        ),
-                      ),
-                      TextSpan(
-                        text: "Sign Up",
+                        text: "Don't have an account ? Sign up",
                         style: TextStyle(
                           decoration: TextDecoration.underline,
                           fontSize: 13.sp,

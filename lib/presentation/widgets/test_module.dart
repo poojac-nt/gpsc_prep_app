@@ -8,14 +8,14 @@ class TestModule extends StatelessWidget {
   const TestModule({
     super.key,
     required this.title,
-    required this.subtitle,
-    required this.icon,
+    this.subtitle,
+    this.icon,
     this.cards = const <Widget>[],
   });
 
   final String title;
-  final String subtitle;
-  final IconData icon;
+  final String? subtitle;
+  final IconData? icon;
   final List<Widget> cards;
 
   @override
@@ -26,16 +26,15 @@ class TestModule extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: Colors.black),
-              10.wGap,
+              if (icon != null) ...[Icon(icon, color: Colors.black), 10.wGap],
               Text(
                 title,
                 style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-          Text(subtitle, style: AppTexts.subTitle),
-          10.hGap,
+          Text(subtitle ?? '', style: AppTexts.subTitle),
+          if (subtitle != null) 10.hGap,
           ...cards,
         ],
       ),
