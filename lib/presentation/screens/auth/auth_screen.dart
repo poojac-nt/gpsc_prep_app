@@ -1,26 +1,15 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
 import '../../widgets/action_button.dart';
 import '../../widgets/custom_text_field.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
-
-  @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
-}
-
-class _RegistrationScreenState extends State<RegistrationScreen> {
-  final TextEditingController email = TextEditingController();
-  final TextEditingController password = TextEditingController();
-  final TextEditingController name = TextEditingController();
-  final TextEditingController address = TextEditingController();
-  final TextEditingController number = TextEditingController();
+class AuthScreen extends StatelessWidget {
+  const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +28,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Exam", style: AppTexts.labelTextStyle),
+                Text(
+                  "Exam",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 5.hGap,
                 DropdownMenu(
                   width: double.infinity,
                   inputDecorationTheme: InputDecorationTheme(
                     border: OutlineInputBorder(
-                      borderRadius: AppBorders.borderRadius,
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     isDense: true,
                     isCollapsed: true,
@@ -67,49 +62,78 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                 ),
                 20.hGap,
-                Text("Full Name", style: AppTexts.labelTextStyle),
+                Text(
+                  "Full Name",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your name",
                   prefixIcon: Icons.person_2,
-                  controller: name,
                 ),
                 20.hGap,
-                Text("Mobile Number", style: AppTexts.labelTextStyle),
+                Text(
+                  "Mobile Number",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your mobile number",
                   prefixIcon: Icons.phone,
-                  controller: number,
                 ),
                 20.hGap,
-                Text("Address", style: AppTexts.labelTextStyle),
+                Text(
+                  "Address",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your address",
                   prefixIcon: Icons.place_rounded,
-                  controller: address,
                 ),
                 20.hGap,
-                Text("Email", style: AppTexts.labelTextStyle),
+                Text(
+                  "Email",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your email",
                   prefixIcon: Icons.email,
-                  controller: email,
                 ),
                 20.hGap,
-                Text("Password", style: AppTexts.labelTextStyle),
+                Text(
+                  "Password",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 5.hGap,
                 CustomTextField(
                   text: "Enter your password",
                   prefixIcon: Icons.password,
-                  controller: password,
                 ),
                 30.hGap,
                 ActionButton(
                   text: "Sign Up",
-                  onTap: () => context.go(AppRoutes.home),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                      ),
                 ),
                 20.hGap,
                 Padding(
@@ -133,7 +157,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           recognizer:
                               TapGestureRecognizer()
                                 ..onTap = () {
-                                  context.go(AppRoutes.login);
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoginScreen(),
+                                    ),
+                                  );
                                 },
                         ),
                       ],
