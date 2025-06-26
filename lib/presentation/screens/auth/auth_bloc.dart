@@ -10,15 +10,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SupabaseHelper helper;
 
   AuthBloc(this.helper) : super(AuthInitial()) {
-    on<LoginRequested>((event, emit) async {
-      emit(AuthLoading());
+    on<LoginRequested>(_Login);
+  }
 
-      final result = await helper.login(event.email, event.password);
+  Future<void> _Login(LoginRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
 
-      result.fold(
-        (failure) => emit(AuthFailure(failure.message)),
-        (user) => emit(AuthSuccess(user)),
-      );
-    });
+    final result = await helper.login(event.email, event.password);
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) => emit(AuthSuccess(user)),
+    );
   }
 }
