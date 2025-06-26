@@ -5,12 +5,22 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
-import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/custom_text_field.dart';
 
-class AuthScreen extends StatelessWidget {
-  const AuthScreen({super.key});
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
+  @override
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
+  final TextEditingController name = TextEditingController();
+  final TextEditingController address = TextEditingController();
+  final TextEditingController number = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +72,7 @@ class AuthScreen extends StatelessWidget {
                 CustomTextField(
                   text: "Enter your name",
                   prefixIcon: Icons.person_2,
+                  controller: name,
                 ),
                 20.hGap,
                 Text("Mobile Number", style: AppTexts.labelTextStyle),
@@ -69,6 +80,7 @@ class AuthScreen extends StatelessWidget {
                 CustomTextField(
                   text: "Enter your mobile number",
                   prefixIcon: Icons.phone,
+                  controller: number,
                 ),
                 20.hGap,
                 Text("Address", style: AppTexts.labelTextStyle),
@@ -76,6 +88,7 @@ class AuthScreen extends StatelessWidget {
                 CustomTextField(
                   text: "Enter your address",
                   prefixIcon: Icons.place_rounded,
+                  controller: address,
                 ),
                 20.hGap,
                 Text("Email", style: AppTexts.labelTextStyle),
@@ -83,6 +96,7 @@ class AuthScreen extends StatelessWidget {
                 CustomTextField(
                   text: "Enter your email",
                   prefixIcon: Icons.email,
+                  controller: email,
                 ),
                 20.hGap,
                 Text("Password", style: AppTexts.labelTextStyle),
@@ -90,6 +104,7 @@ class AuthScreen extends StatelessWidget {
                 CustomTextField(
                   text: "Enter your password",
                   prefixIcon: Icons.password,
+                  controller: password,
                 ),
                 30.hGap,
                 ActionButton(
@@ -118,7 +133,7 @@ class AuthScreen extends StatelessWidget {
                           recognizer:
                               TapGestureRecognizer()
                                 ..onTap = () {
-                                  context.push(AppRoutes.login);
+                                  context.go(AppRoutes.login);
                                 },
                         ),
                       ],
