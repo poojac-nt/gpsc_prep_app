@@ -26,15 +26,12 @@ class TestContainer extends StatelessWidget {
       children: [
         Icon(icon, size: 36.sp, color: iconColor),
         15.hGap,
-        Text(
-          title,
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
-        ),
+        Text(title, style: AppTexts.title),
         5.hGap,
         Text(
           description,
           textAlign: TextAlign.center,
-          // style: AppTexts.descriptionTextStyle,
+          style: AppTexts.subTitle,
         ),
         10.hGap,
         ActionButton(text: buttonTitle, onTap: () {}),

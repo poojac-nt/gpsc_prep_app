@@ -11,7 +11,10 @@ abstract class AppThemeData {
       selectionColor: Colors.black.withAlpha(2),
       selectionHandleColor: Colors.black,
     ),
-    appBarTheme: AppBarTheme(backgroundColor: Colors.white),
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+    ),
     scaffoldBackgroundColor: Colors.white,
     dividerTheme: DividerThemeData(color: Colors.transparent),
     progressIndicatorTheme: ProgressIndicatorThemeData(
@@ -32,8 +35,8 @@ abstract class AppBorders {
 
 abstract class AppTexts {
   static TextStyle labelTextStyle = TextStyle(
-    fontSize: 14.sp,
-    fontWeight: FontWeight.w500,
+    fontSize: 15.sp,
+    fontWeight: FontWeight.bold,
   );
   static TextStyle title = TextStyle(
     fontSize: 15.sp,

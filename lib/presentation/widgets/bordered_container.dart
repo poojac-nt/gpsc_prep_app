@@ -8,18 +8,20 @@ class BorderedContainer extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(20),
     this.radius,
+    this.borderColor,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final BorderRadius? radius;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: radius ?? AppBorders.borderRadius,
-        border: Border.all(color: Colors.black, width: 2),
+        border: Border.all(color: borderColor ?? Colors.black, width: 2),
       ),
       padding: padding,
       child: child,
