@@ -18,32 +18,32 @@ class StatsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(15),
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 34.sp),
-          5.wGap,
-          Column(
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 34.sp),
+        5.wGap,
+        Flexible(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 text,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: Colors.grey.shade700,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-
               Text(
                 num,
-                style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

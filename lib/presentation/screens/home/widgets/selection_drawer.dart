@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
 
 class SelectionDrawer extends StatelessWidget {
@@ -20,6 +22,14 @@ class SelectionDrawer extends StatelessWidget {
     Icons.person,
     Icons.settings,
     Icons.logout,
+  ];
+  final List<String> routePaths = [
+    AppRoutes.home,
+    AppRoutes.testScreen,
+    AppRoutes.answerWriting,
+    AppRoutes.profile,
+    AppRoutes.home,
+    AppRoutes.home,
   ];
 
   @override
@@ -65,20 +75,26 @@ class SelectionDrawer extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: textList.length,
                 itemBuilder:
-                    (context, index) => Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 15.h,
-                        horizontal: 10.w,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(icons[index]),
-                          5.wGap,
-                          Text(
-                            textList[index],
-                            style: TextStyle(fontSize: 16.sp),
-                          ),
-                        ],
+                    (context, index) => InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        context.push(routePaths[index]);
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 15.h,
+                          horizontal: 10.w,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(icons[index]),
+                            5.wGap,
+                            Text(
+                              textList[index],
+                              style: TextStyle(fontSize: 16.sp),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
               ),
