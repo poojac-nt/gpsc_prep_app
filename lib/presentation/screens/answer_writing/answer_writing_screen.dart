@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
+import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
+import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
-import '../home/widgets/selection_drawer.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class AnswerWritingScreen extends StatelessWidget {
   const AnswerWritingScreen({super.key});
@@ -13,8 +12,7 @@ class AnswerWritingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Answer Writing Practice'),
-        shape: Border(bottom: BorderSide(width: 1.0)),
+        title: Text('Writing Practice', style: AppTexts.titleTextStyle),
         actions: [
           IconButton(
             onPressed: () {},
@@ -22,118 +20,77 @@ class AnswerWritingScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: AppPaddings.defaultPadding,
+      body: SingleChildScrollView(
         child: Column(
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    "Answer Writing",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: ActionButton(text: "Start New Practice", onTap: () {}),
+                Text('Writing Practice', style: AppTexts.heading),
+                IntrinsicWidth(
+                  child: ActionButton(text: 'Start New', onTap: () {}),
                 ),
               ],
             ),
-            20.hGap,
-            BorderedContainer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today_outlined),
-                      5.wGap,
-                      Text(
-                        "Daily Practice",
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    "Subject based daily writing prompts",
-                    // style: AppTexts.descriptionTextStyle,
-                  ),
-                  10.hGap,
-                  BorderedContainer(
-                    padding: EdgeInsets.all(15),
-                    radius: BorderRadius.zero,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+            10.hGap,
+            TestModule(
+              title: 'Daily Practice',
+              subtitle: 'Subject Base Daily Writing Prompts',
+              icon: Icons.calendar_today_outlined,
+              cards: [
+                TestTile(
+                  title: 'Good Governance',
+                  subtitle: 'General Studies . 250 Words',
+                  onTap: () {},
+                  buttonTitle: 'Write',
+                ),
+                10.hGap,
+                TestTile(
+                  title: 'Economic Reforms',
+                  subtitle: 'Current Affairs . 200 Words',
+                  onTap: () {},
+                  buttonTitle: 'Write',
+                ),
+              ],
+            ),
+            10.hGap,
+            TestModule(
+              title: 'Weekly Practice',
+              subtitle: 'Comprehensive Essay Writing',
+              icon: Icons.description_outlined,
+              cards: [
+                TestTile(
+                  title: 'Digital India Initiative',
+                  subtitle: 'Essay . 1000 Words',
+                  onTap: () {},
+                  buttonTitle: 'Write',
+                ),
+              ],
+            ),
+            10.hGap,
+            TestModule(
+              title: 'My Submissions',
+              subtitle: 'Track your Submitted Answers',
+              icon: Icons.file_upload_outlined,
+              cards: [
+                ActionButton(text: 'View All Submissions', onTap: () {}),
+                5.hGap,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Good Governance",
-                              style: AppTexts.labelTextStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              "General Studies - 250 words",
-                              // style: AppTexts.descriptionTextStyle,
-                            ),
-                          ],
-                        ),
-                        10.wGap,
-                        Expanded(
-                          child: ActionButton(text: "Write", onTap: () {}),
-                        ),
+                        Text('5 Pending Reviews'),
+                        Text('12 Reviewed'),
                       ],
                     ),
-                  ),
-                  8.hGap,
-                  BorderedContainer(
-                    padding: EdgeInsets.all(15),
-                    radius: BorderRadius.zero,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Economic Reforms",
-                                style: AppTexts.labelTextStyle.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                "Current Affairs - 250 wordssssssssssssssssssssssssssssssssssssssss",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                // style: AppTexts.descriptionTextStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                        10.wGap,
-                        Expanded(
-                          flex: 1,
-                          child: ActionButton(text: "Write", onTap: () {}),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
-      ),
+      ).padAll(AppPaddings.appPaddingInt),
     );
   }
 }

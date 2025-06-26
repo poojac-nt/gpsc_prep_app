@@ -10,11 +10,13 @@ class TestTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    required this.buttonTitle,
     this.widgets = const <Widget>[],
   });
 
   final String title;
   final String subtitle;
+  final String buttonTitle;
   final VoidCallback onTap;
   final List<Widget> widgets;
 
@@ -37,7 +39,7 @@ class TestTile extends StatelessWidget {
           if (widgets.isNotEmpty) 10.wGap,
           ...widgets,
           10.wGap,
-          IntrinsicWidth(child: ActionButton(text: 'Start', onTap: onTap)),
+          IntrinsicWidth(child: ActionButton(text: buttonTitle, onTap: onTap)),
         ],
       ),
     );
