@@ -10,6 +10,4 @@ class LoginRequested extends AuthEvent {
   LoginRequested({required this.email, required this.password});
 }
 
-class LogOutRequested extends AuthEvent {
-  LogOutRequested();
-}
+class LogOutRequested extends AuthEvent {}
