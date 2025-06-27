@@ -25,7 +25,7 @@ abstract class AppThemeData {
 }
 
 abstract class AppPaddings {
-  static EdgeInsets defaultPadding = const EdgeInsets.all(12);
+  static double defaultPadding = 12;
   static double appPaddingInt = 10;
 }
 
@@ -65,5 +65,7 @@ abstract class AppRoutes {
   static const String login = '/login';
   static const String answerWriting = '/answerWriting';
   static const String profile = '/profile';
+  static const String mcqTestScreen = '/mcqTestScreen';
+  static const String testInstructionScreen = '/testInstructionScreen';
   static const String testScreen = '/testScreen';
 }

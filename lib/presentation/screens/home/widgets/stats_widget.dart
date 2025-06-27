@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class StatsWidget extends StatelessWidget {
   const StatsWidget({
