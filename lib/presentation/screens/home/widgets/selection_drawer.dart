@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class SelectionDrawer extends StatelessWidget {
   SelectionDrawer({super.key});
@@ -20,12 +20,12 @@ class SelectionDrawer extends StatelessWidget {
     Icons.content_paste_rounded,
     Icons.edit_document,
     Icons.person,
-    Icons.settings,
+    Icons.notifications,
     Icons.logout,
   ];
   final List<String> routePaths = [
     AppRoutes.home,
-    AppRoutes.testScreen,
+    AppRoutes.mcqTestScreen,
     AppRoutes.answerWriting,
     AppRoutes.profile,
     AppRoutes.home,

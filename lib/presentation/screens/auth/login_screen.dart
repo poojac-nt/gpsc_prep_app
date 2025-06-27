@@ -7,7 +7,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../widgets/action_button.dart';
 import '../../widgets/custom_text_field.dart';
@@ -53,10 +53,7 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Text(
                     "Email",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTexts.labelTextStyle
                   ),
                   5.hGap,
                   CustomTextField(
@@ -67,10 +64,7 @@ class LoginScreen extends StatelessWidget {
                   20.hGap,
                   Text(
                     "Password",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTexts.labelTextStyle
                   ),
                   5.hGap,
                   CustomTextField(
@@ -97,23 +91,16 @@ class LoginScreen extends StatelessWidget {
                       TextSpan(
                         children: [
                           TextSpan(
-                            text: "Don't have an account ? ",
-                            style: TextStyle(
-                              decoration: TextDecoration.underline,
-                              fontSize: 13.sp,
-                            ),
-                          ),
-                          TextSpan(
-                            text: "Sign Up",
+                            text: "Don't have an account ? Sign up",
                             style: TextStyle(
                               decoration: TextDecoration.underline,
                               fontSize: 13.sp,
                             ),
                             recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    context.go(AppRoutes.auth);
-                                  },
+                            TapGestureRecognizer()
+                              ..onTap = () {
+                                context.go(AppRoutes.auth);
+                              },
                           ),
                         ],
                       ),

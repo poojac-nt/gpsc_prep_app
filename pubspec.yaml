@@ -44,6 +44,7 @@ dependencies:
   either_dart: ^1.0.0
   fluttertoast: ^8.2.12
   json_annotation: ^4.9.0
+  image_picker: ^1.1.2
 
 
 dev_dependencies:

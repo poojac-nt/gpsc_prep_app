@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../widgets/action_button.dart';
 
@@ -13,6 +13,7 @@ class TestContainer extends StatelessWidget {
     required this.icon,
     required this.buttonTitle,
     required this.iconColor,
+    required this.onTap,
   });
 
   final String title;
@@ -20,6 +21,7 @@ class TestContainer extends StatelessWidget {
   final IconData icon;
   final String buttonTitle;
   final Color iconColor;
+  final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -34,7 +36,7 @@ class TestContainer extends StatelessWidget {
           style: AppTexts.subTitle,
         ),
         10.hGap,
-        ActionButton(text: buttonTitle, onTap: () {}),
+        ActionButton(text: buttonTitle, onTap: onTap),
       ],
     );
   }

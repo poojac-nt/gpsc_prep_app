@@ -5,7 +5,7 @@ import 'package:gpsc_prep_app/presentation/screens/profile/widgets/quick_stats.d
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/sizedbox.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../widgets/custom_checkbox.dart';
 import '../../widgets/custom_dropdown.dart';
@@ -13,7 +13,7 @@ import '../../widgets/custom_tag.dart';
 import '../../widgets/custom_text_field.dart';
 
 class ProfileScreen extends StatelessWidget {
-  ProfileScreen({super.key});
+  const ProfileScreen({super.key});
 
   List<String> exams = [
     "GPSC Class 1-2",
@@ -52,20 +52,20 @@ class ProfileScreen extends StatelessWidget {
                           radius: 40.r,
                         ),
 
-                        Text(
-                          "John Deo",
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      Text(
+                        "John Deo",
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          "John.deo@example.coooooooooooooom",
-                          textAlign: TextAlign.center,
-                          style: AppTexts.labelTextStyle.copyWith(
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
-                          ),
+                      ),
+                      Text(
+                        "John.deo@example.coooooooooooooom",
+                        textAlign: TextAlign.center,
+                        style: AppTexts.labelTextStyle.copyWith(
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        )
                         ),
                       ],
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -18,8 +19,8 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      maxLines: maxline,
       controller: controller,
+      maxLines: maxline,
       decoration: InputDecoration(
         hintText: text,
         hintStyle: TextStyle(color: Colors.grey),

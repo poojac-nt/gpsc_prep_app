@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
@@ -46,14 +47,14 @@ class MCQTestScreen extends StatelessWidget {
                 TestTile(
                   title: "General Studies",
                   subtitle: "20 Questions . 30 min",
-                  onTap: () {},
+                  onTap: () => context.push(AppRoutes.testInstructionScreen),
                   buttonTitle: 'Start',
                 ),
                 10.hGap,
                 TestTile(
                   title: "Current Affairs",
                   subtitle: "20 Questions . 30 min",
-                  onTap: () {},
+                  onTap: () => context.push(AppRoutes.testInstructionScreen),
                   buttonTitle: 'Start',
                 ),
               ],
