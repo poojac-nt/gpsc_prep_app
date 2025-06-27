@@ -6,6 +6,8 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 
+import '../../presentation/screens/test_module/bloc/test_bloc.dart';
+
 final getIt = GetIt.instance;
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -37,4 +39,5 @@ void setupBlocs() {
   getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(getIt<SupabaseHelper>()),
   );
+  getIt.registerLazySingleton<QuestionBloc>(() => QuestionBloc());
 }

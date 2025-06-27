@@ -13,7 +13,7 @@ import '../../widgets/custom_tag.dart';
 import '../../widgets/custom_text_field.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  ProfileScreen({super.key});
 
   List<String> exams = [
     "GPSC Class 1-2",
@@ -36,7 +36,7 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(title: Text('My Profile', style: AppTexts.titleTextStyle)),
       body: SingleChildScrollView(
         child: Padding(
-          padding: AppPaddings.defaultPadding,
+          padding: EdgeInsets.all(AppPaddings.defaultPadding),
           child: Column(
             children: [
               TestModule(
@@ -52,20 +52,20 @@ class ProfileScreen extends StatelessWidget {
                           radius: 40.r,
                         ),
 
-                      Text(
-                        "John Deo",
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
+                        Text(
+                          "John Deo",
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(
-                        "John.deo@example.coooooooooooooom",
-                        textAlign: TextAlign.center,
-                        style: AppTexts.labelTextStyle.copyWith(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500,
-                        )
+                        Text(
+                          "John.deo@example.coooooooooooooom",
+                          textAlign: TextAlign.center,
+                          style: AppTexts.labelTextStyle.copyWith(
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),

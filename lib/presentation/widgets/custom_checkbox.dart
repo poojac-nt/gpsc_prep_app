@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../utils/app_constants.dart';
+
 class CustomCheckbox extends StatelessWidget {
   const CustomCheckbox({
     super.key,
@@ -34,7 +35,13 @@ class CustomCheckbox extends StatelessWidget {
           }),
           checkColor: Colors.white,
         ),
-        Text(title, style: AppTexts.labelTextStyle.copyWith(fontSize: 13.sp)),
+        Expanded(
+          child: Text(
+            maxLines: 2,
+            title,
+            style: AppTexts.labelTextStyle.copyWith(fontSize: 13.sp),
+          ),
+        ),
       ],
     );
   }
