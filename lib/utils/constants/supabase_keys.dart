@@ -1,4 +1,6 @@
 abstract class SupabaseKeys {
+  ///functions
+
   ///table
   static final String users = 'users';
 

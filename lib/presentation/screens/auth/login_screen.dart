@@ -112,7 +112,7 @@ class LoginScreen extends StatelessWidget {
                             recognizer:
                                 TapGestureRecognizer()
                                   ..onTap = () {
-                                    context.go(AppRoutes.auth);
+                                    context.go(AppRoutes.registrationScreen);
                                   },
                           ),
                         ],

@@ -1,5 +1,6 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,17 +12,6 @@ class SupabaseHelper {
   final LogHelper _log;
 
   SupabaseHelper(this._log);
-
-  Future<bool> doesUserEmailExist(String email) async {
-    final response = await _supabase
-        .from(SupabaseKeys.users)
-        .select()
-        .eq(SupabaseKeys.email, email);
-    if (response.isEmpty) {
-      return true;
-    }
-    return false;
-  }
 
   Future<Either<Failure, UserModel>> login(
     String email,
@@ -50,6 +40,43 @@ class SupabaseHelper {
     } catch (e, s) {
       _log.e('[login] Error occurred', error: e, s: s);
       return Left(Failure('Incorrect Username or Password.'));
+    }
+  }
+
+  Future<Either<Failure, UserModel>> createUser(UserPayload data) async {
+    try {
+      final jsonData = data.toJson();
+      _log.d('[insertUser] Payload: $jsonData');
+      final signUpResponse = await _supabase.auth.signUp(
+        password: data.password!,
+        email: data.email,
+      );
+      final user = signUpResponse.user;
+
+      if (user == null) {
+        _log.e('User SignUp Failed');
+      }
+      final userId = user?.id;
+      _log.d("User id: $userId");
+      final insertResponse =
+          await _supabase
+              .from(SupabaseKeys.users)
+              .insert({
+                'full_name': data.name,
+                'address': data.address,
+                'number': data.number,
+                'role': 'Student',
+                'user_email': data.email,
+                'auth_id': userId,
+                'profile_picture': 'data.profilePicture',
+              })
+              .select('*')
+              .single();
+      _log.i('[UserCreated] Response: $insertResponse');
+      final userModel = UserModel.fromJson(insertResponse);
+      return Right(userModel);
+    } catch (e) {
+      return Left(Failure('Error Creating New User $e'));
     }
   }
 }
