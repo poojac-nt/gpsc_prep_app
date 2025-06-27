@@ -13,14 +13,19 @@ import '../../widgets/action_button.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_text_field.dart';
 
-class AuthScreen extends StatefulWidget {
-  AuthScreen({super.key});
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
 
   @override
-  State<AuthScreen> createState() => _AuthScreenState();
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
+  final TextEditingController name = TextEditingController();
+  final TextEditingController address = TextEditingController();
+  final TextEditingController number = TextEditingController();
   List<String> items = ["GPSC", "UPSC", "GSSSB"];
 
   final picker = ImagePicker();
@@ -37,7 +42,6 @@ class _AuthScreenState extends State<AuthScreen> {
       });
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,30 +105,35 @@ class _AuthScreenState extends State<AuthScreen> {
                   "Enter your name",
                   Icons.person_2,
                   20.hGap,
+                  name,
                 ),
                 _buildInputText(
                   "Phone Number",
                   "Enter your phone number",
                   Icons.phone,
                   20.hGap,
+                  number
                 ),
                 _buildInputText(
                   "Address",
                   "Enter your address",
                   Icons.place_rounded,
                   20.hGap,
+                  address
                 ),
                 _buildInputText(
                   "Email",
                   "Enter your email",
                   Icons.email,
                   20.hGap,
+                  email
                 ),
                 _buildInputText(
                   "Password",
                   "Enter your password",
                   Icons.password,
                   20.hGap,
+                  password
                 ),
                 10.hGap,
                 ActionButton(
@@ -146,7 +155,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           recognizer:
                               TapGestureRecognizer()
                                 ..onTap = () {
-                                  context.push(AppRoutes.login);
+                                  context.go(AppRoutes.login);
                                 },
                         ),
                       ],
@@ -166,13 +175,14 @@ class _AuthScreenState extends State<AuthScreen> {
     String hint,
     IconData? icon,
     Widget bottomGap,
+    TextEditingController controller
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: AppTexts.labelTextStyle),
         5.hGap,
-        CustomTextField(text: hint, prefixIcon: icon),
+        CustomTextField(text: hint, controller : controller, prefixIcon: icon),
         bottomGap,
       ],
     );
