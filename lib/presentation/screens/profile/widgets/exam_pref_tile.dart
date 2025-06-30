@@ -14,7 +14,7 @@ class ExamPrefTile extends StatelessWidget {
       padding: EdgeInsets.zero,
       radius: BorderRadius.zero,
       borderColor: value ? Colors.black : Colors.grey,
-      child: CustomCheckbox(value: value, title: title),
+      child: CustomCheckbox(value: value, ontap: () {}, title: title),
     );
   }
 }

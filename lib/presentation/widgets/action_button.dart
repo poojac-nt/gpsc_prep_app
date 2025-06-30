@@ -31,7 +31,7 @@ class ActionButton extends StatelessWidget {
           padding: padding,
           shape: RoundedRectangleBorder(
             borderRadius: AppBorders.borderRadius,
-            side: BorderSide(color: borderColor, width: 1),
+            side: BorderSide(color: borderColor, width: 2),
           ),
         ),
         child: Text(

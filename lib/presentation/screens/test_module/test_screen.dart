@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
@@ -16,21 +17,62 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
 
-class TestScreen extends StatelessWidget {
-  const TestScreen({super.key});
+class TestScreen extends StatefulWidget {
+  TestScreen({super.key});
+
+  @override
+  State<TestScreen> createState() => _TestScreenState();
+}
+
+class _TestScreenState extends State<TestScreen> {
+  List<String> indicator = ["Current", "Answered", "Not Answered"];
+  List<String> optionsKey = ["option 1", "option 2", "option 3", "option 4"];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Daily Test", style: AppTexts.titleTextStyle)),
+      appBar: AppBar(
+        title: Text("Daily Test", style: AppTexts.titleTextStyle),
+        actions: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: Colors.black),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(Icons.timer_outlined, size: 18.sp),
+                5.wGap,
+                BlocBuilder<QuestionBloc, QuestionState>(
+                  builder: (context, state) {
+                    if (State is QuestionInitial) return SizedBox.shrink();
+                    if (state is QuestionLoaded) {
+                      int minutes = state.tickCount ~/ 60;
+                      int seconds = state.tickCount % 60;
+                      return Text(
+                        "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}",
+                      );
+                    }
+                    return Container();
+                  },
+                ),
+              ],
+            ),
+          ).padSymmetric(horizontal: 10.w),
+        ],
+      ),
       body: BlocBuilder<QuestionBloc, QuestionState>(
         builder: (context, state) {
           if (state is QuestionInitial) {
             return Center(child: Text("Loading..."));
           } else if (state is QuestionLoaded) {
+            int? selectedAnswer = state.selectedOption[state.currentIndex];
             var question = state.questions[state.currentIndex];
-            print(question);
             var progress = state.currentIndex / (state.questions.length - 1);
+            var answered =
+                state.answeredStatus.where((value) => value).toList().length;
             print(progress);
             return SingleChildScrollView(
               child: Column(
@@ -39,7 +81,7 @@ class TestScreen extends StatelessWidget {
                     text:
                         "Question ${state.currentIndex + 1} of ${state.questions.length}",
                     value: progress,
-                    percentageText: "1 Answered",
+                    percentageText: "$answered Answered",
                   ),
                   20.hGap,
                   TestModule(
@@ -53,49 +95,28 @@ class TestScreen extends StatelessWidget {
                         ),
                       ),
                       20.hGap,
-                      BorderedContainer(
-                        radius: BorderRadius.zero,
-                        padding: EdgeInsets.zero,
-                        child: CustomCheckbox(
-                          value: true,
-                          isRounded: true,
-                          title: question['option 1'],
-                        ),
+                      ListView.builder(
+                        itemCount: optionsKey.length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder:
+                            (context, index) => BorderedContainer(
+                              padding: EdgeInsets.zero,
+                              radius: BorderRadius.zero,
+                              child: RadioListTile(
+                                value: index,
+                                activeColor: Colors.black,
+                                groupValue: selectedAnswer,
+                                onChanged: (value) {
+                                  context.read<QuestionBloc>().add(
+                                    AnswerQuestion(value!),
+                                  );
+                                },
+                                title: Text(question[optionsKey[index]]),
+                              ),
+                            ).padAll(5),
                       ),
                       10.hGap,
-                      BorderedContainer(
-                        radius: BorderRadius.zero,
-                        padding: EdgeInsets.zero,
-                        borderColor: Colors.grey[400],
-                        child: CustomCheckbox(
-                          value: false,
-                          isRounded: true,
-                          title: question['option 2'],
-                        ),
-                      ),
-                      10.hGap,
-                      BorderedContainer(
-                        radius: BorderRadius.zero,
-                        padding: EdgeInsets.zero,
-                        borderColor: Colors.grey[400],
-                        child: CustomCheckbox(
-                          value: false,
-                          isRounded: true,
-                          title: question['option 3'],
-                        ),
-                      ),
-                      10.hGap,
-                      BorderedContainer(
-                        radius: BorderRadius.zero,
-                        padding: EdgeInsets.zero,
-                        borderColor: Colors.grey[400],
-                        child: CustomCheckbox(
-                          value: false,
-                          isRounded: true,
-                          title: question['option 4'],
-                        ),
-                      ),
-                      20.hGap,
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -111,7 +132,10 @@ class TestScreen extends StatelessWidget {
                                     : null;
                               },
                               backColor: Colors.white,
-                              fontColor: Colors.black,
+                              fontColor:
+                                  state.currentIndex == 0
+                                      ? Colors.grey
+                                      : Colors.black,
                             ),
                           ),
                           20.wGap,
@@ -120,13 +144,23 @@ class TestScreen extends StatelessWidget {
                             child: Padding(
                               padding: EdgeInsets.only(left: 65.w),
                               child: ActionButton(
-                                text: "Next",
+                                text:
+                                    state.currentIndex ==
+                                            state.questions.length - 1
+                                        ? "Submit Test"
+                                        : "Next",
                                 onTap: () {
-                                  state.currentIndex < state.questions.length
-                                      ? context.read<QuestionBloc>().add(
-                                        NextQuestion(),
-                                      )
-                                      : null;
+                                  if (state.currentIndex <
+                                      state.questions.length - 1) {
+                                    context.read<QuestionBloc>().add(
+                                      NextQuestion(),
+                                    );
+                                  } else {
+                                    context.read<QuestionBloc>().add(
+                                      SubmitTest(),
+                                    );
+                                    context.push(AppRoutes.resultScreen);
+                                  }
                                 },
                               ),
                             ),
@@ -151,6 +185,22 @@ class TestScreen extends StatelessWidget {
                                 padding: EdgeInsets.only(right: 5.w),
                                 child: QuestionNavigatorButton(
                                   text: "${index + 1}",
+                                  backgroundColor:
+                                      state.currentIndex == index
+                                          ? Colors.black
+                                          : Colors.white,
+                                  fontColor:
+                                      state.currentIndex == index
+                                          ? Colors.white
+                                          : state.answeredStatus[index]
+                                          ? Colors.green
+                                          : Colors.black,
+                                  borderColor:
+                                      state.currentIndex == index
+                                          ? Colors.white
+                                          : state.answeredStatus[index]
+                                          ? Colors.green
+                                          : Colors.black,
                                   onTap:
                                       () => context.read<QuestionBloc>().add(
                                         JumpToQuestion(index),
@@ -160,9 +210,19 @@ class TestScreen extends StatelessWidget {
                         ),
                       ),
                       10.hGap,
-                      CustomCheckbox(value: false, title: "Current"),
-                      CustomCheckbox(value: true, title: "Answered"),
-                      CustomCheckbox(value: false, title: "Not Answered"),
+                      QuestionIndicator(
+                        text: "Current",
+                        fillColor: Colors.black,
+                      ),
+                      QuestionIndicator(
+                        text: "Answered",
+                        borderColor: Colors.green,
+                        fillColor: Colors.white,
+                      ),
+                      QuestionIndicator(
+                        text: "Not Answered",
+                        fillColor: Colors.white,
+                      ),
                     ],
                   ),
                 ],
@@ -173,6 +233,35 @@ class TestScreen extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class QuestionIndicator extends StatelessWidget {
+  const QuestionIndicator({
+    super.key,
+    this.fillColor = Colors.black,
+    this.borderColor = Colors.black,
+    required this.text,
+  });
+  final String text;
+  final Color fillColor;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: fillColor,
+            border: Border.all(color: borderColor, width: 2),
+          ),
+        ),
+        10.wGap,
+        Text(text),
+      ],
+    ).padAll(6);
   }
 }
 
@@ -196,13 +285,13 @@ class QuestionNavigatorButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
+        backgroundColor: backgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: AppBorders.borderRadius,
-          side: BorderSide(color: Colors.black, width: 1),
+          side: BorderSide(color: borderColor, width: 1),
         ),
       ),
-      child: Text(text, style: TextStyle(color: Colors.black)),
+      child: Text(text, style: TextStyle(color: fontColor)),
     );
   }
 }

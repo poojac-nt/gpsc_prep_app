@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
@@ -46,6 +47,10 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.testScreen,
     pageBuilder: (context, state) => _slideTransition(TestScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.resultScreen,
+    pageBuilder: (context, state) => _slideTransition(ResultScreen(), state),
   ),
 ];
 

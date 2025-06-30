@@ -10,6 +10,8 @@ import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -44,6 +46,9 @@ Future<void> main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => getIt<AuthBloc>()),
+          BlocProvider(
+            create: (_) => getIt<QuestionBloc>()..add(LoadQuestion()),
+          ),
           BlocProvider(create: (_) => getIt<EditProfileBloc>()),
         ],
         child: const MyApp(),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
@@ -5,11 +7,14 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.d
 class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   QuestionBloc() : super(QuestionInitial()) {
     on<LoadQuestion>(_loadQuestion);
+    on<TimerTicked>(_onTimerTicked);
+    on<SubmitTest>(_onSubmit);
     on<AnswerQuestion>(_answerQuestion);
     on<NextQuestion>(_nextQuestion);
     on<PrevQuestion>(_prevQuestion);
     on<JumpToQuestion>(_jumpToQuestion);
   }
+  Timer? timer;
   Future<void> _loadQuestion(
     LoadQuestion event,
     Emitter<QuestionState> emit,
@@ -48,10 +53,22 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         'option 4': 'A Widget is a mobile app development platform',
       },
     ];
+    timer?.cancel();
+    int tickCount = 30 * 60;
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      tickCount--;
+      add(TimerTicked(tickCount));
+
+      if (tickCount <= 0) {
+        timer.cancel();
+      }
+    });
     emit(
       QuestionLoaded(
         questions: questions,
         currentIndex: 0,
+        tickCount: tickCount,
+        selectedOption: List.generate(questions.length, (_) => null),
         answeredStatus: List.generate(questions.length, (_) => false),
       ),
     );
@@ -63,9 +80,16 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   ) async {
     if (state is QuestionLoaded) {
       final currentState = state as QuestionLoaded;
+      final updateSelectedAnswer = [...currentState.selectedOption];
+      updateSelectedAnswer[currentState.currentIndex] = event.index;
       final updatedAnsweredStatus = [...currentState.answeredStatus];
       updatedAnsweredStatus[currentState.currentIndex] = true;
-      emit(currentState.copyWith(answeredStatus: updatedAnsweredStatus));
+      emit(
+        currentState.copyWith(
+          answeredStatus: updatedAnsweredStatus,
+          selectedOption: updateSelectedAnswer,
+        ),
+      );
     }
   }
 
@@ -104,5 +128,19 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       final index = event.index;
       emit(currentState.copyWith(currentIndex: index));
     }
+  }
+
+  Future<void> _onTimerTicked(
+    TimerTicked event,
+    Emitter<QuestionState> emit,
+  ) async {
+    if (state is QuestionLoaded) {
+      final currentState = state as QuestionLoaded;
+      emit(currentState.copyWith(tickCount: event.remainingSeconds));
+    }
+  }
+
+  Future<void> _onSubmit(SubmitTest event, Emitter<QuestionState> emit) async {
+    timer?.cancel();
   }
 }

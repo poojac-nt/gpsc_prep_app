@@ -252,6 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         itemCount: 3,
                         itemBuilder:
                             (context, index) => CustomCheckbox(
+                              ontap: () {},
                               title: notificationPrefs[index],
                               value: values[index],
                             ),
