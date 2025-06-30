@@ -71,10 +71,17 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
                 Row(
                   children: [
                     CircleAvatar(
-                      backgroundImage: NetworkImage(
-                        'https://picsum.photos/206',
-                      ),
+                      backgroundImage:
+                          user?.profilePicture != null &&
+                                  user!.profilePicture!.isNotEmpty
+                              ? NetworkImage(user!.profilePicture!)
+                              : null,
                       radius: 20.r,
+                      child:
+                          (user?.profilePicture == null ||
+                                  user!.profilePicture!.isEmpty)
+                              ? Icon(Icons.person) // fallback icon or asset
+                              : null,
                     ),
                     10.wGap,
                     Column(

@@ -25,3 +25,5 @@ class UpdateUserProfile extends AuthEvent {
 }
 
 class LogOutRequested extends AuthEvent {}
+
+class PickImage extends AuthEvent {}

@@ -47,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     "Push Notification",
     "Daily Test Reminder",
   ];
-  List<String> languages = ["English", "Gujrati", "Hindi"];
+  List<String> languages = ["English", "Gujarati", "Hindi"];
   List<bool> values = [true, false, true, true, false, false];
 
   @override
@@ -94,20 +94,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             CircleAvatar(
                               backgroundImage: NetworkImage(
-                                "https://picsum.photos/206",
+                                user.profilePicture!,
                               ),
                               radius: 40.r,
                             ),
 
                             Text(
-                              user.name ?? "John Deo",
+                              user.name,
                               style: TextStyle(
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              user.email ?? "John.deo@example.com",
+                              user.email,
                               textAlign: TextAlign.center,
                               style: AppTexts.labelTextStyle.copyWith(
                                 color: Colors.grey[700],

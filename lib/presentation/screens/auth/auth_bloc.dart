@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
-import 'package:meta/meta.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -11,11 +15,14 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
   final CacheManager _cache;
+  final ImagePicker picker = ImagePicker();
+  final _supabase = Supabase.instance.client;
 
   AuthBloc(this.authRepository, this._cache) : super(AuthInitial()) {
     on<LoginRequested>(_login);
     on<LoadUserFromCache>(_loadUserFromCache);
     on<CreateUserRequested>(_createUser);
+    on<PickImage>(_onPickAndUploadImage);
   }
 
   Future<void> _login(LoginRequested event, Emitter<AuthState> emit) async {
@@ -63,5 +70,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _cache.setUser(user);
       emit(AuthCreated(user));
     });
+  }
+
+  Future<void> _onPickAndUploadImage(
+    PickImage event,
+    Emitter<AuthState> state,
+  ) async {
+    emit(ImagePicking());
+    try {
+      XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) {
+        emit(ImageUploadError('No image selected.'));
+        return;
+      }
+      emit(ImageUploading());
+      final File imageFile = File(pickedFile.path);
+      final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await _supabase.storage
+          .from('profile-picture')
+          .upload(fileName, imageFile);
+
+      final String publicUrl = _supabase.storage
+          .from('profile-picture')
+          .getPublicUrl(fileName);
+
+      emit(ImageUploaded(publicUrl));
+    } catch (e) {
+      emit(ImageUploadError('Failed to upload image: $e'));
+    }
   }
 }

@@ -47,6 +47,18 @@ class SupabaseHelper {
     try {
       final jsonData = data.toJson();
       _log.d('[insertUser] Payload: $jsonData');
+      final existingUser =
+          await _supabase
+              .from(SupabaseKeys.users)
+              .select('user_email')
+              .eq('user_email', data.email)
+              .maybeSingle();
+
+      if (existingUser != null) {
+        _log.w('Email already exists: ${data.email}');
+        return Left(Failure('A user with this email already exists.'));
+      }
+
       final signUpResponse = await _supabase.auth.signUp(
         password: data.password!,
         email: data.email,
@@ -68,7 +80,7 @@ class SupabaseHelper {
                 'role': 'Student',
                 'user_email': data.email,
                 'auth_id': userId,
-                'profile_picture': 'data.profilePicture',
+                'profile_picture': data.profilePicture,
               })
               .select('*')
               .single();

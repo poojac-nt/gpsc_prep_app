@@ -21,7 +21,7 @@ class AuthFailure extends AuthState {
   AuthFailure(this.message);
 }
 
-/// Called when user profile is being created via RPC
+/// Called when user profile is being created
 class AuthCreating extends AuthState {}
 
 /// Called when user profile is successfully created
@@ -36,4 +36,21 @@ class AuthCreateFailure extends AuthState {
   final String message;
 
   AuthCreateFailure(this.message);
+}
+
+/// Called When Picking Image in registration screen
+class ImagePicking extends AuthState {}
+
+class ImageUploading extends AuthState {}
+
+class ImageUploaded extends AuthState {
+  final String imageUrl;
+
+  ImageUploaded(this.imageUrl);
+}
+
+class ImageUploadError extends AuthState {
+  final String message;
+
+  ImageUploadError(this.message);
 }
