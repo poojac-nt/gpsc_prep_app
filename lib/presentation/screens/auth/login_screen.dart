@@ -97,10 +97,10 @@ class LoginScreen extends StatelessWidget {
                               fontSize: 13.sp,
                             ),
                             recognizer:
-                            TapGestureRecognizer()
-                              ..onTap = () {
-                                context.go(AppRoutes.auth);
-                              },
+                                TapGestureRecognizer()
+                                  ..onTap = () {
+                                    context.go(AppRoutes.registrationScreen);
+                                  },
                           ),
                         ],
                       ),

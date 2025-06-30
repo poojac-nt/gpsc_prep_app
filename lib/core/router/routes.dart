@@ -13,7 +13,7 @@ import '../../presentation/screens/test/mcq_test_screen.dart';
 
 final List<GoRoute> appRoutes = [
   GoRoute(
-    path: AppRoutes.auth,
+    path: AppRoutes.registrationScreen,
     pageBuilder:
         (context, state) => _slideTransition(RegistrationScreen(), state),
   ),

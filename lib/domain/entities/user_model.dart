@@ -9,6 +9,9 @@ class UserModel {
   @JsonKey(name: 'id')
   final int? id;
 
+  @JsonKey(name: 'auth_id')
+  final String authID;
+
   @JsonKey(name: 'role')
   @UserRoleConverter()
   final UserRole role;
@@ -16,7 +19,7 @@ class UserModel {
   @JsonKey(name: 'full_name')
   final String name;
 
-  @JsonKey(name: 'email', includeIfNull: false)
+  @JsonKey(name: 'user_email')
   final String email;
 
   @JsonKey(name: 'address')
@@ -30,6 +33,7 @@ class UserModel {
 
   UserModel({
     this.id,
+    required this.authID,
     required this.role,
     required this.name,
     required this.email,
