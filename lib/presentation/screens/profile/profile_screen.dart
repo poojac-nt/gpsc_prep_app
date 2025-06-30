@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/exam_pref_tile.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/quick_stats.dart';
+import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -23,9 +26,22 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final SnackBarHelper snackBarHelper = getIt<SnackBarHelper>();
+  late final TextEditingController email;
+  late final TextEditingController password;
+  late final TextEditingController name;
+  late final TextEditingController address;
+  late final TextEditingController number;
+
   @override
   void initState() {
     super.initState();
+    email = TextEditingController();
+    password = TextEditingController();
+    name = TextEditingController();
+    address = TextEditingController();
+    number = TextEditingController();
+
     context.read<EditProfileBloc>().add(LoadInitialProfile());
   }
 
@@ -56,26 +72,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(title: Text('My Profile', style: AppTexts.titleTextStyle)),
       body: BlocConsumer<EditProfileBloc, EditProfileState>(
         listener: (context, state) {
-          if (state is EditProfileLoaded) {
-            final user = state.user;
-          }
-
           if (state is EditProfileSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile updated successfully")),
-            );
-            context.read<AuthBloc>().add(UpdateUserProfile(state.user));
+            snackBarHelper.showSuccess("Profile updated successfully");
           }
-
-          if (state is EditProfileFailure) {}
+          if (state is EditProfileFailure) {
+            snackBarHelper.showError(state.message);
+          }
         },
         builder: (context, state) {
           if (state is EditProfileLoading || state is EditProfileInitial) {
             return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is EditProfileFailure) {
-            return Center(child: Text(state.message));
           }
 
           if (state is EditProfileLoaded || state is EditProfileSuccess) {
@@ -83,6 +89,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 state is EditProfileLoaded
                     ? state.user
                     : (state as EditProfileSuccess).user;
+
+            email.text = user.email;
+            name.text = user.name;
+            number.text = user.number.toString();
+            address.text = user.address!;
+
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -140,23 +152,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       10.hGap,
                       Text("Full Name", style: AppTexts.labelTextStyle),
                       5.hGap,
-                      CustomTextField(text: user.name),
+                      CustomTextField(controller: name),
                       10.hGap,
                       Text("Email", style: AppTexts.labelTextStyle),
                       5.hGap,
-                      CustomTextField(text: user.email),
+                      CustomTextField(controller: email),
                       10.hGap,
                       Text("Mobile Number", style: AppTexts.labelTextStyle),
                       5.hGap,
-                      CustomTextField(text: user.number.toString()),
+                      CustomTextField(
+                        keyboardType: TextInputType.number,
+                        controller: number,
+                      ),
                       10.hGap,
                       Text("Address", style: AppTexts.labelTextStyle),
                       5.hGap,
-                      CustomTextField(
-                        text:
-                            user.address ??
-                            "123 Main Street, Ahmedabad, Gujarat 380001",
-                        maxline: 3,
+                      CustomTextField(maxline: 3, controller: address),
+                      10.hGap,
+                      ActionButton(
+                        text: 'Update Information',
+                        onTap: () {
+                          context.read<EditProfileBloc>().add(
+                            SaveProfileRequested(
+                              UserPayload(
+                                authID: user.authID,
+                                email: user.email,
+                                name: name.text.trim(),
+                                address: address.text.trim(),
+                                number: int.parse(number.text.trim()),
+                                profilePicture: user.profilePicture,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

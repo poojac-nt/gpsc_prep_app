@@ -17,4 +17,7 @@ class AuthRepository {
 
   Future<Either<Failure, UserModel>> createUser(UserPayload data) async =>
       await _supabase.createUser(data);
+
+  Future<Either<Failure, UserModel>> updateUserInfo(UserPayload data) async =>
+      await _supabase.updateUserInfo(data);
 }

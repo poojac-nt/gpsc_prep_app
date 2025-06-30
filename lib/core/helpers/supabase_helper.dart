@@ -91,4 +91,36 @@ class SupabaseHelper {
       return Left(Failure('Error Creating New User $e'));
     }
   }
+
+  Future<Either<Failure, UserModel>> updateUserInfo(UserPayload data) async {
+    try {
+      final jsonData = data.toJson();
+      _log.d('[Update User] Payload: $jsonData');
+
+      await _supabase.rpc(
+        SupabaseKeys.updateUserInfo,
+        params: {
+          'p_auth_id': data.authID,
+          'p_full_name': data.name,
+          'p_email': data.email,
+          'p_address': data.address,
+          'p_number': data.number,
+          'p_profile_picture': data.profilePicture,
+        },
+      );
+
+      // ✅ Recommended: refetch updated user
+      final userResponse =
+          await _supabase
+              .from('users')
+              .select()
+              .eq('auth_id', data.authID!)
+              .single();
+
+      final updatedUser = UserModel.fromJson(userResponse);
+      return Right(updatedUser);
+    } catch (e) {
+      return Left(Failure('Error Updating User Info: ${e.toString()}'));
+    }
+  }
 }

@@ -51,24 +51,18 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Email",
-                    style: AppTexts.labelTextStyle
-                  ),
+                  Text("Email", style: AppTexts.labelTextStyle),
                   5.hGap,
                   CustomTextField(
-                    text: "Enter your email",
+                    hintText: "Enter your email",
                     prefixIcon: Icons.email,
                     controller: email,
                   ),
                   20.hGap,
-                  Text(
-                    "Password",
-                    style: AppTexts.labelTextStyle
-                  ),
+                  Text("Password", style: AppTexts.labelTextStyle),
                   5.hGap,
                   CustomTextField(
-                    text: "Enter your password",
+                    hintText: "Enter your password",
                     prefixIcon: Icons.password,
                     controller: password,
                   ),

@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:meta/meta.dart';
@@ -18,7 +19,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   EditProfileBloc(this._cache, this._authRepository, this._snackBarHelper)
     : super(EditProfileInitial()) {
     on<LoadInitialProfile>(_onLoadInitialProfile);
-    on<ProfileFieldChanged>(_onFieldChanged);
+    on<SaveProfileRequested>(_onSaveProfileRequested);
   }
 
   Future<void> _onLoadInitialProfile(
@@ -34,14 +35,6 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     }
   }
 
-  Future<void> _onFieldChanged(
-    ProfileFieldChanged event,
-    Emitter<EditProfileState> emit,
-  ) async {
-    _currentUser = event.updatedUser;
-    emit(EditProfileLoaded(_currentUser!));
-  }
-
   Future<void> _onSaveProfileRequested(
     SaveProfileRequested event,
     Emitter<EditProfileState> emit,
@@ -51,9 +44,15 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     }
     emit(EditProfileSaving());
     try {
-      ///method to update user from auth repository
-      _cache.setUser(_currentUser!);
-      _snackBarHelper.showSuccess('User Details Updated Successfully');
+      final result = await _authRepository.updateUserInfo(event.updatedUser);
+      result.fold((failure) => emit(EditProfileFailure(failure.message)), (
+        user,
+      ) {
+        _cache.setUser(user);
+        _snackBarHelper.showSuccess('Information Updated Successfully');
+        emit(EditProfileSuccess(user));
+        emit(EditProfileLoaded(user));
+      });
     } catch (e) {
       emit(EditProfileFailure('Failed to Save profile :$e'));
     }

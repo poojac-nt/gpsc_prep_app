@@ -126,6 +126,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       Icons.phone,
                       20.hGap,
                       number,
+                      keyboardType: TextInputType.number,
                     ),
                     _buildInputText(
                       "Address",
@@ -205,14 +206,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     String hint,
     IconData? icon,
     Widget bottomGap,
-    TextEditingController controller,
-  ) {
+    TextEditingController controller, {
+    TextInputType? keyboardType,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: AppTexts.labelTextStyle),
         5.hGap,
-        CustomTextField(text: hint, controller: controller, prefixIcon: icon),
+        CustomTextField(
+          hintText: hint,
+          controller: controller,
+          prefixIcon: icon,
+          keyboardType: keyboardType,
+        ),
         bottomGap,
       ],
     );

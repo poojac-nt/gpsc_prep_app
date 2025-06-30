@@ -48,16 +48,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _updateUserProfile(
-    UpdateUserProfile event,
-    Emitter<AuthState> emit,
-  ) async {
-    _cache.setUser(event.updateUser);
-
-    /// update method from repository
-    emit(AuthSuccess(event.updateUser));
-  }
-
   Future<void> _createUser(
     CreateUserRequested event,
     Emitter<AuthState> emit,
