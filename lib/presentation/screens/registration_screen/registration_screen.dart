@@ -90,9 +90,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           fit: BoxFit.cover,
                                         ),
                                       )
-                                      : const Icon(
+                                      : Icon(
                                         Icons.person,
-                                        size: 30,
+                                        size: 30.sp,
                                         color: Colors.white,
                                       ),
                             ),

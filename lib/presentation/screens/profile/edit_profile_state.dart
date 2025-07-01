@@ -26,3 +26,20 @@ class EditProfileFailure extends EditProfileState {
 
   EditProfileFailure(this.message);
 }
+
+class EditImagePicking extends EditProfileState {}
+
+class EditImageUploading extends EditProfileState {}
+
+class EditImageUploaded extends EditProfileState {
+  final String imageUrl;
+  final UserModel user;
+
+  EditImageUploaded(this.imageUrl, this.user);
+}
+
+class EditImageUploadError extends EditProfileState {
+  final String message;
+
+  EditImageUploadError(this.message);
+}

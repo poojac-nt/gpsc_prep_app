@@ -226,7 +226,7 @@ class ResultScreen extends StatelessWidget {
                     ],
                   ),
                 ],
-                icon: Icons.check_circle_outline_sharp,
+                prefixIcon: Icons.check_circle_outline_sharp,
                 iconColor: Colors.green,
               ).padAll(AppPaddings.defaultPadding);
             }

@@ -78,12 +78,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       await _supabase.storage
           .from('profile-picture')
-          .upload(fileName, imageFile);
+          .upload('uploads/$fileName', imageFile);
 
       final String publicUrl = _supabase.storage
           .from('profile-picture')
-          .getPublicUrl(fileName);
-
+          .getPublicUrl('uploads/$fileName');
       emit(ImageUploaded(publicUrl));
     } catch (e) {
       emit(ImageUploadError('Failed to upload image: $e'));

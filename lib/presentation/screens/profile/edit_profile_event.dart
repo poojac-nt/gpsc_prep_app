@@ -16,3 +16,5 @@ class SaveProfileRequested extends EditProfileEvent {
 
   SaveProfileRequested(this.updatedUser);
 }
+
+class EditImage extends EditProfileEvent {}

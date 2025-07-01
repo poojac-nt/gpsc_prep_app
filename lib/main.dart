@@ -50,6 +50,9 @@ Future<void> main() async {
             create: (_) => getIt<QuestionBloc>()..add(LoadQuestion()),
           ),
           BlocProvider(create: (_) => getIt<EditProfileBloc>()),
+          BlocProvider(
+            create: (_) => getIt<QuestionBloc>()..add(LoadQuestion()),
+          ),
         ],
         child: const MyApp(),
       ),

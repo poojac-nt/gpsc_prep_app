@@ -42,7 +42,7 @@ class MCQTestScreen extends StatelessWidget {
             TestModule(
               title: "Daily Tests",
               subtitle: "Subject-based Daily Practice",
-              icon: Icons.calendar_today_outlined,
+              prefixIcon: Icons.calendar_today_outlined,
               cards: [
                 TestTile(
                   title: "General Studies",
@@ -64,7 +64,7 @@ class MCQTestScreen extends StatelessWidget {
             TestModule(
               title: "Mock Tests",
               subtitle: "Full Length practice Exams",
-              icon: Icons.description_outlined,
+              prefixIcon: Icons.description_outlined,
               cards: [
                 TestTile(
                   title: "GPSC Mock Test #1",
@@ -92,7 +92,7 @@ class MCQTestScreen extends StatelessWidget {
             TestModule(
               title: 'Offline Mode',
               subtitle: 'Download tests for offline Practice',
-              icon: Icons.file_download_outlined,
+              prefixIcon: Icons.file_download_outlined,
               cards: [
                 BorderedContainer(
                   padding: EdgeInsets.all(5),

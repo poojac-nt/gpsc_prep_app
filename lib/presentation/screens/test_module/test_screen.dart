@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +6,6 @@ import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
-import 'package:gpsc_prep_app/presentation/widgets/custom_checkbox.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -243,6 +239,7 @@ class QuestionIndicator extends StatelessWidget {
     this.borderColor = Colors.black,
     required this.text,
   });
+
   final String text;
   final Color fillColor;
   final Color borderColor;
@@ -280,6 +277,7 @@ class QuestionNavigatorButton extends StatelessWidget {
   final Color fontColor;
   final Color borderColor;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(

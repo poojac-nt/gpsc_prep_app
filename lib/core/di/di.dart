@@ -52,6 +52,8 @@ void setupBlocs() {
       getIt<CacheManager>(),
       getIt<AuthRepository>(),
       getIt<SnackBarHelper>(),
+      getIt<CacheManager>(),
+      getIt<LogHelper>(),
     ),
   );
   getIt.registerLazySingleton<QuestionBloc>(() => QuestionBloc());

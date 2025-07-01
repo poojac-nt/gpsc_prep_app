@@ -9,19 +9,19 @@ class TestModule extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
-    this.icon,
     this.iconSize = 24,
     this.fontSize = 24,
     this.iconColor = Colors.black,
+    this.prefixIcon,
     this.cards = const <Widget>[],
   });
 
   final String title;
   final String? subtitle;
-  final IconData? icon;
   final double? iconSize;
   final double? fontSize;
   final Color? iconColor;
+  final IconData? prefixIcon;
   final List<Widget> cards;
 
   @override
@@ -32,8 +32,8 @@ class TestModule extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (icon != null) ...[
-                Icon(icon, size: iconSize, color: iconColor),
+              if (prefixIcon != null) ...[
+                Icon(prefixIcon, size: iconSize, color: iconColor),
                 10.wGap,
               ],
               Text(

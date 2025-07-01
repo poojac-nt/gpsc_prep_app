@@ -80,15 +80,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
         builder: (context, state) {
-          if (state is EditProfileLoading || state is EditProfileInitial) {
+          if (state is EditProfileLoading ||
+              state is EditProfileInitial ||
+              state is EditImagePicking ||
+              state is EditImageUploading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is EditProfileLoaded || state is EditProfileSuccess) {
+          if (state is EditProfileLoaded ||
+              state is EditProfileSuccess ||
+              state is EditImageUploaded) {
             final user =
                 state is EditProfileLoaded
                     ? state.user
-                    : (state as EditProfileSuccess).user;
+                    : state is EditProfileSuccess
+                    ? state.user
+                    : (state as EditImageUploaded).user;
 
             email.text = user.email;
             name.text = user.name;
@@ -103,14 +110,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     cards: [
                       Center(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            CircleAvatar(
-                              backgroundImage: NetworkImage(
-                                user.profilePicture!,
-                              ),
-                              radius: 40.r,
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    context.read<EditProfileBloc>().add(
+                                      EditImage(),
+                                    );
+                                  },
+                                  child: Container(
+                                    height: 75.h,
+                                    width: 80.h,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 6,
+                                          offset: Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipOval(
+                                      child:
+                                          user.profilePicture == null
+                                              ? Icon(
+                                                Icons.person,
+                                                size: 35.sp,
+                                                color: Colors.white,
+                                              )
+                                              : Image.network(
+                                                state is EditImageUploaded
+                                                    ? state.imageUrl
+                                                    : user.profilePicture!,
+                                                fit: BoxFit.cover,
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 4,
+                                  right: 0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    padding: EdgeInsets.all(4),
+                                    child: Icon(
+                                      Icons.edit,
+                                      size: 18.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-
                             Text(
                               user.name,
                               style: TextStyle(
@@ -131,6 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
+
                   10.hGap,
                   TestModule(
                     title: 'Quick Stats',
@@ -147,16 +214,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   10.hGap,
                   TestModule(
                     title: 'Personal Information',
-                    icon: Icons.person_outline,
+                    prefixIcon: Icons.person_outline,
                     cards: [
                       10.hGap,
                       Text("Full Name", style: AppTexts.labelTextStyle),
                       5.hGap,
                       CustomTextField(controller: name),
-                      10.hGap,
-                      Text("Email", style: AppTexts.labelTextStyle),
-                      5.hGap,
-                      CustomTextField(controller: email),
                       10.hGap,
                       Text("Mobile Number", style: AppTexts.labelTextStyle),
                       5.hGap,

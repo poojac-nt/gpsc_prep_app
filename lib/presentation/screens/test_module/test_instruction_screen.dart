@@ -23,7 +23,7 @@ class TestInstructionScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: TestModule(
           title: "Test Instructions",
-          icon: Icons.menu_book_outlined,
+          prefixIcon: Icons.menu_book_outlined,
           cards: [
             BorderedContainer(
               padding: EdgeInsets.all(AppPaddings.defaultPadding),
