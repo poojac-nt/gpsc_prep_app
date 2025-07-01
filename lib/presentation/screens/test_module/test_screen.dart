@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
@@ -9,6 +10,7 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/extensions/question_parsing.dart';
 
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
@@ -22,7 +24,15 @@ class TestScreen extends StatefulWidget {
 
 class _TestScreenState extends State<TestScreen> {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
-  List<String> optionsKey = ["option 1", "option 2", "option 3", "option 4"];
+
+  late List<Question> questions;
+  late List<String> options;
+
+  @override
+  void initState() {
+    super.initState();
+    questions = Question.sampleQuestion();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +74,18 @@ class _TestScreenState extends State<TestScreen> {
           if (state is QuestionInitial) {
             return Center(child: Text("Loading..."));
           } else if (state is QuestionLoaded) {
+            // var parser = Question.parseMCQQuestion();
+            // var title = parser['title'];
+            // var options = parser['options'] as List<String>;
+            // var matchPairs = parser['matchPairs'] List<Map<String, String>>; // For Match-type
+            // var question = state.questions[state.currentIndex];
+
+            options = questions[state.currentIndex].getOptions();
             int? selectedAnswer = state.selectedOption[state.currentIndex];
-            var question = state.questions[state.currentIndex];
             var progress = state.currentIndex / (state.questions.length - 1);
             var answered =
                 state.answeredStatus.where((value) => value).toList().length;
+
             print(progress);
             return SingleChildScrollView(
               child: Column(
@@ -84,15 +101,21 @@ class _TestScreenState extends State<TestScreen> {
                     title: "Question ${state.currentIndex + 1}",
                     cards: [
                       Text(
-                        question['question'],
+                        questions[state.currentIndex].question,
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16.sp,
                         ),
                       ),
-                      20.hGap,
+                      10.hGap,
+                      // ListView.builder(
+                      //   itemCount: options.length,
+                      //   shrinkWrap: true,
+                      //   physics: NeverScrollableScrollPhysics(),
+                      //   itemBuilder: (context, index) => Text(options[index]),
+                      // ),
                       ListView.builder(
-                        itemCount: optionsKey.length,
+                        itemCount: options.length,
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder:
@@ -108,7 +131,7 @@ class _TestScreenState extends State<TestScreen> {
                                     AnswerQuestion(value!),
                                   );
                                 },
-                                title: Text(question[optionsKey[index]]),
+                                title: Text(options[index]),
                               ),
                             ).padAll(5),
                       ),

@@ -3,7 +3,7 @@ sealed class QuestionState {}
 class QuestionInitial extends QuestionState {}
 
 class QuestionLoaded extends QuestionState {
-  final List<Map<String, dynamic>> questions;
+  final List<String> questions;
   final int currentIndex;
   final List<bool> answeredStatus;
   final List<int?> selectedOption;
@@ -18,7 +18,7 @@ class QuestionLoaded extends QuestionState {
   });
 
   QuestionLoaded copyWith({
-    List<Map<String, dynamic>>? questions,
+    List<String>? questions,
     int? currentIndex,
     List<bool>? answeredStatus,
     List<int?>? selectedOption,

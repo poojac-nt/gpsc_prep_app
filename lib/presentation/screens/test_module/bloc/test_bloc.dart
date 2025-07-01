@@ -19,40 +19,14 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     LoadQuestion event,
     Emitter<QuestionState> emit,
   ) async {
-    final questions = [
-      {
-        'id': 1,
-        'question': 'What is Flutter?',
-        'option 1': 'Flutter is a framework',
-        'option 2': 'Flutter is a programming language',
-        'option 3': 'Flutter is a widget library',
-        'option 4': 'Flutter is a mobile app development platform',
-      },
-      {
-        'id': 2,
-        'question': 'What is Dart?',
-        'option 1': 'Dart is a programming language',
-        'option 2': 'Dart is a framework',
-        'option 3': 'Dart is a widget library',
-        'option 4': 'Dart is a mobile app development platform',
-      },
-      {
-        'id': 3,
-        'question': 'What is State Management.',
-        'option 1': 'State Management is a framework',
-        'option 2': 'State Management is a programming language',
-        'option 3': 'State Management is a widget library',
-        'option 4': 'State Management is a mobile app development platform',
-      },
-      {
-        'id': 4,
-        'question': 'What is a Widget?',
-        'option 1': 'A Widget is a framework',
-        'option 2': 'A Widget is a programming language',
-        'option 3': 'A Widget is a widget library',
-        'option 4': 'A Widget is a mobile app development platform',
-      },
+    List<String> questions = [
+      // "What is Dart? a) Programming Language b) Framework c) SDK d) IDE",
+      "Match the following: a) Delhi -> India b) Paris -> France c) Tokyo -> Japan",
+      "What is Flutter?: a) Flutter is a framework b) Flutter is a programming language c) Flutter is a widget library d) Flutter is a mobile app development platform",
+      "What is State Management? a) State Management is a framework b) State Management is a programming language c) State Management is a widget library d) State Management is a mobile app development platform",
+      "What is a Widget? a) A Widget is a framework b) A Widget is a programming language c) A Widget is a widget library d) A Widget is a mobile app development platform ",
     ];
+
     timer?.cancel();
     int tickCount = 30 * 60;
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
