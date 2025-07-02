@@ -18,7 +18,6 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   final CacheManager _cache;
   final AuthRepository _authRepository;
   final SnackBarHelper _snackBarHelper;
-  final CacheManager _cacheManager;
   final LogHelper _log;
   final _supabase = Supabase.instance.client;
   final ImagePicker picker = ImagePicker();
@@ -28,7 +27,6 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     this._cache,
     this._authRepository,
     this._snackBarHelper,
-    this._cacheManager,
     this._log,
   ) : super(EditProfileInitial()) {
     on<LoadInitialProfile>(_onLoadInitialProfile);
@@ -55,6 +53,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   ) async {
     if (_currentUser == null) {
       emit(EditProfileFailure('No User Data to Update'));
+      return;
     }
     emit(EditProfileSaving());
     try {
@@ -69,6 +68,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
       });
     } catch (e) {
       emit(EditProfileFailure('Failed to Save profile :$e'));
+      _log.e('Profile save error', error: e);
     }
   }
 
@@ -77,8 +77,9 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     Emitter<EditProfileState> emit,
   ) async {
     emit(EditImagePicking());
+
     try {
-      /// Pick new image
+      // Pick new image
       final XFile? pickedFile = await picker
           .pickImage(
             source: ImageSource.gallery,
@@ -96,68 +97,68 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
 
       emit(EditImageUploading());
 
-      /// Generate secure filename
+      // Generate secure filename and upload path
       final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final storagePath = 'uploads/$fileName';
       final File imageFile = File(pickedFile.path);
 
-      /// Upload with progress tracking
+      // Upload new image
       await _supabase.storage
           .from('profile-picture')
-          .upload('uploads/$fileName', imageFile);
+          .upload(storagePath, imageFile);
 
-      /// Get authenticated URL (more secure)
+      // Get new public URL
       final String newImageUrl = _supabase.storage
           .from('profile-picture')
-          .getPublicUrl('uploads/$fileName');
+          .getPublicUrl(storagePath);
 
       final String? oldImageUrl = _currentUser?.profilePicture;
-      final authId = _currentUser?.authID;
+      final String? authId = _currentUser?.authID;
       if (authId == null) throw Exception('User ID not found');
 
+      // Update image URL in database
       await _supabase
           .from('users')
           .update({'profile_picture': newImageUrl})
           .eq('auth_id', authId);
 
-      /// Delete old image from storage if it exists
+      // Delete old image if it exists
       if (oldImageUrl != null && oldImageUrl.contains('profile-picture')) {
         try {
-          final Uri uri = Uri.parse(oldImageUrl);
-          final segments = uri.pathSegments;
-          final bucketPathIndex = segments.indexOf('object') + 2;
-
-          if (bucketPathIndex < 2 || bucketPathIndex >= segments.length) {
-            throw Exception("Invalid image URL format.");
-          }
-          final filePath = segments.sublist(bucketPathIndex).join('/');
-          _log.i('Attempting to delete file at path: $filePath');
+          final oldImagePath = _extractStoragePathFromUrl(oldImageUrl);
+          _log.i('Attempting to delete old image at path: $oldImagePath');
           final result = await _supabase.storage.from('profile-picture').remove(
-            [filePath],
+            [oldImagePath!],
           );
           _log.i('Supabase delete result: $result');
         } catch (e) {
-          _log.e('Failed to delete image from Supabase', error: e);
+          _log.e('Failed to delete old image from Supabase', error: e);
         }
       }
 
-      ///  Update local user in cache manager
-      _cacheManager.setUser(
-        UserModel(
-          authID: _currentUser!.authID,
-          role: _currentUser!.role,
-          name: _currentUser!.name,
-          email: _currentUser!.email,
-          profilePicture: newImageUrl,
-          number: _currentUser!.number,
-          address: _currentUser!.address,
-          id: _currentUser!.id,
-        ),
-      );
+      // Update user in cache
+      final updatedUser = _currentUser!.copyWith(profilePicture: newImageUrl);
+      _cache.setUser(updatedUser);
+      _currentUser = updatedUser;
+
       _snackBarHelper.showSuccess('Profile Picture Updated Successfully');
-      emit(EditImageUploaded(newImageUrl, _currentUser!));
+      emit(EditImageUploaded(newImageUrl, updatedUser));
     } catch (e) {
       _log.e('Image upload failed', error: e);
       emit(EditImageUploadError('Upload failed. Please try again'));
+    }
+  }
+
+  /// Helper method to extract the storage path from a public URL
+  String? _extractStoragePathFromUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final index = uri.pathSegments.indexOf('profile-picture');
+      if (index == -1 || index + 1 >= uri.pathSegments.length) return null;
+      return uri.pathSegments.sublist(index + 1).join('/');
+    } catch (e) {
+      _log.e('Error parsing old image URL for deletion', error: e);
+      return null;
     }
   }
 }

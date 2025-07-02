@@ -42,6 +42,29 @@ class UserModel {
     this.profilePicture,
   });
 
+  /// Copy constructor
+  UserModel copyWith({
+    int? id,
+    String? authID,
+    UserRole? role,
+    String? name,
+    String? email,
+    String? address,
+    int? number,
+    String? profilePicture,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      authID: authID ?? this.authID,
+      role: role ?? this.role,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      address: address ?? this.address,
+      number: number ?? this.number,
+      profilePicture: profilePicture ?? this.profilePicture,
+    );
+  }
+
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
