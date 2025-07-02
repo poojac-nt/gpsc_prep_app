@@ -99,10 +99,10 @@ class TestScreen extends StatelessWidget {
                         itemBuilder:
                             (context, index) => BorderedContainer(
                               padding: EdgeInsets.zero,
-                              radius: BorderRadius.zero,
+                              radius: BorderRadius.circular(10),
                               child: RadioListTile(
                                 value: index,
-                                activeColor: Colors.black,
+                                activeColor: AppColors.primary,
                                 groupValue: selectedAnswer,
                                 onChanged: (value) {
                                   context.read<QuestionBloc>().add(

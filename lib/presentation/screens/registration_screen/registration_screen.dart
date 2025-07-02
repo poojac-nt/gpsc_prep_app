@@ -36,18 +36,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthCreated) {
+          if (state is AuthAccountCreated) {
             context.pushReplacement(AppRoutes.home);
-          } else if (state is AuthCreateFailure) {
+          } else if (state is AuthAccountCreateError) {
             print(state.message);
             snackBarHelper.showError(state.message);
-          } else if (state is ImageUploadError) {
+          } else if (state is ImageUploadFailed) {
             print(state.message);
             snackBarHelper.showError(state.message);
           }
         },
         builder: (context, state) {
-          if (state is AuthCreating ||
+          if (state is AuthCreatingAccount ||
               state is ImagePicking ||
               state is ImageUploading) {
             return const Center(

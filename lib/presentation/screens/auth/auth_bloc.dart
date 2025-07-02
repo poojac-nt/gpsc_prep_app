@@ -16,10 +16,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
   final CacheManager _cache;
   final ImagePicker picker = ImagePicker();
-  final _supabase = Supabase.instance.client;
+  static final _supabase = Supabase.instance.client;
 
   AuthBloc(this.authRepository, this._cache) : super(AuthInitial()) {
     on<LoginRequested>(_login);
+    on<LogOutRequested>(_logOutRequest);
     on<LoadUserFromCache>(_loadUserFromCache);
     on<CreateUserRequested>(_createUser);
     on<PickImage>(_onPickAndUploadImage);
@@ -52,25 +53,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CreateUserRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthCreating());
+    emit(AuthCreatingAccount());
 
     final result = await authRepository.createUser(event.userPayload);
 
-    result.fold((failure) => emit(AuthCreateFailure(failure.message)), (user) {
+    result.fold((failure) => emit(AuthAccountCreateError(failure.message)), (
+      user,
+    ) {
       _cache.setUser(user);
-      emit(AuthCreated(user));
+      emit(AuthAccountCreated(user));
     });
   }
 
   Future<void> _onPickAndUploadImage(
     PickImage event,
-    Emitter<AuthState> state,
+    Emitter<AuthState> emit,
   ) async {
     emit(ImagePicking());
     try {
       XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
       if (pickedFile == null) {
-        emit(ImageUploadError('No image selected.'));
+        emit(ImageUploadFailed('No image selected.'));
         return;
       }
       emit(ImageUploading());
@@ -85,7 +88,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           .getPublicUrl('uploads/$fileName');
       emit(ImageUploaded(publicUrl));
     } catch (e) {
-      emit(ImageUploadError('Failed to upload image: $e'));
+      emit(ImageUploadFailed('Failed to upload image: $e'));
+    }
+  }
+
+  Future<void> _logOutRequest(
+    LogOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      await _supabase.auth.signOut();
+      _cache.clearUser();
+      emit(Unauthenticated());
+    } catch (e) {
+      emit(AuthFailure('Logout failed: $e'));
     }
   }
 }

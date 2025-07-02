@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -19,7 +20,6 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     context.read<EditProfileBloc>().add(LoadInitialProfile());
   }
@@ -109,8 +109,9 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
                   'Setting',
                 ),
                 commonWidget(
-                  () => context.push(AppRoutes.home),
+                  () => showLogoutDialog(context),
                   Icons.logout,
+                  iconColor: Colors.red,
                   'Logout',
                 ),
               ],
@@ -121,19 +122,121 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
     );
   }
 
-  Widget commonWidget(VoidCallback onTap, IconData icon, String title) {
+  Widget commonWidget(
+    VoidCallback onTap,
+    IconData icon,
+    String title, {
+    Color iconColor = Colors.black,
+  }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 10.w),
         child: Row(
           children: [
-            Icon(icon, color: Colors.black),
+            Icon(icon, color: iconColor),
             5.wGap,
             Text(title, style: TextStyle(fontSize: 16.sp)),
           ],
         ),
       ),
+    );
+  }
+
+  void showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // prevent accidental dismiss
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          elevation: 12,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Icon
+                  Align(
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.logout,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title
+                  Text(
+                    "Logout",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Message
+                  Text(
+                    "Are you sure you want to logout?",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            context.read<AuthBloc>().add(LogOutRequested());
+                            context.pushReplacement(AppRoutes.login);
+                          },
+                          child: const Text("Logout"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
