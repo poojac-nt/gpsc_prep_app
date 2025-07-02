@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+abstract class AppColors {
+  static Color primary = Color(0xff3b82f6);
+  static Color scaffoldColor = Color(0xfff7f8f9);
+  static Color accentColor = Colors.grey.shade300;
+}
+
 abstract class AppThemeData {
   static ThemeData themData = ThemeData(
+    primaryColor: AppColors.primary,
     fontFamily: 'Inter',
     splashColor: Colors.black.withAlpha(2),
     inputDecorationTheme: InputDecorationTheme(focusColor: Colors.black),
@@ -12,14 +19,15 @@ abstract class AppThemeData {
       selectionHandleColor: Colors.black,
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.scaffoldColor,
       surfaceTintColor: Colors.white,
+      titleSpacing: 0,
     ),
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: Color(0xfff7f8f9),
     dividerTheme: DividerThemeData(color: Colors.transparent),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: Colors.black,
-      refreshBackgroundColor: Colors.white,
+      color: AppColors.primary,
+      refreshBackgroundColor: AppColors.scaffoldColor,
     ),
   );
 }

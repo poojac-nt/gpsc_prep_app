@@ -23,8 +23,9 @@ class TestTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BorderedContainer(
+      borderColor: AppColors.accentColor,
       padding: EdgeInsets.all(10),
-      radius: BorderRadius.circular(0),
+      radius: BorderRadius.circular(10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

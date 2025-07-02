@@ -11,8 +11,7 @@ class AppRouter {
       debugLogDiagnostics: true,
       requestFocus: true,
       initialLocation:
-          // isLoggedIn ? AppRoutes.home :
-          AppRoutes.registrationScreen,
+          isLoggedIn ? AppRoutes.home : AppRoutes.registrationScreen,
       routes: appRoutes,
     );
   }

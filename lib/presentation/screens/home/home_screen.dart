@@ -5,7 +5,7 @@ import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/selection_drawer.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/stats_widget.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/test_container.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
+import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: AppColors.primary,
                 borderRadius: AppBorders.borderRadius,
               ),
               child: Padding(
@@ -61,7 +61,7 @@ class HomeScreen extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: BorderedContainer(
+                  child: ElevatedContainer(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.w,
                       vertical: 15.h,
@@ -76,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 10.wGap,
                 Expanded(
-                  child: BorderedContainer(
+                  child: ElevatedContainer(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.w,
                       vertical: 15.h,
@@ -95,7 +95,7 @@ class HomeScreen extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: BorderedContainer(
+                  child: ElevatedContainer(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.w,
                       vertical: 15.h,
@@ -110,7 +110,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 10.wGap,
                 Expanded(
-                  child: BorderedContainer(
+                  child: ElevatedContainer(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.w,
                       vertical: 15.h,
@@ -126,7 +126,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             10.hGap,
-            BorderedContainer(
+            ElevatedContainer(
               child: Column(
                 children: [
                   Row(
@@ -170,7 +170,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             10.hGap,
-            BorderedContainer(
+            ElevatedContainer(
               child: TestContainer(
                 title: "Daily Test",
                 description: "Take today\'s practice test ",
@@ -181,7 +181,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             10.hGap,
-            BorderedContainer(
+            ElevatedContainer(
               child: TestContainer(
                 title: "Custom Test",
                 description: "Create Personalized test ",
@@ -192,7 +192,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             10.hGap,
-            BorderedContainer(
+            ElevatedContainer(
               child: TestContainer(
                 title: "Mock Test",
                 description: "Full length practice exam ",
@@ -208,7 +208,7 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
             10.hGap,
-            BorderedContainer(
+            ElevatedContainer(
               child: TestContainer(
                 title: "Daily Writing Practice",
                 description:
@@ -220,7 +220,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             10.hGap,
-            BorderedContainer(
+            ElevatedContainer(
               child: TestContainer(
                 title: "My Submission",
                 description: "View submitted answer and feedback",

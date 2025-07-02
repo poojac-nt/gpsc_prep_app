@@ -7,31 +7,28 @@ class ActionButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onTap,
-    this.backColor = Colors.black,
     this.fontColor = Colors.white,
-    this.borderColor = Colors.black,
     this.padding = const EdgeInsets.all(10),
   });
 
   final String text;
   final VoidCallback onTap;
-  final Color backColor;
   final Color fontColor;
-  final Color borderColor;
   final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+      height: 45.h,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backColor,
+          backgroundColor: AppColors.primary,
           padding: padding,
           shape: RoundedRectangleBorder(
             borderRadius: AppBorders.borderRadius,
-            side: BorderSide(color: borderColor, width: 2),
+            side: BorderSide(color: AppColors.primary, width: 1),
           ),
         ),
         child: Text(
@@ -39,7 +36,7 @@ class ActionButton extends StatelessWidget {
           style: TextStyle(
             color: fontColor,
             fontSize: 14.sp,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),

@@ -8,6 +8,7 @@ class BorderedContainer extends StatelessWidget {
     required this.child,
     this.radius,
     this.borderColor,
+    this.hasBorder = true,
     this.padding = const EdgeInsets.all(20),
     this.backgroundColor = Colors.transparent,
   });
@@ -17,6 +18,7 @@ class BorderedContainer extends StatelessWidget {
   final BorderRadius? radius;
   final Color? borderColor;
   final Color? backgroundColor;
+  final bool hasBorder;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,13 @@ class BorderedContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: radius ?? AppBorders.borderRadius,
-        border: Border.all(color: borderColor ?? Colors.black, width: 2),
+        border:
+            hasBorder
+                ? Border.all(
+                  color: borderColor ?? AppColors.accentColor,
+                  width: 2,
+                )
+                : null,
       ),
       padding: padding,
       child: child,

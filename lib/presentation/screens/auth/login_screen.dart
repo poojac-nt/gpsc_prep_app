@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
@@ -24,13 +26,6 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "GPSC Exam Prep",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
@@ -45,66 +40,159 @@ class LoginScreen extends StatelessWidget {
               child: CircularProgressIndicator(color: Colors.black),
             );
           }
-          return Form(
-            child: Padding(
-              padding: EdgeInsets.all(15),
+          return SafeArea(
+            child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Email", style: AppTexts.labelTextStyle),
-                  5.hGap,
-                  CustomTextField(
-                    hintText: "Enter your email",
-                    prefixIcon: Icons.email,
-                    controller: email,
-                  ),
-                  20.hGap,
-                  Text("Password", style: AppTexts.labelTextStyle),
-                  5.hGap,
-                  CustomTextField(
-                    hintText: "Enter your password",
-                    prefixIcon: Icons.password,
-                    controller: password,
-                  ),
-                  30.hGap,
-                  ActionButton(
-                    text: "Sign in",
-                    onTap: () {
-                      context.read<AuthBloc>().add(
-                        LoginRequested(
-                          email: email.text.trim(),
-                          password: password.text.trim(),
-                        ),
-                      );
-                    },
-                  ),
-                  20.hGap,
-                  Padding(
-                    padding: EdgeInsets.only(left: 68.sp),
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Don't have an account ? Sign up",
-                            style: TextStyle(
-                              decoration: TextDecoration.underline,
-                              fontSize: 13.sp,
-                            ),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    context.go(AppRoutes.registrationScreen);
-                                  },
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 70.h,
+                          width: 70.w,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: AppColors.primary,
                           ),
-                        ],
-                      ),
+                          child: Center(
+                            child: Icon(
+                              CupertinoIcons.book,
+                              color: Colors.white,
+                              size: 40.sp,
+                            ),
+                          ),
+                        ),
+                        10.hGap,
+                        Text(
+                          "Exam Prep",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        5.hGap,
+                        Text(
+                          "Smart Learning Platform",
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  40.hGap,
+                  ElevatedContainer(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 24.h,
+                      horizontal: 16.w,
+                    ),
+                    color: Colors.white,
+                    borderRadius: 10,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Text(
+                            'Welcome Back',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 22.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        5.hGap,
+                        Center(
+                          child: Text(
+                            'Sign in to continue your learning journey',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        20.hGap,
+                        _buildLabel("Email"),
+                        10.hGap,
+                        CustomTextField(
+                          hintText: "Enter your email",
+                          controller: email,
+                        ),
+                        20.hGap,
+                        _buildLabel("Password"),
+                        10.hGap,
+                        CustomTextField(
+                          hintText: "Enter your password",
+                          controller: password,
+                        ),
+                        30.hGap,
+                        ActionButton(
+                          text: "Sign In",
+                          onTap: () {
+                            context.read<AuthBloc>().add(
+                              LoginRequested(
+                                email: email.text.trim(),
+                                password: password.text.trim(),
+                              ),
+                            );
+                          },
+                        ),
+                        20.hGap,
+                        Center(
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: "Don't have an account?",
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' Create one',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  recognizer:
+                                      TapGestureRecognizer()
+                                        ..onTap = () {
+                                          context.go(
+                                            AppRoutes.registrationScreen,
+                                          );
+                                        },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
+              ).padAll(AppPaddings.defaultPadding),
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Optional helper widget for label styling
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: AppTexts.labelTextStyle.copyWith(
+        fontWeight: FontWeight.w600,
+        color: Colors.grey[800],
       ),
     );
   }

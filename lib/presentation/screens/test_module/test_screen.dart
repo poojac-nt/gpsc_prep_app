@@ -128,11 +128,10 @@ class TestScreen extends StatelessWidget {
                                     )
                                     : null;
                               },
-                              backColor: Colors.white,
                               fontColor:
                                   state.currentIndex == 0
                                       ? Colors.grey
-                                      : Colors.black,
+                                      : Colors.white,
                             ),
                           ),
                           20.wGap,
@@ -184,13 +183,15 @@ class TestScreen extends StatelessWidget {
                                   text: "${index + 1}",
                                   backgroundColor:
                                       state.currentIndex == index
-                                          ? Colors.black
+                                          ? Colors.grey
+                                          : state.answeredStatus[index]
+                                          ? Colors.green
                                           : Colors.white,
                                   fontColor:
                                       state.currentIndex == index
-                                          ? Colors.white
+                                          ? Colors.black
                                           : state.answeredStatus[index]
-                                          ? Colors.green
+                                          ? Colors.white
                                           : Colors.black,
                                   borderColor:
                                       state.currentIndex == index
@@ -208,13 +209,14 @@ class TestScreen extends StatelessWidget {
                       ),
                       10.hGap,
                       QuestionIndicator(
-                        text: "Current",
-                        fillColor: Colors.black,
+                        text: "Attempted",
+                        borderColor: Colors.green,
+                        fillColor: Colors.green,
                       ),
                       QuestionIndicator(
-                        text: "Answered",
-                        borderColor: Colors.green,
-                        fillColor: Colors.white,
+                        text: "Visited",
+                        borderColor: Colors.grey,
+                        fillColor: Colors.grey,
                       ),
                       QuestionIndicator(
                         text: "Not Answered",

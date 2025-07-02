@@ -11,7 +11,24 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'bloc/test_bloc.dart';
 
 class ResultScreen extends StatelessWidget {
-  const ResultScreen({super.key});
+  ResultScreen({super.key});
+
+  final List<String> containerTitle = [
+    'Correct',
+    'InCorrect',
+    'Not Attempted',
+    'Attempted',
+    'Time Spent',
+    'Total Questions',
+  ];
+  final List<Color> containerColors = [
+    Colors.green.shade500,
+    Colors.red.shade500,
+    Colors.blueGrey.shade500,
+    Colors.purple.shade500,
+    Colors.blue.shade500,
+    Colors.cyan.shade500,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +49,14 @@ class ResultScreen extends StatelessWidget {
                   state.answeredStatus.where((value) => value).toList().length;
 
               var timeSpent = 30 - (state.tickCount ~/ 60);
+              final List<String> containerValues = [
+                '1',
+                '2',
+                notAttempted.toString(),
+                attempted.toString(),
+                timeSpent.toString(),
+                '4',
+              ];
               return TestModule(
                 iconSize: 26.sp,
                 fontSize: 26.sp,
@@ -55,158 +80,21 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                   20.hGap,
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          BorderedContainer(
-                            backgroundColor: Colors.green[50],
-                            radius: BorderRadius.zero,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 13.w,
-                              vertical: 13.h,
-                            ),
-                            borderColor: Colors.green,
-                            child: Column(
-                              children: [
-                                Text(
-                                  "1",
-                                  style: AppTexts.labelTextStyle.copyWith(
-                                    color: Colors.green,
-                                    fontSize: 26.sp,
-                                  ),
-                                ),
-                                Text(
-                                  "Correctttt \n",
-                                  textAlign: TextAlign.center,
-                                  style: AppTexts.subTitle.copyWith(
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          10.wGap,
-                          BorderedContainer(
-                            backgroundColor: Colors.red[50],
-                            radius: BorderRadius.zero,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 13.w,
-                              vertical: 13.h,
-                            ),
-                            borderColor: Colors.red,
-                            child: Column(
-                              children: [
-                                Text(
-                                  "2",
-                                  style: AppTexts.labelTextStyle.copyWith(
-                                    color: Colors.red,
-                                    fontSize: 26.sp,
-                                  ),
-                                ),
-                                Text(
-                                  "Incorrect \n",
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  style: AppTexts.subTitle.copyWith(
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          10.wGap,
-                          BorderedContainer(
-                            backgroundColor: Colors.blueGrey[50],
-                            radius: BorderRadius.zero,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 15.w,
-                              vertical: 16.h,
-                            ),
-                            borderColor: Colors.blueGrey,
-                            child: Column(
-                              children: [
-                                Text(
-                                  notAttempted.toString(),
-                                  maxLines: 2,
-                                  style: AppTexts.labelTextStyle.copyWith(
-                                    color: Colors.blueGrey,
-                                    fontSize: 26.sp,
-                                  ),
-                                ),
-                                Text(
-                                  "Not \nAttempted",
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  style: AppTexts.subTitle,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      10.hGap,
-                      Row(
-                        children: [
-                          BorderedContainer(
-                            backgroundColor: Colors.deepPurple[50],
-                            radius: BorderRadius.zero,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 11.w,
-                              vertical: 11.h,
-                            ),
-                            borderColor: Colors.deepPurple,
-                            child: Column(
-                              children: [
-                                Text(
-                                  attempted.toString(),
-                                  style: AppTexts.labelTextStyle.copyWith(
-                                    color: Colors.deepPurple,
-                                    fontSize: 26.sp,
-                                  ),
-                                ),
-                                Text(
-                                  "Attempted \n",
-                                  textAlign: TextAlign.center,
-                                  style: AppTexts.subTitle.copyWith(
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          10.wGap,
-                          BorderedContainer(
-                            backgroundColor: Colors.blue[50],
-                            radius: BorderRadius.zero,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 5.w,
-                              vertical: 10.h,
-                            ),
-                            borderColor: Colors.blueAccent,
-                            child: Column(
-                              children: [
-                                Text(
-                                  "${timeSpent.toString().padLeft(2, '0')}",
-                                  style: AppTexts.labelTextStyle.copyWith(
-                                    color: Colors.blueAccent,
-                                    fontSize: 26.sp,
-                                  ),
-                                ),
-                                Text(
-                                  "Time Spent \n",
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  style: AppTexts.subTitle.copyWith(
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  GridView.builder(
+                    shrinkWrap: true,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 0.9,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
+                    ),
+                    itemCount: containerTitle.length,
+                    itemBuilder:
+                        (context, index) => containerWidget(
+                          containerValues[index],
+                          containerTitle[index],
+                          containerColors[index],
+                        ),
                   ),
                   20.hGap,
                   Column(
@@ -218,9 +106,7 @@ class ResultScreen extends StatelessWidget {
                       5.hGap,
                       ActionButton(
                         text: "Review Answers",
-                        borderColor: Colors.black,
-                        fontColor: Colors.black,
-                        backColor: Colors.white,
+                        fontColor: Colors.white,
                         onTap: () {},
                       ),
                     ],
@@ -233,6 +119,41 @@ class ResultScreen extends StatelessWidget {
             return Container();
           },
         ),
+      ),
+    );
+  }
+
+  Widget containerWidget(String value, String title, Color containerColor) {
+    return BorderedContainer(
+      hasBorder: false,
+      backgroundColor: Color.lerp(containerColor, Colors.white, 0.8)!,
+      padding: EdgeInsets.all(10.sp),
+      radius: BorderRadius.circular(10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            value,
+            style: AppTexts.labelTextStyle.copyWith(
+              color: containerColor,
+              fontSize: 28.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Wrap(
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                softWrap: true,
+                style: AppTexts.subTitle.copyWith(
+                  fontSize: 14.sp,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

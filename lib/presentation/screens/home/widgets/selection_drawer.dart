@@ -24,33 +24,6 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
     context.read<EditProfileBloc>().add(LoadInitialProfile());
   }
 
-  final List<String> textList = [
-    'Dashboard',
-    'MCQ Tests',
-    'Answer Writing',
-    'Profile',
-    'Settings',
-    'Logout',
-  ];
-
-  final List<IconData> icons = [
-    Icons.dashboard,
-    Icons.content_paste_rounded,
-    Icons.edit_document,
-    Icons.person,
-    Icons.notifications,
-    Icons.logout,
-  ];
-
-  final List<String> routePaths = [
-    AppRoutes.home,
-    AppRoutes.mcqTestScreen,
-    AppRoutes.answerWriting,
-    AppRoutes.profile,
-    AppRoutes.home,
-    AppRoutes.home,
-  ];
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<EditProfileBloc, EditProfileState>(
@@ -80,7 +53,10 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
                       child:
                           (user?.profilePicture == null ||
                                   user!.profilePicture!.isEmpty)
-                              ? Icon(Icons.person) // fallback icon or asset
+                              ? Icon(
+                                Icons.person,
+                                color: AppColors.primary,
+                              ) // fallback icon or asset
                               : null,
                     ),
                     10.wGap,
@@ -107,36 +83,55 @@ class _SelectionDrawerState extends State<SelectionDrawer> {
                   endIndent: 0,
                   color: Colors.grey,
                 ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: textList.length,
-                  itemBuilder:
-                      (context, index) => InkWell(
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          context.push(routePaths[index]);
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 15.h,
-                            horizontal: 10.w,
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(icons[index]),
-                              5.wGap,
-                              Text(
-                                textList[index],
-                                style: TextStyle(fontSize: 16.sp),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                commonWidget(
+                  () => context.push(AppRoutes.home),
+                  Icons.dashboard,
+                  'Dashboard',
+                ),
+                commonWidget(
+                  () => context.push(AppRoutes.mcqTestScreen),
+                  Icons.content_paste_rounded,
+                  'MCQ Tets',
+                ),
+                commonWidget(
+                  () => context.push(AppRoutes.answerWriting),
+                  Icons.edit_document,
+                  'Answer Writing',
+                ),
+                commonWidget(
+                  () => context.push(AppRoutes.profile),
+                  Icons.person,
+                  'Profile',
+                ),
+                commonWidget(
+                  () => context.push(AppRoutes.home),
+                  Icons.notifications,
+                  'Setting',
+                ),
+                commonWidget(
+                  () => context.push(AppRoutes.home),
+                  Icons.logout,
+                  'Logout',
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget commonWidget(VoidCallback onTap, IconData icon, String title) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 10.w),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.black),
+            5.wGap,
+            Text(title, style: TextStyle(fontSize: 16.sp)),
+          ],
         ),
       ),
     );

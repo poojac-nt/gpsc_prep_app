@@ -123,10 +123,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   },
                                   child: Container(
                                     height: 75.h,
-                                    width: 80.h,
+                                    width: 75.h,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[300],
                                       shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                      gradient:
+                                          user.profilePicture == null
+                                              ? LinearGradient(
+                                                colors: [
+                                                  Colors.grey.shade400,
+                                                  Colors.grey.shade600,
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              )
+                                              : null,
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black12,
@@ -153,12 +167,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 Positioned(
-                                  bottom: 4,
+                                  bottom: 0,
                                   right: 0,
                                   child: Container(
+                                    height: 28.h,
+                                    width: 28.h,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.black,
+                                      color: AppColors.primary,
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black26,
@@ -167,11 +183,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ],
                                     ),
-                                    padding: EdgeInsets.all(4),
                                     child: Icon(
                                       Icons.edit,
-                                      size: 18.sp,
                                       color: Colors.white,
+                                      size: 12.sp,
                                     ),
                                   ),
                                 ),
