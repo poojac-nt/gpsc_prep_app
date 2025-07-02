@@ -1,51 +1,156 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+
 import '../../domain/entities/question_model.dart';
 
-extension MCQQuestionParser on String {
-  Question parseMCQQuestion() {
-    String questionText = '';
-    String optA = '';
-    String optB = '';
-    String optC = '';
-    String optD = '';
-    String correctAnswer = '';
+extension QuestionWidgetFormatter on Question {
+  /// Returns a Widget based on question type (statement / mtf / mcq)
+  Widget toQuestionWidget() {
+    switch (questionType.toLowerCase()) {
+      case 'statement':
+        return _buildStatementWidget();
 
-    final lines = split('\n');
+      case 'mtf':
+        return _buildMtfWidget();
 
-    for (var line in lines) {
-      line = line.trim();
-      if (line.isEmpty) continue;
+      default:
+        return _buildMcqWidget();
+    }
+  }
 
-      if (line.startsWith('a)')) {
-        optA = line.substring(2).trim();
-      } else if (line.startsWith('b)')) {
-        optB = line.substring(2).trim();
-      } else if (line.startsWith('c)')) {
-        optC = line.substring(2).trim();
-      } else if (line.startsWith('d)')) {
-        optD = line.substring(2).trim();
-      } else if (line.toLowerCase().startsWith('answer:')) {
-        String correctOptionLetter = line.split(':').last.trim().toLowerCase();
-        if (correctOptionLetter == 'a') correctAnswer = optA;
-        if (correctOptionLetter == 'b') correctAnswer = optB;
-        if (correctOptionLetter == 'c') correctAnswer = optC;
-        if (correctOptionLetter == 'd') correctAnswer = optD;
-      } else {
-        // Everything before options assumed as question
-        if (questionText.isEmpty) {
-          questionText = line;
-        } else {
-          questionText += ' ' + line;
-        }
-      }
+  /// Widget for Statement-based Question
+  Widget _buildStatementWidget() {
+    final text = question;
+    final statementPattern = RegExp(
+      r'(\d\.\s)(.*?)(?=(\d\.\s|$))',
+      dotAll: true,
+    );
+
+    final firstStatementIndex = text.indexOf('1.');
+    if (firstStatementIndex == -1) {
+      return Text(text);
     }
 
-    return Question(
-      question: questionText,
-      optA: optA,
-      optB: optB,
-      optC: optC,
-      optD: optD,
-      correctAnswer: correctAnswer,
+    final intro = text.substring(0, firstStatementIndex).trim();
+    final statementMatches =
+        statementPattern
+            .allMatches(text.substring(firstStatementIndex))
+            .toList();
+
+    List<Widget> widgets = [];
+
+    if (intro.isNotEmpty) {
+      widgets.add(
+        Text(
+          intro,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      );
+    }
+    widgets.add(
+      Text(
+        "Statements:",
+        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+      ).padAll(3),
+    );
+    for (final match in statementMatches) {
+      final statementText = '${match.group(1)}${match.group(2)!.trim()}';
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Text(statementText),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  /// Widget for MTF-based Question (assumes MTF entries are separated by ; and use -> as mapping)
+  Widget _buildMtfWidget() {
+    String text = question;
+
+    // Split intro and pairs
+    int firstOptionIndex = text.indexOf('a)');
+    String intro = '';
+    String mtfPart = text;
+
+    if (firstOptionIndex != -1) {
+      intro = text.substring(0, firstOptionIndex).trim();
+      mtfPart = text.substring(firstOptionIndex).trim();
+    }
+
+    // Split by option labels (a), b), c), d) ...)
+    final optionPattern = RegExp(r'([a-d]\)\s.*?)(?=([a-d]\)|$))', dotAll: true);
+    final optionMatches = optionPattern.allMatches(mtfPart);
+
+    List<Widget> widgets = [];
+
+    // Add Intro line (like: "Match the following")
+    if (intro.isNotEmpty) {
+      widgets.add(
+        Text(
+          intro,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      );
+      widgets.add(const SizedBox(height: 8));
+    }
+
+    // Add each MTF pair as Row (left → right)
+    for (final match in optionMatches) {
+      final optionText = match.group(1)?.trim() ?? '';
+
+      // Split by "->"
+      if (optionText.contains('->')) {
+        final parts = optionText.split('->');
+        final leftPart = parts[0].trim(); // Example: "a) Delhi"
+        final rightPart = parts[1].trim(); // Example: "India"
+
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    leftPart,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Text(rightPart),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        widgets.add(Text(optionText)); // fallback if missing ->
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  /// Widget for Simple MCQ
+  Widget _buildMcqWidget() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      ],
     );
   }
 }

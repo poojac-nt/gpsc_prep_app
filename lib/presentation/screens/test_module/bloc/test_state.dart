@@ -1,9 +1,11 @@
+import '../../../../domain/entities/question_model.dart';
+
 sealed class QuestionState {}
 
 class QuestionInitial extends QuestionState {}
 
 class QuestionLoaded extends QuestionState {
-  final List<String> questions;
+  final List<Question> questions;
   final int currentIndex;
   final List<bool> answeredStatus;
   final List<int?> selectedOption;
@@ -18,7 +20,7 @@ class QuestionLoaded extends QuestionState {
   });
 
   QuestionLoaded copyWith({
-    List<String>? questions,
+    List<Question>? questions,
     int? currentIndex,
     List<bool>? answeredStatus,
     List<int?>? selectedOption,

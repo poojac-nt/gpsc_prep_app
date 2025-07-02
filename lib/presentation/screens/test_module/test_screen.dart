@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_indicator.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_navigator_btn.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
@@ -15,24 +17,14 @@ import 'package:gpsc_prep_app/utils/extensions/question_parsing.dart';
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
 
-class TestScreen extends StatefulWidget {
+class TestScreen extends StatelessWidget {
   TestScreen({super.key});
 
-  @override
-  State<TestScreen> createState() => _TestScreenState();
-}
-
-class _TestScreenState extends State<TestScreen> {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
 
   late List<Question> questions;
-  late List<String> options;
 
-  @override
-  void initState() {
-    super.initState();
-    questions = Question.sampleQuestion();
-  }
+  late List<String> options;
 
   @override
   Widget build(BuildContext context) {
@@ -74,13 +66,11 @@ class _TestScreenState extends State<TestScreen> {
           if (state is QuestionInitial) {
             return Center(child: Text("Loading..."));
           } else if (state is QuestionLoaded) {
-            // var parser = Question.parseMCQQuestion();
-            // var title = parser['title'];
-            // var options = parser['options'] as List<String>;
-            // var matchPairs = parser['matchPairs'] List<Map<String, String>>; // For Match-type
-            // var question = state.questions[state.currentIndex];
+            questions = state.questions;
+            var question =
+                state.questions[state.currentIndex].toQuestionWidget();
+            options = state.questions[state.currentIndex].getOptions();
 
-            options = questions[state.currentIndex].getOptions();
             int? selectedAnswer = state.selectedOption[state.currentIndex];
             var progress = state.currentIndex / (state.questions.length - 1);
             var answered =
@@ -100,20 +90,8 @@ class _TestScreenState extends State<TestScreen> {
                   TestModule(
                     title: "Question ${state.currentIndex + 1}",
                     cards: [
-                      Text(
-                        questions[state.currentIndex].question,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16.sp,
-                        ),
-                      ),
+                      question,
                       10.hGap,
-                      // ListView.builder(
-                      //   itemCount: options.length,
-                      //   shrinkWrap: true,
-                      //   physics: NeverScrollableScrollPhysics(),
-                      //   itemBuilder: (context, index) => Text(options[index]),
-                      // ),
                       ListView.builder(
                         itemCount: options.length,
                         shrinkWrap: true,
@@ -251,68 +229,6 @@ class _TestScreenState extends State<TestScreen> {
           return Container();
         },
       ),
-    );
-  }
-}
-
-class QuestionIndicator extends StatelessWidget {
-  const QuestionIndicator({
-    super.key,
-    this.fillColor = Colors.black,
-    this.borderColor = Colors.black,
-    required this.text,
-  });
-
-  final String text;
-  final Color fillColor;
-  final Color borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.all(7),
-          decoration: BoxDecoration(
-            color: fillColor,
-            border: Border.all(color: borderColor, width: 2),
-          ),
-        ),
-        10.wGap,
-        Text(text),
-      ],
-    ).padAll(6);
-  }
-}
-
-class QuestionNavigatorButton extends StatelessWidget {
-  const QuestionNavigatorButton({
-    super.key,
-    required this.text,
-    this.backgroundColor = Colors.white,
-    this.fontColor = Colors.black,
-    this.borderColor = Colors.black,
-    required this.onTap,
-  });
-
-  final String text;
-  final Color backgroundColor;
-  final Color fontColor;
-  final Color borderColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppBorders.borderRadius,
-          side: BorderSide(color: borderColor, width: 1),
-        ),
-      ),
-      child: Text(text, style: TextStyle(color: fontColor)),
     );
   }
 }

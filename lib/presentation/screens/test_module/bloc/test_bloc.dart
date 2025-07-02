@@ -4,6 +4,8 @@ import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
 
+import '../../../../domain/entities/question_model.dart';
+
 class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   QuestionBloc() : super(QuestionInitial()) {
     on<LoadQuestion>(_loadQuestion);
@@ -19,13 +21,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     LoadQuestion event,
     Emitter<QuestionState> emit,
   ) async {
-    List<String> questions = [
-      // "What is Dart? a) Programming Language b) Framework c) SDK d) IDE",
-      "Match the following: a) Delhi -> India b) Paris -> France c) Tokyo -> Japan",
-      "What is Flutter?: a) Flutter is a framework b) Flutter is a programming language c) Flutter is a widget library d) Flutter is a mobile app development platform",
-      "What is State Management? a) State Management is a framework b) State Management is a programming language c) State Management is a widget library d) State Management is a mobile app development platform",
-      "What is a Widget? a) A Widget is a framework b) A Widget is a programming language c) A Widget is a widget library d) A Widget is a mobile app development platform ",
-    ];
+    List<Question> questions = Question.sampleQuestion();
 
     timer?.cancel();
     int tickCount = 30 * 60;
