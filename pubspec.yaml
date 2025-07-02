@@ -45,6 +45,7 @@ dependencies:
   fluttertoast: ^8.2.12
   json_annotation: ^4.9.0
   image_picker: ^1.1.2
+  markdown_widget: ^2.3.2+8
 
 
 dev_dependencies:

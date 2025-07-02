@@ -12,7 +12,7 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/utils/extensions/question_parsing.dart';
+import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
