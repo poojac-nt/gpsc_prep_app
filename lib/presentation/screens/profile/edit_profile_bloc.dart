@@ -29,22 +29,8 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     this._snackBarHelper,
     this._log,
   ) : super(EditProfileInitial()) {
-    on<LoadInitialProfile>(_onLoadInitialProfile);
     on<SaveProfileRequested>(_onSaveProfileRequested);
     on<EditImage>(_onUpdateImage);
-  }
-
-  Future<void> _onLoadInitialProfile(
-    LoadInitialProfile event,
-    Emitter<EditProfileState> emit,
-  ) async {
-    final user = await _cache.getInitUser();
-    if (user != null) {
-      _currentUser = user;
-      emit(EditProfileLoaded(user));
-    } else {
-      emit(EditProfileFailure('User Not Found'));
-    }
   }
 
   Future<void> _onSaveProfileRequested(

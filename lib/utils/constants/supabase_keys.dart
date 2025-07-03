@@ -1,6 +1,7 @@
 abstract class SupabaseKeys {
   ///functions
   static final String updateUserInfo = 'update_user_info';
+  static final String insertMcqQuestions = 'insert_question_data';
 
   ///table
   static final String users = 'users';

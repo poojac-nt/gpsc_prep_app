@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
@@ -51,6 +52,10 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.resultScreen,
     pageBuilder: (context, state) => _slideTransition(ResultScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.addQuestionScreen,
+    pageBuilder: (context, state) => _slideTransition(UploadQuestions(), state),
   ),
 ];
 

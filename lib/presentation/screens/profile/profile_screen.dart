@@ -43,8 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     name = TextEditingController();
     address = TextEditingController();
     number = TextEditingController();
-
-    context.read<EditProfileBloc>().add(LoadInitialProfile());
   }
 
   @override
@@ -365,7 +363,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       barrierDismissible: false, // prevent accidental dismiss
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
