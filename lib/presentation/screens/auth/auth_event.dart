@@ -21,3 +21,9 @@ class LoadUserFromCache extends AuthEvent {}
 class LogOutRequested extends AuthEvent {}
 
 class PickImage extends AuthEvent {}
+
+class DeleteUserRequested extends AuthEvent {
+  final String userId;
+
+  DeleteUserRequested(this.userId);
+}

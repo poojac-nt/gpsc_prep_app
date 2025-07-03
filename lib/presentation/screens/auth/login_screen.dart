@@ -5,23 +5,42 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/validator.dart';
 
 import '../../widgets/action_button.dart';
 import '../../widgets/custom_text_field.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   LoginScreen({super.key});
 
-  final SnackBarHelper snackBarHelper = getIt<SnackBarHelper>();
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final SnackBarHelper _snackBarHelper = getIt<SnackBarHelper>();
+
+  final LogHelper _log = getIt<LogHelper>();
 
   final TextEditingController email = TextEditingController();
 
   final TextEditingController password = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    email.dispose();
+    password.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +50,8 @@ class LoginScreen extends StatelessWidget {
           if (state is AuthSuccess) {
             context.pushReplacement(AppRoutes.home);
           } else if (state is AuthFailure) {
-            snackBarHelper.showError(state.message);
+            _log.e(state.message);
+            _snackBarHelper.showError(state.message);
           }
         },
         builder: (context, state) {
@@ -42,143 +62,150 @@ class LoginScreen extends StatelessWidget {
           }
           return SafeArea(
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 70.h,
-                          width: 70.w,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: AppColors.primary,
-                          ),
-                          child: Center(
-                            child: Icon(
-                              CupertinoIcons.book,
-                              color: Colors.white,
-                              size: 40.sp,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 70.h,
+                            width: 70.w,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: AppColors.primary,
+                            ),
+                            child: Center(
+                              child: Icon(
+                                CupertinoIcons.book,
+                                color: Colors.white,
+                                size: 40.sp,
+                              ),
                             ),
                           ),
-                        ),
-                        10.hGap,
-                        Text(
-                          "Exam Prep",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        5.hGap,
-                        Text(
-                          "Smart Learning Platform",
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  40.hGap,
-                  ElevatedContainer(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 24.h,
-                      horizontal: 16.w,
-                    ),
-                    color: Colors.white,
-                    borderRadius: 10,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Text(
-                            'Welcome Back',
+                          10.hGap,
+                          Text(
+                            "Exam Prep",
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 24.sp,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
-                        ),
-                        5.hGap,
-                        Center(
-                          child: Text(
-                            'Sign in to continue your learning journey',
-                            textAlign: TextAlign.center,
+                          5.hGap,
+                          Text(
+                            "Smart Learning Platform",
                             style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[700],
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
-                        ),
-                        20.hGap,
-                        _buildLabel("Email"),
-                        10.hGap,
-                        CustomTextField(
-                          hintText: "Enter your email",
-                          controller: email,
-                        ),
-                        20.hGap,
-                        _buildLabel("Password"),
-                        10.hGap,
-                        CustomTextField(
-                          hintText: "Enter your password",
-                          controller: password,
-                        ),
-                        30.hGap,
-                        ActionButton(
-                          text: "Sign In",
-                          onTap: () {
-                            context.read<AuthBloc>().add(
-                              LoginRequested(
-                                email: email.text.trim(),
-                                password: password.text.trim(),
-                              ),
-                            );
-                          },
-                        ),
-                        20.hGap,
-                        Center(
-                          child: Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "Don't have an account?",
-                                  style: TextStyle(
-                                    fontSize: 13.sp,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: ' Create one',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  recognizer:
-                                      TapGestureRecognizer()
-                                        ..onTap = () {
-                                          context.go(
-                                            AppRoutes.registrationScreen,
-                                          );
-                                        },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ).padAll(AppPaddings.defaultPadding),
+                    40.hGap,
+                    ElevatedContainer(
+                      padding: EdgeInsets.symmetric(
+                        vertical: 24.h,
+                        horizontal: 16.w,
+                      ),
+                      color: Colors.white,
+                      borderRadius: 10,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Text(
+                              'Welcome Back',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          5.hGap,
+                          Center(
+                            child: Text(
+                              'Sign in to continue your learning journey',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          20.hGap,
+                          _buildLabel("Email"),
+                          10.hGap,
+                          CustomTextField(
+                            hintText: "Enter your email",
+                            controller: email,
+                            validator: Validator.validateEmail,
+                          ),
+                          20.hGap,
+                          _buildLabel("Password"),
+                          10.hGap,
+                          CustomTextField(
+                            hintText: "Enter your password",
+                            controller: password,
+                            validator: Validator.validatePassword,
+                          ),
+                          30.hGap,
+                          ActionButton(
+                            text: "Sign In",
+                            onTap: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                context.read<AuthBloc>().add(
+                                  LoginRequested(
+                                    email: email.text.trim(),
+                                    password: password.text.trim(),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          20.hGap,
+                          Center(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Don't have an account?",
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: ' Create one',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    recognizer:
+                                        TapGestureRecognizer()
+                                          ..onTap = () {
+                                            context.go(
+                                              AppRoutes.registrationScreen,
+                                            );
+                                          },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ).padAll(AppPaddings.defaultPadding),
+              ),
             ),
           );
         },

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/exam_pref_tile.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/quick_stats.dart';
@@ -12,9 +14,8 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/validator.dart';
 
-import '../../widgets/custom_checkbox.dart';
-import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_tag.dart';
 import '../../widgets/custom_text_field.dart';
 
@@ -32,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final TextEditingController name;
   late final TextEditingController address;
   late final TextEditingController number;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -47,6 +49,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
+    email.dispose();
+    password.dispose();
+    name.dispose();
+    address.dispose();
+    number.dispose();
     super.dispose();
   }
 
@@ -151,17 +158,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     child: ClipOval(
                                       child:
-                                          user.profilePicture == null
-                                              ? Icon(
+                                          user.profilePicture != null &&
+                                                  user
+                                                      .profilePicture!
+                                                      .isNotEmpty
+                                              ? Image.network(
+                                                user.profilePicture!,
+                                                fit: BoxFit.cover,
+                                              )
+                                              : Icon(
                                                 Icons.person,
                                                 size: 35.sp,
                                                 color: Colors.white,
-                                              )
-                                              : Image.network(
-                                                state is EditImageUploaded
-                                                    ? state.imageUrl
-                                                    : user.profilePicture!,
-                                                fit: BoxFit.cover,
                                               ),
                                     ),
                                   ),
@@ -227,44 +235,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   10.hGap,
-                  TestModule(
-                    title: 'Personal Information',
-                    prefixIcon: Icons.person_outline,
-                    cards: [
-                      10.hGap,
-                      Text("Full Name", style: AppTexts.labelTextStyle),
-                      5.hGap,
-                      CustomTextField(controller: name),
-                      10.hGap,
-                      Text("Mobile Number", style: AppTexts.labelTextStyle),
-                      5.hGap,
-                      CustomTextField(
-                        keyboardType: TextInputType.number,
-                        controller: number,
-                      ),
-                      10.hGap,
-                      Text("Address", style: AppTexts.labelTextStyle),
-                      5.hGap,
-                      CustomTextField(maxline: 3, controller: address),
-                      10.hGap,
-                      ActionButton(
-                        text: 'Update Information',
-                        onTap: () {
-                          context.read<EditProfileBloc>().add(
-                            SaveProfileRequested(
-                              UserPayload(
-                                authID: user.authID,
-                                email: user.email,
-                                name: name.text.trim(),
-                                address: address.text.trim(),
-                                number: int.parse(number.text.trim()),
-                                profilePicture: user.profilePicture,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                  Form(
+                    key: _formKey,
+                    child: TestModule(
+                      title: 'Personal Information',
+                      prefixIcon: Icons.person_outline,
+                      cards: [
+                        10.hGap,
+                        Text("Full Name", style: AppTexts.labelTextStyle),
+                        5.hGap,
+                        CustomTextField(
+                          controller: name,
+                          validator: Validator.validateName,
+                        ),
+                        10.hGap,
+                        Text("Mobile Number", style: AppTexts.labelTextStyle),
+                        5.hGap,
+                        CustomTextField(
+                          keyboardType: TextInputType.number,
+                          controller: number,
+                          validator: Validator.validatePhone,
+                        ),
+                        10.hGap,
+                        Text("Address", style: AppTexts.labelTextStyle),
+                        5.hGap,
+                        CustomTextField(
+                          maxLine: 3,
+                          controller: address,
+                          validator: Validator.validateAddress,
+                        ),
+                        10.hGap,
+                        ActionButton(
+                          text: 'Update Information',
+                          onTap: () {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              context.read<EditProfileBloc>().add(
+                                SaveProfileRequested(
+                                  UserPayload(
+                                    authID: user.authID,
+                                    email: user.email,
+                                    name: name.text.trim(),
+                                    address: address.text.trim(),
+                                    number: int.parse(number.text.trim()),
+                                    profilePicture: user.profilePicture,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   10.hGap,
                   TestModule(
@@ -305,80 +326,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   10.hGap,
                   TestModule(
-                    title: "App Preferences",
-                    subtitle: "Customize your app experience",
-                    cards: [
-                      5.hGap,
-                      Text(
-                        "Preferred Language",
-                        style: AppTexts.labelTextStyle,
-                      ),
-                      10.hGap,
-                      CustomDropdown(
-                        items: languages,
-                        hintText: "Choose Language",
-                      ),
-                      10.hGap,
-                      Text(
-                        "Notification Preferences",
-                        style: AppTexts.labelTextStyle,
-                      ),
-                      5.hGap,
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: 3,
-                        itemBuilder:
-                            (context, index) => CustomCheckbox(
-                              ontap: () {},
-                              title: notificationPrefs[index],
-                              value: values[index],
-                            ),
-                      ),
-                    ],
-                  ),
-                  10.hGap,
-                  TestModule(
                     title: "Account Actions",
                     cards: [
-                      8.hGap,
-                      BorderedContainer(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 7.h,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Change Password",
-                            style: AppTexts.labelTextStyle,
+                      GestureDetector(
+                        onTap:
+                            () => showDeleteAccountDialog(context, user.authID),
+                        child: BorderedContainer(
+                          borderColor: Colors.red,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 7.h,
                           ),
-                        ),
-                      ),
-                      8.hGap,
-                      BorderedContainer(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 7.h,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Download My Data",
-                            style: AppTexts.labelTextStyle,
-                          ),
-                        ),
-                      ),
-                      8.hGap,
-                      BorderedContainer(
-                        borderColor: Colors.red,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 7.h,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Delete Account",
-                            style: AppTexts.labelTextStyle.copyWith(
-                              color: Colors.red,
+                          child: Center(
+                            child: Text(
+                              "Delete Account",
+                              style: AppTexts.labelTextStyle.copyWith(
+                                color: Colors.red,
+                              ),
                             ),
                           ),
                         ),
@@ -392,6 +356,105 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return const SizedBox.shrink();
         },
       ),
+    );
+  }
+
+  void showDeleteAccountDialog(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // prevent accidental dismiss
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          elevation: 12,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Icon
+                  Align(
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.delete,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title
+                  Text(
+                    "Delete Account",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Message
+                  Text(
+                    "Are you sure you want to delete your account?",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            context.read<AuthBloc>().add(
+                              DeleteUserRequested(userId),
+                            );
+                            context.pushReplacement(AppRoutes.login);
+                          },
+                          child: const Text("Delete"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

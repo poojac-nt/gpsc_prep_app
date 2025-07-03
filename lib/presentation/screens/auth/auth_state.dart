@@ -56,3 +56,17 @@ class ImageUploadFailed extends AuthState {
 
   ImageUploadFailed(this.message);
 }
+
+///Called when deleting the user
+
+class DeleteUserInitial extends AuthState {}
+
+class DeleteUserLoading extends AuthState {}
+
+class DeleteUserSuccess extends AuthState {}
+
+class DeleteUserFailure extends AuthState {
+  final String error;
+
+  DeleteUserFailure(this.error);
+}

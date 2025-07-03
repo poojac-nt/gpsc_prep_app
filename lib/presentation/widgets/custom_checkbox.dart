@@ -14,6 +14,7 @@ class CustomCheckbox extends StatelessWidget {
     required this.title,
     required this.ontap,
   });
+
   final bool value;
   final String title;
   final bool isRounded;
@@ -40,7 +41,7 @@ class CustomCheckbox extends StatelessWidget {
                 },
                 fillColor: WidgetStateProperty.resolveWith((state) {
                   if (state.contains(WidgetState.selected)) {
-                    return Colors.black;
+                    return AppColors.primary;
                   }
                   return Colors.white;
                 }),

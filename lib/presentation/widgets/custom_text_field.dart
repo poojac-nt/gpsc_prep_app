@@ -7,21 +7,24 @@ class CustomTextField extends StatelessWidget {
     this.hintText,
     this.prefixIcon,
     this.controller,
-    this.maxline = 1,
+    this.maxLine = 1,
     this.keyboardType = TextInputType.text,
+    this.validator,
   });
 
   final String? hintText;
   final IconData? prefixIcon;
   final TextEditingController? controller;
-  final int maxline;
+  final int maxLine;
   final TextInputType? keyboardType;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      validator: validator,
       controller: controller,
-      maxLines: maxline,
+      maxLines: maxLine,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey),
@@ -29,6 +32,14 @@ class CustomTextField extends StatelessWidget {
         labelStyle: TextStyle(color: Colors.black),
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         prefixIconColor: Colors.grey.shade700,
+        errorBorder: OutlineInputBorder(
+          borderRadius: AppBorders.borderRadius,
+          borderSide: BorderSide(color: Colors.grey, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: AppBorders.borderRadius,
+          borderSide: BorderSide(color: Colors.grey, width: 1),
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppBorders.borderRadius,
           borderSide: BorderSide(color: Colors.grey, width: 1),

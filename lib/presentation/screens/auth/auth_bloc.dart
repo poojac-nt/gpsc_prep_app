@@ -13,28 +13,38 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final AuthRepository authRepository;
+  final AuthRepository _authRepository;
   final CacheManager _cache;
   final ImagePicker picker = ImagePicker();
   static final _supabase = Supabase.instance.client;
 
-  AuthBloc(this.authRepository, this._cache) : super(AuthInitial()) {
+  AuthBloc(this._authRepository, this._cache) : super(AuthInitial()) {
     on<LoginRequested>(_login);
     on<LogOutRequested>(_logOutRequest);
     on<LoadUserFromCache>(_loadUserFromCache);
     on<CreateUserRequested>(_createUser);
+    on<DeleteUserRequested>(_onDeleteUserRequested);
     on<PickImage>(_onPickAndUploadImage);
   }
 
   Future<void> _login(LoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
 
-    final result = await authRepository.login(event.email, event.password);
+    try {
+      final userExist = await _authRepository.doesUserExist(event.email);
+      if (!userExist) {
+        emit(AuthFailure("User does not exist."));
+        return;
+      }
 
-    result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
-      _cache.setUser(user);
-      emit(AuthSuccess(user));
-    });
+      final result = await _authRepository.login(event.email, event.password);
+      result.fold((failure) => emit(AuthFailure(failure.message)), (user) {
+        _cache.setUser(user);
+        emit(AuthSuccess(user));
+      });
+    } catch (e) {
+      emit(AuthFailure("An unexpected error occurred."));
+    }
   }
 
   Future<void> _loadUserFromCache(
@@ -54,8 +64,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthCreatingAccount());
-
-    final result = await authRepository.createUser(event.userPayload);
+    final userExist = await _authRepository.doesUserExist(
+      event.userPayload.email,
+    );
+    if (userExist) {
+      emit(AuthAccountCreateError('Email is Already Registered'));
+      return;
+    }
+    final result = await _authRepository.createUser(event.userPayload);
 
     result.fold((failure) => emit(AuthAccountCreateError(failure.message)), (
       user,
@@ -102,6 +118,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(Unauthenticated());
     } catch (e) {
       emit(AuthFailure('Logout failed: $e'));
+    }
+  }
+
+  Future<void> _onDeleteUserRequested(
+    DeleteUserRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(DeleteUserLoading());
+    try {
+      await _authRepository.deleteUser(event.userId);
+      _cache.clearUser();
+      emit(DeleteUserSuccess());
+    } catch (e) {
+      emit(DeleteUserFailure(e.toString()));
     }
   }
 }

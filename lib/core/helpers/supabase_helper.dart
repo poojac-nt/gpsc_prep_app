@@ -2,6 +2,7 @@ import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +13,19 @@ class SupabaseHelper {
   final LogHelper _log;
 
   SupabaseHelper(this._log);
+
+  Future<bool> doesUserExist(String email) async {
+    final response = await _supabase
+        .from(SupabaseKeys.users)
+        .select()
+        .eq(SupabaseKeys.email, email);
+    if (response.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  ///Login Method
 
   Future<Either<Failure, UserModel>> login(
     String email,
@@ -42,6 +56,8 @@ class SupabaseHelper {
       return Left(Failure('Incorrect Username or Password.'));
     }
   }
+
+  ///New User Create Method
 
   Future<Either<Failure, UserModel>> createUser(UserPayload data) async {
     try {
@@ -92,6 +108,8 @@ class SupabaseHelper {
     }
   }
 
+  ///Update User Information Method
+
   Future<Either<Failure, UserModel>> updateUserInfo(UserPayload data) async {
     try {
       final jsonData = data.toJson();
@@ -121,6 +139,28 @@ class SupabaseHelper {
       return Right(updatedUser);
     } catch (e) {
       return Left(Failure('Error Updating User Info: ${e.toString()}'));
+    }
+  }
+
+  ///Delete User from both public and auth tables
+  Future<bool> deleteUser(String userId) async {
+    try {
+      // Delete from auth.users
+      final supabaseAdmin = SupabaseClient(
+        AppSecrets.apiUrl,
+        AppSecrets.serviceKey,
+      );
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+
+      // Delete from public.users
+      await _supabase.from(SupabaseKeys.users).delete().eq('auth_id', userId);
+
+      _log.i('User deleted successfully from both public.users and auth.users');
+      _supabase.auth.signOut();
+      return true;
+    } catch (e) {
+      _log.e('Error in deleteUser: $e');
+      return false;
     }
   }
 }

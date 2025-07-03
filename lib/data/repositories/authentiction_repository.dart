@@ -18,6 +18,12 @@ class AuthRepository {
   Future<Either<Failure, UserModel>> createUser(UserPayload data) async =>
       await _supabase.createUser(data);
 
+  Future<bool> doesUserExist(String email) async =>
+      await _supabase.doesUserExist(email);
+
   Future<Either<Failure, UserModel>> updateUserInfo(UserPayload data) async =>
       await _supabase.updateUserInfo(data);
+
+  Future<void> deleteUser(String userId) async =>
+      await _supabase.deleteUser(userId);
 }
