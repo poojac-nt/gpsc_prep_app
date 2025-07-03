@@ -14,6 +14,7 @@ Question _$QuestionFromJson(Map<String, dynamic> json) => Question(
   optD: json['optD'] as String,
   questionType: json['questionType'] as String,
   correctAnswer: json['correctAnswer'] as String,
+  explanation: json['explanation'] as String,
 );
 
 Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
@@ -24,4 +25,5 @@ Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
   'optD': instance.optD,
   'questionType': instance.questionType,
   'correctAnswer': instance.correctAnswer,
+  'explanation': instance.explanation,
 };

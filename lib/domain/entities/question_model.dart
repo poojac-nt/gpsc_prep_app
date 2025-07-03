@@ -10,8 +10,9 @@ class Question {
   final String optC;
   final String optD;
   final String questionType;
+  final String correctAnswer;
   final String
-  correctAnswer; // stores the correct option text (e.g., “Option A text”)
+  explanation; // stores the correct option text (e.g., “Option A text”)
   Question({
     required this.question,
     required this.optA,
@@ -20,16 +21,8 @@ class Question {
     required this.optD,
     required this.questionType,
     required this.correctAnswer,
+    required this.explanation,
   });
-
-  /// Returns the correct option label (A/B/C/D)
-  String get correctOptionLabel {
-    if (correctAnswer == optA) return 'A';
-    if (correctAnswer == optB) return 'B';
-    if (correctAnswer == optC) return 'C';
-    if (correctAnswer == optD) return 'D';
-    return '';
-  }
 
   factory Question.fromJson(Map<String, dynamic> json) =>
       _$QuestionFromJson(json);
@@ -45,6 +38,8 @@ class Question {
         optD: "D. Flutter is a mobile app development platform",
         questionType: 'mcq',
         correctAnswer: "D. Flutter is a mobile app development platform",
+        explanation:
+            "Flutter is not a programming language — it’s a mobile app development framework created by Google. It allows developers to build cross-platform apps using a single codebase in Dart, making it faster and more efficient to develop for Android, iOS, and other platforms.",
       ),
       Question(
         question: """
@@ -61,6 +56,8 @@ class Question {
         optD: "D. 2-C,3-A,1-B",
         questionType: 'mtf',
         correctAnswer: " B. 3-A,2-B,1-C",
+        explanation:
+            "Mitochondria are known as the powerhouse of the cell because they generate energy (ATP) through cellular respiration. This energy is essential for all cell activities.",
       ),
       Question(
         question:
@@ -75,7 +72,9 @@ class Question {
         optC: "C. 2, 3 and 4 only",
         optD: "D. 1,2 3 and 4",
         questionType: 'statement',
-        correctAnswer: "D. 2, 3 and 4 only",
+        correctAnswer: "C. 2, 3 and 4 only",
+        explanation:
+            "Flutter is not a programming language — it’s a mobile app development framework created by Google. It allows developers to build cross-platform apps using a single codebase in Dart, making it faster and more efficient to develop for Android, iOS, and other platforms.",
       ),
       Question(
         question: "**The powerhouse of the cell is the _________**",
@@ -85,6 +84,8 @@ class Question {
         optD: "D. Cytoplasm",
         questionType: 'mcq',
         correctAnswer: "D. Cytoplasm",
+        explanation:
+            "Mitochondria are known as the powerhouse of the cell because they generate energy (ATP) through cellular respiration. This energy is essential for all cell activities.",
       ),
     ];
   }
