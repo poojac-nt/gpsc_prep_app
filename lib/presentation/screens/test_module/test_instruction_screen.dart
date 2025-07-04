@@ -108,7 +108,6 @@ class TestInstructionScreen extends StatelessWidget {
             ActionButton(
               text: "Start Test",
               onTap: () {
-                context.read<QuestionBloc>().add(LoadQuestion());
                 context.push(AppRoutes.testScreen);
               },
             ),

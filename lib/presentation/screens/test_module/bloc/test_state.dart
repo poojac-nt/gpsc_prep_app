@@ -9,7 +9,6 @@ class QuestionLoaded extends QuestionState {
   final int currentIndex;
   final List<bool> answeredStatus;
   final List<String?> selectedOption;
-  final int tickCount;
   final bool isReview;
 
   QuestionLoaded({
@@ -17,7 +16,6 @@ class QuestionLoaded extends QuestionState {
     required this.currentIndex,
     required this.answeredStatus,
     required this.selectedOption,
-    required this.tickCount,
     this.isReview = false,
   });
 
@@ -26,7 +24,7 @@ class QuestionLoaded extends QuestionState {
     int? currentIndex,
     List<bool>? answeredStatus,
     List<String?>? selectedOption,
-    int? tickCount,
+
     bool? isReview,
   }) {
     return QuestionLoaded(
@@ -34,7 +32,6 @@ class QuestionLoaded extends QuestionState {
       currentIndex: currentIndex ?? this.currentIndex,
       answeredStatus: answeredStatus ?? this.answeredStatus,
       selectedOption: selectedOption ?? this.selectedOption,
-      tickCount: tickCount ?? this.tickCount,
       isReview: isReview ?? this.isReview,
     );
   }
@@ -46,7 +43,6 @@ class TestSubmitted extends QuestionState {
   final int notAttempted;
   final int correct;
   final int inCorrect;
-  final int timeSpent;
   final bool isReview;
   final List<Question> questions;
   final List<String?> selectedOption;
@@ -58,7 +54,6 @@ class TestSubmitted extends QuestionState {
     required this.notAttempted,
     required this.correct,
     required this.inCorrect,
-    required this.timeSpent,
     required this.questions,
     required this.selectedOption,
     required this.answeredStatus,

@@ -9,7 +9,6 @@ import '../../../../domain/entities/question_model.dart';
 class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   QuestionBloc() : super(QuestionInitial()) {
     on<LoadQuestion>(_loadQuestion);
-    on<TimerTicked>(_onTimerTicked);
     on<SubmitTest>(_onSubmit);
     on<ReviewTestMode>(_onReviewTest);
     on<AnswerQuestion>(_answerQuestion);
@@ -25,22 +24,10 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     Emitter<QuestionState> emit,
   ) async {
     List<Question> questions = Question.sampleQuestion();
-
-    timer?.cancel();
-    int tickCount = 30 * 60;
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      tickCount--;
-      add(TimerTicked(tickCount));
-
-      if (tickCount <= 0) {
-        timer.cancel();
-      }
-    });
     emit(
       QuestionLoaded(
         questions: questions,
         currentIndex: 0,
-        tickCount: tickCount,
         isReview: false,
         selectedOption: List.generate(questions.length, (_) => null),
         answeredStatus: List.generate(questions.length, (_) => false),
@@ -107,16 +94,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     }
   }
 
-  Future<void> _onTimerTicked(
-    TimerTicked event,
-    Emitter<QuestionState> emit,
-  ) async {
-    if (state is QuestionLoaded) {
-      final currentState = state as QuestionLoaded;
-      emit(currentState.copyWith(tickCount: event.remainingSeconds));
-    }
-  }
-
   Future<void> _onSubmit(SubmitTest event, Emitter<QuestionState> emit) async {
     if (state is QuestionLoaded) {
       final currentState = state as QuestionLoaded;
@@ -126,7 +103,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
 
       final attempted = answeredStatus.where((status) => status).length;
       final notAttempted = answeredStatus.where((status) => !status).length;
-      final timeSpent = 30 - currentState.tickCount ~/ 60;
       int correctAnswers = 0;
       int incorrectAnswers = 0;
       for (int i = 0; i < currentState.questions.length; i++) {
@@ -151,7 +127,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
           notAttempted: notAttempted,
           correct: correctAnswers,
           inCorrect: incorrectAnswers,
-          timeSpent: timeSpent,
           isReview: currentState.isReview,
         ),
       );
@@ -169,7 +144,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         currentIndex: 0,
         answeredStatus: event.answeredStatus,
         selectedOption: event.selectedOption,
-        tickCount: 0,
         isReview: true,
       ),
     );

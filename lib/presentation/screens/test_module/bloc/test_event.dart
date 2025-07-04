@@ -18,12 +18,6 @@ class JumpToQuestion extends QuestionEvent {
   JumpToQuestion(this.index);
 }
 
-class TimerTicked extends QuestionEvent {
-  final int remainingSeconds;
-
-  TimerTicked(this.remainingSeconds);
-}
-
 class SubmitTest extends QuestionEvent {}
 
 class ReviewTestMode extends QuestionEvent {

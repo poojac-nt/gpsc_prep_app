@@ -51,7 +51,7 @@ class ResultScreen extends StatelessWidget {
                   state.inCorrect.toString(),
                   state.notAttempted.toString(),
                   state.attempted.toString(),
-                  state.timeSpent.toString(),
+                  // state.timeSpent.toString(),
                   state.totalQuestions.toString(),
                 ];
                 return TestModule(

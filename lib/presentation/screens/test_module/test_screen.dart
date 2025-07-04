@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_indicator.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_navigator_btn.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
@@ -16,10 +17,17 @@ import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
+import 'bloc/timer/timer_bloc.dart';
+import 'bloc/timer/timer_state.dart';
 
-class TestScreen extends StatelessWidget {
+class TestScreen extends StatefulWidget {
   TestScreen({super.key});
 
+  @override
+  State<TestScreen> createState() => _TestScreenState();
+}
+
+class _TestScreenState extends State<TestScreen> {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
 
   late List<Question> questions;
@@ -27,58 +35,70 @@ class TestScreen extends StatelessWidget {
   late List<String> options;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    context.read<QuestionBloc>().add(LoadQuestion());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocConsumer<QuestionBloc, QuestionState>(
-      listener: (context, state) {
-        if (state is TestSubmitted && !state.isReview) {
-          context.replace(AppRoutes.resultScreen);
-        }
-      },
-      builder: (context, state) {
-        if (state is QuestionInitial) return Container();
-        if (state is QuestionLoaded) {
-          int minutes = state.tickCount ~/ 60;
-          int seconds = state.tickCount % 60;
-          questions = state.questions;
-          var question = state.questions[state.currentIndex].toQuestionWidget();
-          options = state.questions[state.currentIndex].getOptions();
-          String? selectedAnswer = state.selectedOption[state.currentIndex];
-          var progress = state.currentIndex / (state.questions.length - 1);
-          var answered =
-              state.answeredStatus.where((value) => value).toList().length;
-          return PopScope(
-            onPopInvokedWithResult: (didPop, _) {
-              if (state.isReview) {
-                context.read<QuestionBloc>().add(SubmitTest());
-              }
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                title: Text("Daily Test", style: AppTexts.titleTextStyle),
-                actions: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 3.h,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(color: Colors.black),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(Icons.timer_outlined, size: 18.sp),
-                        5.wGap,
-                        Text(
-                          "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}",
-                        ),
-                      ],
-                    ),
-                  ).padSymmetric(horizontal: 10.w),
-                ],
-              ),
-              body: SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Daily Test", style: AppTexts.titleTextStyle),
+        actions: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: Colors.black),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.timer_outlined, size: 18.sp),
+                5.wGap,
+                BlocBuilder<TimerBloc, TimerState>(
+                  builder: (context, state) {
+                    if (state is TimerRunning) {
+                      return Text(
+                        "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
+                      );
+                    }
+                    return CircularProgressIndicator();
+                  },
+                ),
+              ],
+            ),
+          ).padSymmetric(horizontal: 10.w),
+        ],
+      ),
+      body: BlocConsumer<QuestionBloc, QuestionState>(
+        listener: (context, state) {
+          if (state is TestSubmitted && !state.isReview) {
+            context.replace(AppRoutes.resultScreen);
+          }
+        },
+        builder: (context, state) {
+          if (state is QuestionInitial) return Container();
+          if (state is QuestionLoaded) {
+            questions = state.questions;
+            var question =
+                state.questions[state.currentIndex].toQuestionWidget();
+            options = state.questions[state.currentIndex].getOptions();
+            String? selectedAnswer = state.selectedOption[state.currentIndex];
+            var progress = state.currentIndex / (state.questions.length - 1);
+            var answered =
+                state.answeredStatus.where((value) => value).toList().length;
+            return PopScope(
+              onPopInvokedWithResult: (didPop, _) {
+                if (state.isReview) {
+                  context.read<TimerBloc>().add(TimerStopped());
+                  context.read<QuestionBloc>().add(SubmitTest());
+                }
+              },
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
                     CustomProgressBar(
@@ -252,11 +272,11 @@ class TestScreen extends StatelessWidget {
                   ],
                 ).padAll(AppPaddings.defaultPadding),
               ),
-            ),
-          );
-        }
-        return Container();
-      },
+            );
+          }
+          return Container();
+        },
+      ),
     );
   }
 }
