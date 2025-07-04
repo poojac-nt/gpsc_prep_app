@@ -57,10 +57,7 @@ class MCQTestScreen extends StatelessWidget {
                 TestTile(
                   title: "Current Affairs",
                   subtitle: "20 Questions . 30 min",
-                  onTap:
-                      () => context.pushReplacement(
-                        AppRoutes.testInstructionScreen,
-                      ),
+                  onTap: () => context.push(AppRoutes.testInstructionScreen),
                   buttonTitle: 'Start',
                 ),
               ],

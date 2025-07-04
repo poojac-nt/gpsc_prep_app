@@ -28,7 +28,12 @@ class TestScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<QuestionBloc, QuestionState>(
+    return BlocConsumer<QuestionBloc, QuestionState>(
+      listener: (context, state) {
+        if (state is TestSubmitted && !state.isReview) {
+          context.replace(AppRoutes.resultScreen);
+        }
+      },
       builder: (context, state) {
         if (state is QuestionInitial) return Container();
         if (state is QuestionLoaded) {
@@ -45,9 +50,6 @@ class TestScreen extends StatelessWidget {
             onPopInvokedWithResult: (didPop, _) {
               if (state.isReview) {
                 context.read<QuestionBloc>().add(SubmitTest());
-                context.pushReplacement(AppRoutes.resultScreen);
-              } else {
-                context.go(AppRoutes.home);
               }
             },
             child: Scaffold(
@@ -158,12 +160,13 @@ class TestScreen extends StatelessWidget {
                                         NextQuestion(),
                                       );
                                     } else {
-                                      context.read<QuestionBloc>().add(
-                                        SubmitTest(),
-                                      );
-                                      context.pushReplacement(
-                                        AppRoutes.resultScreen,
-                                      );
+                                      if (!state.isReview) {
+                                        context.read<QuestionBloc>().add(
+                                          SubmitTest(),
+                                        );
+                                      } else {
+                                        context.pop();
+                                      }
                                     }
                                   },
                                 ),

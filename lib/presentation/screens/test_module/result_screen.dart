@@ -35,9 +35,8 @@ class ResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
       onPopInvokedWithResult: (didPop, _) {
-        context.pushReplacement(AppRoutes.home);
+        context.go(AppRoutes.home);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -46,9 +45,7 @@ class ResultScreen extends StatelessWidget {
         body: SingleChildScrollView(
           child: BlocBuilder<QuestionBloc, QuestionState>(
             builder: (context, state) {
-              if (state is QuestionInitial) {
-                return Center(child: CircularProgressIndicator());
-              } else if (state is TestSubmitted) {
+              if (state is TestSubmitted) {
                 final List<String> containerValues = [
                   state.correct.toString(),
                   state.inCorrect.toString(),

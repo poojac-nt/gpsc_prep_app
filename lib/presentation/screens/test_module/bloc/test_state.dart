@@ -47,6 +47,7 @@ class TestSubmitted extends QuestionState {
   final int correct;
   final int inCorrect;
   final int timeSpent;
+  final bool isReview;
   final List<Question> questions;
   final List<String?> selectedOption;
   final List<bool> answeredStatus;
@@ -61,6 +62,7 @@ class TestSubmitted extends QuestionState {
     required this.questions,
     required this.selectedOption,
     required this.answeredStatus,
+    required this.isReview,
   });
 }
 

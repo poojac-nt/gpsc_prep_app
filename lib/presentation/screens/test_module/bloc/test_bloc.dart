@@ -152,6 +152,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
           correct: correctAnswers,
           inCorrect: incorrectAnswers,
           timeSpent: timeSpent,
+          isReview: currentState.isReview,
         ),
       );
     }
