@@ -87,10 +87,38 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                       ),
                     ],
                   ),
-                ).padAll(AppPaddings.defaultPadding),
+                ),
               ),
+              state is UploadFileSuccess
+                  ? Column(
+                    children: [
+                      10.hGap,
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 500),
+                        opacity: 1.0,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green.shade200),
+                          ),
+                          child: Text(
+                            'Upload done: ${state.result.successCount} added, '
+                            '${state.result.duplicateCount} duplicates, ${state.result.failCount} failed.',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                  : SizedBox.shrink(),
             ],
-          );
+          ).padAll(AppPaddings.defaultPadding);
         },
       ),
     );

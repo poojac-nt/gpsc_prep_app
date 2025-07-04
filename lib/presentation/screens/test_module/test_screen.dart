@@ -14,7 +14,6 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
-import '../../../domain/entities/answer_model.dart';
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
 
@@ -24,7 +23,6 @@ class TestScreen extends StatelessWidget {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
 
   late List<Question> questions;
-  late List<AnswerModel> userAnswers;
 
   late List<String> options;
 

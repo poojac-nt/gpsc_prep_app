@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:gpsc_prep_app/domain/entities/answer_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
 
@@ -18,7 +17,9 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     on<PrevQuestion>(_prevQuestion);
     on<JumpToQuestion>(_jumpToQuestion);
   }
+
   Timer? timer;
+
   Future<void> _loadQuestion(
     LoadQuestion event,
     Emitter<QuestionState> emit,
@@ -58,11 +59,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       var correct =
           currentState.questions[currentState.currentIndex].correctAnswer ==
           updateSelectedAnswer[currentState.currentIndex];
-      final answerQuestion = AnswerModel(
-        questionIndex: currentState.currentIndex,
-        selectedOption: updateSelectedAnswer[currentState.currentIndex],
-        isCorrect: correct,
-      );
       final updatedAnsweredStatus = [...currentState.answeredStatus];
       updatedAnsweredStatus[currentState.currentIndex] = true;
       emit(

@@ -1,5 +1,3 @@
-import 'package:gpsc_prep_app/domain/entities/answer_model.dart';
-
 import '../../../../domain/entities/question_model.dart';
 
 sealed class QuestionState {}

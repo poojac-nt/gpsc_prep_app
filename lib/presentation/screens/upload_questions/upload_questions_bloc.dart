@@ -8,9 +8,7 @@ part 'upload_questions_state.dart';
 class UploadQuestionsBloc
     extends Bloc<UploadQuestionsEvent, UploadQuestionsState> {
   UploadQuestionsBloc() : super(UploadQuestionsInitial()) {
-    on<UploadQuestionsEvent>((event, emit) {
-      on<UploadCsvAndInsert>(_onUploadCsvAndInsert);
-    });
+    on<UploadCsvAndInsert>(_onUploadCsvAndInsert);
   }
 
   Future<void> _onUploadCsvAndInsert(
