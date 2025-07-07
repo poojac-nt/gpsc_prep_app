@@ -43,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     name = TextEditingController();
     address = TextEditingController();
     number = TextEditingController();
+    context.read<EditProfileBloc>().add(LoadInitialProfile());
   }
 
   @override

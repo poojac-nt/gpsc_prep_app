@@ -32,6 +32,20 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   ) : super(EditProfileInitial()) {
     on<SaveProfileRequested>(_onSaveProfileRequested);
     on<EditImage>(_onUpdateImage);
+    on<LoadInitialProfile>(_onLoadInitialProfile);
+  }
+
+  Future<void> _onLoadInitialProfile(
+    LoadInitialProfile event,
+    Emitter<EditProfileState> emit,
+  ) async {
+    final user = await _cache.getInitUser();
+    if (user != null) {
+      _currentUser = user;
+      emit(EditProfileLoaded(user));
+    } else {
+      emit(EditProfileFailure('User Not Found'));
+    }
   }
 
   Future<void> _onSaveProfileRequested(
