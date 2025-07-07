@@ -8,9 +8,10 @@ class TimerRunning extends TimerState {
   TimerRunning(this.remainingSeconds, this.remainingMinutes);
 }
 
-class TimerCompleted extends TimerState {
+class TimerStopped extends TimerState {
   final int totalMins;
   final int totalSecs;
+  final bool isManual;
 
-  TimerCompleted(this.totalMins, this.totalSecs);
+  TimerStopped(this.totalMins, this.totalSecs, this.isManual);
 }

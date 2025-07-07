@@ -57,7 +57,7 @@ Future<void> main() async {
           BlocProvider(
             create: (_) => getIt<QuestionBloc>()..add(LoadQuestion()),
           ),
-          BlocProvider(create: (_) => getIt<TimerBloc>()..add(TimerStarted())),
+          BlocProvider(create: (_) => getIt<TimerBloc>()),
         ],
         child: const MyApp(),
       ),

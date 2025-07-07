@@ -21,7 +21,8 @@ import 'bloc/timer/timer_bloc.dart';
 import 'bloc/timer/timer_state.dart';
 
 class TestScreen extends StatefulWidget {
-  const TestScreen({super.key});
+  const TestScreen({super.key, required this.isFromResult});
+  final bool isFromResult;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -32,12 +33,15 @@ class _TestScreenState extends State<TestScreen> {
 
   late List<Question> questions;
 
-  late List<String> options;
-
   @override
   void initState() {
     // TODO: implement initState
-    context.read<QuestionBloc>().add(LoadQuestion());
+    var bloc = context.read<TimerBloc>();
+    if (widget.isFromResult) {
+      bloc.add(TimerStop());
+    } else {
+      bloc.add(TimerStart());
+    }
     super.initState();
   }
 
@@ -66,6 +70,11 @@ class _TestScreenState extends State<TestScreen> {
                         "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
                       );
                     }
+                    if (state is TimerStopped) {
+                      print(state.totalMins);
+                      print(state.totalSecs);
+                      return SizedBox.shrink();
+                    }
                     return CircularProgressIndicator();
                   },
                 ),
@@ -77,24 +86,20 @@ class _TestScreenState extends State<TestScreen> {
       body: BlocConsumer<QuestionBloc, QuestionState>(
         listener: (context, state) {
           if (state is TestSubmitted && !state.isReview) {
-            context.replace(AppRoutes.resultScreen);
+            context.pushReplacement(AppRoutes.resultScreen);
           }
         },
         builder: (context, state) {
+          print("Test$state");
           if (state is QuestionInitial) return Container();
           if (state is QuestionLoaded) {
             questions = state.questions;
-            var question =
-                state.questions[state.currentIndex].toQuestionWidget();
-            options = state.questions[state.currentIndex].getOptions();
             String? selectedAnswer = state.selectedOption[state.currentIndex];
-            var progress = state.currentIndex / (state.questions.length - 1);
-            var answered =
-                state.answeredStatus.where((value) => value).toList().length;
+
             return PopScope(
               onPopInvokedWithResult: (didPop, _) {
                 if (state.isReview) {
-                  context.read<TimerBloc>().add(TimerStopped());
+                  print('isreview called : ${state.isReview}');
                   context.read<QuestionBloc>().add(SubmitTest());
                 }
               },
@@ -104,17 +109,17 @@ class _TestScreenState extends State<TestScreen> {
                     CustomProgressBar(
                       text:
                           "Question ${state.currentIndex + 1} of ${state.questions.length}",
-                      value: progress,
-                      percentageText: "$answered Answered",
+                      value: state.progress,
+                      percentageText: "${state.answered} Answered",
                     ),
                     20.hGap,
                     TestModule(
                       title: "Question ${state.currentIndex + 1}",
                       cards: [
-                        question,
+                        state.question,
                         10.hGap,
                         ListView.builder(
-                          itemCount: options.length,
+                          itemCount: state.options.length,
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder:
@@ -122,20 +127,19 @@ class _TestScreenState extends State<TestScreen> {
                                 padding: EdgeInsets.zero,
                                 radius: BorderRadius.circular(10),
                                 child: RadioListTile<String>(
-                                  value: options[index],
+                                  value: state.options[index],
                                   activeColor: AppColors.primary,
                                   groupValue: selectedAnswer,
                                   onChanged:
                                       state.isReview
                                           ? null
                                           : (value) {
-                                            print(value);
                                             // Store answer
                                             context.read<QuestionBloc>().add(
                                               AnswerQuestion(value!),
                                             );
                                           },
-                                  title: Text(options[index]),
+                                  title: Text(state.options[index]),
                                 ),
                               ).padAll(5),
                         ),
@@ -181,6 +185,9 @@ class _TestScreenState extends State<TestScreen> {
                                       );
                                     } else {
                                       if (!state.isReview) {
+                                        context.read<TimerBloc>().add(
+                                          TimerStop(),
+                                        );
                                         context.read<QuestionBloc>().add(
                                           SubmitTest(),
                                         );

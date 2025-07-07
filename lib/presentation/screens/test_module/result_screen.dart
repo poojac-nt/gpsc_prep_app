@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
@@ -31,9 +33,17 @@ class ResultScreen extends StatelessWidget {
     Colors.blue.shade500,
     Colors.cyan.shade500,
   ];
+  String totalTime(BuildContext context) {
+    var timerState = context.read<TimerBloc>().state;
+    int mins = timerState is TimerStopped ? timerState.totalMins : 0;
+    int secs = timerState is TimerStopped ? timerState.totalSecs : 0;
+    var timeSpent = "$mins:$secs";
+    return timeSpent;
+  }
 
   @override
   Widget build(BuildContext context) {
+    var time = totalTime(context);
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         context.go(AppRoutes.home);
@@ -45,13 +55,14 @@ class ResultScreen extends StatelessWidget {
         body: SingleChildScrollView(
           child: BlocBuilder<QuestionBloc, QuestionState>(
             builder: (context, state) {
+              print("state of result screen :$state");
               if (state is TestSubmitted) {
                 final List<String> containerValues = [
                   state.correct.toString(),
                   state.inCorrect.toString(),
                   state.notAttempted.toString(),
                   state.attempted.toString(),
-                  // state.timeSpent.toString(),
+                  time,
                   state.totalQuestions.toString(),
                 ];
                 return TestModule(
@@ -105,7 +116,7 @@ class ResultScreen extends StatelessWidget {
                           text: "Review Answers",
                           fontColor: Colors.white,
                           onTap: () {
-                            context.push(AppRoutes.testScreen);
+                            print(state.isReview);
                             context.read<QuestionBloc>().add(
                               ReviewTestMode(
                                 state.questions,
@@ -113,6 +124,7 @@ class ResultScreen extends StatelessWidget {
                                 state.answeredStatus,
                               ),
                             );
+                            context.push(AppRoutes.testScreen, extra: true);
                           },
                         ),
                       ],
