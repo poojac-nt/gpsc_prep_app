@@ -9,13 +9,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'log_helper.dart';
 
 class SupabaseHelper {
-  final _supabase = Supabase.instance.client;
+  final supabase = Supabase.instance.client;
   final LogHelper _log;
 
   SupabaseHelper(this._log);
 
   Future<bool> doesUserExist(String email) async {
-    final response = await _supabase
+    final response = await supabase
         .from(SupabaseKeys.users)
         .select()
         .eq(SupabaseKeys.email, email);
@@ -32,7 +32,7 @@ class SupabaseHelper {
     String password,
   ) async {
     try {
-      final response = await _supabase.auth.signInWithPassword(
+      final response = await supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
@@ -43,7 +43,7 @@ class SupabaseHelper {
       }
 
       final userResponse =
-          await _supabase
+          await supabase
               .from(SupabaseKeys.users)
               .select()
               .eq(SupabaseKeys.authId, userId)
@@ -64,7 +64,7 @@ class SupabaseHelper {
       final jsonData = data.toJson();
       _log.d('[insertUser] Payload: $jsonData');
       final existingUser =
-          await _supabase
+          await supabase
               .from(SupabaseKeys.users)
               .select('user_email')
               .eq('user_email', data.email)
@@ -75,7 +75,7 @@ class SupabaseHelper {
         return Left(Failure('A user with this email already exists.'));
       }
 
-      final signUpResponse = await _supabase.auth.signUp(
+      final signUpResponse = await supabase.auth.signUp(
         password: data.password!,
         email: data.email,
       );
@@ -87,7 +87,7 @@ class SupabaseHelper {
       final userId = user?.id;
       _log.d("User id: $userId");
       final insertResponse =
-          await _supabase
+          await supabase
               .from(SupabaseKeys.users)
               .insert({
                 'full_name': data.name,
@@ -115,7 +115,7 @@ class SupabaseHelper {
       final jsonData = data.toJson();
       _log.d('[Update User] Payload: $jsonData');
 
-      await _supabase.rpc(
+      await supabase.rpc(
         SupabaseKeys.updateUserInfo,
         params: {
           'p_auth_id': data.authID,
@@ -129,7 +129,7 @@ class SupabaseHelper {
 
       // ✅ Recommended: refetch updated user
       final userResponse =
-          await _supabase
+          await supabase
               .from('users')
               .select()
               .eq('auth_id', data.authID!)
@@ -153,10 +153,10 @@ class SupabaseHelper {
       await supabaseAdmin.auth.admin.deleteUser(userId);
 
       // Delete from public.users
-      await _supabase.from(SupabaseKeys.users).delete().eq('auth_id', userId);
+      await supabase.from(SupabaseKeys.users).delete().eq('auth_id', userId);
 
       _log.i('User deleted successfully from both public.users and auth.users');
-      _supabase.auth.signOut();
+      supabase.auth.signOut();
       return true;
     } catch (e) {
       _log.e('Error in deleteUser: $e');

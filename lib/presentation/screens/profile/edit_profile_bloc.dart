@@ -2,14 +2,15 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'edit_profile_event.dart';
 part 'edit_profile_state.dart';
@@ -19,7 +20,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
   final AuthRepository _authRepository;
   final SnackBarHelper _snackBarHelper;
   final LogHelper _log;
-  final _supabase = Supabase.instance.client;
+  final _supabase = getIt<SupabaseHelper>().supabase;
   final ImagePicker picker = ImagePicker();
   UserModel? _currentUser;
 

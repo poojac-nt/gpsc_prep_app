@@ -1,13 +1,17 @@
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 
 final _log = getIt<LogHelper>();
+final _supabase = getIt<SupabaseHelper>().supabase;
+final _snackBar = getIt<SnackBarHelper>();
 
 class UploadResult {
   final int successCount;
@@ -26,31 +30,36 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
     final pickedFileResult = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx'],
-      withData: true,
+      withData: false,
     );
 
-    if (pickedFileResult == null ||
-        pickedFileResult.files.single.bytes == null) {
-      throw Exception('Upload cancelled or file unreadable.');
+    if (pickedFileResult == null || pickedFileResult.files.isEmpty) {
+      throw Exception('Upload cancelled by user.');
     }
 
     final file = pickedFileResult.files.single;
+    final filePath = file.path;
+
+    if (filePath == null) throw Exception('File path is null.');
     final ext = file.extension?.toLowerCase();
+
     late List<List<dynamic>> rows;
 
-    // CSV or XLSX
     if (ext == 'csv') {
-      String content = utf8
-          .decode(file.bytes!)
-          .replaceFirst(RegExp(r'^\ufeff'), '');
+      final content = await File(filePath).readAsString();
+      final cleaned = content.replaceFirst(RegExp(r'^\ufeff'), '');
       rows = const CsvToListConverter().convert(
-        content,
+        cleaned,
         eol: '\n',
         shouldParseNumbers: false,
       );
     } else if (ext == 'xlsx') {
-      final excel = Excel.decodeBytes(file.bytes!);
-      final sheet = excel.tables.values.first;
+      final bytes = await File(filePath).readAsBytes();
+      final excel = Excel.decodeBytes(bytes);
+      final sheet = excel.tables.values.firstOrNull;
+      if (sheet == null || sheet.rows.isEmpty) {
+        throw Exception('Excel file has no data.');
+      }
       rows =
           sheet.rows
               .map(
@@ -59,10 +68,13 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
               )
               .toList();
     } else {
-      throw Exception('Unsupported file format');
+      _snackBar.showError('Unsupported file format');
     }
 
-    if (rows.isEmpty) throw Exception('The file is empty.');
+    if (rows.isEmpty) {
+      _snackBar.showError('The file is empty.');
+      return null;
+    }
 
     final headers =
         rows.first
@@ -94,9 +106,10 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
 
     final missingHeaders = requiredHeaders.difference(headers.toSet());
     if (missingHeaders.isNotEmpty) {
-      throw Exception(
+      _snackBar.showError(
         'Missing required column(s): ${missingHeaders.join(', ')}',
       );
+      return null;
     }
 
     final dataRows = rows.skip(1);
@@ -117,14 +130,16 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
       for (final key in requiredHeaders) {
         final value = rowMap[key]?.toString().trim();
         if (value == null || value.isEmpty) {
-          throw Exception(
+          _snackBar.showError(
             'Missing value for "$key" in row $rowIndex (sr_no: ${rowMap['sr_no'] ?? 'unknown'})',
           );
+          return null;
         }
       }
 
       final srNo = rowMap['sr_no']!;
       final lang = rowMap['language_code']!;
+
       final langData = {
         "question_txt": rowMap['question_text'],
         "opt_a": rowMap['option_a'],
@@ -135,28 +150,50 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
         "explanation": rowMap['explanation'],
       };
 
-      grouped.putIfAbsent(
-        srNo,
-        () => {
+      grouped.putIfAbsent(srNo, () {
+        final base = {
           "question_type": rowMap['question_type'],
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
           "topic_name": rowMap['topic_name'],
-          "languages": {},
-        },
-      );
+          "languages": <String, dynamic>{},
+        };
+
+        if (headers.contains('test_name') &&
+            rowMap['test_name']?.toString().trim().isNotEmpty == true) {
+          base['test_name'] = rowMap['test_name'];
+        }
+
+        if (headers.contains('duration') &&
+            rowMap['duration']?.toString().trim().isNotEmpty == true) {
+          base['duration'] = int.tryParse(rowMap['duration'].toString()) ?? 1;
+        }
+
+        return base;
+      });
+
+      final existing = grouped[srNo]!;
+      if (existing['subject_name'] != rowMap['subject_name'] ||
+          existing['topic_name'] != rowMap['topic_name'] ||
+          existing['question_type'] != rowMap['question_type']) {
+        _snackBar.showError(
+          'Conflicting metadata for sr_no $srNo at row $rowIndex: subject/topic/question_type mismatch',
+        );
+        return null;
+      }
 
       grouped[srNo]!['languages'][lang] = langData;
     }
 
     if (grouped.isEmpty) {
-      throw Exception('No valid data found after validation.');
+      _log.e('No valid data found after validation.');
+      return null;
     }
 
     final payload = grouped.values.toList();
 
-    final rpcResult = await Supabase.instance.client.rpc(
-      'insert_multilingual_questions',
+    final rpcResult = await _supabase.rpc(
+      SupabaseKeys.insertMcqWithTest,
       params: {'payload': payload},
     );
 
@@ -167,7 +204,6 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
       duplicateCount: response['skipped_duplicates'] ?? 0,
     );
   } catch (e) {
-    // Optionally log error or show toast
     _log.e('❌ Upload failed: $e');
     return null;
   }
