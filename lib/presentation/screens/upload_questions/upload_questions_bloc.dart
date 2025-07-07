@@ -18,9 +18,9 @@ class UploadQuestionsBloc
     emit(UploadFileInProgress());
 
     try {
-      final result = await uploadCsvAndInsertQuestions();
+      final result = await uploadCsvOrXlsxToSupabaseMobile();
 
-      emit(UploadFileSuccess(result));
+      emit(UploadFileSuccess(result!));
     } catch (e) {
       emit(UploadFileFailure('Upload failed: ${e.toString()}'));
     }

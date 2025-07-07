@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
@@ -36,6 +37,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
               '${r.duplicateCount} duplicates, ${r.failCount} failed.',
             );
           } else if (state is UploadFileFailure) {
+            getIt<LogHelper>().e(state.error);
             getIt<SnackBarHelper>().showError(state.error);
           }
         },

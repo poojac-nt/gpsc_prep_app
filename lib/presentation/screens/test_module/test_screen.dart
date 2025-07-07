@@ -21,7 +21,7 @@ import 'bloc/timer/timer_bloc.dart';
 import 'bloc/timer/timer_state.dart';
 
 class TestScreen extends StatefulWidget {
-  TestScreen({super.key});
+  const TestScreen({super.key});
 
   @override
   State<TestScreen> createState() => _TestScreenState();
