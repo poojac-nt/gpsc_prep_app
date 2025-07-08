@@ -13,7 +13,6 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
@@ -21,7 +20,8 @@ import 'bloc/timer/timer_bloc.dart';
 import 'bloc/timer/timer_state.dart';
 
 class TestScreen extends StatefulWidget {
-  const TestScreen({super.key, required this.isFromResult});
+  const TestScreen({super.key, this.isFromResult = false});
+
   final bool isFromResult;
 
   @override
@@ -51,36 +51,38 @@ class _TestScreenState extends State<TestScreen> {
       appBar: AppBar(
         title: Text("Daily Test", style: AppTexts.titleTextStyle),
         actions: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: Colors.black),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.timer_outlined, size: 18.sp),
-                5.wGap,
-                BlocBuilder<TimerBloc, TimerState>(
-                  builder: (context, state) {
-                    if (state is TimerRunning) {
-                      return Text(
-                        "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
-                      );
-                    }
-                    if (state is TimerStopped) {
-                      print(state.totalMins);
-                      print(state.totalSecs);
-                      return SizedBox.shrink();
-                    }
-                    return CircularProgressIndicator();
-                  },
+          widget.isFromResult
+              ? SizedBox.shrink()
+              : Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(color: Colors.black),
                 ),
-              ],
-            ),
-          ).padSymmetric(horizontal: 10.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.timer_outlined, size: 18.sp),
+                    5.wGap,
+                    BlocBuilder<TimerBloc, TimerState>(
+                      builder: (context, state) {
+                        if (state is TimerRunning) {
+                          return Text(
+                            "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
+                          );
+                        }
+                        if (state is TimerStopped) {
+                          print(state.totalMins);
+                          print(state.totalSecs);
+                          return SizedBox.shrink();
+                        }
+                        return Text('00:00');
+                      },
+                    ),
+                  ],
+                ),
+              ).padSymmetric(horizontal: 10.w),
         ],
       ),
       body: BlocConsumer<QuestionBloc, QuestionState>(
@@ -122,26 +124,66 @@ class _TestScreenState extends State<TestScreen> {
                           itemCount: state.options.length,
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
-                          itemBuilder:
-                              (context, index) => BorderedContainer(
-                                padding: EdgeInsets.zero,
-                                radius: BorderRadius.circular(10),
-                                child: RadioListTile<String>(
-                                  value: state.options[index],
-                                  activeColor: AppColors.primary,
-                                  groupValue: selectedAnswer,
-                                  onChanged:
-                                      state.isReview
-                                          ? null
-                                          : (value) {
-                                            // Store answer
-                                            context.read<QuestionBloc>().add(
-                                              AnswerQuestion(value!),
-                                            );
-                                          },
-                                  title: Text(state.options[index]),
+                          itemBuilder: (context, index) {
+                            final option = state.options[index];
+                            final isSelected = selectedAnswer == option;
+                            final correctAnswer =
+                                state
+                                    .questions[state.currentIndex]
+                                    .correctAnswer;
+                            final isCorrect = option == correctAnswer;
+                            Color? tileColor;
+                            if (state.isReview) {
+                              if (isSelected && isCorrect) {
+                                tileColor =
+                                    Colors.green; // Correct answer selected
+                              } else if (isSelected && !isCorrect) {
+                                tileColor = Colors.red; // Wrong answer selected
+                              } else if (isCorrect) {
+                                tileColor =
+                                    Colors.green; // Correct answer not selected
+                              } else {
+                                tileColor = Colors.transparent;
+                              }
+                            } else {
+                              tileColor =
+                                  isSelected
+                                      ? AppColors.primary
+                                      : AppColors.accentColor;
+                            }
+
+                            return BorderedContainer(
+                              borderColor: tileColor,
+                              padding: EdgeInsets.zero,
+                              radius: BorderRadius.circular(10),
+                              child: RadioListTile<String>(
+                                value: option,
+                                activeColor: AppColors.primary,
+                                groupValue: selectedAnswer,
+                                onChanged:
+                                    state.isReview
+                                        ? null
+                                        : (value) {
+                                          context.read<QuestionBloc>().add(
+                                            AnswerQuestion(value!),
+                                          );
+                                        },
+                                title: Text(
+                                  option,
+                                  style: TextStyle(
+                                    color:
+                                        state.isReview
+                                            ? isCorrect
+                                                ? Colors.green.shade700
+                                                : isSelected && !isCorrect
+                                                ? Colors.red.shade700
+                                                : Colors.black
+                                            : Colors.black,
+                                  ),
                                 ),
-                              ).padAll(5),
+                              ),
+                            ).padAll(5);
+                          },
                         ),
                         10.hGap,
                         Row(

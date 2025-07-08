@@ -26,6 +26,7 @@ class Question {
 
   factory Question.fromJson(Map<String, dynamic> json) =>
       _$QuestionFromJson(json);
+
   Map<String, dynamic> toJson() => _$QuestionToJson(this);
 
   static List<Question> sampleQuestion() {
@@ -37,13 +38,13 @@ class Question {
         optC: " C. Flutter is a widget library",
         optD: "D. Flutter is a mobile app development platform",
         questionType: 'mcq',
-        correctAnswer: "D. Flutter is a mobile app development platform",
+        correctAnswer: "A. Flutter is a framework",
         explanation:
             "Flutter is not a programming language — it’s a mobile app development framework created by Google. It allows developers to build cross-platform apps using a single codebase in Dart, making it faster and more efficient to develop for Android, iOS, and other platforms.",
       ),
       Question(
         question: """
-        **Match the followning options to countries**
+        **Match the following options to countries**
         | Column A | Column B |
         | --- | --- |
         | 1. Delhi | a. State |
@@ -55,7 +56,7 @@ class Question {
         optC: "C. 2-A,3-B,C-1",
         optD: "D. 2-C,3-A,1-B",
         questionType: 'mtf',
-        correctAnswer: " B. 3-A,2-B,1-C",
+        correctAnswer: "A. 1-A,2-B,3-C",
         explanation:
             "Mitochondria are known as the powerhouse of the cell because they generate energy (ATP) through cellular respiration. This energy is essential for all cell activities.",
       ),
@@ -83,7 +84,7 @@ class Question {
         optC: "C. Ribosome",
         optD: "D. Cytoplasm",
         questionType: 'mcq',
-        correctAnswer: "D. Cytoplasm",
+        correctAnswer: "B. Mitochondria",
         explanation:
             "Mitochondria are known as the powerhouse of the cell because they generate energy (ATP) through cellular respiration. This energy is essential for all cell activities.",
       ),
