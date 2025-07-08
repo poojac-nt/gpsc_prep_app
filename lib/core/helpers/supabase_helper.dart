@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
@@ -161,6 +165,36 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error in deleteUser: $e');
       return false;
+    }
+  }
+
+  // Future<Either<Failure, QuestionLanguageData>> fetchQuestions() async {
+  //   try {
+  //     final questionData = await supabase.from(SupabaseKeys.questions).select();
+  //     final response =
+  //         questionData
+  //             .map((e) => QuestionLanguageData.fromJson(e['question_en']))
+  //             .toList();
+  //
+  //     print(response[0].toString());
+  //     _log.i(response[0].toString());
+  //     return Right(response[0]);
+  //   } catch (e, stackTrace) {
+  //     print("Fetch Error: $e");
+  //     print("StackTrace: $stackTrace");
+  //     return Left(Failure(e.toString()));
+  //   }
+  // }
+
+  Future<Either<Failure, List<DailyTestModel>>> fetchDailyTests() async {
+    try {
+      final response = await supabase.from(SupabaseKeys.tests).select();
+      var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+
+      print(result);
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
     }
   }
 }

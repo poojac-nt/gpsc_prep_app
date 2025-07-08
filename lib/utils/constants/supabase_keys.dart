@@ -6,6 +6,8 @@ abstract class SupabaseKeys {
 
   ///table
   static final String users = 'users';
+  static final String questions = 'questions';
+  static final String tests = 'tests';
 
   ///columns
   static final String email = 'user_email';

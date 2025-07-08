@@ -1,4 +1,4 @@
-import '../../../../domain/entities/question_model.dart';
+import '../../../../domain/entities/question_language_model.dart';
 
 sealed class QuestionEvent {}
 
@@ -21,7 +21,7 @@ class JumpToQuestion extends QuestionEvent {
 class SubmitTest extends QuestionEvent {}
 
 class ReviewTestMode extends QuestionEvent {
-  List<Question> questions;
+  List<QuestionLanguageData> questions;
   List<String?> selectedOption;
   List<bool> answeredStatus;
   ReviewTestMode(this.questions, this.selectedOption, this.answeredStatus);

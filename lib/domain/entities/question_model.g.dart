@@ -6,24 +6,23 @@ part of 'question_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Question _$QuestionFromJson(Map<String, dynamic> json) => Question(
-  question: json['question'] as String,
-  optA: json['optA'] as String,
-  optB: json['optB'] as String,
-  optC: json['optC'] as String,
-  optD: json['optD'] as String,
-  questionType: json['questionType'] as String,
-  correctAnswer: json['correctAnswer'] as String,
-  explanation: json['explanation'] as String,
-);
+QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
+    QuestionModel(
+      questionType: json['questionType'] as String,
+      difficultyLevel: json['difficultyLevel'] as String,
+      topicName: json['topicName'] as String,
+      languages: (json['languages'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry(
+          k,
+          QuestionLanguageData.fromJson(e as Map<String, dynamic>),
+        ),
+      ),
+    );
 
-Map<String, dynamic> _$QuestionToJson(Question instance) => <String, dynamic>{
-  'question': instance.question,
-  'optA': instance.optA,
-  'optB': instance.optB,
-  'optC': instance.optC,
-  'optD': instance.optD,
-  'questionType': instance.questionType,
-  'correctAnswer': instance.correctAnswer,
-  'explanation': instance.explanation,
-};
+Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
+    <String, dynamic>{
+      'questionType': instance.questionType,
+      'difficultyLevel': instance.difficultyLevel,
+      'topicName': instance.topicName,
+      'languages': instance.languages,
+    };

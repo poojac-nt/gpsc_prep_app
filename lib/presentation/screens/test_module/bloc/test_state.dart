@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
-import '../../../../domain/entities/question_model.dart';
+import '../../../../domain/entities/question_language_model.dart';
 
 sealed class QuestionState {}
 
 class QuestionInitial extends QuestionState {}
 
 class QuestionLoaded extends QuestionState {
-  final List<Question> questions;
+  final List<QuestionLanguageData> questions;
   final int currentIndex;
   final List<bool> answeredStatus;
   final List<String?> selectedOption;
@@ -26,10 +26,10 @@ class QuestionLoaded extends QuestionState {
   int get answered => answeredStatus.where((value) => value).toList().length;
   List<String> get options => questions[currentIndex].getOptions();
   String? get currentSelected => selectedOption[currentIndex];
-  Widget get question => questions[currentIndex].toQuestionWidget();
+  // Widget get question => questions[currentIndex].toQuestionWidget();
 
   QuestionLoaded copyWith({
-    List<Question>? questions,
+    List<QuestionLanguageData>? questions,
     int? currentIndex,
     List<bool>? answeredStatus,
     List<String?>? selectedOption,
@@ -52,7 +52,7 @@ class TestSubmitted extends QuestionState {
   final int correct;
   final int inCorrect;
   final bool isReview;
-  final List<Question> questions;
+  final List<QuestionLanguageData> questions;
   final List<String?> selectedOption;
   final List<bool> answeredStatus;
 
@@ -70,7 +70,7 @@ class TestSubmitted extends QuestionState {
 }
 
 class ReviewTest extends QuestionState {
-  final List<Question> questions;
+  final List<QuestionLanguageData> questions;
   final List<String> selectedOption;
   final List<bool> answeredStatus;
 
