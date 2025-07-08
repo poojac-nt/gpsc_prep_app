@@ -63,7 +63,9 @@ void setupBlocs() {
       getIt<LogHelper>(),
     ),
   );
-  getIt.registerLazySingleton<QuestionBloc>(() => QuestionBloc());
+  getIt.registerLazySingleton<QuestionBloc>(
+    () => QuestionBloc(getIt<TestRepository>()),
+  );
   getIt.registerLazySingleton<UploadQuestionsBloc>(() => UploadQuestionsBloc());
   getIt.registerLazySingleton<TimerBloc>(() => TimerBloc());
   getIt.registerLazySingleton<DailyTestBloc>(

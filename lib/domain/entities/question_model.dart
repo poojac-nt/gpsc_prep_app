@@ -5,34 +5,30 @@ part 'question_model.g.dart';
 
 @JsonSerializable()
 class QuestionModel {
-  final String questionType;
-  final String difficultyLevel;
-  final String topicName;
-  final Map<String, QuestionLanguageData> languages;
+  @JsonKey(name: "question_type")
+  String questionType;
+  @JsonKey(name: "difficulty_level")
+  String difficultyLevel;
+  @JsonKey(name: "question_en")
+  QuestionLanguageData questionEn;
+  @JsonKey(name: "question_hi")
+  QuestionLanguageData? questionHi;
+  @JsonKey(name: "question_gj")
+  QuestionLanguageData? questionGj;
+  @JsonKey(name: "created_at")
+  String createdAt;
+
   QuestionModel({
     required this.questionType,
     required this.difficultyLevel,
-    required this.topicName,
-    required this.languages,
+    required this.questionEn,
+    required this.questionHi,
+    required this.questionGj,
+    required this.createdAt,
   });
-  factory QuestionModel.fromJson(Map<String, dynamic> json) {
-    final Map<String, QuestionLanguageData> langMap = {};
-    if (json['languages'] != null) {
-      (json['languages'] as Map<String, dynamic>).forEach((key, value) {
-        langMap[key] = QuestionLanguageData.fromJson(value);
-      });
-    }
-    return QuestionModel(
-      questionType: json['question_type'],
-      difficultyLevel: json['difficulty_level'],
-      topicName: json['topic_name'],
-      languages: langMap,
-    );
-  }
-  Map<String, dynamic> toJson() => {
-    'question_type': questionType,
-    'difficulty_level': difficultyLevel,
-    'topic_name': topicName,
-    'languages': languages.map((key, value) => MapEntry(key, value.toJson())),
-  };
+
+  factory QuestionModel.fromJson(Map<String, dynamic> json) =>
+      _$QuestionModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$QuestionModelToJson(this);
 }

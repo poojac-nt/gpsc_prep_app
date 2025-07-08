@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
@@ -167,23 +168,30 @@ class SupabaseHelper {
     }
   }
 
-  // Future<Either<Failure, QuestionLanguageData>> fetchQuestions() async {
-  //   try {
-  //     final questionData = await supabase.from(SupabaseKeys.questions).select();
-  //     final response =
-  //         questionData
-  //             .map((e) => QuestionLanguageData.fromJson(e['question_en']))
-  //             .toList();
-  //
-  //     print(response[0].toString());
-  //     _log.i(response[0].toString());
-  //     return Right(response[0]);
-  //   } catch (e, stackTrace) {
-  //     print("Fetch Error: $e");
-  //     print("StackTrace: $stackTrace");
-  //     return Left(Failure(e.toString()));
-  //   }
-  // }
+  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions() async {
+    try {
+      final data = await supabase
+          .from(SupabaseKeys.test_questions)
+          .select('questions(*)')
+          .eq('test_id', 9);
+      _log.i("Data: ${data.toString()}");
+      // final questions =
+      //     data.map((e) => QuestionModel.fromJson(e['questions'])).toList();
+      final questions =
+          data
+              .where((e) => e['questions'] != null) // Safety check
+              .map((e) => QuestionModel.fromJson(e['questions']))
+              .where((q) => q.questionEn != null) // Ensure only valid entries
+              .toList();
+      _log.i("Fetched English questions: ${questions.length}");
+
+      return Right(questions);
+    } catch (e, stackTrace) {
+      print("Fetch Error: $e");
+      print("StackTrace: $stackTrace");
+      return Left(Failure(e.toString()));
+    }
+  }
 
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTests() async {
     try {

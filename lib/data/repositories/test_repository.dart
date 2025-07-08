@@ -1,9 +1,11 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 
 import '../../core/di/di.dart';
 import '../../core/error/failure.dart';
+import '../../domain/entities/question_model.dart';
 
 class TestRepository {
   final SupabaseHelper _supabase;
@@ -11,4 +13,7 @@ class TestRepository {
 
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTest() async =>
       await _supabase.fetchDailyTests();
+
+  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions() async =>
+      await _supabase.fetchTestQuestions();
 }

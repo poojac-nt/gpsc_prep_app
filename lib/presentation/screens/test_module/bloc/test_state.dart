@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
+import '../../../../core/error/failure.dart';
 import '../../../../domain/entities/question_language_model.dart';
 
 sealed class QuestionState {}
@@ -13,9 +14,11 @@ class QuestionLoaded extends QuestionState {
   final List<bool> answeredStatus;
   final List<String?> selectedOption;
   final bool isReview;
+  final List<String> questionType;
 
   QuestionLoaded({
     required this.questions,
+    required this.questionType,
     required this.currentIndex,
     required this.answeredStatus,
     required this.selectedOption,
@@ -34,6 +37,7 @@ class QuestionLoaded extends QuestionState {
     List<bool>? answeredStatus,
     List<String?>? selectedOption,
     bool? isReview,
+    List<String>? questionType,
   }) {
     return QuestionLoaded(
       questions: questions ?? this.questions,
@@ -41,8 +45,14 @@ class QuestionLoaded extends QuestionState {
       answeredStatus: answeredStatus ?? this.answeredStatus,
       selectedOption: selectedOption ?? this.selectedOption,
       isReview: isReview ?? this.isReview,
+      questionType: questionType ?? this.questionType,
     );
   }
+}
+
+class QuestionLoadFailed extends QuestionState {
+  final Failure failure;
+  QuestionLoadFailed(this.failure);
 }
 
 class TestSubmitted extends QuestionState {
@@ -76,3 +86,6 @@ class ReviewTest extends QuestionState {
 
   ReviewTest(this.questions, this.selectedOption, this.answeredStatus);
 }
+
+/// test load - test submit(stats) - test review
+/// question load - next question - prev question - jump to question

@@ -8,21 +8,32 @@ part of 'question_model.dart';
 
 QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
     QuestionModel(
-      questionType: json['questionType'] as String,
-      difficultyLevel: json['difficultyLevel'] as String,
-      topicName: json['topicName'] as String,
-      languages: (json['languages'] as Map<String, dynamic>).map(
-        (k, e) => MapEntry(
-          k,
-          QuestionLanguageData.fromJson(e as Map<String, dynamic>),
-        ),
+      questionType: json['question_type'] as String,
+      difficultyLevel: json['difficulty_level'] as String,
+      questionEn: QuestionLanguageData.fromJson(
+        json['question_en'] as Map<String, dynamic>,
       ),
+      questionHi:
+          json['question_hi'] == null
+              ? null
+              : QuestionLanguageData.fromJson(
+                json['question_hi'] as Map<String, dynamic>,
+              ),
+      questionGj:
+          json['question_gj'] == null
+              ? null
+              : QuestionLanguageData.fromJson(
+                json['question_gj'] as Map<String, dynamic>,
+              ),
+      createdAt: json['created_at'] as String,
     );
 
 Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
     <String, dynamic>{
-      'questionType': instance.questionType,
-      'difficultyLevel': instance.difficultyLevel,
-      'topicName': instance.topicName,
-      'languages': instance.languages,
+      'question_type': instance.questionType,
+      'difficulty_level': instance.difficultyLevel,
+      'question_en': instance.questionEn,
+      'question_hi': instance.questionHi,
+      'question_gj': instance.questionGj,
+      'created_at': instance.createdAt,
     };

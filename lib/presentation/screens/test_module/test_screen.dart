@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
@@ -31,7 +32,7 @@ class TestScreen extends StatefulWidget {
 class _TestScreenState extends State<TestScreen> {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
 
-  late List<QuestionLanguageData> questions;
+  late QuestionLanguageData question;
 
   @override
   void initState() {
@@ -94,10 +95,14 @@ class _TestScreenState extends State<TestScreen> {
         builder: (context, state) {
           print("Test$state");
           if (state is QuestionInitial) return Container();
+          if (state is QuestionLoadFailed)
+            return Container(child: Text(state.failure.message));
           if (state is QuestionLoaded) {
-            questions = state.questions;
+            question = state.questions[state.currentIndex];
             String? selectedAnswer = state.selectedOption[state.currentIndex];
-
+            // if (question.isEmpty) {
+            //   return Center(child: Text("No questions found"));
+            // }
             return PopScope(
               onPopInvokedWithResult: (didPop, _) {
                 if (state.isReview) {
@@ -118,10 +123,20 @@ class _TestScreenState extends State<TestScreen> {
                     TestModule(
                       title: "Question ${state.currentIndex + 1}",
                       cards: [
-                        // state.question,
+                        SizedBox(
+                          height: 200.h,
+                          child: state.questions[state.currentIndex].questionTxt
+                              .toQuestionWidget(
+                                state.questionType[state.currentIndex],
+                              ),
+                        ),
+                        // state.questions[state.currentIndex].questionTxt
+                        //     .toQuestionWidget(
+                        //       state.questionType[state.currentIndex],
+                        //     ),
                         10.hGap,
                         ListView.builder(
-                          itemCount: state.options.length,
+                          itemCount: 3,
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
