@@ -6,8 +6,10 @@ import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
 
@@ -43,6 +45,10 @@ void setupRepositories() {
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepository(getIt<SupabaseHelper>()),
   );
+
+  getIt.registerLazySingleton<TestRepository>(
+    () => TestRepository(getIt<SupabaseHelper>()),
+  );
 }
 
 void setupBlocs() {
@@ -60,4 +66,7 @@ void setupBlocs() {
   getIt.registerLazySingleton<QuestionBloc>(() => QuestionBloc());
   getIt.registerLazySingleton<UploadQuestionsBloc>(() => UploadQuestionsBloc());
   getIt.registerLazySingleton<TimerBloc>(() => TimerBloc());
+  getIt.registerLazySingleton<DailyTestBloc>(
+    () => DailyTestBloc(getIt<TestRepository>()),
+  );
 }

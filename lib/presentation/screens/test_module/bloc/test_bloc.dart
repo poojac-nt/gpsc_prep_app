@@ -1,15 +1,19 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
 
 import '../../../../core/di/di.dart';
+import '../../../../core/helpers/log_helper.dart';
 import '../../../../domain/entities/question_language_model.dart';
 
 class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
+  Timer? timer;
+  final supabase = getIt<SupabaseHelper>();
+  final log = getIt<LogHelper>();
+
   QuestionBloc() : super(QuestionInitial()) {
     on<LoadQuestion>(_loadQuestion);
     on<SubmitTest>(_onSubmit);
@@ -19,8 +23,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     on<PrevQuestion>(_prevQuestion);
     on<JumpToQuestion>(_jumpToQuestion);
   }
-
-  Timer? timer;
 
   Future<void> _loadQuestion(
     LoadQuestion event,
@@ -101,11 +103,9 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       final currentState = state as QuestionLoaded;
       final updateSelectedAnswer = [...currentState.selectedOption];
       updateSelectedAnswer[currentState.currentIndex] = event.index;
-      var correct =
-          currentState.questions[currentState.currentIndex].correctAnswer ==
-          updateSelectedAnswer[currentState.currentIndex];
       final updatedAnsweredStatus = [...currentState.answeredStatus];
       updatedAnsweredStatus[currentState.currentIndex] = true;
+
       emit(
         currentState.copyWith(
           answeredStatus: updatedAnsweredStatus,

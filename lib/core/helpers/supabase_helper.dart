@@ -30,7 +30,6 @@ class SupabaseHelper {
   }
 
   ///Login Method
-
   Future<Either<Failure, UserModel>> login(
     String email,
     String password,
@@ -189,12 +188,14 @@ class SupabaseHelper {
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTests() async {
     try {
       final response = await supabase.from(SupabaseKeys.tests).select();
+
       var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
 
-      print(result);
+      _log.i('Total test : ${result.length}');
       return Right(result);
-    } catch (e) {
-      return Left(Failure(e.toString()));
+    } catch (e, s) {
+      _log.e('Error in fetching test: $e', s: s);
+      return Left(Failure("Error fetching test : ${e.toString()}"));
     }
   }
 }
