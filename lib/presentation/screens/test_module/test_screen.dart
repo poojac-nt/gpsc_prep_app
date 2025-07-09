@@ -134,13 +134,17 @@ class _TestScreenState extends State<TestScreen> {
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
+                            print(state.options[index]);
                             final option = state.options[index];
-                            final isSelected = selectedAnswer == option;
                             final correctAnswer =
                                 state
                                     .questions[state.currentIndex]
                                     .correctAnswer;
                             final isCorrect = option == correctAnswer;
+                            // final isCorrect =;
+
+                            final isSelected = selectedAnswer == option;
+
                             Color? tileColor;
                             if (state.isReview) {
                               if (isSelected && isCorrect) {

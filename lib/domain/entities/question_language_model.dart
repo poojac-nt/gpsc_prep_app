@@ -29,8 +29,28 @@ class QuestionLanguageData {
     required this.correctAnswer,
   });
 
-  factory QuestionLanguageData.fromJson(Map<String, dynamic> json) =>
-      _$QuestionLanguageDataFromJson(json);
+  factory QuestionLanguageData.fromJson(Map<String, dynamic> json) {
+    final data = _$QuestionLanguageDataFromJson(json);
+    final correctKey = json['correct_answer'] as String?;
+    // Step 2: Map "option_a" → actual string like "Delhi"
+    final optionMap = {
+      "option_a": data.optA,
+      "option_b": data.optB,
+      "option_c": data.optC,
+      "option_d": data.optD,
+    };
+
+    final correctValue = optionMap[correctKey] ?? '';
+    return QuestionLanguageData(
+      optA: data.optA,
+      optB: data.optB,
+      optC: data.optC,
+      optD: data.optD,
+      explanation: data.explanation,
+      questionTxt: data.questionTxt,
+      correctAnswer: correctValue,
+    );
+  }
 
   Map<String, dynamic> toJson() => _$QuestionLanguageDataToJson(this);
   List<String> getOptions() {

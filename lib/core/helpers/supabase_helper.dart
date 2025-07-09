@@ -177,15 +177,14 @@ class SupabaseHelper {
           .select('questions(*)')
           .eq('test_id', testId);
       _log.i("Data: ${data.toString()}");
-      // final questions =
-      //     data.map((e) => QuestionModel.fromJson(e['questions'])).toList();
+
       final questions =
           data
               .where((e) => e['questions'] != null) // Safety check
               .map((e) => QuestionModel.fromJson(e['questions']))
               .where((q) => q.questionEn != null) // Ensure only valid entries
               .toList();
-      _log.i("Fetched English questions: ${questions.length}");
+      _log.i("Fetched questions: ${questions.length}");
 
       return Right(questions);
     } catch (e, stackTrace) {

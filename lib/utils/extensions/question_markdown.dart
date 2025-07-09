@@ -61,7 +61,7 @@ extension QuestionWidgetFormatter on String {
 
     switch (questionType.toLowerCase()) {
       case 'statement':
-        return _buildStatementWidget(cleanedQuestion);
+        return _buildStatementWidget(this);
       case 'mtf':
         return _buildMtfWidget(cleanedQuestion);
       default:

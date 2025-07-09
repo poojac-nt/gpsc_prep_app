@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
+import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
+import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
 
@@ -19,7 +23,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   QuestionBloc(this._testRepository) : super(QuestionLoading()) {
     on<LoadQuestion>(_loadQuestion);
     on<SubmitTest>(_onSubmit);
-    on<ReviewTestMode>(_onReviewTest);
+    on<ReviewTestEvent>(_onReviewTest);
     on<AnswerQuestion>(_answerQuestion);
     on<NextQuestion>(_nextQuestion);
     on<PrevQuestion>(_prevQuestion);
@@ -83,7 +87,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
           log.i("Question type: ${q.questionType}");
           log.i("EN Question: ${q.questionEn.questionTxt}");
         }
-
         emit(
           QuestionLoaded(
             questions: localizedQuestions,
@@ -172,6 +175,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       final notAttempted = answeredStatus.where((status) => !status).length;
       int correctAnswers = 0;
       int incorrectAnswers = 0;
+      List<bool?> isCorrect = [];
       for (int i = 0; i < currentState.questions.length; i++) {
         final userAnswer = selectedOptions[i];
         final correctAnswer = currentState.questions[i].correctAnswer;
@@ -179,8 +183,10 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         if (userAnswer != null) {
           if (userAnswer.trim() == correctAnswer.trim()) {
             correctAnswers++;
+            isCorrect.add(true);
           } else {
             incorrectAnswers++;
+            isCorrect.add(false);
           }
         }
       }
@@ -195,6 +201,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
           notAttempted: notAttempted,
           correct: correctAnswers,
           inCorrect: incorrectAnswers,
+          isCorrect: isCorrect,
           isReview: currentState.isReview,
         ),
       );
@@ -203,7 +210,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   }
 
   Future<void> _onReviewTest(
-    ReviewTestMode event,
+    ReviewTestEvent event,
     Emitter<QuestionState> emit,
   ) async {
     emit(

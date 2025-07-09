@@ -27,13 +27,13 @@ class JumpToQuestion extends QuestionEvent {
 
 class SubmitTest extends QuestionEvent {}
 
-class ReviewTestMode extends QuestionEvent {
+class ReviewTestEvent extends QuestionEvent {
   List<QuestionLanguageData> questions;
   List<String?> selectedOption;
   List<bool> answeredStatus;
   final List<String> questionType;
 
-  ReviewTestMode(
+  ReviewTestEvent(
     this.questions,
     this.selectedOption,
     this.answeredStatus,

@@ -119,7 +119,7 @@ class ResultScreen extends StatelessWidget {
                           onTap: () {
                             print(state.isReview);
                             context.read<QuestionBloc>().add(
-                              ReviewTestMode(
+                              ReviewTestEvent(
                                 state.questions,
                                 state.selectedOption,
                                 state.answeredStatus,

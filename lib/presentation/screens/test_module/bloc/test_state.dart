@@ -31,8 +31,6 @@ class QuestionLoaded extends QuestionState {
 
   String? get currentSelected => selectedOption[currentIndex];
 
-  // Widget get question => questions[currentIndex].toQuestionWidget();
-
   QuestionLoaded copyWith({
     List<QuestionLanguageData>? questions,
     int? currentIndex,
@@ -67,6 +65,7 @@ class TestSubmitted extends QuestionState {
   final bool isReview;
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOption;
+  final List<bool?> isCorrect;
   final List<bool> answeredStatus;
   final List<String> questionType;
 
@@ -81,13 +80,6 @@ class TestSubmitted extends QuestionState {
     required this.answeredStatus,
     required this.isReview,
     required this.questionType,
+    required this.isCorrect,
   });
-}
-
-class ReviewTest extends QuestionState {
-  final List<QuestionLanguageData> questions;
-  final List<String> selectedOption;
-  final List<bool> answeredStatus;
-
-  ReviewTest(this.questions, this.selectedOption, this.answeredStatus);
 }
