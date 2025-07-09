@@ -4,11 +4,14 @@ sealed class QuestionEvent {}
 
 class LoadQuestion extends QuestionEvent {
   final int testId;
-  LoadQuestion(this.testId);
+  final String? language;
+
+  LoadQuestion(this.testId, this.language);
 }
 
 class AnswerQuestion extends QuestionEvent {
   final String index;
+
   AnswerQuestion(this.index);
 }
 
@@ -18,6 +21,7 @@ class PrevQuestion extends QuestionEvent {}
 
 class JumpToQuestion extends QuestionEvent {
   final int index;
+
   JumpToQuestion(this.index);
 }
 
@@ -27,5 +31,12 @@ class ReviewTestMode extends QuestionEvent {
   List<QuestionLanguageData> questions;
   List<String?> selectedOption;
   List<bool> answeredStatus;
-  ReviewTestMode(this.questions, this.selectedOption, this.answeredStatus);
+  final List<String> questionType;
+
+  ReviewTestMode(
+    this.questions,
+    this.selectedOption,
+    this.answeredStatus,
+    this.questionType,
+  );
 }

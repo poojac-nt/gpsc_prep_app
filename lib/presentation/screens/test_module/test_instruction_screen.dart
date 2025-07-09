@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -13,9 +11,17 @@ import '../../widgets/action_button.dart';
 import 'bloc/test_bloc.dart';
 import 'bloc/test_event.dart';
 
-class TestInstructionScreen extends StatelessWidget {
-  const TestInstructionScreen({super.key, required this.testId});
+class TestInstructionScreen extends StatefulWidget {
+  TestInstructionScreen({super.key, required this.testId});
+
   final int testId;
+
+  @override
+  State<TestInstructionScreen> createState() => _TestInstructionScreenState();
+}
+
+class _TestInstructionScreenState extends State<TestInstructionScreen> {
+  String selectedLanguage = 'en';
 
   @override
   Widget build(BuildContext context) {
@@ -108,10 +114,25 @@ class TestInstructionScreen extends StatelessWidget {
             3.hGap,
             _buildInstructionTile("Click to Submit to finish test"),
             15.hGap,
+            10.hGap,
+            Text("Choose Language", style: AppTexts.labelTextStyle),
+            10.hGap,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _languageButton(context, 'Hindi', 'hi'),
+                _languageButton(context, 'English', 'en'),
+                _languageButton(context, 'Gujarati', 'gj'),
+              ],
+            ),
+            15.hGap,
+
             ActionButton(
               text: "Start Test",
               onTap: () {
-                context.read<QuestionBloc>().add(LoadQuestion(testId));
+                context.read<QuestionBloc>().add(
+                  LoadQuestion(widget.testId, selectedLanguage),
+                );
                 context.push(AppRoutes.testScreen, extra: false);
               },
             ),
@@ -139,6 +160,31 @@ class TestInstructionScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _languageButton(BuildContext context, String label, String code) {
+    final bool isSelected = selectedLanguage == code;
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        backgroundColor: isSelected ? Colors.blue.shade100 : null,
+        side: BorderSide(
+          color: isSelected ? Colors.blue : Colors.grey,
+          width: 2,
+        ),
+      ),
+      onPressed: () {
+        setState(() {
+          selectedLanguage = code;
+        });
+      },
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.blue : Colors.black,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
     );
   }
 }

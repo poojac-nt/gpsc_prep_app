@@ -1,12 +1,8 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:bloc/bloc.dart';
-import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
-import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
 
@@ -36,55 +32,76 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   ) async {
     final result = await _testRepository.fetchTestQuestions(event.testId);
 
-    List<QuestionLanguageData> q1 = [];
-
     result.fold(
       (failure) {
-        print("FAiled to load questions");
+        print("Failed to load questions: $failure");
+        emit(QuestionLoadFailed(failure));
       },
       (questions) {
-        q1 = questions.map((e) => e.questionEn).toList();
+        List<QuestionLanguageData> localizedQuestions = [];
+        List<String> questionType = [];
+
+        switch (event.language) {
+          case 'hi':
+            localizedQuestions =
+                questions
+                    .map((e) => e.questionHi)
+                    .whereType<QuestionLanguageData>()
+                    .toList();
+            break;
+          case 'en':
+            localizedQuestions =
+                questions
+                    .map((e) => e.questionEn)
+                    .whereType<QuestionLanguageData>()
+                    .toList();
+            break;
+          case 'gj':
+            localizedQuestions =
+                questions
+                    .map((e) => e.questionGj)
+                    .whereType<QuestionLanguageData>()
+                    .toList();
+            break;
+          default:
+            emit(QuestionLoadFailed(Failure("Unsupported language")));
+            return;
+        }
+
         questionType = questions.map((e) => e.questionType).toList();
 
-        if (q1.isEmpty) {
-          emit(QuestionLoadFailed(Failure("No English questions available")));
+        if (localizedQuestions.isEmpty) {
+          emit(
+            QuestionLoadFailed(
+              Failure("No questions available in selected language"),
+            ),
+          );
           return;
         }
-        questions.forEach((q) {
+
+        for (var q in questions) {
           log.i("Question type: ${q.questionType}");
-          log.i("EN Question: ${q.questionEn?.questionTxt}");
-        });
+          log.i("EN Question: ${q.questionEn.questionTxt}");
+        }
+
         emit(
           QuestionLoaded(
-            questions: q1,
+            questions: localizedQuestions,
             questionType: questionType,
             currentIndex: 0,
             isReview: false,
-            selectedOption: List.generate(q1.length, (_) => null),
-            answeredStatus: List.generate(q1.length, (_) => false),
+            selectedOption: List.generate(
+              localizedQuestions.length,
+              (_) => null,
+            ),
+            answeredStatus: List.generate(
+              localizedQuestions.length,
+              (_) => false,
+            ),
           ),
         );
       },
     );
-    // emit(
-    //   QuestionLoaded(
-    //     questions: q1,
-    //     questionType: questionType,
-    //     currentIndex: 0,
-    //     isReview: false,
-    //     selectedOption: List.generate(q1.length, (_) => null),
-    //     answeredStatus: List.generate(q1.length, (_) => false),
-    //   ),
-    // );
-    // emit(
-    //   QuestionLoaded(
-    //     questions: questions,
-    //     currentIndex: 0,
-    //     isReview: false,
-    //     selectedOption: List.generate(questions.length, (_) => null),
-    //     answeredStatus: List.generate(questions.length, (_) => false),
-    //   ),
-    // );
   }
 
   Future<void> _answerQuestion(
@@ -173,6 +190,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
           questions: currentState.questions,
           selectedOption: selectedOptions,
           totalQuestions: totalQuestions,
+          questionType: currentState.questionType,
           attempted: attempted,
           notAttempted: notAttempted,
           correct: correctAnswers,
@@ -192,7 +210,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       QuestionLoaded(
         questions: event.questions,
         currentIndex: 0,
-        questionType: questionType,
+        questionType: event.questionType,
         answeredStatus: event.answeredStatus,
         selectedOption: event.selectedOption,
         isReview: true,

@@ -33,6 +33,7 @@ class ResultScreen extends StatelessWidget {
     Colors.blue.shade500,
     Colors.cyan.shade500,
   ];
+
   String totalTime(BuildContext context) {
     var timerState = context.read<TimerBloc>().state;
     int mins = timerState is TimerStopped ? timerState.totalMins : 0;
@@ -122,6 +123,7 @@ class ResultScreen extends StatelessWidget {
                                 state.questions,
                                 state.selectedOption,
                                 state.answeredStatus,
+                                state.questionType,
                               ),
                             );
                             context.push(AppRoutes.testScreen, extra: true);

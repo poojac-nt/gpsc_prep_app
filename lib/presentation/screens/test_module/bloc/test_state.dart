@@ -24,9 +24,13 @@ class QuestionLoaded extends QuestionState {
 
   double get progress =>
       questions.length <= 1 ? 1.0 : currentIndex + 1 / questions.length;
+
   int get answered => answeredStatus.where((value) => value).toList().length;
+
   List<String> get options => questions[currentIndex].getOptions();
+
   String? get currentSelected => selectedOption[currentIndex];
+
   // Widget get question => questions[currentIndex].toQuestionWidget();
 
   QuestionLoaded copyWith({
@@ -50,6 +54,7 @@ class QuestionLoaded extends QuestionState {
 
 class QuestionLoadFailed extends QuestionState {
   final Failure failure;
+
   QuestionLoadFailed(this.failure);
 }
 
@@ -63,6 +68,7 @@ class TestSubmitted extends QuestionState {
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOption;
   final List<bool> answeredStatus;
+  final List<String> questionType;
 
   TestSubmitted({
     required this.totalQuestions,
@@ -74,6 +80,7 @@ class TestSubmitted extends QuestionState {
     required this.selectedOption,
     required this.answeredStatus,
     required this.isReview,
+    required this.questionType,
   });
 }
 
