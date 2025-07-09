@@ -128,7 +128,7 @@ class _TestScreenState extends State<TestScreen> {
                             ),
                         10.hGap,
                         ListView.builder(
-                          itemCount: 3,
+                          itemCount: state.options.length,
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
