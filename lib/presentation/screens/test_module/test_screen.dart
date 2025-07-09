@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
@@ -16,6 +17,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'bloc/test_bloc.dart';
 import 'bloc/test_state.dart';
@@ -52,6 +54,66 @@ class _TestScreenState extends State<TestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text(
+                        "Confirm Exit",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: Text(
+                    "Do you really want to leave the test in between?",
+                    style: TextStyle(fontSize: 15, color: Colors.black54),
+                  ),
+                  actions: [
+                    TextButton(
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close dialog
+                      },
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        "Yes, Leave",
+                        style: AppTexts.title.copyWith(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        context.pop(); // Close dialog
+                        context.pushReplacement(AppRoutes.home);
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
         title: Text("Daily Test", style: AppTexts.titleTextStyle),
         actions: [
           widget.isFromResult
@@ -76,8 +138,8 @@ class _TestScreenState extends State<TestScreen> {
                           );
                         }
                         if (state is TimerStopped) {
-                          print(state.totalMins);
-                          print(state.totalSecs);
+                          getIt<LogHelper>().w(state.totalMins.toString());
+                          getIt<LogHelper>().w(state.totalSecs.toString());
                           return SizedBox.shrink();
                         }
                         return Text('00:00');
@@ -96,8 +158,51 @@ class _TestScreenState extends State<TestScreen> {
         },
         builder: (context, state) {
           if (state is QuestionLoading) {
-            return Center(child: CircularProgressIndicator());
+            return Padding(
+              padding: EdgeInsets.all(AppPaddings.defaultPadding),
+              child: Skeletonizer(
+                enabled: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Fake progress bar
+                    CustomProgressBar(
+                      text: "Question 1 of 10",
+                      value: 0.1,
+                      percentageText: "0 Answered",
+                    ),
+                    20.hGap,
+                    // Question Title
+                    TestModule(
+                      title: "Question 1",
+                      cards: [
+                        // Fake question
+                        Text("This is a sample question text."),
+                        10.hGap,
+                        // Fake options
+                        Column(
+                          children: List.generate(4, (index) {
+                            return BorderedContainer(
+                              padding: EdgeInsets.zero,
+                              radius: BorderRadius.circular(10),
+                              borderColor: AppColors.accentColor,
+                              child: RadioListTile<String>(
+                                value: 'Option $index',
+                                groupValue: null,
+                                onChanged: null,
+                                title: Text("Option $index"),
+                              ),
+                            ).padAll(5);
+                          }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
+
           if (state is QuestionLoadFailed) {
             _snackBar.showError(state.failure.message);
           }
@@ -107,7 +212,7 @@ class _TestScreenState extends State<TestScreen> {
             return PopScope(
               onPopInvokedWithResult: (didPop, _) {
                 if (state.isReview) {
-                  print('isreview called : ${state.isReview}');
+                  getIt<LogHelper>().w('isReview called : ${state.isReview}');
                   context.read<QuestionBloc>().add(SubmitTest());
                 }
               },
@@ -205,6 +310,10 @@ class _TestScreenState extends State<TestScreen> {
                             Expanded(
                               flex: 1,
                               child: ActionButton(
+                                backgroundColor:
+                                    state.currentIndex == 0
+                                        ? Colors.grey
+                                        : AppColors.primary,
                                 text: "Previous",
                                 onTap: () {
                                   state.currentIndex > 0
@@ -213,10 +322,7 @@ class _TestScreenState extends State<TestScreen> {
                                       )
                                       : null;
                                 },
-                                fontColor:
-                                    state.currentIndex == 0
-                                        ? Colors.grey
-                                        : Colors.white,
+                                fontColor: Colors.white,
                               ),
                             ),
                             20.wGap,
@@ -240,14 +346,110 @@ class _TestScreenState extends State<TestScreen> {
                                       );
                                     } else {
                                       if (!state.isReview) {
-                                        context.read<TimerBloc>().add(
-                                          TimerStop(),
-                                        );
-                                        context.read<QuestionBloc>().add(
-                                          SubmitTest(),
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            final total =
+                                                state.questions.length;
+                                            final attempted =
+                                                state.answeredStatus
+                                                    .where((status) => status)
+                                                    .length;
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              title: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.warning_amber_rounded,
+                                                    color: Colors.orange,
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    "Submit Test",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "You have attempted $attempted out of $total questions.",
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 12),
+                                                  Text(
+                                                    "Are you sure you want to submit the test?",
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      color: Colors.black54,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  child: Text(
+                                                    "Cancel",
+                                                    style: TextStyle(
+                                                      color: Colors.grey[700],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(
+                                                      context,
+                                                    ).pop(); // close dialog
+                                                  },
+                                                ),
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        AppColors.primary,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    "Submit",
+                                                    style: AppTexts.title
+                                                        .copyWith(
+                                                          color: Colors.white,
+                                                        ),
+                                                  ),
+                                                  onPressed: () {
+                                                    context
+                                                        .pop(); // close dialog
+                                                    context
+                                                        .read<TimerBloc>()
+                                                        .add(TimerStop());
+                                                    context
+                                                        .read<QuestionBloc>()
+                                                        .add(SubmitTest());
+                                                  },
+                                                ),
+                                              ],
+                                            );
+                                          },
                                         );
                                       } else {
-                                        context.pop();
+                                        context.pop(); // Go back from review
                                       }
                                     }
                                   },

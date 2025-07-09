@@ -37,6 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: AppBorders.borderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Padding(
                 padding: EdgeInsets.all(20.sp),

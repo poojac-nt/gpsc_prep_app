@@ -8,7 +8,7 @@ class TestTile extends StatelessWidget {
   const TestTile({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle = '',
     required this.onTap,
     required this.buttonTitle,
     this.widgets = const <Widget>[],
@@ -34,7 +34,9 @@ class TestTile extends StatelessWidget {
             children: [
               Text(title, style: AppTexts.title),
               10.wGap,
-              Text(subtitle, style: AppTexts.subTitle),
+              subtitle == ''
+                  ? SizedBox.shrink()
+                  : Text(subtitle, style: AppTexts.subTitle),
             ],
           ),
           if (widgets.isNotEmpty) 10.wGap,

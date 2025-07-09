@@ -1,10 +1,7 @@
-import 'dart:math';
-
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
-import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
@@ -185,7 +182,7 @@ class SupabaseHelper {
               .where((q) => q.questionEn != null) // Ensure only valid entries
               .toList();
       _log.i("Fetched questions: ${questions.length}");
-
+      Future.delayed(Duration(seconds: 30));
       return Right(questions);
     } catch (e, stackTrace) {
       print("Fetch Error: $e");

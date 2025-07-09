@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'bloc/daily_test_bloc.dart';
 import 'bloc/daily_test_event.dart';
@@ -24,7 +25,6 @@ class MCQTestScreen extends StatefulWidget {
 class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     context.read<DailyTestBloc>().add(FetchDailyTest());
     super.initState();
   }
@@ -46,7 +46,118 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is DailyTestFetching) {
-            return Center(child: CircularProgressIndicator());
+            return Padding(
+              padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+              child: Skeletonizer(
+                enabled: true,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Available Tests', style: AppTexts.heading),
+                          IntrinsicWidth(
+                            child: ActionButton(
+                              text: 'Generate Test',
+                              onTap: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+                      10.hGap,
+                      // Fake Daily Tests Section
+                      TestModule(
+                        title: "Daily Tests",
+                        subtitle: "Subject-based Daily Practice",
+                        prefixIcon: Icons.calendar_today_outlined,
+                        cards: List.generate(
+                          3,
+                          (index) => Skeleton.ignorePointer(
+                            child: TestTile(
+                              title: "Test Title Placeholder",
+                              onTap: () {},
+                              buttonTitle: "Start",
+                            ).padSymmetric(vertical: 6.h),
+                          ),
+                        ),
+                      ),
+                      10.hGap,
+                      // Fake Mock Tests Section
+                      TestModule(
+                        title: "Mock Tests",
+                        subtitle: "Full Length practice Exams",
+                        prefixIcon: Icons.description_outlined,
+                        cards: [
+                          TestTile(
+                            title: "Mock Test Placeholder",
+                            subtitle: "100 Questions . 2 hours",
+                            widgets: [
+                              Skeleton.shade(
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 1,
+                                    ),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Icon(
+                                    Icons.file_download_outlined,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onTap: () {},
+                            buttonTitle: 'Start',
+                          ),
+                        ],
+                      ),
+                      10.hGap,
+                      // Fake Offline Mode Section
+                      TestModule(
+                        title: 'Offline Mode',
+                        subtitle: 'Download tests for offline Practice',
+                        prefixIcon: Icons.file_download_outlined,
+                        cards: [
+                          BorderedContainer(
+                            borderColor: AppColors.accentColor,
+                            padding: EdgeInsets.all(5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.file_download_outlined),
+                                10.wGap,
+                                Text(
+                                  'Download PDF Test',
+                                  style: AppTexts.title,
+                                ),
+                              ],
+                            ),
+                          ),
+                          10.hGap,
+                          BorderedContainer(
+                            borderColor: AppColors.accentColor,
+                            padding: EdgeInsets.all(5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.file_upload_outlined),
+                                10.wGap,
+                                Text('Upload Answers', style: AppTexts.title),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
           } else if (state is DailyTestFetchFailed) {
             return Center(child: Text(state.failure.message));
           } else if (state is DailyTestFetched) {
@@ -79,8 +190,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                         itemBuilder:
                             (context, index) => TestTile(
                               title: state.dailyTestModel[index].name,
-                              subtitle:
-                                  "${state.dailyTestModel[index].noQuestions} Questions . ${state.dailyTestModel[index].duration} min",
                               onTap:
                                   () => context.pushReplacement(
                                     AppRoutes.testInstructionScreen,
