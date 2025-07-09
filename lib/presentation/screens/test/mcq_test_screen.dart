@@ -84,6 +84,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                               onTap:
                                   () => context.pushReplacement(
                                     AppRoutes.testInstructionScreen,
+                                    extra: state.dailyTestModel[index].id,
                                   ),
                               buttonTitle: 'Start',
                             ).padSymmetric(vertical: 6.h),

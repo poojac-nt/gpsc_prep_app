@@ -1,12 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
-
 import '../../../../core/error/failure.dart';
 import '../../../../domain/entities/question_language_model.dart';
 
 sealed class QuestionState {}
 
-class QuestionInitial extends QuestionState {}
+class QuestionLoading extends QuestionState {}
 
 class QuestionLoaded extends QuestionState {
   final List<QuestionLanguageData> questions;
@@ -25,7 +22,8 @@ class QuestionLoaded extends QuestionState {
     this.isReview = false,
   });
 
-  double get progress => currentIndex / (questions.length - 1);
+  double get progress =>
+      questions.length <= 1 ? 1.0 : currentIndex + 1 / questions.length;
   int get answered => answeredStatus.where((value) => value).toList().length;
   List<String> get options => questions[currentIndex].getOptions();
   String? get currentSelected => selectedOption[currentIndex];
@@ -86,6 +84,3 @@ class ReviewTest extends QuestionState {
 
   ReviewTest(this.questions, this.selectedOption, this.answeredStatus);
 }
-
-/// test load - test submit(stats) - test review
-/// question load - next question - prev question - jump to question

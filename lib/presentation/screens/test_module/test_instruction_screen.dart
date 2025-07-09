@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -12,7 +14,8 @@ import 'bloc/test_bloc.dart';
 import 'bloc/test_event.dart';
 
 class TestInstructionScreen extends StatelessWidget {
-  const TestInstructionScreen({super.key});
+  const TestInstructionScreen({super.key, required this.testId});
+  final int testId;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +111,7 @@ class TestInstructionScreen extends StatelessWidget {
             ActionButton(
               text: "Start Test",
               onTap: () {
-                context.read<QuestionBloc>().add(LoadQuestion());
+                context.read<QuestionBloc>().add(LoadQuestion(testId));
                 context.push(AppRoutes.testScreen, extra: false);
               },
             ),

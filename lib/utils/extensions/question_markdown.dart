@@ -76,16 +76,16 @@ extension QuestionWidgetFormatter on String {
 
   /// Statement Question Widget
   Widget _buildStatementWidget(String data) {
-    return MarkdownWidget(data: data);
+    return MarkdownWidget(shrinkWrap: true, data: data);
   }
 
   /// Match the Following (MTF) Widget
   Widget _buildMtfWidget(String data) {
-    return MarkdownWidget(data: data);
+    return MarkdownWidget(shrinkWrap: true, data: data);
   }
 
   /// Simple MCQ Widget
   Widget _buildMcqWidget(String data) {
-    return MarkdownWidget(data: data);
+    return MarkdownWidget(shrinkWrap: true, data: data);
   }
 }

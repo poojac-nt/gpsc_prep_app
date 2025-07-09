@@ -50,14 +50,11 @@ Future<void> main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => getIt<AuthBloc>()),
-          BlocProvider(
-            create: (_) => getIt<QuestionBloc>()..add(LoadQuestion()),
-          ),
+          BlocProvider(create: (_) => getIt<QuestionBloc>()),
+
           BlocProvider(create: (_) => getIt<EditProfileBloc>()),
           BlocProvider(create: (_) => getIt<UploadQuestionsBloc>()),
-          BlocProvider(
-            create: (_) => getIt<QuestionBloc>()..add(LoadQuestion()),
-          ),
+
           BlocProvider(create: (_) => getIt<TimerBloc>()),
           BlocProvider(create: (_) => getIt<DailyTestBloc>()),
         ],

@@ -168,12 +168,14 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions() async {
+  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions(
+    int testId,
+  ) async {
     try {
       final data = await supabase
           .from(SupabaseKeys.test_questions)
           .select('questions(*)')
-          .eq('test_id', 9);
+          .eq('test_id', testId);
       _log.i("Data: ${data.toString()}");
       // final questions =
       //     data.map((e) => QuestionModel.fromJson(e['questions'])).toList();

@@ -2,7 +2,10 @@ import '../../../../domain/entities/question_language_model.dart';
 
 sealed class QuestionEvent {}
 
-class LoadQuestion extends QuestionEvent {}
+class LoadQuestion extends QuestionEvent {
+  final int testId;
+  LoadQuestion(this.testId);
+}
 
 class AnswerQuestion extends QuestionEvent {
   final String index;

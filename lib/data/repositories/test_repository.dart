@@ -14,6 +14,7 @@ class TestRepository {
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTest() async =>
       await _supabase.fetchDailyTests();
 
-  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions() async =>
-      await _supabase.fetchTestQuestions();
+  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions(
+    int testID,
+  ) async => await _supabase.fetchTestQuestions(testID);
 }

@@ -93,16 +93,15 @@ class _TestScreenState extends State<TestScreen> {
           }
         },
         builder: (context, state) {
-          print("Test$state");
-          if (state is QuestionInitial) return Container();
-          if (state is QuestionLoadFailed)
+          if (state is QuestionLoading) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (state is QuestionLoadFailed) {
             return Container(child: Text(state.failure.message));
+          }
           if (state is QuestionLoaded) {
             question = state.questions[state.currentIndex];
             String? selectedAnswer = state.selectedOption[state.currentIndex];
-            // if (question.isEmpty) {
-            //   return Center(child: Text("No questions found"));
-            // }
             return PopScope(
               onPopInvokedWithResult: (didPop, _) {
                 if (state.isReview) {
@@ -123,17 +122,10 @@ class _TestScreenState extends State<TestScreen> {
                     TestModule(
                       title: "Question ${state.currentIndex + 1}",
                       cards: [
-                        SizedBox(
-                          height: 200.h,
-                          child: state.questions[state.currentIndex].questionTxt
-                              .toQuestionWidget(
-                                state.questionType[state.currentIndex],
-                              ),
-                        ),
-                        // state.questions[state.currentIndex].questionTxt
-                        //     .toQuestionWidget(
-                        //       state.questionType[state.currentIndex],
-                        //     ),
+                        state.questions[state.currentIndex].questionTxt
+                            .toQuestionWidget(
+                              state.questionType[state.currentIndex],
+                            ),
                         10.hGap,
                         ListView.builder(
                           itemCount: 3,
@@ -267,9 +259,12 @@ class _TestScreenState extends State<TestScreen> {
                           cards: [
                             Padding(
                               padding: EdgeInsets.only(left: 6.w),
-                              child: Text(
-                                state.questions[state.currentIndex].explanation,
-                              ),
+                              child: state
+                                  .questions[state.currentIndex]
+                                  .explanation
+                                  .toQuestionWidget(
+                                    state.questionType[state.currentIndex],
+                                  ),
                             ),
                           ],
                         )
