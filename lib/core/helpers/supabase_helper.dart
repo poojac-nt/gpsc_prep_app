@@ -193,7 +193,10 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTests() async {
     try {
-      final response = await supabase.from(SupabaseKeys.tests).select();
+      final response = await supabase
+          .from(SupabaseKeys.tests)
+          .select()
+          .order('id', ascending: false);
 
       var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
 

@@ -190,6 +190,8 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                         itemBuilder:
                             (context, index) => TestTile(
                               title: state.dailyTestModel[index].name,
+                              subtitle:
+                                  "${state.dailyTestModel[index].noQuestions} Questions . ${state.dailyTestModel[index].duration} min",
                               onTap:
                                   () => context.pushReplacement(
                                     AppRoutes.testInstructionScreen,
