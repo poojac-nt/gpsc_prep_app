@@ -90,7 +90,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         emit(
           QuestionLoaded(
             questions: localizedQuestions,
-            questionType: questionType,
             currentIndex: 0,
             isReview: false,
             selectedOption: List.generate(
@@ -198,7 +197,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
           questions: currentState.questions,
           selectedOption: selectedOptions,
           totalQuestions: totalQuestions,
-          questionType: currentState.questionType,
           attempted: attempted,
           notAttempted: notAttempted,
           correct: correctAnswers,
@@ -220,7 +218,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         questions: event.questions,
         currentIndex: 0,
         isCorrect: event.isCorrect,
-        questionType: event.questionType,
         answeredStatus: event.answeredStatus,
         selectedOption: event.selectedOption,
         isReview: true,

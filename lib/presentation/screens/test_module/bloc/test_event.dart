@@ -31,14 +31,12 @@ class ReviewTestEvent extends QuestionEvent {
   List<QuestionLanguageData> questions;
   List<String?> selectedOption;
   List<bool> answeredStatus;
-  final List<String> questionType;
   List<bool?> isCorrect;
 
   ReviewTestEvent(
     this.questions,
     this.selectedOption,
     this.answeredStatus,
-    this.questionType,
     this.isCorrect,
   );
 }

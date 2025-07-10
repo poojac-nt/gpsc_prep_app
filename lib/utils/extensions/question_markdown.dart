@@ -56,36 +56,7 @@ import 'package:markdown_widget/markdown_widget.dart';
 // }
 extension QuestionWidgetFormatter on String {
   /// Converts a question string into a Markdown widget based on its type.
-  Widget toQuestionWidget(String questionType) {
-    final cleanedQuestion = _cleanWhitespace(this);
-
-    switch (questionType.toLowerCase()) {
-      case 'statement':
-        return _buildStatementWidget(this);
-      case 'mtf':
-        return _buildMtfWidget(cleanedQuestion);
-      default:
-        return _buildMcqWidget(cleanedQuestion);
-    }
-  }
-
-  /// Clean leading whitespace from each line
-  String _cleanWhitespace(String text) {
-    return text.replaceAll(RegExp(r'^\s+', multiLine: true), '');
-  }
-
-  /// Statement Question Widget
-  Widget _buildStatementWidget(String data) {
-    return MarkdownWidget(shrinkWrap: true, data: data);
-  }
-
-  /// Match the Following (MTF) Widget
-  Widget _buildMtfWidget(String data) {
-    return MarkdownWidget(shrinkWrap: true, data: data);
-  }
-
-  /// Simple MCQ Widget
-  Widget _buildMcqWidget(String data) {
-    return MarkdownWidget(shrinkWrap: true, data: data);
+  Widget toQuestionWidget() {
+    return MarkdownWidget(shrinkWrap: true, data: this);
   }
 }

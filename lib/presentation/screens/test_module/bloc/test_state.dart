@@ -11,12 +11,10 @@ class QuestionLoaded extends QuestionState {
   final List<bool> answeredStatus;
   final List<String?> selectedOption;
   final bool isReview;
-  final List<String> questionType;
   List<bool?>? isCorrect;
 
   QuestionLoaded({
     required this.questions,
-    required this.questionType,
     required this.currentIndex,
     required this.answeredStatus,
     required this.selectedOption,
@@ -39,7 +37,6 @@ class QuestionLoaded extends QuestionState {
     List<bool>? answeredStatus,
     List<String?>? selectedOption,
     bool? isReview,
-    List<String>? questionType,
     List<bool?>? isCorrect,
   }) {
     return QuestionLoaded(
@@ -48,7 +45,6 @@ class QuestionLoaded extends QuestionState {
       answeredStatus: answeredStatus ?? this.answeredStatus,
       selectedOption: selectedOption ?? this.selectedOption,
       isReview: isReview ?? this.isReview,
-      questionType: questionType ?? this.questionType,
       isCorrect: isCorrect ?? this.isCorrect,
     );
   }
@@ -71,7 +67,6 @@ class TestSubmitted extends QuestionState {
   final List<String?> selectedOption;
   final List<bool?> isCorrect;
   final List<bool> answeredStatus;
-  final List<String> questionType;
 
   TestSubmitted({
     required this.totalQuestions,
@@ -83,7 +78,6 @@ class TestSubmitted extends QuestionState {
     required this.selectedOption,
     required this.answeredStatus,
     required this.isReview,
-    required this.questionType,
     required this.isCorrect,
   });
 }

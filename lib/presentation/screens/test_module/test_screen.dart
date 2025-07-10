@@ -230,9 +230,7 @@ class _TestScreenState extends State<TestScreen> {
                       title: "Question ${state.currentIndex + 1}",
                       cards: [
                         state.questions[state.currentIndex].questionTxt
-                            .toQuestionWidget(
-                              state.questionType[state.currentIndex],
-                            ),
+                            .toQuestionWidget(),
                         10.hGap,
                         ListView.builder(
                           itemCount: state.options.length,
@@ -253,7 +251,10 @@ class _TestScreenState extends State<TestScreen> {
                               } else if (isSelected && !isCorrect!) {
                                 tileColor = Colors.red; // Wrong answer selected
                                 textColor = Colors.red.shade700;
-                              } else if (isSelected) {
+                              } else if (state
+                                      .questions[state.currentIndex]
+                                      .correctAnswer ==
+                                  option) {
                                 tileColor =
                                     Colors.green; // Correct answer not selected
                               } else {
@@ -460,12 +461,11 @@ class _TestScreenState extends State<TestScreen> {
                           cards: [
                             Padding(
                               padding: EdgeInsets.only(left: 6.w),
-                              child: state
-                                  .questions[state.currentIndex]
-                                  .explanation
-                                  .toQuestionWidget(
-                                    state.questionType[state.currentIndex],
-                                  ),
+                              child:
+                                  state
+                                      .questions[state.currentIndex]
+                                      .explanation
+                                      .toQuestionWidget(),
                             ),
                           ],
                         )

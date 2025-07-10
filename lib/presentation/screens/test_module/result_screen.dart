@@ -123,7 +123,6 @@ class ResultScreen extends StatelessWidget {
                                 state.questions,
                                 state.selectedOption,
                                 state.answeredStatus,
-                                state.questionType,
                                 state.isCorrect,
                               ),
                             );
