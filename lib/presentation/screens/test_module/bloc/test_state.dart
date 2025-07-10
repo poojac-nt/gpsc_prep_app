@@ -12,6 +12,7 @@ class QuestionLoaded extends QuestionState {
   final List<String?> selectedOption;
   final bool isReview;
   final List<String> questionType;
+  List<bool?>? isCorrect;
 
   QuestionLoaded({
     required this.questions,
@@ -19,6 +20,7 @@ class QuestionLoaded extends QuestionState {
     required this.currentIndex,
     required this.answeredStatus,
     required this.selectedOption,
+    this.isCorrect,
     this.isReview = false,
   });
 
@@ -38,6 +40,7 @@ class QuestionLoaded extends QuestionState {
     List<String?>? selectedOption,
     bool? isReview,
     List<String>? questionType,
+    List<bool?>? isCorrect,
   }) {
     return QuestionLoaded(
       questions: questions ?? this.questions,
@@ -46,6 +49,7 @@ class QuestionLoaded extends QuestionState {
       selectedOption: selectedOption ?? this.selectedOption,
       isReview: isReview ?? this.isReview,
       questionType: questionType ?? this.questionType,
+      isCorrect: isCorrect ?? this.isCorrect,
     );
   }
 }

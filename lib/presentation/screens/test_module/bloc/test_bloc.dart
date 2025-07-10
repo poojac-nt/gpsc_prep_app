@@ -188,6 +188,8 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
             incorrectAnswers++;
             isCorrect.add(false);
           }
+        } else {
+          isCorrect.add(null);
         }
       }
       emit(
@@ -217,6 +219,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       QuestionLoaded(
         questions: event.questions,
         currentIndex: 0,
+        isCorrect: event.isCorrect,
         questionType: event.questionType,
         answeredStatus: event.answeredStatus,
         selectedOption: event.selectedOption,

@@ -239,25 +239,21 @@ class _TestScreenState extends State<TestScreen> {
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
-                            print(state.options[index]);
                             final option = state.options[index];
-                            final correctAnswer =
-                                state
-                                    .questions[state.currentIndex]
-                                    .correctAnswer;
-                            final isCorrect = option == correctAnswer;
-                            // final isCorrect =;
-
                             final isSelected = selectedAnswer == option;
-
                             Color? tileColor;
+                            Color? textColor;
                             if (state.isReview) {
-                              if (isSelected && isCorrect) {
+                              final isCorrect =
+                                  state.isCorrect![state.currentIndex];
+                              if (isSelected && isCorrect!) {
                                 tileColor =
                                     Colors.green; // Correct answer selected
-                              } else if (isSelected && !isCorrect) {
+                                textColor = Colors.green.shade700;
+                              } else if (isSelected && !isCorrect!) {
                                 tileColor = Colors.red; // Wrong answer selected
-                              } else if (isCorrect) {
+                                textColor = Colors.red.shade700;
+                              } else if (isSelected) {
                                 tileColor =
                                     Colors.green; // Correct answer not selected
                               } else {
@@ -268,6 +264,7 @@ class _TestScreenState extends State<TestScreen> {
                                   isSelected
                                       ? AppColors.primary
                                       : AppColors.accentColor;
+                              textColor = Colors.black;
                             }
 
                             return BorderedContainer(
@@ -291,11 +288,7 @@ class _TestScreenState extends State<TestScreen> {
                                   style: TextStyle(
                                     color:
                                         state.isReview
-                                            ? isCorrect
-                                                ? Colors.green.shade700
-                                                : isSelected && !isCorrect
-                                                ? Colors.red.shade700
-                                                : Colors.black
+                                            ? textColor
                                             : Colors.black,
                                   ),
                                 ),

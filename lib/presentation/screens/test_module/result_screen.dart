@@ -124,6 +124,7 @@ class ResultScreen extends StatelessWidget {
                                 state.selectedOption,
                                 state.answeredStatus,
                                 state.questionType,
+                                state.isCorrect,
                               ),
                             );
                             context.push(AppRoutes.testScreen, extra: true);
