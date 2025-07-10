@@ -1,4 +1,4 @@
-part of 'daily_test_bloc.dart';
+
 
 sealed class DailyTestEvent {}
 

@@ -140,7 +140,7 @@ class ResultScreen extends StatelessWidget {
                   iconColor: Colors.green,
                 ).padAll(AppPaddings.defaultPadding);
               }
-              return Container();
+              return SizedBox.shrink();
             },
           ),
         ),
