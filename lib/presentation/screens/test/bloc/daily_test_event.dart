@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+part of 'daily_test_bloc.dart';
 
 sealed class DailyTestEvent {}
 

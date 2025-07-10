@@ -7,7 +7,8 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_indicator.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_navigator_btn.dart';
@@ -19,13 +20,17 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'bloc/test_bloc.dart';
-import 'bloc/test_state.dart';
 import 'bloc/timer/timer_bloc.dart';
 import 'bloc/timer/timer_state.dart';
 
 class TestScreen extends StatefulWidget {
-  const TestScreen({super.key, this.isFromResult = false});
+  const TestScreen({
+    super.key,
+    this.isFromResult = false,
+    required this.testId,
+  });
+
+  final int? testId;
 
   final bool isFromResult;
 
@@ -152,9 +157,9 @@ class _TestScreenState extends State<TestScreen> {
       ),
       body: BlocConsumer<QuestionBloc, QuestionState>(
         listener: (context, state) {
-          if (state is TestSubmitted && !state.isReview) {
-            context.pushReplacement(AppRoutes.resultScreen);
-          }
+          // if (state is TestSubmitted) {
+          //   context.pushReplacement(AppRoutes.resultScreen);
+          // }
         },
         builder: (context, state) {
           if (state is QuestionLoading) {
@@ -213,7 +218,6 @@ class _TestScreenState extends State<TestScreen> {
               onPopInvokedWithResult: (didPop, _) {
                 if (state.isReview) {
                   getIt<LogHelper>().w('isReview called : ${state.isReview}');
-                  context.read<QuestionBloc>().add(SubmitTest());
                 }
               },
               child: SingleChildScrollView(
@@ -433,9 +437,25 @@ class _TestScreenState extends State<TestScreen> {
                                                     context
                                                         .read<TimerBloc>()
                                                         .add(TimerStop());
+                                                    print(
+                                                      "Test id ${widget.testId}",
+                                                    );
                                                     context
-                                                        .read<QuestionBloc>()
-                                                        .add(SubmitTest());
+                                                        .read<TestBloc>()
+                                                        .add(
+                                                          SubmitTest(
+                                                            widget.testId!,
+                                                            total,
+                                                            state.questions,
+                                                            state
+                                                                .selectedOption,
+                                                            state
+                                                                .answeredStatus,
+                                                          ),
+                                                        );
+                                                    context.push(
+                                                      AppRoutes.resultScreen,
+                                                    );
                                                   },
                                                 ),
                                               ],

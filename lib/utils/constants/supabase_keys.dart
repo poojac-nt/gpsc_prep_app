@@ -5,10 +5,11 @@ abstract class SupabaseKeys {
   static final String insertMcqWithTest = 'insert_questions_with_tests';
 
   ///table
-  static final String users = 'users';
-  static final String questions = 'questions';
-  static final String tests = 'tests';
-  static final String test_questions = 'test_questions';
+  static final String usersTable = 'users';
+  static final String questionsTable = 'questions';
+  static final String testsTable = 'tests';
+  static final String testQuestionTable = 'test_questions';
+  static final String testResultsTable = 'test_results';
 
   ///columns
   static final String email = 'user_email';

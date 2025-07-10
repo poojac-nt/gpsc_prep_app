@@ -11,10 +11,9 @@ import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -51,6 +50,7 @@ Future<void> main() async {
         providers: [
           BlocProvider(create: (_) => getIt<AuthBloc>()),
           BlocProvider(create: (_) => getIt<QuestionBloc>()),
+          BlocProvider(create: (_) => getIt<TestBloc>()),
 
           BlocProvider(create: (_) => getIt<EditProfileBloc>()),
           BlocProvider(create: (_) => getIt<UploadQuestionsBloc>()),

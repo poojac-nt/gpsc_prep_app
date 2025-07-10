@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_event.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test_state.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
@@ -11,8 +12,6 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-
-import 'bloc/test_bloc.dart';
 
 class ResultScreen extends StatelessWidget {
   ResultScreen({super.key});
@@ -54,9 +53,9 @@ class ResultScreen extends StatelessWidget {
           title: Text('Test Completed', style: AppTexts.titleTextStyle),
         ),
         body: SingleChildScrollView(
-          child: BlocBuilder<QuestionBloc, QuestionState>(
+          child: BlocBuilder<TestBloc, TestState>(
             builder: (context, state) {
-              print("state of result screen :$state");
+              print("state of result screen :${state.runtimeType}");
               if (state is TestSubmitted) {
                 final List<String> containerValues = [
                   state.correct.toString(),
@@ -117,7 +116,6 @@ class ResultScreen extends StatelessWidget {
                           text: "Review Answers",
                           fontColor: Colors.white,
                           onTap: () {
-                            print(state.isReview);
                             context.read<QuestionBloc>().add(
                               ReviewTestEvent(
                                 state.questions,
@@ -126,7 +124,13 @@ class ResultScreen extends StatelessWidget {
                                 state.isCorrect,
                               ),
                             );
-                            context.push(AppRoutes.testScreen, extra: true);
+                            context.push(
+                              AppRoutes.testScreen,
+                              extra: TestScreenArgs(
+                                isFromResult: true,
+                                testId: null,
+                              ), // or testId: 123
+                            );
                           },
                         ),
                       ],

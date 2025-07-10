@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
-import 'bloc/test_bloc.dart';
-import 'bloc/test_event.dart';
 
 class TestInstructionScreen extends StatefulWidget {
-  TestInstructionScreen({super.key, required this.testId});
+  const TestInstructionScreen({super.key, required this.testId});
 
   final int testId;
 
@@ -133,7 +133,13 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                 context.read<QuestionBloc>().add(
                   LoadQuestion(widget.testId, selectedLanguage),
                 );
-                context.push(AppRoutes.testScreen, extra: false);
+                context.push(
+                  AppRoutes.testScreen,
+                  extra: TestScreenArgs(
+                    isFromResult: false,
+                    testId: widget.testId,
+                  ), // or testId: 123
+                );
               },
             ),
           ],

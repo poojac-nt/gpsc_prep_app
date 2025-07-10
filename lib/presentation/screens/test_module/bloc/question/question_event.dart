@@ -1,5 +1,6 @@
-import '../../../../domain/entities/question_language_model.dart';
+part of 'question_bloc.dart';
 
+@immutable
 sealed class QuestionEvent {}
 
 class LoadQuestion extends QuestionEvent {
@@ -25,13 +26,11 @@ class JumpToQuestion extends QuestionEvent {
   JumpToQuestion(this.index);
 }
 
-class SubmitTest extends QuestionEvent {}
-
 class ReviewTestEvent extends QuestionEvent {
-  List<QuestionLanguageData> questions;
-  List<String?> selectedOption;
-  List<bool> answeredStatus;
-  List<bool?> isCorrect;
+  final List<QuestionLanguageData> questions;
+  final List<String?> selectedOption;
+  final List<bool> answeredStatus;
+  final List<bool?> isCorrect;
 
   ReviewTestEvent(
     this.questions,

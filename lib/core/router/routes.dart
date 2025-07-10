@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
@@ -50,8 +51,12 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.testScreen,
     pageBuilder: (context, state) {
-      final isFromResult = state.extra as bool;
-      return _slideTransition(TestScreen(isFromResult: isFromResult), state);
+      final args = state.extra as TestScreenArgs;
+
+      return _slideTransition(
+        TestScreen(isFromResult: args.isFromResult, testId: args.testId),
+        state,
+      );
     },
   ),
   GoRoute(

@@ -10,10 +10,10 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
-
-import '../../presentation/screens/test_module/bloc/test_bloc.dart';
 
 final getIt = GetIt.instance;
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -65,6 +65,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<QuestionBloc>(
     () => QuestionBloc(getIt<TestRepository>()),
+  );
+  getIt.registerLazySingleton<TestBloc>(
+    () => TestBloc(getIt<TestRepository>()),
   );
   getIt.registerLazySingleton<UploadQuestionsBloc>(() => UploadQuestionsBloc());
   getIt.registerLazySingleton<TimerBloc>(() => TimerBloc());

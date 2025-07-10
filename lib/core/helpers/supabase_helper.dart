@@ -3,6 +3,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
@@ -18,7 +19,7 @@ class SupabaseHelper {
 
   Future<bool> doesUserExist(String email) async {
     final response = await supabase
-        .from(SupabaseKeys.users)
+        .from(SupabaseKeys.usersTable)
         .select()
         .eq(SupabaseKeys.email, email);
     if (response.isEmpty) {
@@ -45,7 +46,7 @@ class SupabaseHelper {
 
       final userResponse =
           await supabase
-              .from(SupabaseKeys.users)
+              .from(SupabaseKeys.usersTable)
               .select()
               .eq(SupabaseKeys.authId, userId)
               .single();
@@ -66,7 +67,7 @@ class SupabaseHelper {
       _log.d('[insertUser] Payload: $jsonData');
       final existingUser =
           await supabase
-              .from(SupabaseKeys.users)
+              .from(SupabaseKeys.usersTable)
               .select('user_email')
               .eq('user_email', data.email)
               .maybeSingle();
@@ -89,7 +90,7 @@ class SupabaseHelper {
       _log.d("User id: $userId");
       final insertResponse =
           await supabase
-              .from(SupabaseKeys.users)
+              .from(SupabaseKeys.usersTable)
               .insert({
                 'full_name': data.name,
                 'address': data.address,
@@ -154,7 +155,10 @@ class SupabaseHelper {
       await supabaseAdmin.auth.admin.deleteUser(userId);
 
       // Delete from public.users
-      await supabase.from(SupabaseKeys.users).delete().eq('auth_id', userId);
+      await supabase
+          .from(SupabaseKeys.usersTable)
+          .delete()
+          .eq('auth_id', userId);
 
       _log.i('User deleted successfully from both public.users and auth.users');
       supabase.auth.signOut();
@@ -170,7 +174,7 @@ class SupabaseHelper {
   ) async {
     try {
       final data = await supabase
-          .from(SupabaseKeys.test_questions)
+          .from(SupabaseKeys.testQuestionTable)
           .select('questions(*)')
           .eq('test_id', testId);
       _log.i("Data: ${data.toString()}");
@@ -191,10 +195,11 @@ class SupabaseHelper {
     }
   }
 
+  ///Insert Daily Tests Results
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTests() async {
     try {
       final response = await supabase
-          .from(SupabaseKeys.tests)
+          .from(SupabaseKeys.testsTable)
           .select()
           .order('id', ascending: false);
 
@@ -205,6 +210,60 @@ class SupabaseHelper {
     } catch (e, s) {
       _log.e('Error in fetching test: $e', s: s);
       return Left(Failure("Error fetching test : ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, List<TestResultModel>>> insertDailyTestsResults(
+    TestResultModel test,
+  ) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.testResultsTable)
+              .insert({
+                'user_id': test.userId,
+                'test_id': test.testId,
+                'correct_answers': test.correctAnswers,
+                'incorrect_answers': test.inCorrectAnswers,
+                'attempted_questions': test.attemptedQuestions,
+                'not_attempted_questions': test.notAttemptedQuestions,
+                'total_marks': test.totalMarks,
+              })
+              .select()
+              .single(); // returns single inserted row
+
+      _log.i('Test result inserted successfully: $response');
+
+      final model = TestResultModel.fromJson(response);
+      return Right([model]);
+    } catch (e) {
+      _log.e('Error inserting/fetching test result: $e');
+      return Left(Failure("Error inserting test: ${e.toString()}"));
+    }
+  }
+
+  ///Fetch Daily Test Results
+  Future<Either<Failure, TestResultModel?>> fetchResultForSingleTest({
+    required int userId,
+    required int testId,
+  }) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.testResultsTable)
+              .select()
+              .eq('user_id', userId)
+              .eq('test_id', testId)
+              .maybeSingle(); // Use maybeSingle for optional single result
+
+      if (response == null) {
+        return Right(null); // No result yet
+      }
+
+      final model = TestResultModel.fromJson(response);
+      return Right(model);
+    } catch (e) {
+      return Left(Failure("Error fetching result: ${e.toString()}"));
     }
   }
 }

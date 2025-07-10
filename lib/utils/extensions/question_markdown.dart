@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../domain/entities/question_language_model.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 // extension QuestionWidgetFormatter on QuestionLanguageData {

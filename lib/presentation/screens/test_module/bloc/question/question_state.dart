@@ -1,17 +1,19 @@
-import '../../../../core/error/failure.dart';
-import '../../../../domain/entities/question_language_model.dart';
+part of 'question_bloc.dart';
 
+@immutable
 sealed class QuestionState {}
 
-class QuestionLoading extends QuestionState {}
+final class QuestionInitial extends QuestionState {}
 
-class QuestionLoaded extends QuestionState {
+final class QuestionLoading extends QuestionState {}
+
+final class QuestionLoaded extends QuestionState {
   final List<QuestionLanguageData> questions;
   final int currentIndex;
   final List<bool> answeredStatus;
   final List<String?> selectedOption;
+  final List<bool?>? isCorrect;
   final bool isReview;
-  List<bool?>? isCorrect;
 
   QuestionLoaded({
     required this.questions,
@@ -36,16 +38,16 @@ class QuestionLoaded extends QuestionState {
     int? currentIndex,
     List<bool>? answeredStatus,
     List<String?>? selectedOption,
+    // List<bool?>? isCorrect,
     bool? isReview,
-    List<bool?>? isCorrect,
   }) {
     return QuestionLoaded(
       questions: questions ?? this.questions,
       currentIndex: currentIndex ?? this.currentIndex,
       answeredStatus: answeredStatus ?? this.answeredStatus,
       selectedOption: selectedOption ?? this.selectedOption,
+      // isCorrect: isCorrect ?? this.isCorrect,
       isReview: isReview ?? this.isReview,
-      isCorrect: isCorrect ?? this.isCorrect,
     );
   }
 }
@@ -54,30 +56,4 @@ class QuestionLoadFailed extends QuestionState {
   final Failure failure;
 
   QuestionLoadFailed(this.failure);
-}
-
-class TestSubmitted extends QuestionState {
-  final int totalQuestions;
-  final int attempted;
-  final int notAttempted;
-  final int correct;
-  final int inCorrect;
-  final bool isReview;
-  final List<QuestionLanguageData> questions;
-  final List<String?> selectedOption;
-  final List<bool?> isCorrect;
-  final List<bool> answeredStatus;
-
-  TestSubmitted({
-    required this.totalQuestions,
-    required this.attempted,
-    required this.notAttempted,
-    required this.correct,
-    required this.inCorrect,
-    required this.questions,
-    required this.selectedOption,
-    required this.answeredStatus,
-    required this.isReview,
-    required this.isCorrect,
-  });
 }
