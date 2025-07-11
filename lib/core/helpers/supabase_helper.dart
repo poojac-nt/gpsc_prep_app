@@ -226,11 +226,12 @@ class SupabaseHelper {
               .insert({
                 'user_id': test.userId,
                 'test_id': test.testId,
+                'total_questions': test.totalQuestions,
                 'correct_answers': test.correctAnswers,
                 'incorrect_answers': test.inCorrectAnswers,
                 'attempted_questions': test.attemptedQuestions,
                 'not_attempted_questions': test.notAttemptedQuestions,
-                'total_marks': test.totalMarks,
+                'score': test.score,
                 'time_taken': test.timeTaken,
               })
               .select()

@@ -54,6 +54,11 @@ class TestBloc extends Bloc<TestEvent, TestState> {
         isCorrect.add(null);
       }
     }
+    final totalScore = calculatePercentage(
+      correctAnswers: correctAnswers,
+      totalQuestions: totalQuestions,
+      wrongAnswers: incorrectAnswers,
+    );
     emit(
       TestSubmitted(
         questions: questions,
@@ -72,11 +77,12 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       TestResultModel(
         userId: getIt<CacheManager>().user!.id!,
         testId: event.testId,
+        totalQuestions: totalQuestions,
         correctAnswers: correctAnswers,
         inCorrectAnswers: incorrectAnswers,
         attemptedQuestions: attempted,
         notAttemptedQuestions: notAttempted,
-        totalMarks: 20,
+        score: totalScore,
         timeTaken: timeSpent,
       ),
     );
@@ -95,4 +101,38 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       (data) => emit(SingleResultSuccess(data!)),
     );
   }
+}
+
+double calculatePercentage({
+  required int totalQuestions,
+  required int correctAnswers,
+  required int wrongAnswers,
+}) {
+  const double marksPerCorrect = 2.0;
+  const double negativeMarkFraction = 0.33;
+
+  // Calculate not attempted
+  int notAttempted = totalQuestions - correctAnswers - wrongAnswers;
+
+  // Ensure values are logical
+  if (notAttempted < 0) {
+    throw ArgumentError(
+      'Total of correct and wrong answers cannot exceed total questions',
+    );
+  }
+
+  // Score formula
+  double score =
+      (correctAnswers * marksPerCorrect) -
+      (wrongAnswers * marksPerCorrect * negativeMarkFraction);
+
+  double maxScore = totalQuestions * marksPerCorrect;
+
+  // Avoid division by zero
+  if (maxScore == 0) return 0.0;
+
+  // Percentage score
+  double percentage = (score / maxScore) * 100;
+
+  return percentage.clamp(0.0, 100.0);
 }

@@ -17,6 +17,8 @@ class QuestionModel {
   QuestionLanguageData? questionGj;
   @JsonKey(name: "created_at")
   String createdAt;
+  @JsonKey(name: "marks")
+  int marks;
 
   QuestionModel({
     required this.questionType,
@@ -25,6 +27,7 @@ class QuestionModel {
     required this.questionHi,
     required this.questionGj,
     required this.createdAt,
+    required this.marks,
   });
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) =>

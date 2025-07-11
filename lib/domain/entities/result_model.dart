@@ -8,6 +8,9 @@ class TestResultModel {
   int userId;
   @JsonKey(name: "test_id")
   int testId;
+  @JsonKey(name: "total_questions")
+  int totalQuestions;
+
   @JsonKey(name: "correct_answers")
   int correctAnswers;
   @JsonKey(name: "incorrect_answers")
@@ -16,19 +19,20 @@ class TestResultModel {
   int attemptedQuestions;
   @JsonKey(name: "not_attempted_questions")
   int notAttemptedQuestions;
-  @JsonKey(name: "total_marks")
-  double totalMarks;
+  @JsonKey(name: "score")
+  double score;
   @JsonKey(name: "time_taken")
   int timeTaken;
 
   TestResultModel({
     required this.userId,
     required this.testId,
+    required this.totalQuestions,
     required this.correctAnswers,
     required this.inCorrectAnswers,
     required this.attemptedQuestions,
     required this.notAttemptedQuestions,
-    required this.totalMarks,
+    required this.score,
     required this.timeTaken,
   });
 
@@ -36,22 +40,24 @@ class TestResultModel {
   TestResultModel copyWith({
     int? userId,
     int? testId,
+    int? totalQuestions,
     int? correctAnswers,
     int? inCorrectAnswers,
     int? attemptedQuestions,
     int? notAttemptedQuestions,
-    double? totalMarks,
+    double? score,
     int? timeTaken,
   }) {
     return TestResultModel(
       userId: userId ?? this.userId,
       testId: testId ?? this.testId,
+      totalQuestions: totalQuestions ?? this.totalQuestions,
       correctAnswers: correctAnswers ?? this.correctAnswers,
       inCorrectAnswers: inCorrectAnswers ?? this.inCorrectAnswers,
       attemptedQuestions: attemptedQuestions ?? this.attemptedQuestions,
       notAttemptedQuestions:
           notAttemptedQuestions ?? this.notAttemptedQuestions,
-      totalMarks: totalMarks ?? this.totalMarks,
+      score: score ?? this.score,
       timeTaken: timeTaken ?? this.timeTaken,
     );
   }

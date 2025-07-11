@@ -176,7 +176,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   state.result.notAttemptedQuestions.toString(),
                   state.result.attemptedQuestions.toString(),
                   formatTimeSpent(state.result.timeTaken),
-                  state.result.totalMarks.toString(),
+                  state.result.totalQuestions.toString(),
                 ];
                 return TestModule(
                   iconSize: 26.sp,
@@ -187,7 +187,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       child: Column(
                         children: [
                           Text(
-                            '0%',
+                            '${state.result.score.toStringAsFixed(2)}%',
                             style: TextStyle(
                               fontSize: 26.sp,
                               fontWeight: FontWeight.bold,
@@ -218,37 +218,6 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                     ),
                     20.hGap,
-                    // Column(
-                    //   children: [
-                    //     ActionButton(
-                    //       text: "Download Detailed Report",
-                    //       onTap: () {},
-                    //     ),
-                    //     5.hGap,
-                    //     ActionButton(
-                    //       text: "Review Answers",
-                    //       fontColor: Colors.white,
-                    //       onTap: () {
-                    //
-                    //         context.read<QuestionBloc>().add(
-                    //           ReviewTestEvent(
-                    //             state.questions,
-                    //             state.selectedOption,
-                    //             state.answeredStatus,
-                    //             state.isCorrect,
-                    //           ),
-                    //         );
-                    //         context.push(
-                    //           AppRoutes.testScreen,
-                    //           extra: TestScreenArgs(
-                    //             isFromResult: true,
-                    //             testId: null,
-                    //           ), // or testId: 123
-                    //         );
-                    //       },
-                    //     ),
-                    //   ],
-                    // ),
                   ],
                   prefixIcon: Icons.check_circle_outline_sharp,
                   iconColor: Colors.green,
