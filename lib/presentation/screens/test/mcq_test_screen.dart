@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
@@ -12,8 +13,6 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'bloc/daily_test_bloc.dart';
-import 'bloc/daily_test_event.dart';
-import 'bloc/daily_test_state.dart';
 
 class MCQTestScreen extends StatefulWidget {
   const MCQTestScreen({super.key});
@@ -25,7 +24,7 @@ class MCQTestScreen extends StatefulWidget {
 class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
   void initState() {
-    context.read<DailyTestBloc>().add(FetchDailyTest());
+    context.read<DailyTestBloc>().add(FetchTests());
     super.initState();
   }
 
@@ -53,106 +52,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Available Tests', style: AppTexts.heading),
-                          IntrinsicWidth(
-                            child: ActionButton(
-                              text: 'Generate Test',
-                              onTap: () {},
-                            ),
-                          ),
-                        ],
-                      ),
-                      10.hGap,
-                      // Fake Daily Tests Section
-                      TestModule(
-                        title: "Daily Tests",
-                        subtitle: "Subject-based Daily Practice",
-                        prefixIcon: Icons.calendar_today_outlined,
-                        cards: List.generate(
-                          3,
-                          (index) => Skeleton.ignorePointer(
-                            child: TestTile(
-                              title: "Test Title Placeholder",
-                              onTap: () {},
-                              buttonTitle: "Start",
-                            ).padSymmetric(vertical: 6.h),
-                          ),
-                        ),
-                      ),
-                      10.hGap,
-                      // Fake Mock Tests Section
-                      TestModule(
-                        title: "Mock Tests",
-                        subtitle: "Full Length practice Exams",
-                        prefixIcon: Icons.description_outlined,
-                        cards: [
-                          TestTile(
-                            title: "Mock Test Placeholder",
-                            subtitle: "100 Questions . 2 hours",
-                            widgets: [
-                              Skeleton.shade(
-                                child: Container(
-                                  padding: EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 1,
-                                    ),
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: Icon(
-                                    Icons.file_download_outlined,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ],
-                            onTap: () {},
-                            buttonTitle: 'Start',
-                          ),
-                        ],
-                      ),
-                      10.hGap,
-                      // Fake Offline Mode Section
-                      TestModule(
-                        title: 'Offline Mode',
-                        subtitle: 'Download tests for offline Practice',
-                        prefixIcon: Icons.file_download_outlined,
-                        cards: [
-                          BorderedContainer(
-                            borderColor: AppColors.accentColor,
-                            padding: EdgeInsets.all(5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.file_download_outlined),
-                                10.wGap,
-                                Text(
-                                  'Download PDF Test',
-                                  style: AppTexts.title,
-                                ),
-                              ],
-                            ),
-                          ),
-                          10.hGap,
-                          BorderedContainer(
-                            borderColor: AppColors.accentColor,
-                            padding: EdgeInsets.all(5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.file_upload_outlined),
-                                10.wGap,
-                                Text('Upload Answers', style: AppTexts.title),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Your loading skeletons go here (if needed)
                     ],
                   ),
                 ),
@@ -171,13 +71,16 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                       IntrinsicWidth(
                         child: ActionButton(
                           text: 'Generate Test',
-                          onTap: () {},
+                          onTap: () {
+                            // Handle Generate Test
+                          },
                         ),
                       ),
                     ],
                   ),
                   10.hGap,
-                  // Daily Tests Section
+
+                  /// Daily Tests Section
                   TestModule(
                     title: "Daily Tests",
                     subtitle: "Subject-based Daily Practice",
@@ -185,33 +88,50 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                     cards: [
                       ListView.builder(
                         shrinkWrap: true,
-                        scrollDirection: Axis.vertical,
+                        physics: NeverScrollableScrollPhysics(),
                         itemCount: state.dailyTestModel.length,
-                        itemBuilder:
-                            (context, index) => TestTile(
-                              title: state.dailyTestModel[index].name,
-                              subtitle:
-                                  "${state.dailyTestModel[index].noQuestions} Questions . ${state.dailyTestModel[index].duration} min",
-                              onTap:
-                                  () => context.pushReplacement(
-                                    AppRoutes.testInstructionScreen,
-                                    extra: state.dailyTestModel[index].id,
+                        itemBuilder: (context, index) {
+                          final test = state.dailyTestModel[index];
+                          final hasResult = state.testResults.containsKey(
+                            test.id,
+                          );
+                          return TestTile(
+                            title: test.name,
+                            subtitle:
+                                "${test.noQuestions} Questions · ${test.duration} min",
+                            onTap: () {
+                              if (hasResult) {
+                                context.push(
+                                  AppRoutes.resultScreen,
+                                  extra: ResultScreenArgs(
+                                    isFromTest: false,
+                                    testId: test.id,
                                   ),
-                              buttonTitle: 'Start',
-                            ).padSymmetric(vertical: 6.h),
+                                );
+                              } else {
+                                context.pushReplacement(
+                                  AppRoutes.testInstructionScreen,
+                                  extra: test.id,
+                                );
+                              }
+                            },
+                            buttonTitle: hasResult ? 'Result' : 'Start',
+                          ).padSymmetric(vertical: 6.h);
+                        },
                       ),
                     ],
                   ),
                   10.hGap,
-                  // Mock Tests Section
+
+                  /// Mock Tests Section
                   TestModule(
                     title: "Mock Tests",
-                    subtitle: "Full Length practice Exams",
+                    subtitle: "Full Length Practice Exams",
                     prefixIcon: Icons.description_outlined,
                     cards: [
                       TestTile(
                         title: "GPSC Mock Test #1",
-                        subtitle: "100 Questions . 2 hours",
+                        subtitle: "100 Questions · 2 hours",
                         widgets: [
                           Container(
                             padding: EdgeInsets.all(5),
@@ -226,12 +146,16 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                             ),
                           ),
                         ],
-                        onTap: () {},
+                        onTap: () {
+                          // Handle mock test tap
+                        },
                         buttonTitle: 'Start',
                       ),
                     ],
                   ),
                   10.hGap,
+
+                  /// Offline Mode Section
                   TestModule(
                     title: 'Offline Mode',
                     subtitle: 'Download tests for offline Practice',
@@ -268,7 +192,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
               ).padAll(AppPaddings.appPaddingInt),
             );
           }
-          return Container();
+          return Container(); // fallback UI for unhandled states
         },
       ),
     );

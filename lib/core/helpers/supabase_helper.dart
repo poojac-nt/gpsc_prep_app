@@ -1,4 +1,6 @@
 import 'package:either_dart/either.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
@@ -14,6 +16,7 @@ import 'log_helper.dart';
 class SupabaseHelper {
   final supabase = Supabase.instance.client;
   final LogHelper _log;
+  final CacheManager _cache = getIt<CacheManager>();
 
   SupabaseHelper(this._log);
 
@@ -228,6 +231,7 @@ class SupabaseHelper {
                 'attempted_questions': test.attemptedQuestions,
                 'not_attempted_questions': test.notAttemptedQuestions,
                 'total_marks': test.totalMarks,
+                'time_taken': test.timeTaken,
               })
               .select()
               .single(); // returns single inserted row
@@ -244,7 +248,6 @@ class SupabaseHelper {
 
   ///Fetch Daily Test Results
   Future<Either<Failure, TestResultModel?>> fetchResultForSingleTest({
-    required int userId,
     required int testId,
   }) async {
     try {
@@ -252,7 +255,7 @@ class SupabaseHelper {
           await supabase
               .from(SupabaseKeys.testResultsTable)
               .select()
-              .eq('user_id', userId)
+              .eq('user_id', _cache.user!.id!)
               .eq('test_id', testId)
               .maybeSingle(); // Use maybeSingle for optional single result
 

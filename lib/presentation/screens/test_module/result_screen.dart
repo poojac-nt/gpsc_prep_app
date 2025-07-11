@@ -13,17 +13,46 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
-class ResultScreen extends StatelessWidget {
-  ResultScreen({super.key});
+class ResultScreen extends StatefulWidget {
+  const ResultScreen({super.key, this.isFromTestScreen = false, this.testId});
+
+  final bool isFromTestScreen;
+  final int? testId;
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    if (!widget.isFromTestScreen && widget.testId != null) {
+      context.read<TestBloc>().add(
+        FetchSingleTestResultEvent(testId: widget.testId!),
+      );
+    }
+  }
+
+  String formatTimeSpent(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    String minutesPart = mins > 0 ? '$mins' : '';
+    String secondsPart = secs > 0 ? '$secs' : '';
+    if (minutesPart.isEmpty && secondsPart.isEmpty) return '0 sec';
+    return '$minutesPart${minutesPart.isNotEmpty && secondsPart.isNotEmpty ? ' ' : '0'}:$secondsPart';
+  }
 
   final List<String> containerTitle = [
     'Correct',
     'InCorrect',
     'Not Attempted',
     'Attempted',
-    'Time Spent',
+    'Time Taken',
     'Total Questions',
   ];
+
   final List<Color> containerColors = [
     Colors.green.shade500,
     Colors.red.shade500,
@@ -135,6 +164,91 @@ class ResultScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ],
+                  prefixIcon: Icons.check_circle_outline_sharp,
+                  iconColor: Colors.green,
+                ).padAll(AppPaddings.defaultPadding);
+              }
+              if (state is SingleResultSuccess) {
+                final List<String> containerValues = [
+                  state.result.correctAnswers.toString(),
+                  state.result.inCorrectAnswers.toString(),
+                  state.result.notAttemptedQuestions.toString(),
+                  state.result.attemptedQuestions.toString(),
+                  formatTimeSpent(state.result.timeTaken),
+                  state.result.totalMarks.toString(),
+                ];
+                return TestModule(
+                  iconSize: 26.sp,
+                  fontSize: 26.sp,
+                  title: "Test Result",
+                  cards: [
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            '0%',
+                            style: TextStyle(
+                              fontSize: 26.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "Your Score",
+                            style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
+                          ),
+                        ],
+                      ),
+                    ),
+                    20.hGap,
+                    GridView.builder(
+                      shrinkWrap: true,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 0.9,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                      ),
+                      itemCount: containerTitle.length,
+                      itemBuilder:
+                          (context, index) => containerWidget(
+                            containerValues[index],
+                            containerTitle[index],
+                            containerColors[index],
+                          ),
+                    ),
+                    20.hGap,
+                    // Column(
+                    //   children: [
+                    //     ActionButton(
+                    //       text: "Download Detailed Report",
+                    //       onTap: () {},
+                    //     ),
+                    //     5.hGap,
+                    //     ActionButton(
+                    //       text: "Review Answers",
+                    //       fontColor: Colors.white,
+                    //       onTap: () {
+                    //
+                    //         context.read<QuestionBloc>().add(
+                    //           ReviewTestEvent(
+                    //             state.questions,
+                    //             state.selectedOption,
+                    //             state.answeredStatus,
+                    //             state.isCorrect,
+                    //           ),
+                    //         );
+                    //         context.push(
+                    //           AppRoutes.testScreen,
+                    //           extra: TestScreenArgs(
+                    //             isFromResult: true,
+                    //             testId: null,
+                    //           ), // or testId: 123
+                    //         );
+                    //       },
+                    //     ),
+                    //   ],
+                    // ),
                   ],
                   prefixIcon: Icons.check_circle_outline_sharp,
                   iconColor: Colors.green,

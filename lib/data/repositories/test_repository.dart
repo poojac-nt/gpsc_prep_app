@@ -21,4 +21,8 @@ class TestRepository {
   Future<Either<Failure, List<TestResultModel>>> insertTestResult(
     TestResultModel testResult,
   ) async => await _supabase.insertDailyTestsResults(testResult);
+
+  Future<Either<Failure, TestResultModel?>> singleTestResult(
+    int testId,
+  ) async => await _supabase.fetchResultForSingleTest(testId: testId);
 }

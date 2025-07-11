@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
@@ -55,118 +56,145 @@ class _TestScreenState extends State<TestScreen> {
     super.initState();
   }
 
+  int totalTime(BuildContext context) {
+    var timerState = context.read<TimerBloc>().state;
+    int mins = timerState is TimerStopped ? timerState.totalMins : 0;
+    int secs = timerState is TimerStopped ? timerState.totalSecs : 0;
+    final timeSpent = (mins * 60) + secs;
+    return timeSpent;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  title: Row(
-                    children: [
-                      Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text(
-                        "Confirm Exit",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-                  content: Text(
-                    "Do you really want to leave the test in between?",
-                    style: TextStyle(fontSize: 15, color: Colors.black54),
-                  ),
-                  actions: [
-                    TextButton(
-                      child: Text(
-                        "Cancel",
-                        style: TextStyle(color: Colors.grey[700]),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close dialog
-                      },
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
+        leading: BlocBuilder<QuestionBloc, QuestionState>(
+          builder: (context, state) {
+            if (state is! QuestionLoaded) return SizedBox.shrink();
+
+            final isReviewMode = state.isReview;
+
+            return IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                if (!isReviewMode) {
+                  // Show exit confirmation dialog during test
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ),
-                      child: Text(
-                        "Yes, Leave",
-                        style: AppTexts.title.copyWith(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        context.pop(); // Close dialog
-                        context.pushReplacement(AppRoutes.home);
-                      },
-                    ),
-                  ],
-                );
+                        title: Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.orange,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Confirm Exit",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        content: Text(
+                          "Do you really want to leave the test in between?",
+                          style: TextStyle(fontSize: 15, color: Colors.black54),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.pop(); // Close dialog
+                              context.pushReplacement(
+                                AppRoutes.home,
+                              ); // Go to home
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              "Yes, Leave",
+                              style: AppTexts.title.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  // Just pop the screen if in review mode
+                  context.pop();
+                }
               },
             );
           },
-          icon: Icon(Icons.arrow_back),
         ),
         title: Text("Daily Test", style: AppTexts.titleTextStyle),
         actions: [
-          widget.isFromResult
-              ? SizedBox.shrink()
-              : Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: Colors.black),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.timer_outlined, size: 18.sp),
-                    5.wGap,
-                    BlocBuilder<TimerBloc, TimerState>(
-                      builder: (context, state) {
-                        if (state is TimerRunning) {
-                          return Text(
-                            "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
-                          );
-                        }
-                        if (state is TimerStopped) {
-                          getIt<LogHelper>().w(state.totalMins.toString());
-                          getIt<LogHelper>().w(state.totalSecs.toString());
-                          return SizedBox.shrink();
-                        }
+          if (!widget.isFromResult)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: Colors.black),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.timer_outlined, size: 18.sp),
+                  SizedBox(width: 5.w),
+                  BlocBuilder<TimerBloc, TimerState>(
+                    builder: (context, state) {
+                      if (state is TimerRunning) {
+                        final minutes = state.remainingMinutes
+                            .toString()
+                            .padLeft(2, '0');
+                        final seconds = state.remainingSeconds
+                            .toString()
+                            .padLeft(2, '0');
+                        return Text('$minutes:$seconds');
+                      } else if (state is TimerStopped) {
+                        getIt<LogHelper>().w(state.totalMins.toString());
+                        getIt<LogHelper>().w(state.totalSecs.toString());
+                        return SizedBox.shrink();
+                      } else {
                         return Text('00:00');
-                      },
-                    ),
-                  ],
-                ),
-              ).padSymmetric(horizontal: 10.w),
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ).padAll(AppPaddings.appPaddingInt),
         ],
       ),
       body: BlocListener<TestBloc, TestState>(
         listener: (context, state) {
           if (state is TestSubmitted) {
-            context.push(AppRoutes.resultScreen);
+            context.push(
+              AppRoutes.resultScreen,
+              extra: ResultScreenArgs(isFromTest: true, testId: widget.testId),
+            );
           }
         },
-        child: BlocConsumer<QuestionBloc, QuestionState>(
-          listener: (context, state) {
-            // if (state is TestSubmitted) {
-            //   context.pushReplacement(AppRoutes.resultScreen);
-            // }
-          },
+        child: BlocBuilder<QuestionBloc, QuestionState>(
           builder: (context, state) {
             if (state is QuestionLoading) {
               return Padding(
@@ -270,9 +298,7 @@ class _TestScreenState extends State<TestScreen> {
                                 } else if (!isSelected &&
                                     option == correctAnswer) {
                                   // Not selected, but correct answer
-                                  tileColor = Colors.green.withOpacity(
-                                    0.3,
-                                  );
+                                  tileColor = Colors.green.withOpacity(0.3);
                                   textColor = Colors.green.shade800;
                                 } else {
                                   tileColor = Colors.transparent;
@@ -358,7 +384,12 @@ class _TestScreenState extends State<TestScreen> {
                                         );
                                       } else {
                                         if (!state.isReview) {
-                                          _buildSubmitDialoge(context, state);
+                                          var time = totalTime(context);
+                                          _buildSubmitDialoge(
+                                            context,
+                                            state,
+                                            time,
+                                          );
                                         } else {
                                           context.pop(); // Go back from review
                                         }
@@ -458,7 +489,11 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  void _buildSubmitDialoge(BuildContext context, QuestionLoaded state) {
+  void _buildSubmitDialoge(
+    BuildContext context,
+    QuestionLoaded state,
+    int timeTaken,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -526,6 +561,7 @@ class _TestScreenState extends State<TestScreen> {
                     state.questions,
                     state.selectedOption,
                     state.answeredStatus,
+                    timeTaken,
                   ),
                 );
               },

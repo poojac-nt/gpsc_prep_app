@@ -4,3 +4,10 @@ class TestScreenArgs {
 
   TestScreenArgs({required this.isFromResult, this.testId});
 }
+
+class ResultScreenArgs {
+  final bool isFromTest;
+  final int? testId;
+
+  ResultScreenArgs({required this.isFromTest, this.testId});
+}

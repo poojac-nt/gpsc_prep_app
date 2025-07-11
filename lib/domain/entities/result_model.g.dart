@@ -15,6 +15,7 @@ TestResultModel _$TestResultModelFromJson(Map<String, dynamic> json) =>
       attemptedQuestions: (json['attempted_questions'] as num).toInt(),
       notAttemptedQuestions: (json['not_attempted_questions'] as num).toInt(),
       totalMarks: (json['total_marks'] as num).toDouble(),
+      timeTaken: (json['time_taken'] as num).toInt(),
     );
 
 Map<String, dynamic> _$TestResultModelToJson(TestResultModel instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$TestResultModelToJson(TestResultModel instance) =>
       'attempted_questions': instance.attemptedQuestions,
       'not_attempted_questions': instance.notAttemptedQuestions,
       'total_marks': instance.totalMarks,
+      'time_taken': instance.timeTaken,
     };

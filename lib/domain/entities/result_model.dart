@@ -18,6 +18,8 @@ class TestResultModel {
   int notAttemptedQuestions;
   @JsonKey(name: "total_marks")
   double totalMarks;
+  @JsonKey(name: "time_taken")
+  int timeTaken;
 
   TestResultModel({
     required this.userId,
@@ -27,6 +29,7 @@ class TestResultModel {
     required this.attemptedQuestions,
     required this.notAttemptedQuestions,
     required this.totalMarks,
+    required this.timeTaken,
   });
 
   /// ✅ copyWith method
@@ -38,6 +41,7 @@ class TestResultModel {
     int? attemptedQuestions,
     int? notAttemptedQuestions,
     double? totalMarks,
+    int? timeTaken,
   }) {
     return TestResultModel(
       userId: userId ?? this.userId,
@@ -48,6 +52,7 @@ class TestResultModel {
       notAttemptedQuestions:
           notAttemptedQuestions ?? this.notAttemptedQuestions,
       totalMarks: totalMarks ?? this.totalMarks,
+      timeTaken: timeTaken ?? this.timeTaken,
     );
   }
 

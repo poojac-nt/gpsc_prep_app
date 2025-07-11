@@ -5,6 +5,8 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
 import 'package:meta/meta.dart';
 
 part 'test_event.dart';
@@ -16,7 +18,7 @@ class TestBloc extends Bloc<TestEvent, TestState> {
 
   TestBloc(this._testRepository) : super(TestResultInitial()) {
     on<SubmitTest>(_onSubmit);
-    // on<FetchSingleTestResultEvent>(_onFetchSingleResult);
+    on<FetchSingleTestResultEvent>(_onFetchSingleResult);
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
@@ -27,6 +29,10 @@ class TestBloc extends Bloc<TestEvent, TestState> {
 
     final attempted = answeredStatus.where((status) => status).length;
     final notAttempted = totalQuestions - attempted;
+    var timerState = getIt<TimerBloc>().state;
+    final minSpent = timerState is TimerStopped ? timerState.totalMins : 0;
+    final secSpent = timerState is TimerStopped ? timerState.totalSecs : 0;
+    final timeSpent = (minSpent * 60) + secSpent;
 
     int correctAnswers = 0;
     int incorrectAnswers = 0;
@@ -71,24 +77,22 @@ class TestBloc extends Bloc<TestEvent, TestState> {
         attemptedQuestions: attempted,
         notAttemptedQuestions: notAttempted,
         totalMarks: 20,
+        timeTaken: timeSpent,
       ),
     );
   }
 
-  // Future<void> _onFetchSingleResult(
-  //   FetchSingleTestResultEvent event,
-  //   Emitter<TestState> emit,
-  // ) async {
-  //   emit(SingleResultLoading());
-  //
-  //   final result = await _testRepository.getSingleTestResult(
-  //     userId: event.userId,
-  //     testId: event.testId,
-  //   );
-  //
-  //   result.fold(
-  //     (failure) => emit(SingleResultFailure(failure)),
-  //     (data) => emit(SingleResultSuccess(data)),
-  //   );
-  // }
+  Future<void> _onFetchSingleResult(
+    FetchSingleTestResultEvent event,
+    Emitter<TestState> emit,
+  ) async {
+    emit(SingleResultLoading());
+
+    final result = await _testRepository.singleTestResult(event.testId);
+
+    result.fold(
+      (failure) => emit(SingleResultFailure(failure)),
+      (data) => emit(SingleResultSuccess(data!)),
+    );
+  }
 }

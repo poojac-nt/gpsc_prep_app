@@ -61,7 +61,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.resultScreen,
-    pageBuilder: (context, state) => _slideTransition(ResultScreen(), state),
+    pageBuilder: (context, state) {
+      final args = state.extra as ResultScreenArgs;
+      return _slideTransition(
+        ResultScreen(isFromTestScreen: args.isFromTest, testId: args.testId),
+        state,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.addQuestionScreen,

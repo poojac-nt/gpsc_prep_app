@@ -9,6 +9,7 @@ class SubmitTest extends TestEvent {
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOptions;
   final List<bool> answeredStatus;
+  final int timeTaken;
 
   SubmitTest(
     this.testId,
@@ -16,14 +17,14 @@ class SubmitTest extends TestEvent {
     this.questions,
     this.selectedOptions,
     this.answeredStatus,
+    this.timeTaken,
   );
 }
 
 class InsertTestResultEvent extends TestEvent {}
 
 class FetchSingleTestResultEvent extends TestEvent {
-  final int userId;
   final int testId;
 
-  FetchSingleTestResultEvent({required this.userId, required this.testId});
+  FetchSingleTestResultEvent({required this.testId});
 }
