@@ -4,12 +4,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
+import '../../../core/di/di.dart';
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
+import 'cubit/test/test_cubit.dart';
+import 'cubit/test/test_cubit_state.dart';
 
 class TestInstructionScreen extends StatefulWidget {
   const TestInstructionScreen({super.key, required this.testId});
@@ -130,9 +134,9 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             ActionButton(
               text: "Start Test",
               onTap: () {
-                context.read<QuestionBloc>().add(
-                  LoadQuestion(widget.testId, selectedLanguage),
-                );
+                // context.read<QuestionBloc>().add(
+                //   LoadQuestion(widget.testId, selectedLanguage),
+                // );
                 context.push(
                   AppRoutes.testScreen,
                   extra: TestScreenArgs(

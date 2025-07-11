@@ -1,16 +1,13 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
-import 'package:meta/meta.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_state.dart';
 
-part 'test_event.dart';
-part 'test_state.dart';
+import '../../cubit/test/test_cubit.dart';
+import '../../cubit/test/test_cubit_state.dart';
 
 class TestBloc extends Bloc<TestEvent, TestState> {
   final TestRepository _testRepository;
@@ -22,70 +19,74 @@ class TestBloc extends Bloc<TestEvent, TestState> {
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
-    final questions = event.questions;
-    final selectedOptions = event.selectedOptions;
-    final answeredStatus = event.answeredStatus;
-    final totalQuestions = questions.length;
+    // final questions = event.questions;
+    // final selectedOptions = event.selectedOptions;
+    // final answeredStatus = event.answeredStatus;
+    // final totalQuestions = questions.length;
+    //
+    // final attempted = answeredStatus.where((status) => status).length;
+    // final notAttempted = totalQuestions - attempted;
+    // var timerState = getIt<TimerBloc>().state;
+    // final minSpent = timerState is TimerStopped ? timerState.totalMins : 0;
+    // final secSpent = timerState is TimerStopped ? timerState.totalSecs : 0;
+    // final timeSpent = (minSpent * 60) + secSpent;
+    //
+    // int correctAnswers = 0;
+    // int incorrectAnswers = 0;
+    // List<bool?> isCorrect = [];
+    //
+    // for (int i = 0; i < questions.length; i++) {
+    //   final userAnswer = selectedOptions[i];
+    //   final correctAnswer = questions[i].correctAnswer;
+    //
+    //   if (userAnswer != null) {
+    //     if (userAnswer.trim() == correctAnswer.trim()) {
+    //       correctAnswers++;
+    //       isCorrect.add(true);
+    //     } else {
+    //       incorrectAnswers++;
+    //       isCorrect.add(false);
+    //     }
+    //   } else {
+    //     isCorrect.add(null);
+    //   }
+    // }
+    // final totalScore = calculatePercentage(
+    //   correctAnswers: correctAnswers,
+    //   totalQuestions: totalQuestions,
+    //   wrongAnswers: incorrectAnswers,
+    // );
 
-    final attempted = answeredStatus.where((status) => status).length;
-    final notAttempted = totalQuestions - attempted;
-    var timerState = getIt<TimerBloc>().state;
-    final minSpent = timerState is TimerStopped ? timerState.totalMins : 0;
-    final secSpent = timerState is TimerStopped ? timerState.totalSecs : 0;
-    final timeSpent = (minSpent * 60) + secSpent;
+    var cubit = getIt<TestCubit>();
+    cubit.calculateAndEmitTestResult(
+      questions: event.questions,
+      selectedOption: event.selectedOptions,
+      answeredStatus: event.answeredStatus,
+    );
 
-    int correctAnswers = 0;
-    int incorrectAnswers = 0;
-    List<bool?> isCorrect = [];
-
-    for (int i = 0; i < questions.length; i++) {
-      final userAnswer = selectedOptions[i];
-      final correctAnswer = questions[i].correctAnswer;
-
-      if (userAnswer != null) {
-        if (userAnswer.trim() == correctAnswer.trim()) {
-          correctAnswers++;
-          isCorrect.add(true);
-        } else {
-          incorrectAnswers++;
-          isCorrect.add(false);
-        }
-      } else {
-        isCorrect.add(null);
-      }
+    if (cubit.state is TestCubitSubmitted) {
+      var currentCubitState = cubit.state as TestCubitSubmitted;
+      emit(
+        TestSubmitted(
+          questions: event.questions,
+          selectedOption: event.selectedOptions,
+          answeredStatus: event.answeredStatus,
+        ),
+      );
+      _testRepository.insertTestResult(
+        TestResultModel(
+          userId: getIt<CacheManager>().user!.id!,
+          testId: event.testId,
+          totalQuestions: currentCubitState.totalQuestions,
+          correctAnswers: currentCubitState.correct,
+          inCorrectAnswers: currentCubitState.inCorrect,
+          attemptedQuestions: currentCubitState.attempted,
+          notAttemptedQuestions: currentCubitState.notAttempted,
+          score: currentCubitState.score,
+          timeTaken: currentCubitState.timeSpent,
+        ),
+      );
     }
-    final totalScore = calculatePercentage(
-      correctAnswers: correctAnswers,
-      totalQuestions: totalQuestions,
-      wrongAnswers: incorrectAnswers,
-    );
-    emit(
-      TestSubmitted(
-        questions: questions,
-        selectedOption: selectedOptions,
-        answeredStatus: answeredStatus,
-        totalQuestions: totalQuestions,
-        attempted: attempted,
-        notAttempted: notAttempted,
-        correct: correctAnswers,
-        inCorrect: incorrectAnswers,
-        isCorrect: isCorrect,
-        isReview: false,
-      ),
-    );
-    _testRepository.insertTestResult(
-      TestResultModel(
-        userId: getIt<CacheManager>().user!.id!,
-        testId: event.testId,
-        totalQuestions: totalQuestions,
-        correctAnswers: correctAnswers,
-        inCorrectAnswers: incorrectAnswers,
-        attemptedQuestions: attempted,
-        notAttemptedQuestions: notAttempted,
-        score: totalScore,
-        timeTaken: timeSpent,
-      ),
-    );
   }
 
   Future<void> _onFetchSingleResult(

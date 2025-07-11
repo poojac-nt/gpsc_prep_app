@@ -1,23 +1,21 @@
-part of 'test_bloc.dart';
+import 'package:flutter/cupertino.dart';
+
+import '../../../../../domain/entities/question_language_model.dart';
 
 @immutable
 sealed class TestEvent {}
 
 class SubmitTest extends TestEvent {
   final int testId;
-  final int totalQuestions;
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOptions;
   final List<bool> answeredStatus;
-  final int timeTaken;
 
   SubmitTest(
     this.testId,
-    this.totalQuestions,
     this.questions,
     this.selectedOptions,
     this.answeredStatus,
-    this.timeTaken,
   );
 }
 

@@ -5,8 +5,8 @@ import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:meta/meta.dart';
 
-part 'daily_test_event.dart';
-part 'daily_test_state.dart';
+import 'daily_test_event.dart';
+import 'daily_test_state.dart';
 
 class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
   final TestRepository _testRepository;

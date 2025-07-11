@@ -15,11 +15,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
 
   QuestionBloc(this._testRepository) : super(QuestionLoading()) {
     on<LoadQuestion>(_loadQuestion);
-    on<AnswerQuestion>(_answerQuestion);
-    on<NextQuestion>(_nextQuestion);
-    on<PrevQuestion>(_prevQuestion);
-    on<JumpToQuestion>(_jumpToQuestion);
-    on<ReviewTestEvent>(_onReviewTest);
   }
 
   Future<void> _loadQuestion(
@@ -66,90 +61,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         return;
       }
 
-      emit(
-        QuestionLoaded(
-          questions: localizedQuestions,
-          currentIndex: 0,
-          selectedOption: List.generate(localizedQuestions.length, (_) => null),
-          answeredStatus: List.generate(
-            localizedQuestions.length,
-            (_) => false,
-          ),
-        ),
-      );
+      emit(QuestionLoaded(questions: localizedQuestions));
     });
-  }
-
-  Future<void> _answerQuestion(
-    AnswerQuestion event,
-    Emitter<QuestionState> emit,
-  ) async {
-    if (state is QuestionLoaded) {
-      final currentState = state as QuestionLoaded;
-      final updatedSelected = [...currentState.selectedOption];
-      updatedSelected[currentState.currentIndex] = event.index;
-
-      final updatedStatus = [...currentState.answeredStatus];
-      updatedStatus[currentState.currentIndex] = true;
-
-      emit(
-        currentState.copyWith(
-          selectedOption: updatedSelected,
-          answeredStatus: updatedStatus,
-        ),
-      );
-    }
-  }
-
-  Future<void> _nextQuestion(
-    NextQuestion event,
-    Emitter<QuestionState> emit,
-  ) async {
-    if (state is QuestionLoaded) {
-      final currentState = state as QuestionLoaded;
-      final nextIndex = currentState.currentIndex + 1;
-      if (nextIndex < currentState.questions.length) {
-        emit(currentState.copyWith(currentIndex: nextIndex));
-      }
-    }
-  }
-
-  Future<void> _prevQuestion(
-    PrevQuestion event,
-    Emitter<QuestionState> emit,
-  ) async {
-    if (state is QuestionLoaded) {
-      final currentState = state as QuestionLoaded;
-      final prevIndex = currentState.currentIndex - 1;
-      if (prevIndex >= 0) {
-        emit(currentState.copyWith(currentIndex: prevIndex));
-      }
-    }
-  }
-
-  Future<void> _jumpToQuestion(
-    JumpToQuestion event,
-    Emitter<QuestionState> emit,
-  ) async {
-    if (state is QuestionLoaded) {
-      final currentState = state as QuestionLoaded;
-      emit(currentState.copyWith(currentIndex: event.index));
-    }
-  }
-
-  Future<void> _onReviewTest(
-    ReviewTestEvent event,
-    Emitter<QuestionState> emit,
-  ) async {
-    emit(
-      QuestionLoaded(
-        questions: event.questions,
-        currentIndex: 0,
-        answeredStatus: event.answeredStatus,
-        selectedOption: event.selectedOption,
-        isCorrect: event.isCorrect,
-        isReview: true,
-      ),
-    );
   }
 }

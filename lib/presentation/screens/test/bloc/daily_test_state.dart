@@ -1,4 +1,8 @@
-part of 'daily_test_bloc.dart';
+import 'package:flutter/cupertino.dart';
+
+import '../../../../core/error/failure.dart';
+import '../../../../domain/entities/daily_test_model.dart';
+import '../../../../domain/entities/result_model.dart';
 
 @immutable
 sealed class DailyTestState {}

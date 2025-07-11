@@ -13,7 +13,10 @@ import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dar
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
+
+import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
 
 final getIt = GetIt.instance;
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -74,4 +77,6 @@ void setupBlocs() {
   getIt.registerLazySingleton<DailyTestBloc>(
     () => DailyTestBloc(getIt<TestRepository>()),
   );
+  getIt.registerLazySingleton<TestCubit>(() => TestCubit());
+  getIt.registerLazySingleton<QuestionCubit>(() => QuestionCubit());
 }
