@@ -54,7 +54,11 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as TestScreenArgs;
 
       return _slideTransition(
-        TestScreen(isFromResult: args.isFromResult, testId: args.testId),
+        TestScreen(
+          isFromResult: args.isFromResult,
+          testId: args.testId,
+          language: args.language,
+        ),
         state,
       );
     },

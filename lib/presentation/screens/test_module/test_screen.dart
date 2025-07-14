@@ -34,10 +34,12 @@ class TestScreen extends StatefulWidget {
     super.key,
     this.isFromResult = false,
     required this.testId,
+    required this.language,
   });
 
   final int? testId;
   final bool isFromResult;
+  final String? language;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -56,7 +58,9 @@ class _TestScreenState extends State<TestScreen> {
     if (widget.isFromResult) {
       bloc.add(TimerStop());
     } else {
-      context.read<QuestionBloc>().add(LoadQuestion(widget.testId!, 'en'));
+      context.read<QuestionBloc>().add(
+        LoadQuestion(widget.testId!, widget.language),
+      );
       bloc.add(TimerStart());
     }
     super.initState();

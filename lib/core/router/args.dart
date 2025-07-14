@@ -1,8 +1,9 @@
 class TestScreenArgs {
   final bool isFromResult;
   final int? testId;
+  final String? language;
 
-  TestScreenArgs({required this.isFromResult, this.testId});
+  TestScreenArgs({required this.isFromResult, this.testId, this.language});
 }
 
 class ResultScreenArgs {

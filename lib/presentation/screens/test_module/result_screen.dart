@@ -169,6 +169,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                   extra: TestScreenArgs(
                                     isFromResult: true,
                                     testId: null,
+                                    language: null,
                                   ), // or testId: 123
                                 );
                               },
