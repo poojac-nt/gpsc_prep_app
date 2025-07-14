@@ -37,7 +37,6 @@ class TestScreen extends StatefulWidget {
   });
 
   final int? testId;
-
   final bool isFromResult;
 
   @override
@@ -172,7 +171,7 @@ class _TestScreenState extends State<TestScreen> {
               ).padSymmetric(horizontal: 10.w),
         ],
       ),
-      body: BlocListener<TestCubit, TestCubitState>(
+      body: BlocListener<TestCubit, TestCubitSubmitted>(
         listener: (context, state) {
           if (state is TestCubitSubmitted) {
             context.push(

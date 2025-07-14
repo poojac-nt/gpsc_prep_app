@@ -6,8 +6,8 @@ import '../../../../../domain/entities/question_language_model.dart';
 import '../../bloc/timer/timer_bloc.dart';
 import '../../bloc/timer/timer_state.dart';
 
-class TestCubit extends Cubit<TestCubitState> {
-  TestCubit() : super(TestCubitInitial());
+class TestCubit extends Cubit<TestCubitSubmitted> {
+  TestCubit() : super(TestCubitSubmitted.initial());
 
   void calculateAndEmitTestResult({
     required List<QuestionLanguageData> questions,

@@ -51,7 +51,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
   Future<void> _onTimerStop(TimerStop event, Emitter<TimerState> emit) async {
     timer?.cancel();
-    int timeSpent = 0;
+
     _hasTestBeenSubmitted = true;
 
     if (event.isManual) {
@@ -75,19 +75,6 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
       }
 
       emit(TimerStopped(spentMins, spentSecs, event.isManual));
-      // if (state is TimerRunning) {
-      //   final currentState = state as TimerRunning;
-      //   var remainingTime =
-      //       currentState.remainingMinutes * 60 + currentState.remainingSeconds;
-      //   timeSpent = 30 * 60 - remainingTime;
-      //   print("timeSpent :$timeSpent");
-      //   var spentMins = timeSpent ~/ 60;
-      //   var spentSecs = timeSpent % 60;
-      //   emit(TimerStopped(spentMins, spentSecs, event.isManual));
-      // } else {
-      //   // If not running, fall back safely
-      //   emit(TimerStopped(0, 0, event.isManual));
-      // }
     } else {
       emit(TimerStopped(30, 0, false));
     }

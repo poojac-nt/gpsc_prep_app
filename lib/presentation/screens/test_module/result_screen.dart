@@ -91,7 +91,7 @@ class _ResultScreenState extends State<ResultScreen> {
             builder: (context, state) {
               print("state of result screen :${state.runtimeType}");
               if (state is TestSubmitted) {
-                return BlocBuilder<TestCubit, TestCubitState>(
+                return BlocBuilder<TestCubit, TestCubitSubmitted>(
                   builder: (context, state) {
                     if (state is! TestCubitSubmitted) {
                       return SizedBox.shrink();

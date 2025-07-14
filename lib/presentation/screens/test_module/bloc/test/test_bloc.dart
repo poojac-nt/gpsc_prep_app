@@ -38,13 +38,13 @@ class TestBloc extends Bloc<TestEvent, TestState> {
         TestResultModel(
           userId: getIt<CacheManager>().user!.id!,
           testId: event.testId,
-          totalQuestions: currentCubitState.totalQuestions,
-          correctAnswers: currentCubitState.correct,
-          inCorrectAnswers: currentCubitState.inCorrect,
-          attemptedQuestions: currentCubitState.attempted,
-          notAttemptedQuestions: currentCubitState.notAttempted,
-          score: currentCubitState.score,
-          timeTaken: currentCubitState.timeSpent,
+          totalQuestions: currentCubitState.totalQuestions ?? 0,
+          correctAnswers: currentCubitState.correct ?? 0,
+          inCorrectAnswers: currentCubitState.inCorrect ?? 0,
+          attemptedQuestions: currentCubitState.attempted ?? 0,
+          notAttemptedQuestions: currentCubitState.notAttempted ?? 0,
+          score: currentCubitState.score ?? 0,
+          timeTaken: currentCubitState.timeSpent ?? 0,
         ),
       );
     }
