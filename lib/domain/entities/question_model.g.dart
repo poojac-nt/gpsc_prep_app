@@ -11,20 +11,15 @@ QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
       questionType: json['question_type'] as String,
       difficultyLevel: json['difficulty_level'] as String,
       questionEn: QuestionLanguageData.fromJson(
-        json['question_en'] as Map<String, dynamic>,
-      ),
-      questionHi:
-          json['question_hi'] == null
-              ? null
-              : QuestionLanguageData.fromJson(
-                json['question_hi'] as Map<String, dynamic>,
-              ),
-      questionGj:
-          json['question_gj'] == null
-              ? null
-              : QuestionLanguageData.fromJson(
-                json['question_gj'] as Map<String, dynamic>,
-              ),
+          json['question_en'] as Map<String, dynamic>),
+      questionHi: json['question_hi'] == null
+          ? null
+          : QuestionLanguageData.fromJson(
+              json['question_hi'] as Map<String, dynamic>),
+      questionGj: json['question_gj'] == null
+          ? null
+          : QuestionLanguageData.fromJson(
+              json['question_gj'] as Map<String, dynamic>),
       createdAt: json['created_at'] as String,
       marks: (json['marks'] as num).toInt(),
     );

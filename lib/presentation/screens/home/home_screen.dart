@@ -4,8 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:gpsc_prep_app/data/Use%20Case/network_check.dart';
+import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/selection_drawer.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/stats_widget.dart';
@@ -13,6 +16,7 @@ import 'package:gpsc_prep_app/presentation/screens/home/widgets/test_container.d
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../answer_writing/answer_writing_screen.dart';
@@ -37,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (fcmToken != null) {
         await setFcmToken(fcmToken);
       }
-
     });
     FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) async {
       await setFcmToken(fcmToken);
@@ -49,6 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
         getIt<SnackBarHelper>().showSuccess(notification.body ?? "");
       }
     });
+
+    syncLatestIfExists();
   }
 
   Future<void> setFcmToken(String fcmToken) async {
@@ -280,5 +285,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ).padAll(AppPaddings.defaultPadding),
       ),
     );
+  }
+
+  Future<void> syncLatestIfExists() async {
+    final testResultBox = getIt<Box<TestResultModel>>(); // ✅ use getIt
+    final latest = testResultBox.get('latest');
+    if (latest == null) return;
+    final log = getIt<LogHelper>();
+
+    final isOnline = await getIt<NetworkCheckUseCase>().isOnline();
+    if (isOnline) {
+      try {
+        await getIt<SupabaseHelper>().insertDailyTestsResults(latest);
+        await testResultBox.delete('latest');
+        log.i('✅ Synced test result to Supabase and removed from Hive');
+      } catch (e) {
+        log.e('❌ Sync failed: $e');
+      }
+    } else {
+      log.e('No Internet');
+      return;
+    }
   }
 }

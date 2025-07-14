@@ -7,15 +7,15 @@ part of 'user_payload.dart';
 // **************************************************************************
 
 UserPayload _$UserPayloadFromJson(Map<String, dynamic> json) => UserPayload(
-  authID: json['auth_id'] as String?,
-  name: json['full_name'] as String,
-  email: json['email'] as String,
-  password: json['password'] as String?,
-  role: json['role'] as String? ?? 'Student',
-  address: json['address'] as String?,
-  number: (json['number'] as num?)?.toInt(),
-  profilePicture: json['profile_picture'] as String?,
-);
+      authID: json['auth_id'] as String?,
+      name: json['full_name'] as String,
+      email: json['email'] as String,
+      password: json['password'] as String?,
+      role: json['role'] as String? ?? 'Student',
+      address: json['address'] as String?,
+      number: (json['number'] as num?)?.toInt(),
+      profilePicture: json['profile_picture'] as String?,
+    );
 
 Map<String, dynamic> _$UserPayloadToJson(UserPayload instance) =>
     <String, dynamic>{

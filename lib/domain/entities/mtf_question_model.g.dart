@@ -7,17 +7,18 @@ part of 'mtf_question_model.dart';
 // **************************************************************************
 
 MTFQuestion _$MTFQuestionFromJson(Map<String, dynamic> json) => MTFQuestion(
-  question: json['question'] as String,
-  optA: json['optA'] as String,
-  optB: json['optB'] as String,
-  optC: json['optC'] as String,
-  optD: json['optD'] as String,
-  leftItems:
-      (json['leftItems'] as List<dynamic>).map((e) => e as String).toList(),
-  rightItems:
-      (json['rightItems'] as List<dynamic>).map((e) => e as String).toList(),
-  correctAnswer: json['correctAnswer'] as String,
-);
+      question: json['question'] as String,
+      optA: json['optA'] as String,
+      optB: json['optB'] as String,
+      optC: json['optC'] as String,
+      optD: json['optD'] as String,
+      leftItems:
+          (json['leftItems'] as List<dynamic>).map((e) => e as String).toList(),
+      rightItems: (json['rightItems'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      correctAnswer: json['correctAnswer'] as String,
+    );
 
 Map<String, dynamic> _$MTFQuestionToJson(MTFQuestion instance) =>
     <String, dynamic>{

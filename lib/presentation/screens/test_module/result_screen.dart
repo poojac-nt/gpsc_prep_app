@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
@@ -14,6 +15,7 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:hive/hive.dart';
 
 import 'bloc/test/test_event.dart';
 import 'bloc/test/test_state.dart';
@@ -93,9 +95,6 @@ class _ResultScreenState extends State<ResultScreen> {
               if (state is TestSubmitted) {
                 return BlocBuilder<TestCubit, TestCubitSubmitted>(
                   builder: (context, state) {
-                    if (state is! TestCubitSubmitted) {
-                      return SizedBox.shrink();
-                    }
                     final List<String> containerValues = [
                       state.correct.toString(),
                       state.inCorrect.toString(),
@@ -113,7 +112,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           child: Column(
                             children: [
                               Text(
-                                '${state.score.toString()}%',
+                                '${state.score!.toStringAsFixed(2)}%',
                                 style: TextStyle(
                                   fontSize: 26.sp,
                                   fontWeight: FontWeight.bold,
@@ -151,7 +150,19 @@ class _ResultScreenState extends State<ResultScreen> {
                           children: [
                             ActionButton(
                               text: "Download Detailed Report",
-                              onTap: () {},
+                              onTap: () {
+                                final box = Hive.box<TestResultModel>(
+                                  'test_results',
+                                );
+                                final latestResult = box.get('latest');
+                                if (latestResult != null) {
+                                  print(
+                                    'Key: latest → Value: ${latestResult.toJson()}',
+                                  );
+                                } else {
+                                  print('No entry found for key "latest".');
+                                }
+                              },
                             ),
                             5.hGap,
                             ActionButton(
