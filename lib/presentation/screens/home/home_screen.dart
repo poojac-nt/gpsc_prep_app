@@ -1,8 +1,11 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/selection_drawer.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/stats_widget.dart';
@@ -10,6 +13,7 @@ import 'package:gpsc_prep_app/presentation/screens/home/widgets/test_container.d
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../answer_writing/answer_writing_screen.dart';
 
@@ -22,6 +26,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final user = getIt<CacheManager>().user;
+
+  @override
+  void initState() {
+    super.initState();
+    Supabase.instance.client.auth.onAuthStateChange.listen((event) async {
+      await FirebaseMessaging.instance.requestPermission();
+
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await setFcmToken(fcmToken);
+      }
+
+    });
+    FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) async {
+      await setFcmToken(fcmToken);
+    });
+
+    FirebaseMessaging.onMessage.listen((payload) {
+      final notification = payload.notification;
+      if (notification != null) {
+        getIt<SnackBarHelper>().showSuccess(notification.body ?? "");
+      }
+    });
+  }
+
+  Future<void> setFcmToken(String fcmToken) async {
+    await getIt<SupabaseHelper>().updateOrInsertFcmToken(fcmToken);
+  }
 
   @override
   Widget build(BuildContext context) {

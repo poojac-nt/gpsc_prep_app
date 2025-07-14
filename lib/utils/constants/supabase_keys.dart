@@ -14,4 +14,5 @@ abstract class SupabaseKeys {
   ///columns
   static final String email = 'user_email';
   static final String authId = 'auth_id';
+  static final String fcmToken = 'fcm_token';
 }

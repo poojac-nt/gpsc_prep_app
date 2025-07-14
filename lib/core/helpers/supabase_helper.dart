@@ -270,4 +270,25 @@ class SupabaseHelper {
       return Left(Failure("Error fetching result: ${e.toString()}"));
     }
   }
+
+  Future<void> updateOrInsertFcmToken(String fcmToken) async {
+    try {
+      final userId = supabase.auth.currentSession?.user.id;
+
+      if (userId != null) {
+        final response =
+            await supabase
+                .from(SupabaseKeys.usersTable)
+                .update({SupabaseKeys.fcmToken: fcmToken})
+                .eq(SupabaseKeys.authId, userId)
+                .select()
+                .single();
+        _log.i('FCM token upsert response: $response');
+      } else {
+        _log.e('No authenticated user found.');
+      }
+    } catch (e) {
+      _log.e('Exception in updateOrInsertFcmToken: $e');
+    }
+  }
 }
