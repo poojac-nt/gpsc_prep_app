@@ -1,35 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import '../../../../../core/error/failure.dart';
 import '../../../../../domain/entities/question_language_model.dart';
-import '../../../../../domain/entities/result_model.dart';
 
 @immutable
 sealed class TestCubitState {}
 
 final class TestCubitInitial extends TestCubitState {}
-
-class TestCubitResultInitial extends TestCubitState {}
-
-class TestCubitResultLoading extends TestCubitState {}
-
-class TestCubitResultSuccess extends TestCubitState {
-  final List<TestResultModel> results;
-
-  TestCubitResultSuccess(this.results);
-}
-
-class TestCubitResultFailure extends TestCubitState {
-  final Failure message;
-
-  TestCubitResultFailure(this.message);
-}
-
-class NoTestCubitResultFound extends TestCubitState {}
-
-class TestCubitSubmissionFailed extends TestCubitState {
-  final Failure message;
-  TestCubitSubmissionFailed(this.message);
-}
 
 class TestCubitSubmitted extends TestCubitState {
   final int totalQuestions;

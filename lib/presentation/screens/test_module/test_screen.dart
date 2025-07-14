@@ -25,7 +25,6 @@ import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import 'bloc/test/test_event.dart';
-import 'bloc/test/test_state.dart';
 import 'bloc/timer/timer_bloc.dart';
 import 'bloc/timer/timer_state.dart';
 import 'cubit/test/test_cubit_state.dart';
@@ -49,6 +48,7 @@ class _TestScreenState extends State<TestScreen> {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
   final _snackBar = getIt<SnackBarHelper>();
   late QuestionLanguageData question;
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -57,7 +57,6 @@ class _TestScreenState extends State<TestScreen> {
     if (widget.isFromResult) {
       bloc.add(TimerStop());
     } else {
-      // context.read<QuestionNavigatorCubit>().reset();
       context.read<QuestionBloc>().add(LoadQuestion(widget.testId!, 'en'));
       bloc.add(TimerStart());
     }
@@ -125,6 +124,7 @@ class _TestScreenState extends State<TestScreen> {
                         style: AppTexts.title.copyWith(color: Colors.white),
                       ),
                       onPressed: () {
+                        context.read<QuestionCubit>().reset();
                         context.pop(); // Close dialog
                         context.pushReplacement(AppRoutes.home);
                       },
@@ -183,15 +183,23 @@ class _TestScreenState extends State<TestScreen> {
         },
         child: BlocConsumer<QuestionBloc, QuestionState>(
           listener: (context, state) {
-            // if (state is TestSubmitted) {
-            //   context.pushReplacement(AppRoutes.resultScreen);
-            // }
+            if (state is QuestionLoaded && !_initialized) {
+              _initialized = true;
+
+              if (widget.isFromResult) {
+                context.read<QuestionCubit>().initialize(state.questions);
+              } else {
+                context.read<QuestionCubit>()
+                  ..reset()
+                  ..initialize(state.questions);
+              }
+            }
             if (state is QuestionLoadFailed) {
               _snackBar.showError(state.failure.message);
             }
           },
           builder: (context, state) {
-            print("TEst screen : ${state.toString()}");
+            print("TEst screen state : ${state.toString()}");
             if (state is QuestionLoading) {
               return Padding(
                 padding: EdgeInsets.all(AppPaddings.defaultPadding),
@@ -239,12 +247,6 @@ class _TestScreenState extends State<TestScreen> {
             }
 
             if (state is QuestionLoaded) {
-              context.read<QuestionCubit>()
-                ..reset()
-                ..initialize(state.questions);
-              // context.read<QuestionNavigatorCubit>().initialize(
-              //   state.questions,
-              // );
               return BlocBuilder<QuestionCubit, QuestionCubitState>(
                 builder: (context, state) {
                   if (state is! QuestionCubitLoaded) {
@@ -561,11 +563,6 @@ class _TestScreenState extends State<TestScreen> {
                 context.pop(); // close dialog
                 context.read<TimerBloc>().add(TimerStop());
                 print("Test id ${widget.testId}");
-                // context.read<TestCubit>().calculateAndEmitTestResult(
-                //   questions: state.questions,
-                //   selectedOption: state.selectedOption,
-                //   answeredStatus: state.answeredStatus,
-                // );
                 context.read<TestBloc>().add(
                   SubmitTest(
                     widget.testId!,

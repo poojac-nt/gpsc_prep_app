@@ -8,6 +8,7 @@ import '../../bloc/timer/timer_state.dart';
 
 class TestCubit extends Cubit<TestCubitState> {
   TestCubit() : super(TestCubitInitial());
+
   void calculateAndEmitTestResult({
     required List<QuestionLanguageData> questions,
     required List<String?> selectedOption,

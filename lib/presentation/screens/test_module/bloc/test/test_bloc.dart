@@ -11,7 +11,6 @@ import '../../cubit/test/test_cubit_state.dart';
 
 class TestBloc extends Bloc<TestEvent, TestState> {
   final TestRepository _testRepository;
-  final CacheManager _cacheManager = getIt<CacheManager>();
 
   TestBloc(this._testRepository) : super(TestResultInitial()) {
     on<SubmitTest>(_onSubmit);
@@ -19,44 +18,6 @@ class TestBloc extends Bloc<TestEvent, TestState> {
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
-    // final questions = event.questions;
-    // final selectedOptions = event.selectedOptions;
-    // final answeredStatus = event.answeredStatus;
-    // final totalQuestions = questions.length;
-    //
-    // final attempted = answeredStatus.where((status) => status).length;
-    // final notAttempted = totalQuestions - attempted;
-    // var timerState = getIt<TimerBloc>().state;
-    // final minSpent = timerState is TimerStopped ? timerState.totalMins : 0;
-    // final secSpent = timerState is TimerStopped ? timerState.totalSecs : 0;
-    // final timeSpent = (minSpent * 60) + secSpent;
-    //
-    // int correctAnswers = 0;
-    // int incorrectAnswers = 0;
-    // List<bool?> isCorrect = [];
-    //
-    // for (int i = 0; i < questions.length; i++) {
-    //   final userAnswer = selectedOptions[i];
-    //   final correctAnswer = questions[i].correctAnswer;
-    //
-    //   if (userAnswer != null) {
-    //     if (userAnswer.trim() == correctAnswer.trim()) {
-    //       correctAnswers++;
-    //       isCorrect.add(true);
-    //     } else {
-    //       incorrectAnswers++;
-    //       isCorrect.add(false);
-    //     }
-    //   } else {
-    //     isCorrect.add(null);
-    //   }
-    // }
-    // final totalScore = calculatePercentage(
-    //   correctAnswers: correctAnswers,
-    //   totalQuestions: totalQuestions,
-    //   wrongAnswers: incorrectAnswers,
-    // );
-
     var cubit = getIt<TestCubit>();
     cubit.calculateAndEmitTestResult(
       questions: event.questions,

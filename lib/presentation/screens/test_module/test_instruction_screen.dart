@@ -134,9 +134,6 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             ActionButton(
               text: "Start Test",
               onTap: () {
-                // context.read<QuestionBloc>().add(
-                //   LoadQuestion(widget.testId, selectedLanguage),
-                // );
                 context.push(
                   AppRoutes.testScreen,
                   extra: TestScreenArgs(

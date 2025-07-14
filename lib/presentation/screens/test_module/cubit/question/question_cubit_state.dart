@@ -20,6 +20,7 @@ final class QuestionCubitLoaded extends QuestionCubitState {
     required this.selectedOption,
     this.isCorrect,
   });
+
   double get progress =>
       questions.length <= 1 ? 1.0 : currentIndex + 1 / questions.length;
   int get answered => answeredStatus.where((value) => value).toList().length;

@@ -26,16 +26,16 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
 
   void answerQuestion(String? option) {
     if (state is! QuestionCubitLoaded) return;
-    final s = state as QuestionCubitLoaded;
+    final currentState = state as QuestionCubitLoaded;
 
-    final updatedSelected = List<String?>.from(s.selectedOption)
-      ..[s.currentIndex] = option;
+    final updatedSelected = List<String?>.from(currentState.selectedOption)
+      ..[currentState.currentIndex] = option;
 
-    final updatedStatus = List<bool>.from(s.answeredStatus)
-      ..[s.currentIndex] = option != null;
+    final updatedStatus = List<bool>.from(currentState.answeredStatus)
+      ..[currentState.currentIndex] = option != null;
 
     emit(
-      s.copyWith(
+      currentState.copyWith(
         selectedOption: updatedSelected,
         answeredStatus: updatedStatus,
       ),
@@ -44,25 +44,25 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
 
   void nextQuestion() {
     if (state is! QuestionCubitLoaded) return;
-    final s = state as QuestionCubitLoaded;
-    if (s.currentIndex < s.questions.length - 1) {
-      emit(s.copyWith(currentIndex: s.currentIndex + 1));
+    final currentState = state as QuestionCubitLoaded;
+    if (currentState.currentIndex < currentState.questions.length - 1) {
+      emit(currentState.copyWith(currentIndex: currentState.currentIndex + 1));
     }
   }
 
   void prevQuestion() {
     if (state is! QuestionCubitLoaded) return;
-    final s = state as QuestionCubitLoaded;
-    if (s.currentIndex > 0) {
-      emit(s.copyWith(currentIndex: s.currentIndex - 1));
+    final currentState = state as QuestionCubitLoaded;
+    if (currentState.currentIndex > 0) {
+      emit(currentState.copyWith(currentIndex: currentState.currentIndex - 1));
     }
   }
 
   void jumpToQuestion(int index) {
     if (state is! QuestionCubitLoaded) return;
-    final s = state as QuestionCubitLoaded;
-    if (index >= 0 && index < s.questions.length) {
-      emit(s.copyWith(currentIndex: index));
+    final currentState = state as QuestionCubitLoaded;
+    if (index >= 0 && index < currentState.questions.length) {
+      emit(currentState.copyWith(currentIndex: index));
     }
   }
 
@@ -73,9 +73,9 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     required List<QuestionLanguageData> questions,
   }) {
     if (state is! QuestionCubitLoaded) return;
-    final s = state as QuestionCubitLoaded;
+    final currentState = state as QuestionCubitLoaded;
     emit(
-      s.copyWith(
+      currentState.copyWith(
         questions: questions,
         currentIndex: 0,
         answeredStatus: answeredStatus,
