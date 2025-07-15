@@ -9,12 +9,9 @@ final class QuestionLoading extends QuestionState {}
 
 final class QuestionLoaded extends QuestionState {
   final List<QuestionLanguageData> questions;
+  final List<int> marks;
 
-  QuestionLoaded({required this.questions});
-
-  QuestionLoaded copyWith({List<QuestionLanguageData>? questions}) {
-    return QuestionLoaded(questions: questions ?? this.questions);
-  }
+  QuestionLoaded({required this.questions, required this.marks});
 }
 
 class QuestionLoadFailed extends QuestionState {

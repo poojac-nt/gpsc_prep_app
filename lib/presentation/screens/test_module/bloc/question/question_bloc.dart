@@ -6,6 +6,8 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:meta/meta.dart';
 
+import '../../../../../domain/entities/question_model.dart';
+
 part 'question_event.dart';
 part 'question_state.dart';
 
@@ -25,6 +27,12 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
 
     result.fold((failure) => emit(QuestionLoadFailed(failure)), (questions) {
       List<QuestionLanguageData> localizedQuestions;
+      List<int> marks =
+          questions
+              .where((q) => q.marks != 0)
+              .map((q) => q.marks) // Ensure only valid entries
+              .toList();
+      print('MArksss:$marks');
       switch (event.language) {
         case 'hi':
           localizedQuestions =
@@ -61,7 +69,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         return;
       }
 
-      emit(QuestionLoaded(questions: localizedQuestions));
+      emit(QuestionLoaded(questions: localizedQuestions, marks: marks));
     });
   }
 }

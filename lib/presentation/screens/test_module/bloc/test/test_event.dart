@@ -7,12 +7,14 @@ sealed class TestEvent {}
 
 class SubmitTest extends TestEvent {
   final int testId;
+  final List<int> marks;
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOptions;
   final List<bool> answeredStatus;
 
   SubmitTest(
     this.testId,
+    this.marks,
     this.questions,
     this.selectedOptions,
     this.answeredStatus,

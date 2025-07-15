@@ -113,7 +113,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           child: Column(
                             children: [
                               Text(
-                                '${state.score.toString()}%',
+                                '${state.score?.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   fontSize: 26.sp,
                                   fontWeight: FontWeight.bold,

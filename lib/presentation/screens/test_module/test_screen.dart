@@ -250,6 +250,7 @@ class _TestScreenState extends State<TestScreen> {
             }
 
             if (state is QuestionLoaded) {
+              final marks = state.marks;
               return BlocBuilder<QuestionCubit, QuestionCubitState>(
                 builder: (context, state) {
                   if (state is! QuestionCubitLoaded) {
@@ -398,6 +399,7 @@ class _TestScreenState extends State<TestScreen> {
                                                 context,
                                                 state,
                                                 time,
+                                                marks,
                                               );
                                             } else {
                                               context
@@ -505,6 +507,7 @@ class _TestScreenState extends State<TestScreen> {
     BuildContext context,
     QuestionCubitLoaded state,
     int timeTaken,
+    List<int> marks,
   ) {
     showDialog(
       context: context,
@@ -569,6 +572,7 @@ class _TestScreenState extends State<TestScreen> {
                 context.read<TestBloc>().add(
                   SubmitTest(
                     widget.testId!,
+                    marks,
                     state.questions,
                     state.selectedOption,
                     state.answeredStatus,

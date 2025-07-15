@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
@@ -63,7 +65,6 @@ class SupabaseHelper {
   }
 
   ///New User Create Method
-
   Future<Either<Failure, UserModel>> createUser(UserPayload data) async {
     try {
       final jsonData = data.toJson();
@@ -188,6 +189,7 @@ class SupabaseHelper {
               .map((e) => QuestionModel.fromJson(e['questions']))
               .where((q) => q.questionEn != null) // Ensure only valid entries
               .toList();
+
       _log.i("Fetched questions: ${questions.length}");
       Future.delayed(Duration(seconds: 30));
       return Right(questions);

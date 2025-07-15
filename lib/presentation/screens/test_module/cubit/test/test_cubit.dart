@@ -13,6 +13,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     required List<QuestionLanguageData> questions,
     required List<String?> selectedOption,
     required List<bool> answeredStatus,
+    required List<int> marks,
   }) {
     final attempted = answeredStatus.where((status) => status).length;
     final notAttempted = questions.length - attempted;
@@ -24,6 +25,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     int correctAnswers = 0;
     int incorrectAnswers = 0;
     List<bool?> isCorrect = [];
+    double totalScore = 0.0;
 
     for (int i = 0; i < questions.length; i++) {
       final userAnswer = selectedOption[i];
@@ -33,20 +35,17 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
         if (userAnswer.trim() == correctAnswer.trim()) {
           correctAnswers++;
           isCorrect.add(true);
+          totalScore += marks[i];
         } else {
           incorrectAnswers++;
           isCorrect.add(false);
+          totalScore -= 0.33 * marks[i];
         }
       } else {
         isCorrect.add(null);
+        totalScore += 0 * marks[i];
       }
     }
-
-    final totalScore = calculatePercentage(
-      correctAnswers: correctAnswers,
-      totalQuestions: questions.length,
-      wrongAnswers: incorrectAnswers,
-    );
     emit(
       TestCubitSubmitted(
         questions: questions,
@@ -63,39 +62,5 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
         timeSpent: timeSpent,
       ),
     );
-  }
-
-  double calculatePercentage({
-    required int totalQuestions,
-    required int correctAnswers,
-    required int wrongAnswers,
-  }) {
-    const double marksPerCorrect = 2.0;
-    const double negativeMarkFraction = 0.33;
-
-    // Calculate not attempted
-    int notAttempted = totalQuestions - correctAnswers - wrongAnswers;
-
-    // Ensure values are logical
-    if (notAttempted < 0) {
-      throw ArgumentError(
-        'Total of correct and wrong answers cannot exceed total questions',
-      );
-    }
-
-    // Score formula
-    double score =
-        (correctAnswers * marksPerCorrect) -
-        (wrongAnswers * marksPerCorrect * negativeMarkFraction);
-
-    double maxScore = totalQuestions * marksPerCorrect;
-
-    // Avoid division by zero
-    if (maxScore == 0) return 0.0;
-
-    // Percentage score
-    double percentage = (score / maxScore) * 100;
-
-    return percentage.clamp(0.0, 100.0);
   }
 }
