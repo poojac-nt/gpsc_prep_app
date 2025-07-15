@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
@@ -82,6 +83,7 @@ class _ResultScreenState extends State<ResultScreen> {
     var time = totalTime(context);
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
+        context.read<ConnectivityBloc>().add(CheckConnectivity());
         context.go(AppRoutes.home);
       },
       child: Scaffold(

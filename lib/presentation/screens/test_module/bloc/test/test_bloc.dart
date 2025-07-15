@@ -1,22 +1,19 @@
 import 'package:bloc/bloc.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/data/Use%20Case/network_check.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_state.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
 
 import '../../cubit/test/test_cubit.dart';
 import '../../cubit/test/test_cubit_state.dart';
 
 class TestBloc extends Bloc<TestEvent, TestState> {
   final TestRepository _testRepository;
-  final CacheManager _cacheManager = getIt<CacheManager>();
   final LogHelper _log = getIt<LogHelper>();
 
   TestBloc(this._testRepository) : super(TestResultInitial()) {
@@ -42,43 +39,25 @@ class TestBloc extends Bloc<TestEvent, TestState> {
         ),
       );
 
-      final networkChecker = NetworkCheckUseCase(
-        connectivity: Connectivity(),
-        httpClient: http.Client(),
+      final testResult = TestResultModel(
+        userId: getIt<CacheManager>().user!.id!,
+        testId: event.testId,
+        totalQuestions: currentCubitState.totalQuestions ?? 0,
+        correctAnswers: currentCubitState.correct ?? 0,
+        inCorrectAnswers: currentCubitState.inCorrect ?? 0,
+        attemptedQuestions: currentCubitState.attempted ?? 0,
+        notAttemptedQuestions: currentCubitState.notAttempted ?? 0,
+        score: currentCubitState.score ?? 0,
+        timeTaken: currentCubitState.timeSpent ?? 0,
       );
-      final online = await networkChecker.isOnline();
-      if (online) {
-        _testRepository.insertTestResult(
-          TestResultModel(
-            userId: getIt<CacheManager>().user!.id!,
-            testId: event.testId,
-            totalQuestions: currentCubitState.totalQuestions ?? 0,
-            correctAnswers: currentCubitState.correct ?? 0,
-            inCorrectAnswers: currentCubitState.inCorrect ?? 0,
-            attemptedQuestions: currentCubitState.attempted ?? 0,
-            notAttemptedQuestions: currentCubitState.notAttempted ?? 0,
-            score: currentCubitState.score ?? 0,
-            timeTaken: currentCubitState.timeSpent ?? 0,
-          ),
-        );
+
+      final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+      if (isOnline) {
+        _testRepository.insertTestResult(testResult);
         _log.i("✅ Internet is available. Proceeding...");
-        // Proceed with API or Supabase request
       } else {
         final box = Hive.box<TestResultModel>('test_results');
-        box.put(
-          'latest',
-          TestResultModel(
-            userId: getIt<CacheManager>().user!.id!,
-            testId: event.testId,
-            totalQuestions: currentCubitState.totalQuestions ?? 0,
-            correctAnswers: currentCubitState.correct ?? 0,
-            inCorrectAnswers: currentCubitState.inCorrect ?? 0,
-            attemptedQuestions: currentCubitState.attempted ?? 0,
-            notAttemptedQuestions: currentCubitState.notAttempted ?? 0,
-            score: currentCubitState.score ?? 0,
-            timeTaken: currentCubitState.timeSpent ?? 0,
-          ),
-        );
+        box.put('latest', testResult);
         _log.e("❌ No internet connection");
         return;
       }

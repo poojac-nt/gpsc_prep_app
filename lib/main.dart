@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/app/app.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
@@ -39,7 +40,7 @@ Future<void> main() async {
     anonKey: AppSecrets.serviceKey,
   );
 
-  await setupInitializer();
+  setupInitializer();
 
   await getIt<SharedPrefHelper>().init();
 
@@ -65,6 +66,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<DailyTestBloc>()),
           BlocProvider(create: (_) => getIt<QuestionCubit>()),
           BlocProvider(create: (_) => getIt<TestCubit>()),
+          BlocProvider(create: (_) => getIt<ConnectivityBloc>()),
         ],
         child: const MyApp(),
       ),
