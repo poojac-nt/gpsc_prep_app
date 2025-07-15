@@ -113,7 +113,11 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                               } else {
                                 context.pushReplacement(
                                   AppRoutes.testInstructionScreen,
-                                  extra: test.id,
+                                  extra: TestInstructionScreenArgs(
+                                    testId: test.id,
+                                    availableLanguages:
+                                        state.languages[test.id] ?? {'en'},
+                                  ), // or testId: 123
                                 );
                               }
                             },

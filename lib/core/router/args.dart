@@ -12,3 +12,13 @@ class ResultScreenArgs {
 
   ResultScreenArgs({required this.isFromTest, this.testId});
 }
+
+class TestInstructionScreenArgs {
+  final int testId;
+  final Set<String> availableLanguages;
+
+  TestInstructionScreenArgs({
+    required this.testId,
+    required this.availableLanguages,
+  });
+}

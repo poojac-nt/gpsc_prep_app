@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 
 import 'daily_test_event.dart';
 import 'daily_test_state.dart';
@@ -18,8 +19,7 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
   ) async {
     emit(DailyTestFetching());
 
-    final testsResult =
-        await _testRepository.fetchDailyTest(); // fetch all tests
+    final testsResult = await _testRepository.fetchDailyTest();
 
     await testsResult.fold(
       (failure) async {
@@ -27,21 +27,26 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
       },
       (tests) async {
         final resultMap = <int, TestResultModel>{};
+        final languageAvailability = <int, Set<String>>{};
+
+        final getLanguages = GetAvailableLanguagesForTestUseCase(
+          _testRepository,
+        );
 
         for (final test in tests) {
+          final availableLanguages = await getLanguages(test.id);
+          languageAvailability[test.id] = availableLanguages;
+
           final result = await _testRepository.singleTestResult(test.id);
 
-          result.fold(
-            (_) {}, // silently ignore failure for individual test result
-            (testResult) {
-              if (testResult != null) {
-                resultMap[test.id] = testResult;
-              }
-            },
-          );
+          result.fold((_) {}, (testResult) {
+            if (testResult != null) {
+              resultMap[test.id] = testResult;
+            }
+          });
         }
 
-        emit(DailyTestFetched(tests, resultMap));
+        emit(DailyTestFetched(tests, resultMap, languageAvailability));
       },
     );
   }

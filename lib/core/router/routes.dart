@@ -44,8 +44,14 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.testInstructionScreen,
     pageBuilder: (context, state) {
-      final testId = state.extra as int;
-      return _slideTransition(TestInstructionScreen(testId: testId), state);
+      final args = state.extra as TestInstructionScreenArgs;
+      return _slideTransition(
+        TestInstructionScreen(
+          testId: args.testId,
+          availableLanguages: args.availableLanguages,
+        ),
+        state,
+      );
     },
   ),
   GoRoute(

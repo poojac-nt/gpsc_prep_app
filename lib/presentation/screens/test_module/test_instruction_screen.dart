@@ -10,8 +10,14 @@ import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
 
 class TestInstructionScreen extends StatefulWidget {
-  const TestInstructionScreen({super.key, required this.testId});
+  const TestInstructionScreen({
+    super.key,
+    required this.testId,
+    required this.availableLanguages,
+  });
+
   final int testId;
+  final Set<String> availableLanguages;
 
   @override
   State<TestInstructionScreen> createState() => _TestInstructionScreenState();
@@ -19,6 +25,15 @@ class TestInstructionScreen extends StatefulWidget {
 
 class _TestInstructionScreenState extends State<TestInstructionScreen> {
   String selectedLanguage = 'en';
+
+  @override
+  void initState() {
+    super.initState();
+    selectedLanguage =
+        widget.availableLanguages.contains('en')
+            ? 'en'
+            : widget.availableLanguages.first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,9 +132,12 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _languageButton(context, 'Hindi', 'hi'),
-                _languageButton(context, 'English', 'en'),
-                _languageButton(context, 'Gujarati', 'gj'),
+                if (widget.availableLanguages.contains('hi'))
+                  _languageButton(context, 'Hindi', 'hi'),
+                if (widget.availableLanguages.contains('en'))
+                  _languageButton(context, 'English', 'en'),
+                if (widget.availableLanguages.contains('gj'))
+                  _languageButton(context, 'Gujarati', 'gj'),
               ],
             ),
             15.hGap,

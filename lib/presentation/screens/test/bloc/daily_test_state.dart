@@ -14,8 +14,9 @@ class DailyTestFetching extends DailyTestState {}
 class DailyTestFetched extends DailyTestState {
   final List<DailyTestModel> dailyTestModel;
   final Map<int, TestResultModel> testResults;
+  final Map<int, Set<String>> languages;
 
-  DailyTestFetched(this.dailyTestModel, this.testResults);
+  DailyTestFetched(this.dailyTestModel, this.testResults, this.languages);
 }
 
 class DailyTestFetchFailed extends DailyTestState {
