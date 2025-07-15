@@ -22,67 +22,33 @@ class TestBloc extends Bloc<TestEvent, TestState> {
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
-    var cubit = getIt<TestCubit>();
-
-    cubit.calculateAndEmitTestResult(
-      questions: event.questions,
-      marks: event.marks,
-      selectedOption: event.selectedOptions,
-      answeredStatus: event.answeredStatus,
+    final testResult = TestResultModel(
+      userId: getIt<CacheManager>().user!.id!,
+      testId: event.testId,
+      totalQuestions: event.totalQuestions ?? 0,
+      correctAnswers: event.correctAnswers ?? 0,
+      inCorrectAnswers: event.inCorrectAnswers ?? 0,
+      attemptedQuestions: event.attemptedQuestions ?? 0,
+      notAttemptedQuestions: event.notAttemptedQuestions ?? 0,
+      score: event.score ?? 0,
+      timeTaken: event.timeTaken ?? 0,
     );
-    var currentCubitState = cubit.state;
 
-    if (cubit.state is TestCubitSubmitted) {
-      var currentCubitState = cubit.state as TestCubitSubmitted;
-      emit(
-        TestSubmitted(
-          questions: event.questions,
-          selectedOption: event.selectedOptions,
-          answeredStatus: event.answeredStatus,
-        ),
-      );
-
-      final testResult = TestResultModel(
-        userId: getIt<CacheManager>().user!.id!,
-        testId: event.testId,
-        totalQuestions: currentCubitState.totalQuestions ?? 0,
-        correctAnswers: currentCubitState.correct ?? 0,
-        inCorrectAnswers: currentCubitState.inCorrect ?? 0,
-        attemptedQuestions: currentCubitState.attempted ?? 0,
-        notAttemptedQuestions: currentCubitState.notAttempted ?? 0,
-        score: currentCubitState.score ?? 0,
-        timeTaken: currentCubitState.timeSpent ?? 0,
-      );
-
-      final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
-      if (isOnline) {
-        _testRepository.insertTestResult(testResult);
-        _log.i("✅ Internet is available. Proceeding...");
-      } else {
-        final box = Hive.box<TestResultModel>('test_results');
-        box.put('latest', testResult);
-        _log.e("❌ No internet connection");
-        return;
-      }
+    final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+    if (isOnline) {
+      _testRepository.insertTestResult(testResult);
+      _log.i("✅ Internet is available. Proceeding...");
+    } else {
+      final box = Hive.box<TestResultModel>('test_results');
+      box.put('latest', testResult);
+      _log.e("❌ No internet connection");
+      return;
     }
     emit(
       TestSubmitted(
         questions: event.questions,
         selectedOption: event.selectedOptions,
         answeredStatus: event.answeredStatus,
-      ),
-    );
-    _testRepository.insertTestResult(
-      TestResultModel(
-        userId: getIt<CacheManager>().user!.id!,
-        testId: event.testId,
-        totalQuestions: currentCubitState.totalQuestions ?? 0,
-        correctAnswers: currentCubitState.correct ?? 0,
-        inCorrectAnswers: currentCubitState.inCorrect ?? 0,
-        attemptedQuestions: currentCubitState.attempted ?? 0,
-        notAttemptedQuestions: currentCubitState.notAttempted ?? 0,
-        score: currentCubitState.score ?? 0,
-        timeTaken: currentCubitState.timeSpent ?? 0,
       ),
     );
   }

@@ -1,9 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:meta/meta.dart';
 
 import 'daily_test_event.dart';
 import 'daily_test_state.dart';

@@ -1,17 +1,15 @@
 import '../../../../../domain/entities/question_language_model.dart';
 
-class TestCubitState {}
-
-class TestCubitSubmitted extends TestCubitState {
+class TestCubitSubmitted {
   final int? totalQuestions;
-  final int? attempted;
-  final int? notAttempted;
-  final int? correct;
-  final int? inCorrect;
+  final int? attemptedQuestions;
+  final int? notAttemptedQuestions;
+  final int? correctAnswers;
+  final int? inCorrectAnswers;
   final bool isReview;
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOption;
-  final List<bool?> isCorrect;
+  final List<bool?> isAnswerCorrect;
   final double? score;
   final int? timeSpent;
   final List<bool> answeredStatus;
@@ -20,43 +18,44 @@ class TestCubitSubmitted extends TestCubitState {
 
   TestCubitSubmitted({
     this.totalQuestions,
-    this.attempted,
-    this.notAttempted,
-    this.correct,
-    this.inCorrect,
+    this.attemptedQuestions,
+    this.notAttemptedQuestions,
+    this.correctAnswers,
+    this.inCorrectAnswers,
     this.questions = const [],
     this.selectedOption = const [],
     this.answeredStatus = const [],
     this.isReview = false,
     this.timeSpent,
     this.score,
-    this.isCorrect = const [],
+    this.isAnswerCorrect = const [],
   });
 
   TestCubitSubmitted copyWith({
     int? totalQuestions,
-    int? attempted,
-    int? notAttempted,
-    int? correct,
-    int? inCorrect,
+    int? attemptedQuestions,
+    int? notAttemptedQuestions,
+    int? correctAnswers,
+    int? inCorrectAnswers,
     bool? isReview,
     List<QuestionLanguageData>? questions,
     List<String?>? selectedOption,
-    List<bool?>? isCorrect,
+    List<bool?>? isAnswerCorrect,
     double? score,
     int? timeSpent,
     List<bool>? answeredStatus,
   }) {
     return TestCubitSubmitted(
       totalQuestions: totalQuestions ?? this.totalQuestions,
-      attempted: attempted ?? this.attempted,
-      notAttempted: notAttempted ?? this.notAttempted,
-      correct: correct ?? this.correct,
-      inCorrect: inCorrect ?? this.inCorrect,
+      attemptedQuestions: attemptedQuestions ?? this.attemptedQuestions,
+      notAttemptedQuestions:
+          notAttemptedQuestions ?? this.notAttemptedQuestions,
+      correctAnswers: correctAnswers ?? this.correctAnswers,
+      inCorrectAnswers: inCorrectAnswers ?? this.inCorrectAnswers,
       isReview: isReview ?? this.isReview,
       questions: questions ?? this.questions,
       selectedOption: selectedOption ?? this.selectedOption,
-      isCorrect: isCorrect ?? this.isCorrect,
+      isAnswerCorrect: isAnswerCorrect ?? this.isAnswerCorrect,
       score: score ?? this.score,
       timeSpent: timeSpent ?? this.timeSpent,
       answeredStatus: answeredStatus ?? this.answeredStatus,

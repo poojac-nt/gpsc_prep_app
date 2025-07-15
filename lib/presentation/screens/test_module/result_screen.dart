@@ -97,14 +97,11 @@ class _ResultScreenState extends State<ResultScreen> {
               if (state is TestSubmitted) {
                 return BlocBuilder<TestCubit, TestCubitSubmitted>(
                   builder: (context, state) {
-                    if (state is! TestCubitSubmitted) {
-                      return SizedBox.shrink();
-                    }
                     final List<String> containerValues = [
-                      state.correct.toString(),
-                      state.inCorrect.toString(),
-                      state.notAttempted.toString(),
-                      state.attempted.toString(),
+                      state.correctAnswers.toString(),
+                      state.inCorrectAnswers.toString(),
+                      state.notAttemptedQuestions.toString(),
+                      state.attemptedQuestions.toString(),
                       time,
                       state.totalQuestions.toString(),
                     ];
@@ -117,7 +114,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           child: Column(
                             children: [
                               Text(
-                                '${state.score!.toStringAsFixed(2)}%',
+                                '${state.score!.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   fontSize: 26.sp,
                                   fontWeight: FontWeight.bold,
@@ -164,7 +161,7 @@ class _ResultScreenState extends State<ResultScreen> {
                               onTap: () {
                                 context.read<QuestionCubit>().reviewTest(
                                   questions: state.questions,
-                                  isCorrect: state.isCorrect,
+                                  isCorrect: state.isAnswerCorrect,
                                   answeredStatus: state.answeredStatus,
                                   selectedOption: state.selectedOption,
                                 );
