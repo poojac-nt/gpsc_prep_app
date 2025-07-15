@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
@@ -24,7 +25,6 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'bloc/test/test_event.dart';
 import 'bloc/timer/timer_bloc.dart';
 import 'bloc/timer/timer_state.dart';
 import 'cubit/test/test_cubit_state.dart';
@@ -175,7 +175,7 @@ class _TestScreenState extends State<TestScreen> {
               ).padSymmetric(horizontal: 10.w),
         ],
       ),
-      body: BlocListener<TestCubit, TestCubitSubmitted>(
+      body: BlocListener<TestCubit, TestCubitState>(
         listener: (context, state) {
           if (state is TestCubitSubmitted) {
             context.push(
@@ -202,7 +202,7 @@ class _TestScreenState extends State<TestScreen> {
             }
           },
           builder: (context, state) {
-            print("TEst screen state : ${state.toString()}");
+            print("Test screen state : ${state.toString()}");
             if (state is QuestionLoading) {
               return Padding(
                 padding: EdgeInsets.all(AppPaddings.defaultPadding),

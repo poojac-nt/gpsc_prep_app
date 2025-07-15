@@ -1,12 +1,10 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/app/app.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
@@ -23,6 +21,8 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_c
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +66,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<DailyTestBloc>()),
           BlocProvider(create: (_) => getIt<QuestionCubit>()),
           BlocProvider(create: (_) => getIt<TestCubit>()),
+          BlocProvider(create: (_) => getIt<ConnectivityBloc>()),
         ],
         child: const MyApp(),
       ),

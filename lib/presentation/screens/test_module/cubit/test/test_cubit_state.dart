@@ -1,6 +1,8 @@
 import '../../../../../domain/entities/question_language_model.dart';
 
-class TestCubitSubmitted {
+class TestCubitState {}
+
+class TestCubitSubmitted extends TestCubitState {
   final int? totalQuestions;
   final int? attempted;
   final int? notAttempted;

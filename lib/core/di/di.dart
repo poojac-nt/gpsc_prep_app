@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
@@ -7,6 +8,7 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
@@ -15,6 +17,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bl
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
+import 'package:hive_flutter/adapters.dart';
 
 import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
 
@@ -25,6 +28,7 @@ void setupInitializer() {
   setupHelpers();
   setupRepositories();
   setupBlocs();
+  setUpHive();
 }
 
 void setupHelpers() {
@@ -79,4 +83,15 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<TestCubit>(() => TestCubit());
   getIt.registerLazySingleton<QuestionCubit>(() => QuestionCubit());
+  getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
+}
+
+Future<void> setUpHive() async {
+  // Init Hive
+  await Hive.initFlutter();
+  // Register Hive adapters
+  Hive.registerAdapter(TestResultModelAdapter());
+  // Open Hive box and register it
+  final testResultBox = await Hive.openBox<TestResultModel>('test_results');
+  getIt.registerSingleton<Box<TestResultModel>>(testResultBox);
 }
