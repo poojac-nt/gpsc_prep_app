@@ -40,7 +40,7 @@ Future<void> main() async {
     anonKey: AppSecrets.serviceKey,
   );
 
-  setupInitializer();
+  await setupInitializer();
 
   await getIt<SharedPrefHelper>().init();
 

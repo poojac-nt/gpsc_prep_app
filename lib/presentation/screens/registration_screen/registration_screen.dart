@@ -51,7 +51,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAccountCreated) {
-            context.pushReplacement(AppRoutes.home);
+            context.pushReplacement(AppRoutes.dashboard);
           } else if (state is AuthAccountCreateError) {
             _log.e(state.message);
             snackBarHelper.showError(state.message);

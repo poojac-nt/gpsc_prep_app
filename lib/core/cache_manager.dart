@@ -1,5 +1,6 @@
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 
 class CacheManager {
   final SharedPrefHelper _prefs;
@@ -7,6 +8,8 @@ class CacheManager {
   CacheManager(this._prefs);
 
   UserModel? _user;
+
+  UserRole? getUserRole() => _user?.role ?? UserRole.student;
 
   Future<UserModel?> getInitUser() async {
     _user = await _prefs.getUser();

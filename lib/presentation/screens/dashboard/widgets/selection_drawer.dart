@@ -7,12 +7,16 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class SelectionDrawer extends StatelessWidget {
   SelectionDrawer({super.key});
 
   final user = getIt<CacheManager>().user;
+  final isStudent = getIt<CacheManager>().getUserRole() == UserRole.student;
+  final isMentor = getIt<CacheManager>().getUserRole() == UserRole.mentor;
+  final isAdmin = getIt<CacheManager>().getUserRole() == UserRole.admin;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +65,7 @@ class SelectionDrawer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user?.name ?? 'John Deo',
+                        user!.name,
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
@@ -80,26 +84,32 @@ class SelectionDrawer extends StatelessWidget {
                 endIndent: 0,
                 color: Colors.grey,
               ),
-              commonWidget(
-                () => context.push(AppRoutes.home),
-                Icons.dashboard,
-                'Dashboard',
-              ),
-              commonWidget(
-                () => context.push(AppRoutes.mcqTestScreen),
-                Icons.content_paste_rounded,
-                'MCQ Tests',
-              ),
+              isStudent
+                  ? commonWidget(
+                    () => context.push(AppRoutes.dashboard),
+                    Icons.dashboard,
+                    'Dashboard',
+                  )
+                  : SizedBox.shrink(),
+              isStudent
+                  ? commonWidget(
+                    () => context.push(AppRoutes.mcqTestScreen),
+                    Icons.content_paste_rounded,
+                    'MCQ Tests',
+                  )
+                  : SizedBox.shrink(),
               // commonWidget(
               //   () => context.push(AppRoutes.answerWriting),
               //   Icons.edit_document,
               //   'Answer Writing',
               // ),
-              commonWidget(
-                () => context.push(AppRoutes.profile),
-                Icons.person,
-                'Profile',
-              ),
+              isStudent
+                  ? commonWidget(
+                    () => context.push(AppRoutes.profile),
+                    Icons.person,
+                    'Profile',
+                  )
+                  : SizedBox.shrink(),
               commonWidget(
                 () => context.push(AppRoutes.addQuestionScreen),
                 Icons.file_upload_outlined,

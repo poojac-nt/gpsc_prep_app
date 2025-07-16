@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
@@ -16,7 +15,6 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:hive/hive.dart';
 
 import 'bloc/test/test_event.dart';
 import 'bloc/test/test_state.dart';
@@ -84,7 +82,7 @@ class _ResultScreenState extends State<ResultScreen> {
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         context.read<ConnectivityBloc>().add(CheckConnectivity());
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.dashboard);
       },
       child: Scaffold(
         appBar: AppBar(

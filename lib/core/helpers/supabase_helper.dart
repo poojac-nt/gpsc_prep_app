@@ -191,8 +191,10 @@ class SupabaseHelper {
       _log.i("Fetched questions: ${questions.length}");
       return Right(questions);
     } catch (e, stackTrace) {
-      print("Fetch Error: $e");
-      print("StackTrace: $stackTrace");
+      _log.e(
+        "Fetch Error: $e"
+        "\nStackTrace: $stackTrace",
+      );
       return Left(Failure(e.toString()));
     }
   }

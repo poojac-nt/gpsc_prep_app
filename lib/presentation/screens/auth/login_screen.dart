@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            context.pushReplacement(AppRoutes.home);
+            context.pushReplacement(AppRoutes.dashboard);
           } else if (state is AuthFailure) {
             _log.e(state.message);
             _snackBarHelper.showError(state.message);

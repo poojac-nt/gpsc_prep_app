@@ -24,11 +24,11 @@ import '../../presentation/screens/test_module/cubit/question/question_cubit.dar
 final getIt = GetIt.instance;
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-void setupInitializer() {
+Future<void> setupInitializer() async {
   setupHelpers();
   setupRepositories();
   setupBlocs();
-  setUpHive();
+  await setUpHive();
 }
 
 void setupHelpers() {

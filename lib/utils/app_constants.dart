@@ -69,7 +69,7 @@ abstract class AppTexts {
 abstract class AppRoutes {
   static const String splash = '/splash';
   static const String registrationScreen = '/registrationScreen';
-  static const String home = '/home';
+  static const String dashboard = '/dashboard';
   static const String login = '/login';
   static const String answerWriting = '/answerWriting';
   static const String profile = '/profile';

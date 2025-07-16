@@ -132,10 +132,10 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if (widget.availableLanguages.contains('hi'))
-                  _languageButton(context, 'Hindi', 'hi'),
                 if (widget.availableLanguages.contains('en'))
                   _languageButton(context, 'English', 'en'),
+                if (widget.availableLanguages.contains('hi'))
+                  _languageButton(context, 'Hindi', 'hi'),
                 if (widget.availableLanguages.contains('gj'))
                   _languageButton(context, 'Gujarati', 'gj'),
               ],

@@ -7,7 +7,7 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
@@ -129,7 +129,7 @@ class _TestScreenState extends State<TestScreen> {
                       onPressed: () {
                         context.read<QuestionCubit>().reset();
                         context.pop(); // Close dialog
-                        context.pushReplacement(AppRoutes.home);
+                        context.pushReplacement(AppRoutes.dashboard);
                       },
                     ),
                   ],

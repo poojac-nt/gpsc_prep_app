@@ -10,10 +10,10 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/widgets/custom_progress_bar.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/widgets/selection_drawer.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/widgets/stats_widget.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/widgets/test_container.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/selection_drawer.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/stats_widget.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/test_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/connectivity_handler_dialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -24,14 +24,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../answer_writing/answer_writing_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _DashboardScreenState extends State<DashboardScreen> {
   final user = getIt<CacheManager>().user;
 
   @override

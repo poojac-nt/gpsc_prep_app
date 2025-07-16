@@ -46,7 +46,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
             return Center(child: const CircularProgressIndicator());
           }
           return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Center(
                 child: ElevatedContainer(
