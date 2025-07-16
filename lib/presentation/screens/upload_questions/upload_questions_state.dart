@@ -14,7 +14,7 @@ class UploadFileSuccess extends UploadQuestionsState {
 }
 
 class UploadFileFailure extends UploadQuestionsState {
-  final String error;
+  final Failure failure;
 
-  UploadFileFailure(this.error);
+  UploadFileFailure(this.failure);
 }

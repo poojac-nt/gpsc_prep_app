@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
@@ -89,7 +91,12 @@ class _ResultScreenState extends State<ResultScreen> {
           title: Text('Test Completed', style: AppTexts.titleTextStyle),
         ),
         body: SingleChildScrollView(
-          child: BlocBuilder<TestBloc, TestState>(
+          child: BlocConsumer<TestBloc, TestState>(
+            listener: (context, state) {
+              if (state is SingleResultFailure) {
+                getIt<SnackBarHelper>().showError(state.failure.message);
+              }
+            },
             builder: (context, state) {
               print("state of result screen :${state.runtimeType}");
               if (state is TestSubmitted) {

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+
 import '../../../../../core/error/failure.dart';
 import '../../../../../domain/entities/question_language_model.dart';
 import '../../../../../domain/entities/result_model.dart';
@@ -19,14 +20,15 @@ class SingleResultSuccess extends TestState {
 }
 
 class SingleResultFailure extends TestState {
-  final Failure message;
+  final Failure failure;
 
-  SingleResultFailure(this.message);
+  SingleResultFailure(this.failure);
 }
 
 class TestSubmissionFailed extends TestState {
-  final Failure message;
-  TestSubmissionFailed(this.message);
+  final Failure failure;
+
+  TestSubmissionFailed(this.failure);
 }
 
 class TestSubmitted extends TestState {

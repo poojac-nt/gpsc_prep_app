@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
 import 'package:meta/meta.dart';
 
@@ -22,7 +23,7 @@ class UploadQuestionsBloc
 
       emit(UploadFileSuccess(result!));
     } catch (e) {
-      emit(UploadFileFailure('Upload failed: ${e.toString()}'));
+      emit(UploadFileFailure(Failure('Upload failed: ${e.toString()}')));
     }
   }
 }

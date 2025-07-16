@@ -37,8 +37,8 @@ class _UploadQuestionsState extends State<UploadQuestions> {
               '${r.duplicateCount} duplicates, ${r.failCount} failed.',
             );
           } else if (state is UploadFileFailure) {
-            getIt<LogHelper>().e(state.error);
-            getIt<SnackBarHelper>().showError(state.error);
+            getIt<LogHelper>().e(state.failure.message);
+            getIt<SnackBarHelper>().showError(state.failure.message);
           }
         },
         builder: (context, state) {
