@@ -31,13 +31,13 @@ class CustomDropdown extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 10.w),
               ),
               hintText: hintText,
+              menuHeight: 400.h,
               dropdownMenuEntries:
                   items
                       .map(
                         (item) => DropdownMenuEntry(value: item, label: item),
                       )
                       .toList(),
-              menuHeight: 400.h,
               menuStyle: MenuStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.white),
                 elevation: WidgetStateProperty.all(5),

@@ -20,12 +20,16 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   bool get hasTestBeenSubmitted => _hasTestBeenSubmitted;
 
   int tickCount = 0;
+  int testDuration = 0;
   Future<void> _onTimerStarted(
     TimerStart event,
     Emitter<TimerState> emit,
   ) async {
     timer?.cancel();
-    tickCount = 30 * 60;
+    testDuration = event.testDuration!;
+    tickCount = event.testDuration! * 60;
+
+    emit(TimerRunning(tickCount % 60, tickCount ~/ 60));
     timer = Timer.periodic(Duration(seconds: 1), (_) {
       tickCount--;
       add(TimerTicked(tickCount % 60, tickCount ~/ 60));
@@ -68,15 +72,14 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
         final current = state as TimerRunning;
         final remaining =
             current.remainingMinutes * 60 + current.remainingSeconds;
-        final timeSpent = 30 * 60 - remaining;
-
+        final timeSpent = testDuration * 60 - remaining;
         spentMins = timeSpent ~/ 60;
         spentSecs = timeSpent % 60;
       }
 
       emit(TimerStopped(spentMins, spentSecs, event.isManual));
     } else {
-      emit(TimerStopped(30, 0, false));
+      emit(TimerStopped(testDuration, 0, false));
     }
   }
 }

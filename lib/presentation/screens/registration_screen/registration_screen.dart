@@ -196,10 +196,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Exam", style: AppTexts.labelTextStyle),
-                          5.hGap,
-                          CustomDropdown(items: items, hintText: "Select Exam"),
-                          20.hGap,
+                          // Text("Exam", style: AppTexts.labelTextStyle),
+                          // 5.hGap,
+                          // CustomDropdown(items: items, hintText: "Select Exam"),
+                          // 20.hGap,
                           _buildInputText(
                             "Full Name",
                             "Enter your name",

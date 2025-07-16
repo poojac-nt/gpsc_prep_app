@@ -100,7 +100,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                 context.pushReplacement(
                                   AppRoutes.testInstructionScreen,
                                   extra: TestInstructionScreenArgs(
-                                    testId: test.id,
+                                    dailyTestModel: test,
                                     availableLanguages:
                                         state.languages[test.id] ?? {'en'},
                                   ), // or testId: 123

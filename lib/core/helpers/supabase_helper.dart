@@ -284,8 +284,8 @@ class SupabaseHelper {
       if (response == null) {
         return Right(null); // No result yet
       }
-
       final model = TestResultModel.fromJson(response);
+      _log.i("Result ${response.toString()}");
       return Right(model);
     } catch (e) {
       _snackBar.showError('Error fetching result: $e');

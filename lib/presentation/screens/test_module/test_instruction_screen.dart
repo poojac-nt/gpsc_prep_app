@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -12,11 +13,11 @@ import '../../widgets/action_button.dart';
 class TestInstructionScreen extends StatefulWidget {
   const TestInstructionScreen({
     super.key,
-    required this.testId,
+    required this.dailyTestModel,
     required this.availableLanguages,
   });
 
-  final int testId;
+  final DailyTestModel dailyTestModel;
   final Set<String> availableLanguages;
 
   @override
@@ -39,10 +40,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Daily Test - General Studies",
-          style: AppTexts.titleTextStyle,
-        ),
+        title: Text(widget.dailyTestModel.name, style: AppTexts.titleTextStyle),
       ),
       body: SingleChildScrollView(
         child: TestModule(
@@ -56,7 +54,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                 child: Column(
                   children: [
                     Text(
-                      "25",
+                      widget.dailyTestModel.noQuestions.toString(),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -78,7 +76,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                 child: Column(
                   children: [
                     Text(
-                      "30",
+                      widget.dailyTestModel.duration.toString(),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -115,10 +113,12 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             Text("Instructions: ", style: AppTexts.labelTextStyle),
             10.hGap,
             _buildInstructionTile(
-              "This test contains 25 multiple choice questions",
+              "This test contains ${widget.dailyTestModel.noQuestions} multiple choice questions",
             ),
             3.hGap,
-            _buildInstructionTile("There is no negative marking"),
+            _buildInstructionTile(
+              "There is a penalty of 0.33 marks for each incorrect response",
+            ),
             3.hGap,
             _buildInstructionTile(
               "You can navigate between questions using next/previous buttons",
@@ -148,8 +148,9 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                   AppRoutes.testScreen,
                   extra: TestScreenArgs(
                     isFromResult: false,
-                    testId: widget.testId,
+                    testId: widget.dailyTestModel.id,
                     language: selectedLanguage,
+                    testDuration: widget.dailyTestModel.duration,
                   ), // or testId: 123
                 );
               },

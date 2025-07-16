@@ -2,7 +2,10 @@ sealed class TimerEvent {}
 
 class TimerInit extends TimerEvent {}
 
-class TimerStart extends TimerEvent {}
+class TimerStart extends TimerEvent {
+  final int? testDuration;
+  TimerStart({this.testDuration});
+}
 
 class TimerStop extends TimerEvent {
   final bool isManual;
