@@ -277,48 +277,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  10.hGap,
-                  TestModule(
-                    title: "Exam Preferences",
-                    subtitle: "Select the exams you are preparing for",
-                    cards: [
-                      5.hGap,
-                      Text(
-                        "Preparing for exams",
-                        style: AppTexts.labelTextStyle,
-                      ),
-                      5.hGap,
-                      ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: exams.length,
-                        itemBuilder:
-                            (context, index) => Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5.h),
-                              child: ExamPrefTile(
-                                title: exams[index],
-                                value: checkedList[index],
-                                onChanged: (value) {
-                                  setState(() {
-                                    checkedList[index] = value!;
-                                  });
-                                },
-                              ),
-                            ),
-                      ),
-                      10.hGap,
-                      Text("Selected Exams", style: AppTexts.labelTextStyle),
-                      5.hGap,
-                      Wrap(
-                        runSpacing: 3,
-                        spacing: 5,
-                        children: [
-                          CustomTag(exam: exams[0]),
-                          CustomTag(exam: exams[1]),
-                        ],
-                      ),
-                    ],
-                  ),
+                  // 10.hGap,
+                  // TestModule(
+                  //   title: "Exam Preferences",
+                  //   subtitle: "Select the exams you are preparing for",
+                  //   cards: [
+                  //     5.hGap,
+                  //     Text(
+                  //       "Preparing for exams",
+                  //       style: AppTexts.labelTextStyle,
+                  //     ),
+                  //     5.hGap,
+                  //     ListView.builder(
+                  //       physics: NeverScrollableScrollPhysics(),
+                  //       shrinkWrap: true,
+                  //       itemCount: exams.length,
+                  //       itemBuilder:
+                  //           (context, index) => Padding(
+                  //             padding: EdgeInsets.symmetric(vertical: 5.h),
+                  //             child: ExamPrefTile(
+                  //               title: exams[index],
+                  //               value: checkedList[index],
+                  //               onChanged: (value) {
+                  //                 setState(() {
+                  //                   checkedList[index] = value!;
+                  //                 });
+                  //               },
+                  //             ),
+                  //           ),
+                  //     ),
+                  //     10.hGap,
+                  //     Text("Selected Exams", style: AppTexts.labelTextStyle),
+                  //     5.hGap,
+                  //     Wrap(
+                  //       runSpacing: 3,
+                  //       spacing: 5,
+                  //       children: [
+                  //         CustomTag(exam: exams[0]),
+                  //         CustomTag(exam: exams[1]),
+                  //       ],
+                  //     ),
+                  //   ],
+                  // ),
                   10.hGap,
                   TestModule(
                     title: "Account Actions",

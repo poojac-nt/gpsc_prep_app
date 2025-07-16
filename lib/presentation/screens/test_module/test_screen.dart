@@ -61,7 +61,6 @@ class _TestScreenState extends State<TestScreen> {
       context.read<QuestionBloc>().add(
         LoadQuestion(widget.testId!, widget.language),
       );
-      bloc.add(TimerStart(testDuration: widget.testDuration));
     }
     super.initState();
   }
@@ -230,6 +229,9 @@ class _TestScreenState extends State<TestScreen> {
                   context.read<QuestionCubit>()
                     ..reset()
                     ..initialize(state.questions);
+                  context.read<TimerBloc>().add(
+                    TimerStart(testDuration: widget.testDuration),
+                  );
                 }
               }
             },

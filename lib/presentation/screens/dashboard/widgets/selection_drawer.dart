@@ -88,14 +88,20 @@ class SelectionDrawer extends StatelessWidget {
               ),
               isStudent
                   ? commonWidget(
-                    () => context.push(AppRoutes.dashboard),
+                    () {
+                      context.pop();
+                      context.go(AppRoutes.dashboard);
+                    },
                     Icons.dashboard,
                     'Dashboard',
                   )
                   : SizedBox.shrink(),
               isStudent
                   ? commonWidget(
-                    () => context.push(AppRoutes.mcqTestScreen),
+                    () {
+                      context.pop();
+                      context.push(AppRoutes.mcqTestScreen);
+                    },
                     Icons.content_paste_rounded,
                     'MCQ Tests',
                   )
@@ -107,13 +113,19 @@ class SelectionDrawer extends StatelessWidget {
               // ),
               isStudent
                   ? commonWidget(
-                    () => context.push(AppRoutes.profile),
+                    () {
+                      context.pop();
+                      context.push(AppRoutes.profile);
+                    },
                     Icons.person,
                     'Profile',
                   )
                   : SizedBox.shrink(),
               commonWidget(
-                () => context.push(AppRoutes.addQuestionScreen),
+                () {
+                  context.pop();
+                  context.push(AppRoutes.addQuestionScreen);
+                },
                 Icons.file_upload_outlined,
                 'Upload Test',
               ),
