@@ -2,6 +2,7 @@ import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
@@ -16,9 +17,10 @@ import 'log_helper.dart';
 class SupabaseHelper {
   final supabase = Supabase.instance.client;
   final LogHelper _log;
+  final SnackBarHelper _snackBar;
   final CacheManager _cache = getIt<CacheManager>();
 
-  SupabaseHelper(this._log);
+  SupabaseHelper(this._log, this._snackBar);
 
   Future<bool> doesUserExist(String email) async {
     final response = await supabase
@@ -26,8 +28,10 @@ class SupabaseHelper {
         .select()
         .eq(SupabaseKeys.email, email);
     if (response.isEmpty) {
+      _snackBar.showSuccess('User Does Not Exist');
       return false;
     }
+    _snackBar.showError('User already Exist');
     return true;
   }
 
@@ -55,6 +59,7 @@ class SupabaseHelper {
               .single();
       _log.i('[login] User table response: $userResponse');
       final user = UserModel.fromJson(userResponse);
+      _snackBar.showSuccess('Logged In as ${user.name}');
       return Right(user);
     } catch (e, s) {
       _log.e('[login] Error occurred', error: e, s: s);
@@ -76,6 +81,7 @@ class SupabaseHelper {
 
       if (existingUser != null) {
         _log.w('Email already exists: ${data.email}');
+        _snackBar.showError('A user with this email already exists.');
         return Left(Failure('A user with this email already exists.'));
       }
 
@@ -86,6 +92,7 @@ class SupabaseHelper {
       final user = signUpResponse.user;
 
       if (user == null) {
+        _snackBar.showError('User SignUp Failed');
         _log.e('User SignUp Failed');
       }
       final userId = user?.id;
@@ -105,9 +112,12 @@ class SupabaseHelper {
               .select('*')
               .single();
       _log.i('[UserCreated] Response: $insertResponse');
+      _snackBar.showSuccess('User Created Successfully as ${data.name}');
       final userModel = UserModel.fromJson(insertResponse);
       return Right(userModel);
     } catch (e) {
+      _snackBar.showError('Error Creating New User: $e');
+      _log.e('[createUser] Error: $e');
       return Left(Failure('Error Creating New User $e'));
     }
   }
@@ -140,8 +150,14 @@ class SupabaseHelper {
               .single();
 
       final updatedUser = UserModel.fromJson(userResponse);
+      _log.i('[Update User] Updated User: ${updatedUser.toJson()}');
+      _snackBar.showSuccess(
+        'User Information Updated Successfully as ${updatedUser.name}',
+      );
       return Right(updatedUser);
     } catch (e) {
+      _snackBar.showError('Error Updating User Info: ${e.toString()}');
+      _log.e('[Update User] Error: $e', error: e);
       return Left(Failure('Error Updating User Info: ${e.toString()}'));
     }
   }
@@ -163,9 +179,11 @@ class SupabaseHelper {
           .eq('auth_id', userId);
 
       _log.i('User deleted successfully from both public.users and auth.users');
+      _snackBar.showSuccess('User deleted successfully');
       supabase.auth.signOut();
       return true;
     } catch (e) {
+      _snackBar.showError('Error deleting user: ${e.toString()}');
       _log.e('Error in deleteUser: $e');
       return false;
     }
@@ -191,6 +209,7 @@ class SupabaseHelper {
       _log.i("Fetched questions: ${questions.length}");
       return Right(questions);
     } catch (e, stackTrace) {
+      _snackBar.showError('Error fetching test questions: ${e.toString()}');
       _log.e(
         "Fetch Error: $e"
         "\nStackTrace: $stackTrace",
@@ -212,6 +231,7 @@ class SupabaseHelper {
       _log.i('Total test : ${result.length}');
       return Right(result);
     } catch (e, s) {
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
       _log.e('Error in fetching test: $e', s: s);
       return Left(Failure("Error fetching test : ${e.toString()}"));
     }
@@ -241,8 +261,10 @@ class SupabaseHelper {
       _log.i('Test result inserted successfully: $response');
 
       final model = TestResultModel.fromJson(response);
+      _snackBar.showSuccess('Test Result Inserted Successfully');
       return Right([model]);
     } catch (e) {
+      _snackBar.showError('Error inserting test result: ${e.toString()}');
       _log.e('Error inserting/fetching test result: $e');
       return Left(Failure("Error inserting test: ${e.toString()}"));
     }
@@ -268,6 +290,7 @@ class SupabaseHelper {
       final model = TestResultModel.fromJson(response);
       return Right(model);
     } catch (e) {
+      _snackBar.showError('Error fetching result: $e');
       return Left(Failure("Error fetching result: ${e.toString()}"));
     }
   }
@@ -285,10 +308,13 @@ class SupabaseHelper {
                 .select()
                 .single();
         _log.i('FCM token upsert response: $response');
+        _snackBar.showSuccess('FCM Token Updated Successfully');
       } else {
+        _snackBar.showError('No authenticated user found.');
         _log.e('No authenticated user found.');
       }
     } catch (e) {
+      _snackBar.showError('Error updating FCM token: $e');
       _log.e('Exception in updateOrInsertFcmToken: $e');
     }
   }

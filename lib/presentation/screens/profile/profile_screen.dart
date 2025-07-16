@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
@@ -28,7 +26,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final SnackBarHelper snackBarHelper = getIt<SnackBarHelper>();
   late final TextEditingController email;
   late final TextEditingController password;
   late final TextEditingController name;
@@ -72,19 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('My Profile', style: AppTexts.titleTextStyle)),
-      body: BlocConsumer<EditProfileBloc, EditProfileState>(
-        listener: (context, state) {
-          if (state is EditProfileSuccess) {
-            snackBarHelper.showSuccess("Profile updated successfully");
-          }
-          if (state is EditProfileFailure || state is EditImageUploadError) {
-            snackBarHelper.showError(
-              state is EditProfileFailure
-                  ? state.failure.message
-                  : (state as EditImageUploadError).failure.message,
-            );
-          }
-        },
+      body: BlocBuilder<EditProfileBloc, EditProfileState>(
         builder: (context, state) {
           if (state is EditProfileLoading ||
               state is EditProfileInitial ||

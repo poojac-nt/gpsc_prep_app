@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
@@ -50,8 +48,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         builder: (context, state) {
           if (state is DailyTestFetching) {
             return _buildWhenLoading();
-          } else if (state is DailyTestFetchFailed) {
-            getIt<SnackBarHelper>().showError(state.failure.message);
           } else if (state is DailyTestFetched) {
             return SingleChildScrollView(
               child: Column(

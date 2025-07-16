@@ -52,12 +52,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         listener: (context, state) {
           if (state is AuthAccountCreated) {
             context.pushReplacement(AppRoutes.dashboard);
-          } else if (state is AuthAccountCreateError) {
-            _log.e(state.message);
-            snackBarHelper.showError(state.message);
-          } else if (state is ImageUploadFailed) {
-            _log.e(state.message);
-            snackBarHelper.showError(state.message);
           }
         },
         builder: (context, state) {

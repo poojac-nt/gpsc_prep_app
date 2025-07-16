@@ -36,7 +36,7 @@ void setupHelpers() {
   getIt.registerLazySingleton<LogHelper>(LogHelper.new);
 
   getIt.registerLazySingleton<SupabaseHelper>(
-    () => SupabaseHelper(getIt<LogHelper>()),
+    () => SupabaseHelper(getIt<LogHelper>(), getIt<SnackBarHelper>()),
   );
 
   getIt.registerLazySingleton<CacheManager>(
