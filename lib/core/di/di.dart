@@ -35,16 +35,20 @@ void setupHelpers() {
   getIt.registerLazySingleton<SharedPrefHelper>(SharedPrefHelper.new);
   getIt.registerLazySingleton<LogHelper>(LogHelper.new);
 
-  getIt.registerLazySingleton<SupabaseHelper>(
-    () => SupabaseHelper(getIt<LogHelper>(), getIt<SnackBarHelper>()),
-  );
-
   getIt.registerLazySingleton<CacheManager>(
     () => CacheManager(getIt<SharedPrefHelper>()),
   );
 
   getIt.registerLazySingleton<SnackBarHelper>(
     () => SnackBarHelper(scaffoldMessengerKey),
+  );
+
+  getIt.registerLazySingleton<SupabaseHelper>(
+    () => SupabaseHelper(
+      getIt<LogHelper>(),
+      getIt<SnackBarHelper>(),
+      getIt<CacheManager>(),
+    ),
   );
 }
 

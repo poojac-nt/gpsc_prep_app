@@ -18,9 +18,9 @@ class SupabaseHelper {
   final supabase = Supabase.instance.client;
   final LogHelper _log;
   final SnackBarHelper _snackBar;
-  final CacheManager _cache = getIt<CacheManager>();
+  final CacheManager _cache;
 
-  SupabaseHelper(this._log, this._snackBar);
+  SupabaseHelper(this._log, this._snackBar, this._cache);
 
   Future<bool> doesUserExist(String email) async {
     final response = await supabase

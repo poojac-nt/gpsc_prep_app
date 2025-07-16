@@ -47,7 +47,6 @@ class TestScreen extends StatefulWidget {
 
 class _TestScreenState extends State<TestScreen> {
   List<String> indicator = ["Current", "Answered", "Not Answered"];
-  final _snackBar = getIt<SnackBarHelper>();
   late QuestionLanguageData question;
   bool _initialized = false;
 

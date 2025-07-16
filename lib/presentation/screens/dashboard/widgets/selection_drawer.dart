@@ -13,10 +13,12 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 class SelectionDrawer extends StatelessWidget {
   SelectionDrawer({super.key});
 
-  final user = getIt<CacheManager>().user;
-  final isStudent = getIt<CacheManager>().getUserRole() == UserRole.student;
-  final isMentor = getIt<CacheManager>().getUserRole() == UserRole.mentor;
-  final isAdmin = getIt<CacheManager>().getUserRole() == UserRole.admin;
+  static final CacheManager cache = getIt<CacheManager>();
+
+  final user = cache.user;
+  final isStudent = cache.getUserRole() == UserRole.student;
+  final isMentor = cache.getUserRole() == UserRole.mentor;
+  final isAdmin = cache.getUserRole() == UserRole.admin;
 
   @override
   Widget build(BuildContext context) {

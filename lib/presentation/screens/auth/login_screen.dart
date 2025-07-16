@@ -25,9 +25,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final SnackBarHelper _snackBarHelper = getIt<SnackBarHelper>();
-  final LogHelper _log = getIt<LogHelper>();
-
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
