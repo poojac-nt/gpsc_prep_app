@@ -81,8 +81,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (state is EditProfileSuccess) {
             snackBarHelper.showSuccess("Profile updated successfully");
           }
-          if (state is EditProfileFailure) {
-            snackBarHelper.showError(state.message);
+          if (state is EditProfileFailure || state is EditImageUploadError) {
+            snackBarHelper.showError(
+              state is EditProfileFailure
+                  ? state.failure.message
+                  : (state as EditImageUploadError).failure.message,
+            );
           }
         },
         builder: (context, state) {

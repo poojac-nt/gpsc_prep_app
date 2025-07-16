@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
@@ -44,7 +45,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
       _currentUser = user;
       emit(EditProfileLoaded(user));
     } else {
-      emit(EditProfileFailure('User Not Found'));
+      emit(EditProfileFailure(Failure('User Not Found')));
     }
   }
 
@@ -53,22 +54,23 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     Emitter<EditProfileState> emit,
   ) async {
     if (_currentUser == null) {
-      emit(EditProfileFailure('No User Data to Update'));
+      emit(EditProfileFailure(Failure('No User Data to Update')));
       return;
     }
     emit(EditProfileSaving());
     try {
       final result = await _authRepository.updateUserInfo(event.updatedUser);
-      result.fold((failure) => emit(EditProfileFailure(failure.message)), (
-        user,
-      ) {
-        _cache.setUser(user);
-        _snackBarHelper.showSuccess('Information Updated Successfully');
-        emit(EditProfileSuccess(user));
-        emit(EditProfileLoaded(user));
-      });
+      result.fold(
+        (failure) => emit(EditProfileFailure(Failure(failure.message))),
+        (user) {
+          _cache.setUser(user);
+          _snackBarHelper.showSuccess('Information Updated Successfully');
+          emit(EditProfileSuccess(user));
+          emit(EditProfileLoaded(user));
+        },
+      );
     } catch (e) {
-      emit(EditProfileFailure('Failed to Save profile :$e'));
+      emit(EditProfileFailure(Failure('Failed to Save profile :$e')));
       _log.e('Profile save error', error: e);
     }
   }
@@ -78,7 +80,6 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     Emitter<EditProfileState> emit,
   ) async {
     emit(EditImagePicking());
-
     try {
       // Pick new image
       final XFile? pickedFile = await picker
@@ -92,7 +93,13 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
           });
 
       if (pickedFile == null) {
-        emit(EditImageUploadError('Please select an image'));
+        _log.e('Image pick error: No image selected');
+        emit(
+          EditImageUploadError(
+            Failure('Please select an image to update profile picture'),
+          ),
+        );
+        emit(EditProfileLoaded(_currentUser!));
         return;
       }
 
@@ -146,7 +153,7 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
       emit(EditImageUploaded(newImageUrl, updatedUser));
     } catch (e) {
       _log.e('Image upload failed', error: e);
-      emit(EditImageUploadError('Upload failed. Please try again'));
+      emit(EditImageUploadError(Failure('Upload failed. Please try again')));
     }
   }
 

@@ -22,9 +22,9 @@ class EditProfileSuccess extends EditProfileState {
 }
 
 class EditProfileFailure extends EditProfileState {
-  final String message;
+  final Failure failure;
 
-  EditProfileFailure(this.message);
+  EditProfileFailure(this.failure);
 }
 
 class EditImagePicking extends EditProfileState {}
@@ -39,7 +39,7 @@ class EditImageUploaded extends EditProfileState {
 }
 
 class EditImageUploadError extends EditProfileState {
-  final String message;
+  final Failure failure;
 
-  EditImageUploadError(this.message);
+  EditImageUploadError(this.failure);
 }
