@@ -37,8 +37,10 @@ class CustomDropdown extends StatelessWidget {
                         (item) => DropdownMenuEntry(value: item, label: item),
                       )
                       .toList(),
+              menuHeight: 400.h,
               menuStyle: MenuStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.white),
+                backgroundColor: WidgetStateProperty.all(Colors.white),
+                elevation: WidgetStateProperty.all(5),
                 shape: WidgetStatePropertyAll(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.r),

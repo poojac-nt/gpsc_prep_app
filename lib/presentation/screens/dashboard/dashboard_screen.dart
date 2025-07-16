@@ -242,56 +242,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: () => context.push(AppRoutes.mcqTestScreen),
                 ),
               ),
-              10.hGap,
-              ElevatedContainer(
-                child: TestContainer(
-                  title: "Custom Test",
-                  description: "Create Personalized test ",
-                  iconColor: Colors.green,
-                  icon: Icons.radar,
-                  buttonTitle: 'Create Test',
-                  onTap: () {},
-                ),
-              ),
-              10.hGap,
-              ElevatedContainer(
-                child: TestContainer(
-                  title: "Mock Test",
-                  description: "Full length practice exam ",
-                  iconColor: Colors.purple,
-                  icon: Icons.paste_rounded,
-                  buttonTitle: 'Take Mock Test',
-                  onTap: () {},
-                ),
-              ),
-              10.hGap,
-              Text(
-                'Answer Writing Practice',
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-              ),
-              10.hGap,
-              ElevatedContainer(
-                child: TestContainer(
-                  title: "Daily Writing Practice",
-                  description:
-                      "Practice descriptive answers and improve overall performance",
-                  iconColor: Colors.purple,
-                  icon: Icons.menu_book,
-                  buttonTitle: 'Start Writing',
-                  onTap: () => AnswerWritingScreen(),
-                ),
-              ),
-              10.hGap,
-              ElevatedContainer(
-                child: TestContainer(
-                  title: "My Submission",
-                  description: "View submitted answer and feedback",
-                  iconColor: Colors.pink,
-                  icon: Icons.file_upload_outlined,
-                  buttonTitle: 'View Submissions',
-                  onTap: () {},
-                ),
-              ),
+              // 10.hGap,
+              // ElevatedContainer(
+              //   child: TestContainer(
+              //     title: "Custom Test",
+              //     description: "Create Personalized test ",
+              //     iconColor: Colors.green,
+              //     icon: Icons.radar,
+              //     buttonTitle: 'Create Test',
+              //     onTap: () {},
+              //   ),
+              // ),
+              // 10.hGap,
+              // ElevatedContainer(
+              //   child: TestContainer(
+              //     title: "Mock Test",
+              //     description: "Full length practice exam ",
+              //     iconColor: Colors.purple,
+              //     icon: Icons.paste_rounded,
+              //     buttonTitle: 'Take Mock Test',
+              //     onTap: () {},
+              //   ),
+              // ),
+              // 10.hGap,
+              // Text(
+              //   'Answer Writing Practice',
+              //   style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+              // ),
+              // 10.hGap,
+              // ElevatedContainer(
+              //   child: TestContainer(
+              //     title: "Daily Writing Practice",
+              //     description:
+              //         "Practice descriptive answers and improve overall performance",
+              //     iconColor: Colors.purple,
+              //     icon: Icons.menu_book,
+              //     buttonTitle: 'Start Writing',
+              //     onTap: () => AnswerWritingScreen(),
+              //   ),
+              // ),
+              // 10.hGap,
+              // ElevatedContainer(
+              //   child: TestContainer(
+              //     title: "My Submission",
+              //     description: "View submitted answer and feedback",
+              //     iconColor: Colors.pink,
+              //     icon: Icons.file_upload_outlined,
+              //     buttonTitle: 'View Submissions',
+              //     onTap: () {},
+              //   ),
+              // ),
             ],
           ).padAll(AppPaddings.defaultPadding),
         ),

@@ -6,7 +6,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="gpsc_prep_app"
+        android:label="Exam Prep App"
         android:resizeableActivity="false">
         <activity
             android:name=".MainActivity"

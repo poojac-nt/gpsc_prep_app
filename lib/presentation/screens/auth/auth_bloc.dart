@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
@@ -18,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final CacheManager _cache;
   final ImagePicker picker = ImagePicker();
   static final _supabase = getIt<SupabaseHelper>().supabase;
+  static final _snackBar = getIt<SnackBarHelper>();
 
   AuthBloc(this._authRepository, this._cache) : super(AuthInitial()) {
     on<LoginRequested>(_login);
@@ -69,6 +71,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       event.userPayload.email,
     );
     if (userExist) {
+      _snackBar.showError('Email is Already Registered');
       emit(AuthAccountCreateError('Email is Already Registered'));
       return;
     }

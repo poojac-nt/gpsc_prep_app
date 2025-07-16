@@ -1,6 +1,5 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
@@ -28,10 +27,8 @@ class SupabaseHelper {
         .select()
         .eq(SupabaseKeys.email, email);
     if (response.isEmpty) {
-      _snackBar.showSuccess('User Does Not Exist');
       return false;
     }
-    _snackBar.showError('User already Exist');
     return true;
   }
 
@@ -62,6 +59,7 @@ class SupabaseHelper {
       _snackBar.showSuccess('Logged In as ${user.name}');
       return Right(user);
     } catch (e, s) {
+      _snackBar.showError('Please Check Your Login Credentials');
       _log.e('[login] Error occurred', error: e, s: s);
       return Left(Failure('Incorrect Username or Password.'));
     }
@@ -308,9 +306,7 @@ class SupabaseHelper {
                 .select()
                 .single();
         _log.i('FCM token upsert response: $response');
-        _snackBar.showSuccess('FCM Token Updated Successfully');
       } else {
-        _snackBar.showError('No authenticated user found.');
         _log.e('No authenticated user found.');
       }
     } catch (e) {

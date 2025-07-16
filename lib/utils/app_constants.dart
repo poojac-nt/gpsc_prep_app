@@ -11,12 +11,12 @@ abstract class AppThemeData {
   static ThemeData themData = ThemeData(
     primaryColor: AppColors.primary,
     fontFamily: 'Inter',
-    splashColor: Colors.black.withAlpha(2),
-    inputDecorationTheme: InputDecorationTheme(focusColor: Colors.black),
+    splashColor: AppColors.primary.withAlpha(2),
+    inputDecorationTheme: InputDecorationTheme(focusColor: AppColors.primary),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: Colors.black,
-      selectionColor: Colors.black.withAlpha(2),
-      selectionHandleColor: Colors.black,
+      cursorColor: AppColors.primary,
+      selectionColor: AppColors.primary.withAlpha(50),
+      selectionHandleColor: AppColors.primary,
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.scaffoldColor,
