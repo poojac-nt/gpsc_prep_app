@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,21 +25,36 @@ class SelectionDrawer extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    backgroundImage:
-                        user?.profilePicture != null &&
-                                user!.profilePicture!.isNotEmpty
-                            ? NetworkImage(user!.profilePicture!)
-                            : null,
-                    radius: 20.r,
-                    child:
-                        (user?.profilePicture == null ||
-                                user!.profilePicture!.isEmpty)
-                            ? Icon(
-                              Icons.person,
-                              color: AppColors.primary,
-                            ) // fallback icon or asset
-                            : null,
+                  SizedBox(
+                    width: 40.r,
+                    height: 40.r,
+                    child: ClipOval(
+                      child:
+                          user?.profilePicture != null &&
+                                  user!.profilePicture!.isNotEmpty
+                              ? CachedNetworkImage(
+                                imageUrl: user!.profilePicture!,
+                                fit: BoxFit.cover,
+                                placeholder:
+                                    (context, url) => Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                errorWidget:
+                                    (context, url, error) => Icon(
+                                      Icons.error,
+                                      color: AppColors.primary,
+                                    ),
+                              )
+                              : Container(
+                                color: Colors.grey.shade200,
+                                child: Icon(
+                                  Icons.person,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                    ),
                   ),
                   10.wGap,
                   Column(

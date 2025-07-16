@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -160,9 +161,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   user
                                                       .profilePicture!
                                                       .isNotEmpty
-                                              ? Image.network(
-                                                user.profilePicture!,
+                                              ? CachedNetworkImage(
+                                                imageUrl: user.profilePicture!,
                                                 fit: BoxFit.cover,
+                                                placeholder:
+                                                    (context, url) =>
+                                                        CircularProgressIndicator(),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Icon(Icons.error),
                                               )
                                               : Icon(
                                                 Icons.person,

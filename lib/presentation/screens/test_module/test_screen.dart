@@ -217,49 +217,7 @@ class _TestScreenState extends State<TestScreen> {
           builder: (context, state) {
             print("Test screen state : ${state.toString()}");
             if (state is QuestionLoading) {
-              return Padding(
-                padding: EdgeInsets.all(AppPaddings.defaultPadding),
-                child: Skeletonizer(
-                  enabled: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Fake progress bar
-                      CustomProgressBar(
-                        text: "Question 1 of 10",
-                        value: 0.1,
-                        percentageText: "0 Answered",
-                      ),
-                      20.hGap,
-                      // Question Title
-                      TestModule(
-                        title: "Question 1",
-                        cards: [
-                          // Fake question
-                          Text("This is a sample question text."),
-                          10.hGap,
-                          // Fake options
-                          Column(
-                            children: List.generate(4, (index) {
-                              return BorderedContainer(
-                                padding: EdgeInsets.zero,
-                                radius: BorderRadius.circular(10),
-                                borderColor: AppColors.accentColor,
-                                child: RadioListTile<String>(
-                                  value: 'Option $index',
-                                  groupValue: null,
-                                  onChanged: null,
-                                  title: Text("Option $index"),
-                                ),
-                              ).padAll(5);
-                            }),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return _buildWhenLoading();
             }
 
             if (state is QuestionLoaded) {
@@ -399,7 +357,7 @@ class _TestScreenState extends State<TestScreen> {
                                         } else {
                                           if (!state.isReview) {
                                             var time = totalTime(context);
-                                            _buildSubmitDialoge(
+                                            _buildSubmitDialog(
                                               context,
                                               state,
                                               time,
@@ -506,7 +464,53 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  void _buildSubmitDialoge(
+  Padding _buildWhenLoading() {
+    return Padding(
+      padding: EdgeInsets.all(AppPaddings.defaultPadding),
+      child: Skeletonizer(
+        enabled: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fake progress bar
+            CustomProgressBar(
+              text: "Question 1 of 10",
+              value: 0.1,
+              percentageText: "0 Answered",
+            ),
+            20.hGap,
+            // Question Title
+            TestModule(
+              title: "Question 1",
+              cards: [
+                // Fake question
+                Text("This is a sample question text."),
+                10.hGap,
+                // Fake options
+                Column(
+                  children: List.generate(4, (index) {
+                    return BorderedContainer(
+                      padding: EdgeInsets.zero,
+                      radius: BorderRadius.circular(10),
+                      borderColor: AppColors.accentColor,
+                      child: RadioListTile<String>(
+                        value: 'Option $index',
+                        groupValue: null,
+                        onChanged: null,
+                        title: Text("Option $index"),
+                      ),
+                    ).padAll(5);
+                  }),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _buildSubmitDialog(
     BuildContext context,
     QuestionCubitLoaded state,
     int timeTaken,

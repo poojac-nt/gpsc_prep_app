@@ -47,19 +47,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is DailyTestFetching) {
-            return Padding(
-              padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-              child: Skeletonizer(
-                enabled: true,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Your loading skeletons go here (if needed)
-                    ],
-                  ),
-                ),
-              ),
-            );
+            return _buildWhenLoading();
           } else if (state is DailyTestFetchFailed) {
             return Center(child: Text(state.failure.message));
           } else if (state is DailyTestFetched) {
@@ -162,44 +150,153 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                   10.hGap,
 
                   /// Offline Mode Section
-                  TestModule(
-                    title: 'Offline Mode',
-                    subtitle: 'Download tests for offline Practice',
-                    prefixIcon: Icons.file_download_outlined,
-                    cards: [
-                      BorderedContainer(
-                        borderColor: AppColors.accentColor,
-                        padding: EdgeInsets.all(5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.file_download_outlined),
-                            10.wGap,
-                            Text('Download PDF Test', style: AppTexts.title),
-                          ],
-                        ),
-                      ),
-                      10.hGap,
-                      BorderedContainer(
-                        borderColor: AppColors.accentColor,
-                        padding: EdgeInsets.all(5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.file_upload_outlined),
-                            10.wGap,
-                            Text('Upload Answers', style: AppTexts.title),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  // TestModule(
+                  //   title: 'Offline Mode',
+                  //   subtitle: 'Download tests for offline Practice',
+                  //   prefixIcon: Icons.file_download_outlined,
+                  //   cards: [
+                  //     BorderedContainer(
+                  //       borderColor: AppColors.accentColor,
+                  //       padding: EdgeInsets.all(5),
+                  //       child: Row(
+                  //         mainAxisAlignment: MainAxisAlignment.center,
+                  //         children: [
+                  //           Icon(Icons.file_download_outlined),
+                  //           10.wGap,
+                  //           Text('Download PDF Test', style: AppTexts.title),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //     10.hGap,
+                  //     BorderedContainer(
+                  //       borderColor: AppColors.accentColor,
+                  //       padding: EdgeInsets.all(5),
+                  //       child: Row(
+                  //         mainAxisAlignment: MainAxisAlignment.center,
+                  //         children: [
+                  //           Icon(Icons.file_upload_outlined),
+                  //           10.wGap,
+                  //           Text('Upload Answers', style: AppTexts.title),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ).padAll(AppPaddings.appPaddingInt),
             );
           }
           return Container(); // fallback UI for unhandled states
         },
+      ),
+    );
+  }
+
+  Padding _buildWhenLoading() {
+    return Padding(
+      padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+      child: Skeletonizer(
+        enabled: true, // Set this to false when actual data is loaded
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Available Tests', style: AppTexts.heading),
+                  IntrinsicWidth(
+                    child: ActionButton(text: 'Generate Test', onTap: () {}),
+                  ),
+                ],
+              ),
+              10.hGap,
+
+              /// Daily Tests Section
+              TestModule(
+                title: "Daily Tests",
+                subtitle: "Subject-based Daily Practice",
+                prefixIcon: Icons.calendar_today_outlined,
+                cards: List.generate(
+                  3,
+                  (index) => TestTile(
+                    title: "Loading Test $index",
+                    subtitle: "00 Questions · 0 min",
+                    onTap: () {},
+                    buttonTitle: 'Start',
+                  ).padSymmetric(vertical: 6.h),
+                ),
+              ),
+              10.hGap,
+
+              /// Mock Tests Section
+              TestModule(
+                title: "Mock Tests",
+                subtitle: "Full Length Practice Exams",
+                prefixIcon: Icons.description_outlined,
+                cards: [
+                  TestTile(
+                    title: "GPSC Mock Test #1",
+                    subtitle: "100 Questions · 2 hours",
+                    widgets: [
+                      Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColors.accentColor,
+                            width: 1,
+                          ),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Icon(
+                          Icons.file_download_outlined,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                    onTap: () {},
+                    buttonTitle: 'Start',
+                  ),
+                ],
+              ),
+              10.hGap,
+
+              /// Offline Mode Section
+              TestModule(
+                title: 'Offline Mode',
+                subtitle: 'Download tests for offline Practice',
+                prefixIcon: Icons.file_download_outlined,
+                cards: [
+                  BorderedContainer(
+                    borderColor: AppColors.accentColor,
+                    padding: EdgeInsets.all(5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.file_download_outlined),
+                        10.wGap,
+                        Text('Download PDF Test', style: AppTexts.title),
+                      ],
+                    ),
+                  ),
+                  10.hGap,
+                  BorderedContainer(
+                    borderColor: AppColors.accentColor,
+                    padding: EdgeInsets.all(5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.file_upload_outlined),
+                        10.wGap,
+                        Text('Upload Answers', style: AppTexts.title),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ).padAll(AppPaddings.appPaddingInt),
+        ),
       ),
     );
   }

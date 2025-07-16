@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
@@ -191,7 +189,6 @@ class SupabaseHelper {
               .toList();
 
       _log.i("Fetched questions: ${questions.length}");
-      Future.delayed(Duration(seconds: 30));
       return Right(questions);
     } catch (e, stackTrace) {
       print("Fetch Error: $e");
