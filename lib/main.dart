@@ -58,10 +58,8 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<AuthBloc>()),
           BlocProvider(create: (_) => getIt<QuestionBloc>()),
           BlocProvider(create: (_) => getIt<TestBloc>()),
-
           BlocProvider(create: (_) => getIt<EditProfileBloc>()),
           BlocProvider(create: (_) => getIt<UploadQuestionsBloc>()),
-
           BlocProvider(create: (_) => getIt<TimerBloc>()),
           BlocProvider(create: (_) => getIt<DailyTestBloc>()),
           BlocProvider(create: (_) => getIt<QuestionCubit>()),

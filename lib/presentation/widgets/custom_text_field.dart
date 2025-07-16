@@ -7,6 +7,7 @@ class CustomTextField extends StatelessWidget {
     this.hintText,
     this.prefixIcon,
     this.controller,
+    this.isLoading = false,
     this.maxLine = 1,
     this.keyboardType = TextInputType.text,
     this.validator,
@@ -16,6 +17,7 @@ class CustomTextField extends StatelessWidget {
   final IconData? prefixIcon;
   final TextEditingController? controller;
   final int maxLine;
+  final bool isLoading;
   final TextInputType? keyboardType;
   final FormFieldValidator<String>? validator;
 
@@ -29,6 +31,7 @@ class CustomTextField extends StatelessWidget {
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey),
         isDense: true,
+        enabled: !isLoading,
         labelStyle: TextStyle(color: Colors.black),
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         prefixIconColor: Colors.grey.shade700,
@@ -43,6 +46,10 @@ class CustomTextField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: AppBorders.borderRadius,
           borderSide: BorderSide(color: Colors.grey, width: 1),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: AppBorders.borderRadius,
+          borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppBorders.borderRadius,

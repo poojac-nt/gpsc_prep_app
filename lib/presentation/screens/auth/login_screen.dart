@@ -15,6 +15,7 @@ import 'package:gpsc_prep_app/utils/services/validator.dart';
 
 import '../../widgets/action_button.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../widgets/loading_wrapper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,18 +26,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final SnackBarHelper _snackBarHelper = getIt<SnackBarHelper>();
-
   final LogHelper _log = getIt<LogHelper>();
 
   final TextEditingController email = TextEditingController();
-
   final TextEditingController password = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    // TODO: implement dispose
     email.dispose();
     password.dispose();
     super.dispose();
@@ -55,11 +52,6 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         },
         builder: (context, state) {
-          if (state is AuthLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.black),
-            );
-          }
           return SafeArea(
             child: SingleChildScrollView(
               child: Form(
@@ -143,61 +135,92 @@ class _LoginScreenState extends State<LoginScreen> {
                           20.hGap,
                           _buildLabel("Email"),
                           10.hGap,
-                          CustomTextField(
-                            hintText: "Enter your email",
-                            controller: email,
-                            validator: Validator.validateEmail,
+                          BlocLoadingWrapper<AuthBloc, AuthState>(
+                            isLoadingSelector: (state) => state is AuthLoading,
+                            builder: (isLoading) {
+                              return CustomTextField(
+                                hintText: "Enter your email",
+                                controller: email,
+                                validator: Validator.validateEmail,
+                                isLoading: isLoading,
+                              );
+                            },
                           ),
                           20.hGap,
                           _buildLabel("Password"),
                           10.hGap,
-                          CustomTextField(
-                            hintText: "Enter your password",
-                            controller: password,
-                            validator: Validator.validatePassword,
+                          BlocLoadingWrapper<AuthBloc, AuthState>(
+                            isLoadingSelector: (state) => state is AuthLoading,
+                            builder: (isLoading) {
+                              return CustomTextField(
+                                hintText: "Enter your password",
+                                controller: password,
+                                validator: Validator.validatePassword,
+                                isLoading: isLoading,
+                              );
+                            },
                           ),
                           30.hGap,
-                          ActionButton(
-                            text: "Sign In",
-                            onTap: () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                context.read<AuthBloc>().add(
-                                  LoginRequested(
-                                    email: email.text.trim(),
-                                    password: password.text.trim(),
-                                  ),
-                                );
-                              }
+                          BlocLoadingWrapper<AuthBloc, AuthState>(
+                            isLoadingSelector: (state) => state is AuthLoading,
+                            builder: (isLoading) {
+                              return ActionButton(
+                                isLoading: isLoading,
+                                text: "Sign In",
+                                onTap: () {
+                                  if (_formKey.currentState?.validate() ??
+                                      false) {
+                                    context.read<AuthBloc>().add(
+                                      LoginRequested(
+                                        email: email.text.trim(),
+                                        password: password.text.trim(),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
                             },
                           ),
                           20.hGap,
                           Center(
-                            child: Text.rich(
-                              TextSpan(
-                                children: [
+                            child: BlocLoadingWrapper<AuthBloc, AuthState>(
+                              isLoadingSelector:
+                                  (state) => state is AuthLoading,
+                              builder: (isLoading) {
+                                return Text.rich(
                                   TextSpan(
-                                    text: "Don't have an account?",
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
-                                      color: Colors.black,
-                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: "Don't have an account?",
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: ' Create one',
+                                        style: TextStyle(
+                                          color:
+                                              isLoading
+                                                  ? Colors.grey
+                                                  : AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        recognizer:
+                                            TapGestureRecognizer()
+                                              ..onTap = () {
+                                                if (!isLoading) {
+                                                  context.go(
+                                                    AppRoutes
+                                                        .registrationScreen,
+                                                  );
+                                                }
+                                              },
+                                      ),
+                                    ],
                                   ),
-                                  TextSpan(
-                                    text: ' Create one',
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    recognizer:
-                                        TapGestureRecognizer()
-                                          ..onTap = () {
-                                            context.go(
-                                              AppRoutes.registrationScreen,
-                                            );
-                                          },
-                                  ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ),
                         ],

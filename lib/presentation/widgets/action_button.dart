@@ -9,6 +9,7 @@ class ActionButton extends StatelessWidget {
     required this.text,
     required this.onTap,
     this.backgroundColor = const Color(0xff3b82f6),
+    this.isLoading = false,
     this.fontColor = Colors.white,
     this.padding = const EdgeInsets.all(10),
   });
@@ -17,7 +18,7 @@ class ActionButton extends StatelessWidget {
   final VoidCallback onTap;
   final Color fontColor;
   final Color backgroundColor;
-
+  final bool isLoading;
   final EdgeInsets padding;
 
   @override
@@ -29,11 +30,14 @@ class ActionButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor,
+            backgroundColor: isLoading ? Colors.grey : backgroundColor,
             padding: padding,
             shape: RoundedRectangleBorder(
               borderRadius: AppBorders.borderRadius,
-              side: BorderSide(color: backgroundColor, width: 1),
+              side: BorderSide(
+                color: isLoading ? Colors.grey : backgroundColor,
+                width: 1,
+              ),
             ),
           ),
           child: Text(
