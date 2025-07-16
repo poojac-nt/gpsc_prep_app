@@ -72,13 +72,13 @@ class SelectionDrawer extends StatelessWidget {
               commonWidget(
                 () => context.push(AppRoutes.mcqTestScreen),
                 Icons.content_paste_rounded,
-                'MCQ Tets',
+                'MCQ Tests',
               ),
-              commonWidget(
-                () => context.push(AppRoutes.answerWriting),
-                Icons.edit_document,
-                'Answer Writing',
-              ),
+              // commonWidget(
+              //   () => context.push(AppRoutes.answerWriting),
+              //   Icons.edit_document,
+              //   'Answer Writing',
+              // ),
               commonWidget(
                 () => context.push(AppRoutes.profile),
                 Icons.person,
@@ -86,8 +86,8 @@ class SelectionDrawer extends StatelessWidget {
               ),
               commonWidget(
                 () => context.push(AppRoutes.addQuestionScreen),
-                Icons.notifications,
-                'Setting',
+                Icons.file_upload_outlined,
+                'Upload Test',
               ),
               commonWidget(
                 () => showLogoutDialog(context),

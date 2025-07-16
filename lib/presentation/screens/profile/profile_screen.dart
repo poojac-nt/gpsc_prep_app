@@ -64,13 +64,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     "TAT",
     "HTAT",
   ];
-  List<String> notificationPrefs = [
-    "Email Update",
-    "Push Notification",
-    "Daily Test Reminder",
-  ];
-  List<String> languages = ["English", "Gujarati", "Hindi"];
-  List<bool> values = [true, false, true, true, false, false];
+
+  List<bool> checkedList = List.generate(6, (index) => false);
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +305,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               padding: EdgeInsets.symmetric(vertical: 5.h),
                               child: ExamPrefTile(
                                 title: exams[index],
-                                value: index == 3,
+                                value: checkedList[index],
+                                onChanged: (value) {
+                                  setState(() {
+                                    checkedList[index] = value!;
+                                  });
+                                },
                               ),
                             ),
                       ),

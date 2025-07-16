@@ -8,58 +8,49 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/qu
 import '../../utils/app_constants.dart';
 
 class CustomCheckbox extends StatelessWidget {
-  const CustomCheckbox({
+  CustomCheckbox({
     super.key,
     required this.value,
     this.isRounded = false,
     required this.title,
-    required this.ontap,
+    required this.onTap,
   });
 
-  final bool value;
+  bool value;
   final String title;
   final bool isRounded;
-  final VoidCallback ontap;
+  final ValueChanged<bool?> onTap;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<QuestionCubit, QuestionCubitState>(
-      builder: (BuildContext context, state) {
-        if (state is QuestionCubitLoaded) {
-          return Row(
-            children: [
-              Checkbox(
-                shape:
-                    isRounded
-                        ? RoundedRectangleBorder(
-                          borderRadius: AppBorders.borderRadius,
-                          side: BorderSide(color: Colors.green, width: 1),
-                        )
-                        : null,
-                value: state.answeredStatus[state.currentIndex],
-                onChanged: (value) {
-                  state.answeredStatus[state.currentIndex] = true;
-                },
-                fillColor: WidgetStateProperty.resolveWith((state) {
-                  if (state.contains(WidgetState.selected)) {
-                    return AppColors.primary;
-                  }
-                  return Colors.white;
-                }),
-                checkColor: Colors.white,
-              ),
-              Expanded(
-                child: Text(
-                  maxLines: 2,
-                  title,
-                  style: AppTexts.labelTextStyle.copyWith(fontSize: 13.sp),
-                ),
-              ),
-            ],
-          );
-        }
-        return Container();
-      },
+    return Row(
+      children: [
+        Checkbox(
+          shape:
+              isRounded
+                  ? RoundedRectangleBorder(
+                    borderRadius: AppBorders.borderRadius,
+                    side: BorderSide(color: Colors.green, width: 1),
+                  )
+                  : null,
+          value: value,
+          onChanged: onTap,
+          fillColor: WidgetStateProperty.resolveWith((state) {
+            if (state.contains(WidgetState.selected)) {
+              return AppColors.primary;
+            }
+            return Colors.white;
+          }),
+          checkColor: Colors.white,
+        ),
+        Expanded(
+          child: Text(
+            maxLines: 2,
+            title,
+            style: AppTexts.labelTextStyle.copyWith(fontSize: 13.sp),
+          ),
+        ),
+      ],
     );
   }
 }
