@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
@@ -98,62 +97,69 @@ class _TestScreenState extends State<TestScreen> {
         appBar: AppBar(
           leading: IconButton(
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    title: Row(
-                      children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                        SizedBox(width: 8),
-                        Text(
-                          "Confirm Exit",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+              widget.isFromResult
+                  ? context.pop()
+                  : showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        title: Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.orange,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Confirm Exit",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        content: Text(
+                          "Do you really want to leave the test in between?",
+                          style: TextStyle(fontSize: 15, color: Colors.black54),
+                        ),
+                        actions: [
+                          TextButton(
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close dialog
+                            },
                           ),
-                        ),
-                      ],
-                    ),
-                    content: Text(
-                      "Do you really want to leave the test in between?",
-                      style: TextStyle(fontSize: 15, color: Colors.black54),
-                    ),
-                    actions: [
-                      TextButton(
-                        child: Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close dialog
-                        },
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              "Yes, Leave",
+                              style: AppTexts.title.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            onPressed: () {
+                              context.read<QuestionCubit>().reset();
+                              context.pop(); // Close dialog
+                              context.pushReplacement(AppRoutes.dashboard);
+                            },
                           ),
-                        ),
-                        child: Text(
-                          "Yes, Leave",
-                          style: AppTexts.title.copyWith(color: Colors.white),
-                        ),
-                        onPressed: () {
-                          context.read<QuestionCubit>().reset();
-                          context.pop(); // Close dialog
-                          context.pushReplacement(AppRoutes.dashboard);
-                        },
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   );
-                },
-              );
             },
             icon: Icon(Icons.arrow_back),
           ),
