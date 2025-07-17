@@ -153,7 +153,7 @@ class _TestScreenState extends State<TestScreen> {
                             onPressed: () {
                               context.read<QuestionCubit>().reset();
                               context.pop(); // Close dialog
-                              context.pushReplacement(AppRoutes.dashboard);
+                              context.go(AppRoutes.dashboard);
                             },
                           ),
                         ],
@@ -242,7 +242,6 @@ class _TestScreenState extends State<TestScreen> {
               }
             },
             builder: (context, state) {
-              print("Test screen state : ${state.toString()}");
               if (state is QuestionLoading) {
                 return _buildWhenLoading();
               }
@@ -310,7 +309,6 @@ class _TestScreenState extends State<TestScreen> {
                                             : AppColors.accentColor;
                                     textColor = Colors.black;
                                   }
-
                                   return BorderedContainer(
                                     borderColor: tileColor,
                                     padding: EdgeInsets.zero,
@@ -604,7 +602,6 @@ class _TestScreenState extends State<TestScreen> {
               onPressed: () {
                 context.pop(); // close dialog
                 context.read<TimerBloc>().add(TimerStop());
-                print("Test id ${widget.testId}");
               },
             ),
           ],

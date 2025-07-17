@@ -46,7 +46,7 @@ class _ResultScreenState extends State<ResultScreen> {
     final secs = seconds % 60;
     String minutesPart = mins > 0 ? '$mins' : '';
     String secondsPart = secs > 0 ? '$secs' : '';
-    if (minutesPart.isEmpty && secondsPart.isEmpty) return '0 sec';
+    if (minutesPart.isEmpty && secondsPart.isEmpty) return '0';
     return '$minutesPart${minutesPart.isNotEmpty && secondsPart.isNotEmpty ? ' ' : '0'}:$secondsPart';
   }
 
@@ -69,10 +69,12 @@ class _ResultScreenState extends State<ResultScreen> {
   ];
 
   String totalTime(BuildContext context) {
-    var timerState = context.read<TimerBloc>().state;
+    final timerState = context.read<TimerBloc>().state;
     int mins = timerState is TimerStopped ? timerState.totalMins : 0;
     int secs = timerState is TimerStopped ? timerState.totalSecs : 0;
-    var timeSpent = "$mins:$secs";
+    String minStr = mins.toString().padLeft(2, '0');
+    String secStr = secs.toString().padLeft(2, '0');
+    final timeSpent = "$minStr:$secStr";
     return timeSpent;
   }
 
@@ -91,7 +93,6 @@ class _ResultScreenState extends State<ResultScreen> {
         body: SingleChildScrollView(
           child: BlocBuilder<TestBloc, TestState>(
             builder: (context, state) {
-              print("state of result screen :${state.runtimeType}");
               if (state is TestSubmitted) {
                 return BlocBuilder<TestCubit, TestCubitSubmitted>(
                   builder: (context, state) {
@@ -200,7 +201,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       child: Column(
                         children: [
                           Text(
-                            '${state.result.score.toStringAsFixed(2)}%',
+                            '${state.result.score.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 26.sp,
                               fontWeight: FontWeight.bold,
