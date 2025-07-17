@@ -32,8 +32,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final user = getIt<CacheManager>().user;
-
   @override
   void initState() {
     super.initState();
@@ -63,6 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = getIt<CacheManager>().user;
     return Scaffold(
       drawer: SelectionDrawer(),
       drawerEdgeDragWidth: 150,
@@ -324,7 +323,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome back , ${user?.name}',
+                      'Welcome back , user?.name',
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.bold,

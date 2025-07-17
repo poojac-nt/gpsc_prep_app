@@ -35,6 +35,14 @@ class Validator {
     if (value == null || value.isEmpty) {
       return 'Phone is required';
     }
+    final numericRegex = RegExp(r'^[0-9]+$');
+    if (!numericRegex.hasMatch(value)) {
+      return 'Phone number must contain only digits';
+    }
+
+    if (value.length != 10) {
+      return 'Phone number must be exactly 10 digits';
+    }
     return null;
   }
 

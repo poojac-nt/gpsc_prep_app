@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
@@ -14,7 +14,6 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/validator.dart';
 
 import '../../widgets/action_button.dart';
-import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_text_field.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -25,8 +24,6 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-  final SnackBarHelper snackBarHelper = getIt<SnackBarHelper>();
-  final LogHelper _log = getIt<LogHelper>();
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController name = TextEditingController();
@@ -246,22 +243,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ActionButton(
                             text: "Sign Up",
                             onTap: () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                context.read<AuthBloc>().add(
-                                  CreateUserRequested(
-                                    UserPayload(
-                                      name: name.text.trim(),
-                                      email: email.text.trim(),
-                                      password: password.text.trim(),
-                                      role: "Student",
-                                      number: int.parse(number.text.trim()),
-                                      address: address.text.trim(),
-                                      profilePicture:
-                                          state is ImageUploaded
-                                              ? state.imageUrl
-                                              : null,
+                              final isOnline =
+                                  context.read<ConnectivityBloc>().state
+                                      is ConnectivityOnline;
+                              if (isOnline) {
+                                if (_formKey.currentState?.validate() ??
+                                    false) {
+                                  context.read<AuthBloc>().add(
+                                    CreateUserRequested(
+                                      UserPayload(
+                                        name: name.text.trim(),
+                                        email: email.text.trim(),
+                                        password: password.text.trim(),
+                                        role: "Student",
+                                        number: int.parse(number.text.trim()),
+                                        address: address.text.trim(),
+                                        profilePicture:
+                                            state is ImageUploaded
+                                                ? state.imageUrl
+                                                : null,
+                                      ),
                                     ),
-                                  ),
+                                  );
+                                }
+                              } else {
+                                getIt<SnackBarHelper>().showError(
+                                  "You are offline. Please check your internet connection.",
                                 );
                               }
                             },

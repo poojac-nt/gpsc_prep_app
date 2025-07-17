@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -159,13 +162,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                 isLoading: isLoading,
                                 text: "Sign In",
                                 onTap: () {
-                                  if (_formKey.currentState?.validate() ??
-                                      false) {
-                                    context.read<AuthBloc>().add(
-                                      LoginRequested(
-                                        email: email.text.trim(),
-                                        password: password.text.trim(),
-                                      ),
+                                  final isOnline =
+                                      context.read<ConnectivityBloc>().state
+                                          is ConnectivityOnline;
+                                  if (isOnline) {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      context.read<AuthBloc>().add(
+                                        LoginRequested(
+                                          email: email.text.trim(),
+                                          password: password.text.trim(),
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    getIt<SnackBarHelper>().showError(
+                                      'No Internet Connection',
                                     );
                                   }
                                 },
