@@ -1,10 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
 
-import '../../../../../core/di/di.dart';
 import '../../../../../domain/entities/question_language_model.dart';
-import '../../bloc/timer/timer_bloc.dart';
-import '../../bloc/timer/timer_state.dart';
 
 class TestCubit extends Cubit<TestCubitSubmitted> {
   TestCubit() : super(TestCubitSubmitted.initial());
@@ -14,12 +11,11 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     required List<String?> selectedOption,
     required List<bool> answeredStatus,
     required List<int> marks,
+    required int minSpent,
+    required int secSpent,
   }) {
     final attempted = answeredStatus.where((status) => status).length;
     final notAttempted = questions.length - attempted;
-    var timerState = getIt<TimerBloc>().state;
-    final minSpent = timerState is TimerStopped ? timerState.totalMins : 0;
-    final secSpent = timerState is TimerStopped ? timerState.totalSecs : 0;
     final timeSpent = (minSpent * 60) + secSpent;
 
     int correctAnswers = 0;

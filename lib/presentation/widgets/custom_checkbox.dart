@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
 
 import '../../utils/app_constants.dart';
 

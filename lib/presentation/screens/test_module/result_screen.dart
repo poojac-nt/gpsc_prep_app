@@ -47,7 +47,7 @@ class _ResultScreenState extends State<ResultScreen> {
     String minutesPart = mins > 0 ? '$mins' : '';
     String secondsPart = secs > 0 ? '$secs' : '';
     if (minutesPart.isEmpty && secondsPart.isEmpty) return '0';
-    return '$minutesPart${minutesPart.isNotEmpty && secondsPart.isNotEmpty ? ' ' : '0'}:$secondsPart';
+    return '$minutesPart${minutesPart.isNotEmpty ? '' : '0'}:$secondsPart${secondsPart.isNotEmpty ? ' ' : '0'}';
   }
 
   final List<String> containerTitle = [
@@ -72,9 +72,7 @@ class _ResultScreenState extends State<ResultScreen> {
     final timerState = context.read<TimerBloc>().state;
     int mins = timerState is TimerStopped ? timerState.totalMins : 0;
     int secs = timerState is TimerStopped ? timerState.totalSecs : 0;
-    String minStr = mins.toString().padLeft(1, '0');
-    String secStr = secs.toString().padLeft(2, '0');
-    final timeSpent = "$minStr:$secStr";
+    final timeSpent = "$mins:$secs";
     return timeSpent;
   }
 
@@ -113,7 +111,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           child: Column(
                             children: [
                               Text(
-                                '${state.score!.toStringAsFixed(2)}',
+                                state.score!.toStringAsFixed(2),
                                 style: TextStyle(
                                   fontSize: 26.sp,
                                   fontWeight: FontWeight.bold,
@@ -201,7 +199,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       child: Column(
                         children: [
                           Text(
-                            '${state.result.score.toStringAsFixed(2)}',
+                            state.result.score.toStringAsFixed(2),
                             style: TextStyle(
                               fontSize: 26.sp,
                               fontWeight: FontWeight.bold,

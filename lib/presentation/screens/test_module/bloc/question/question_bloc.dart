@@ -6,7 +6,6 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:meta/meta.dart';
 
-import '../../../../../domain/entities/question_model.dart';
 
 part 'question_event.dart';
 part 'question_state.dart';

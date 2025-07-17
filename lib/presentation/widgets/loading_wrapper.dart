@@ -6,10 +6,10 @@ class BlocLoadingWrapper<B extends BlocBase<S>, S> extends StatelessWidget {
   final bool Function(S state) isLoadingSelector;
 
   const BlocLoadingWrapper({
-    Key? key,
+    super.key,
     required this.builder,
     required this.isLoadingSelector,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

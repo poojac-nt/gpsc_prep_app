@@ -90,6 +90,8 @@ class _TestScreenState extends State<TestScreen> {
             selectedOption: questionCubitState.selectedOption,
             answeredStatus: questionCubitState.answeredStatus,
             marks: questionBlocState.marks,
+            minSpent: state.totalMins,
+            secSpent: state.totalSecs,
           );
         }
       },
