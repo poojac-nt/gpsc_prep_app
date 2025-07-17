@@ -37,8 +37,13 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       final box = Hive.box<TestResultModel>('test_results');
       box.put('latest', testResult);
       _log.e("❌ No internet connection");
-
-      emit(TestSubmissionFailed(Failure("No internet connection")));
+      emit(
+        TestSubmitted(
+          questions: event.questions,
+          selectedOption: event.selectedOptions,
+          answeredStatus: event.answeredStatus,
+        ),
+      );
       return;
     }
 

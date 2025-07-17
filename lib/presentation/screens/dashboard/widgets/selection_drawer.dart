@@ -41,12 +41,6 @@ class SelectionDrawer extends StatelessWidget {
                               ? CachedNetworkImage(
                                 imageUrl: user!.profilePicture!,
                                 fit: BoxFit.cover,
-                                placeholder:
-                                    (context, url) => Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
                                 errorWidget:
                                     (context, url, error) => Icon(
                                       Icons.error,

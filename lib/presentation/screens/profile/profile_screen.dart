@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/profile/widgets/exam_pref_tile.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/quick_stats.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
@@ -15,7 +14,6 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/validator.dart';
 
-import '../../widgets/custom_tag.dart';
 import '../../widgets/custom_text_field.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -149,9 +147,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               ? CachedNetworkImage(
                                                 imageUrl: user.profilePicture!,
                                                 fit: BoxFit.cover,
-                                                placeholder:
-                                                    (context, url) =>
-                                                        CircularProgressIndicator(),
                                                 errorWidget:
                                                     (context, url, error) =>
                                                         Icon(Icons.error),
