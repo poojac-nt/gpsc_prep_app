@@ -57,29 +57,19 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     timer?.cancel();
 
     _hasTestBeenSubmitted = true;
-
-    if (event.isManual) {
-      if (state is TimerStopped) {
-        // Already stopped: don’t override with 0
-        emit(state); // return same state
-        return;
-      }
-
-      int spentMins = 0;
-      int spentSecs = 0;
-
-      if (state is TimerRunning) {
-        final current = state as TimerRunning;
-        final remaining =
-            current.remainingMinutes * 60 + current.remainingSeconds;
-        final timeSpent = testDuration * 60 - remaining;
-        spentMins = timeSpent ~/ 60;
-        spentSecs = timeSpent % 60;
-      }
-
-      emit(TimerStopped(spentMins, spentSecs, event.isManual));
-    } else {
-      emit(TimerStopped(testDuration, 0, false));
+    int spentMins = 0;
+    int spentSecs = 0;
+    if (state is TimerRunning) {
+      final current = state as TimerRunning;
+      final remaining =
+          current.remainingMinutes * 60 + current.remainingSeconds;
+      final timeSpent = testDuration * 60 - remaining;
+      spentMins = timeSpent ~/ 60;
+      spentSecs = timeSpent % 60;
+    } else if (state is TimerStopped) {
+      emit(state);
+      return;
     }
+    emit(TimerStopped(spentMins, spentSecs, event.isManual));
   }
 }
