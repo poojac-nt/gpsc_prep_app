@@ -20,6 +20,12 @@ class UploadQuestions extends StatefulWidget {
 
 class _UploadQuestionsState extends State<UploadQuestions> {
   @override
+  void dispose() {
+    getIt<UploadQuestionsBloc>().add(ResetUploadState());
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

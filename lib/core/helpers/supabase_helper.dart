@@ -310,7 +310,6 @@ class SupabaseHelper {
         _log.e('No authenticated user found.');
       }
     } catch (e) {
-      _snackBar.showError('Error updating FCM token: $e');
       _log.e('Exception in updateOrInsertFcmToken: $e');
     }
   }

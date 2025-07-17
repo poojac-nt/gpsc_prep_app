@@ -10,6 +10,9 @@ class UploadQuestionsBloc
     extends Bloc<UploadQuestionsEvent, UploadQuestionsState> {
   UploadQuestionsBloc() : super(UploadQuestionsInitial()) {
     on<UploadCsvAndInsert>(_onUploadCsvAndInsert);
+    on<ResetUploadState>((event, emit) {
+      emit(UploadQuestionsInitial()); // or your initial state
+    });
   }
 
   Future<void> _onUploadCsvAndInsert(

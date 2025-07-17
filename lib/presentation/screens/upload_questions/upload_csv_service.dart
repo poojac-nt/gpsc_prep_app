@@ -138,7 +138,6 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
       if (row.every(
         (field) => field == null || field.toString().trim().isEmpty,
       )) {
-        _log.w('Skipping empty row at index $rowIndex');
         continue;
       }
       final rowMap = Map.fromIterables(headers, row);

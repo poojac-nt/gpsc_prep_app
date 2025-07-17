@@ -115,14 +115,16 @@ class SelectionDrawer extends StatelessWidget {
                     'Profile',
                   )
                   : SizedBox.shrink(),
-              commonWidget(
-                () {
-                  context.pop();
-                  context.push(AppRoutes.addQuestionScreen);
-                },
-                Icons.file_upload_outlined,
-                'Upload Test',
-              ),
+              isStudent
+                  ? SizedBox.shrink()
+                  : commonWidget(
+                    () {
+                      context.pop();
+                      context.push(AppRoutes.addQuestionScreen);
+                    },
+                    Icons.file_upload_outlined,
+                    'Upload Test',
+                  ),
               commonWidget(
                 () => showLogoutDialog(context),
                 Icons.logout,
