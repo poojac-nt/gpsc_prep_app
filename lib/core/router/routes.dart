@@ -62,7 +62,9 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         TestScreen(
           isFromResult: args.isFromResult,
-          dailyTestModel: args.dailyTestModel,
+          testId: args.testId,
+          testDuration: args.testDuration,
+          testName: args.testName,
           language: args.language,
         ),
         state,
@@ -74,7 +76,11 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       final args = state.extra as ResultScreenArgs;
       return _slideTransition(
-        ResultScreen(isFromTestScreen: args.isFromTest, testId: args.testId),
+        ResultScreen(
+          isFromTestScreen: args.isFromTest,
+          testName: args.testName,
+          testId: args.testId,
+        ),
         state,
       );
     },

@@ -33,13 +33,17 @@ class TestScreen extends StatefulWidget {
   const TestScreen({
     super.key,
     this.isFromResult = false,
-    required this.dailyTestModel,
+    required this.testId,
+    required this.testName,
+    required this.testDuration,
     required this.language,
   });
 
   final bool isFromResult;
   final String? language;
-  final DailyTestModel? dailyTestModel;
+  final int? testId;
+  final String? testName;
+  final int? testDuration;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -56,7 +60,7 @@ class _TestScreenState extends State<TestScreen> {
       bloc.add(TimerStop());
     } else {
       context.read<QuestionBloc>().add(
-        LoadQuestion(widget.dailyTestModel!.id, widget.language),
+        LoadQuestion(widget.testId!, widget.language),
       );
     }
     super.initState();
@@ -143,10 +147,7 @@ class _TestScreenState extends State<TestScreen> {
             },
             icon: Icon(Icons.arrow_back),
           ),
-          title: Text(
-            widget.dailyTestModel!.name,
-            style: AppTexts.titleTextStyle,
-          ),
+          title: Text(widget.testName!, style: AppTexts.titleTextStyle),
           actions: [
             widget.isFromResult
                 ? SizedBox.shrink()
@@ -189,7 +190,7 @@ class _TestScreenState extends State<TestScreen> {
           listener: (context, state) {
             context.read<TestBloc>().add(
               SubmitTest(
-                widget.dailyTestModel!.id,
+                widget.testId!,
                 state.questions,
                 state.selectedOption,
                 state.answeredStatus,
@@ -210,7 +211,8 @@ class _TestScreenState extends State<TestScreen> {
                 AppRoutes.resultScreen,
                 extra: ResultScreenArgs(
                   isFromTest: true,
-                  testId: widget.dailyTestModel?.id,
+                  testName: widget.testName,
+                  testId: widget.testId,
                 ),
               );
             }
@@ -227,7 +229,7 @@ class _TestScreenState extends State<TestScreen> {
                     ..reset()
                     ..initialize(state.questions);
                   context.read<TimerBloc>().add(
-                    TimerStart(testDuration: widget.dailyTestModel?.duration),
+                    TimerStart(testDuration: widget.testDuration),
                   );
                 }
               }
@@ -661,7 +663,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    testId: widget.dailyTestModel?.id,
+                    testId: widget.testId,
                   ),
                 );
               },

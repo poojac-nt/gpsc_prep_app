@@ -20,10 +20,16 @@ import 'bloc/test/test_event.dart';
 import 'bloc/test/test_state.dart';
 
 class ResultScreen extends StatefulWidget {
-  const ResultScreen({super.key, this.isFromTestScreen = false, this.testId});
+  const ResultScreen({
+    super.key,
+    this.isFromTestScreen = false,
+    this.testId,
+    this.testName,
+  });
 
   final bool isFromTestScreen;
   final int? testId;
+  final String? testName;
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -166,7 +172,9 @@ class _ResultScreenState extends State<ResultScreen> {
                                   AppRoutes.testScreen,
                                   extra: TestScreenArgs(
                                     isFromResult: true,
-                                    dailyTestModel: null,
+                                    testId: null,
+                                    testDuration: null,
+                                    testName: widget.testName,
                                     language: null,
                                   ), // or testId: 123
                                 );
