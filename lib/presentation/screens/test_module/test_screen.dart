@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
@@ -32,22 +33,19 @@ class TestScreen extends StatefulWidget {
   const TestScreen({
     super.key,
     this.isFromResult = false,
-    required this.testId,
+    required this.dailyTestModel,
     required this.language,
-    required this.testDuration,
   });
 
-  final int? testId;
   final bool isFromResult;
   final String? language;
-  final int? testDuration;
+  final DailyTestModel? dailyTestModel;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
 }
 
 class _TestScreenState extends State<TestScreen> {
-  List<String> indicator = ["Current", "Answered", "Not Answered"];
   late QuestionLanguageData question;
   bool _initialized = false;
 
@@ -58,7 +56,7 @@ class _TestScreenState extends State<TestScreen> {
       bloc.add(TimerStop());
     } else {
       context.read<QuestionBloc>().add(
-        LoadQuestion(widget.testId!, widget.language),
+        LoadQuestion(widget.dailyTestModel!.id, widget.language),
       );
     }
     super.initState();
@@ -145,7 +143,10 @@ class _TestScreenState extends State<TestScreen> {
             },
             icon: Icon(Icons.arrow_back),
           ),
-          title: Text("Daily Test", style: AppTexts.titleTextStyle),
+          title: Text(
+            widget.dailyTestModel!.name,
+            style: AppTexts.titleTextStyle,
+          ),
           actions: [
             widget.isFromResult
                 ? SizedBox.shrink()
@@ -188,7 +189,7 @@ class _TestScreenState extends State<TestScreen> {
           listener: (context, state) {
             context.read<TestBloc>().add(
               SubmitTest(
-                widget.testId!,
+                widget.dailyTestModel!.id,
                 state.questions,
                 state.selectedOption,
                 state.answeredStatus,
@@ -209,7 +210,7 @@ class _TestScreenState extends State<TestScreen> {
                 AppRoutes.resultScreen,
                 extra: ResultScreenArgs(
                   isFromTest: true,
-                  testId: widget.testId,
+                  testId: widget.dailyTestModel?.id,
                 ),
               );
             }
@@ -226,7 +227,7 @@ class _TestScreenState extends State<TestScreen> {
                     ..reset()
                     ..initialize(state.questions);
                   context.read<TimerBloc>().add(
-                    TimerStart(testDuration: widget.testDuration),
+                    TimerStart(testDuration: widget.dailyTestModel?.duration),
                   );
                 }
               }
@@ -428,7 +429,12 @@ class _TestScreenState extends State<TestScreen> {
                                               state.currentIndex == index
                                                   ? Colors.grey
                                                   : state.answeredStatus[index]
-                                                  ? Colors.green
+                                                  ? state.isReview
+                                                      ? state.isCorrect![index] ==
+                                                              false
+                                                          ? Colors.red
+                                                          : Colors.green
+                                                      : Colors.green
                                                   : Colors.white,
                                           fontColor:
                                               state.currentIndex == index
@@ -438,9 +444,14 @@ class _TestScreenState extends State<TestScreen> {
                                                   : Colors.black,
                                           borderColor:
                                               state.currentIndex == index
-                                                  ? Colors.white
+                                                  ? Colors.grey
                                                   : state.answeredStatus[index]
-                                                  ? Colors.green
+                                                  ? state.isReview
+                                                      ? state.isCorrect![index] ==
+                                                              false
+                                                          ? Colors.red
+                                                          : Colors.green
+                                                      : Colors.green
                                                   : Colors.black,
                                           onTap:
                                               () => context
@@ -456,13 +467,15 @@ class _TestScreenState extends State<TestScreen> {
                                 borderColor: Colors.green,
                                 fillColor: Colors.green,
                               ),
+                              state.isReview
+                                  ? QuestionIndicator(
+                                    text: "Incorrect",
+                                    borderColor: Colors.red,
+                                    fillColor: Colors.red,
+                                  )
+                                  : SizedBox.shrink(),
                               QuestionIndicator(
-                                text: "Visited",
-                                borderColor: Colors.grey,
-                                fillColor: Colors.grey,
-                              ),
-                              QuestionIndicator(
-                                text: "Not Answered",
+                                text: "Not Attempted",
                                 fillColor: Colors.white,
                               ),
                             ],
@@ -648,7 +661,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    testId: widget.testId,
+                    testId: widget.dailyTestModel?.id,
                   ),
                 );
               },

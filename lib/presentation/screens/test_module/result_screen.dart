@@ -166,7 +166,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                   AppRoutes.testScreen,
                                   extra: TestScreenArgs(
                                     isFromResult: true,
-                                    testId: null,
+                                    dailyTestModel: null,
                                     language: null,
                                   ), // or testId: 123
                                 );

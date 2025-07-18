@@ -62,9 +62,8 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         TestScreen(
           isFromResult: args.isFromResult,
-          testId: args.testId,
+          dailyTestModel: args.dailyTestModel,
           language: args.language,
-          testDuration: args.testDuration,
         ),
         state,
       );
