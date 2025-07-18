@@ -90,25 +90,25 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                 ),
               ),
             ),
-            10.hGap,
-            BorderedContainer(
-              padding: EdgeInsets.all(AppPaddings.defaultPadding),
-              radius: BorderRadius.zero,
-              child: Center(
-                child: Column(
-                  children: [
-                    Text(
-                      "1",
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text("Mark Each", style: AppTexts.subTitle),
-                  ],
-                ),
-              ),
-            ),
+            // 10.hGap,
+            // BorderedContainer(
+            //   padding: EdgeInsets.all(AppPaddings.defaultPadding),
+            //   radius: BorderRadius.zero,
+            //   child: Center(
+            //     child: Column(
+            //       children: [
+            //         Text(
+            //           "1",
+            //           style: TextStyle(
+            //             fontSize: 20.sp,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //         Text("Mark Each", style: AppTexts.subTitle),
+            //       ],
+            //     ),
+            //   ),
+            // ),
             10.hGap,
             Text("Instructions: ", style: AppTexts.labelTextStyle),
             10.hGap,

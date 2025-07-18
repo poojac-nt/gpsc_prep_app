@@ -209,7 +209,7 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
     _log.i('Prepared payload for Supabase: ${payload.length} items');
 
     final rpcResult = await _supabase.rpc(
-      SupabaseKeys.insertMcqWithTest,
+      SupabaseKeys.insertMcqWithTest2,
       params: {'payload': payload},
     );
     _log.i('Received RPC result: $rpcResult');

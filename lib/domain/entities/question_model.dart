@@ -19,6 +19,8 @@ class QuestionModel {
   String createdAt;
   @JsonKey(name: "marks")
   int marks;
+  @JsonKey(name: "question_hash")
+  String questionHash;
 
   QuestionModel({
     required this.questionType,
@@ -28,6 +30,7 @@ class QuestionModel {
     required this.questionGj,
     required this.createdAt,
     required this.marks,
+    required this.questionHash,
   });
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) =>

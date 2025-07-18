@@ -3,6 +3,7 @@ abstract class SupabaseKeys {
   static final String updateUserInfo = 'update_user_info';
   static final String insertMcqMultiLingual = 'insert_multilingual_questions';
   static final String insertMcqWithTest = 'insert_questions_with_tests';
+  static final String insertMcqWithTest2 = 'insert_questions_with_tests_v2';
 
   ///table
   static final String usersTable = 'users';

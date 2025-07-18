@@ -22,7 +22,7 @@ final class QuestionCubitLoaded extends QuestionCubitState {
   });
 
   double get progress =>
-      questions.length <= 1 ? 1.0 : currentIndex + 1 / questions.length;
+      questions.length <= 1 ? 1.0 : (currentIndex + 1) / questions.length;
   int get answered => answeredStatus.where((value) => value).toList().length;
   List<String> get options => questions[currentIndex].getOptions();
   String? get currentSelected => selectedOption[currentIndex];

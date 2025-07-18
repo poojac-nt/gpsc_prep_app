@@ -17,14 +17,22 @@ UserPayload _$UserPayloadFromJson(Map<String, dynamic> json) => UserPayload(
       profilePicture: json['profile_picture'] as String?,
     );
 
-Map<String, dynamic> _$UserPayloadToJson(UserPayload instance) =>
-    <String, dynamic>{
-      if (instance.authID case final value?) 'auth_id': value,
-      'email': instance.email,
-      'password': instance.password,
-      'full_name': instance.name,
-      'role': instance.role,
-      if (instance.address case final value?) 'address': value,
-      if (instance.number case final value?) 'number': value,
-      if (instance.profilePicture case final value?) 'profile_picture': value,
-    };
+Map<String, dynamic> _$UserPayloadToJson(UserPayload instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('auth_id', instance.authID);
+  val['email'] = instance.email;
+  val['password'] = instance.password;
+  val['full_name'] = instance.name;
+  val['role'] = instance.role;
+  writeNotNull('address', instance.address);
+  writeNotNull('number', instance.number);
+  writeNotNull('profile_picture', instance.profilePicture);
+  return val;
+}
