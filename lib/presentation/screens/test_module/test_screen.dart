@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
@@ -207,7 +206,7 @@ class _TestScreenState extends State<TestScreen> {
             if (timerState is TimerStopped && !timerState.isManual) {
               _buildAutoSubmitDialog(context, state);
             } else {
-              context.push(
+              context.pushReplacement(
                 AppRoutes.resultScreen,
                 extra: ResultScreenArgs(
                   isFromTest: true,
@@ -659,7 +658,7 @@ class _TestScreenState extends State<TestScreen> {
               ),
               onPressed: () {
                 context.pop(); // close dialog
-                context.push(
+                context.pushReplacement(
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
