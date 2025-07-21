@@ -41,7 +41,7 @@ class TestScreen extends StatefulWidget {
   final bool isFromResult;
   final String? language;
   final int? testId;
-  final String? testName;
+  final String testName;
   final int? testDuration;
 
   @override
@@ -98,55 +98,11 @@ class _TestScreenState extends State<TestScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              widget.isFromResult
-                  ? context.pop()
-                  : showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return customDialogBox(
-                        context,
-                        "Confirm Exit",
-                        "Do you really want to leave the test in between?",
-                        "",
-                        [
-                          TextButton(
-                            child: Text(
-                              "Cancel",
-                              style: TextStyle(color: Colors.grey[700]),
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Close dialog
-                            },
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              "Yes, Leave",
-                              style: AppTexts.title.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () {
-                              context.read<QuestionCubit>().reset();
-                              context.pop(); // Close dialog
-                              context.go(AppRoutes.dashboard);
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-            },
-            icon: Icon(Icons.arrow_back),
+          automaticallyImplyLeading: false,
+          title: Padding(
+            padding: EdgeInsets.only(left: 20.w),
+            child: Text(widget.testName!, style: AppTexts.titleTextStyle),
           ),
-          title: Text(widget.testName!, style: AppTexts.titleTextStyle),
           actions: [
             widget.isFromResult
                 ? SizedBox.shrink()
@@ -168,8 +124,11 @@ class _TestScreenState extends State<TestScreen> {
                       BlocBuilder<TimerBloc, TimerState>(
                         builder: (context, state) {
                           if (state is TimerRunning) {
-                            return Text(
-                              "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
+                            return SizedBox(
+                              width: 39.w,
+                              child: Text(
+                                "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
+                              ),
                             );
                           }
                           if (state is TimerStopped) {
@@ -256,6 +215,114 @@ class _TestScreenState extends State<TestScreen> {
                                 "Question ${state.currentIndex + 1} of ${state.questions.length}",
                             value: state.progress,
                             percentageText: "${state.answered} Answered",
+                          ),
+                          20.hGap,
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 5.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                state.isReview
+                                    ? SizedBox.shrink()
+                                    : Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(right: 25.w),
+                                        child: ActionButton(
+                                          text: "Quit Test",
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder:
+                                                  (context) => customDialogBox(
+                                                    context,
+                                                    "Confirm Exit",
+                                                    "Do you really want to leave the test in between?",
+                                                    "",
+                                                    [
+                                                      TextButton(
+                                                        child: Text(
+                                                          "Cancel",
+                                                          style: TextStyle(
+                                                            color:
+                                                                Colors
+                                                                    .grey[700],
+                                                          ),
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(
+                                                            context,
+                                                          ).pop(); // Close dialog
+                                                        },
+                                                      ),
+                                                      ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.redAccent,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          "Yes, Leave",
+                                                          style: AppTexts.title
+                                                              .copyWith(
+                                                                color:
+                                                                    Colors
+                                                                        .white,
+                                                              ),
+                                                        ),
+                                                        onPressed: () {
+                                                          context
+                                                              .read<
+                                                                QuestionCubit
+                                                              >()
+                                                              .reset();
+                                                          context
+                                                              .pop(); // Close dialog
+                                                          context.go(
+                                                            AppRoutes.dashboard,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                100.wGap,
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      left: state.isReview ? 98.w : 8.w,
+                                    ),
+                                    child: ActionButton(
+                                      text:
+                                          state.isReview
+                                              ? "Back to Result"
+                                              : "Submit Test",
+                                      onTap: () {
+                                        if (!state.isReview) {
+                                          var time = totalTime(context);
+                                          _buildSubmitDialog(
+                                            context,
+                                            state,
+                                            time,
+                                            marks,
+                                          );
+                                        } else {
+                                          context.pop();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           20.hGap,
                           TestModule(
@@ -359,33 +426,19 @@ class _TestScreenState extends State<TestScreen> {
                                     child: Padding(
                                       padding: EdgeInsets.only(left: 65.w),
                                       child: ActionButton(
-                                        text:
+                                        text: "Next",
+                                        backgroundColor:
                                             state.currentIndex ==
                                                     state.questions.length - 1
-                                                ? state.isReview
-                                                    ? "Back to Result"
-                                                    : "Submit Test"
-                                                : "Next",
+                                                ? Colors.grey
+                                                : AppColors.primary,
                                         onTap: () {
-                                          if (state.currentIndex <
-                                              state.questions.length - 1) {
-                                            context
-                                                .read<QuestionCubit>()
-                                                .nextQuestion();
-                                          } else {
-                                            if (!state.isReview) {
-                                              var time = totalTime(context);
-                                              _buildSubmitDialog(
-                                                context,
-                                                state,
-                                                time,
-                                                marks,
-                                              );
-                                            } else {
-                                              context
-                                                  .pop(); // Go back from review
-                                            }
-                                          }
+                                          state.currentIndex <
+                                                  state.questions.length - 1
+                                              ? context
+                                                  .read<QuestionCubit>()
+                                                  .nextQuestion()
+                                              : null;
                                         },
                                       ),
                                     ),

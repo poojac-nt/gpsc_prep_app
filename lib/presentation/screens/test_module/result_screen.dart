@@ -111,7 +111,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     return TestModule(
                       iconSize: 26.sp,
                       fontSize: 26.sp,
-                      title: "Test Result",
+                      title: "${widget.testName} Result",
                       cards: [
                         Center(
                           child: Column(
@@ -174,7 +174,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                     isFromResult: true,
                                     testId: null,
                                     testDuration: null,
-                                    testName: widget.testName,
+                                    testName: widget.testName!,
                                     language: null,
                                   ), // or testId: 123
                                 );
@@ -201,7 +201,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 return TestModule(
                   iconSize: 26.sp,
                   fontSize: 26.sp,
-                  title: "Test Result",
+                  title: "${widget.testName!} Result",
                   cards: [
                     Center(
                       child: Column(

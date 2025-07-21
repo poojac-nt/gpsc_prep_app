@@ -144,7 +144,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             ActionButton(
               text: "Start Test",
               onTap: () {
-                context.push(
+                context.pushReplacement(
                   AppRoutes.testScreen,
                   extra: TestScreenArgs(
                     isFromResult: false,

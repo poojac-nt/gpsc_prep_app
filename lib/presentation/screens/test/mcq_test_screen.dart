@@ -94,6 +94,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                   extra: ResultScreenArgs(
                                     isFromTest: false,
                                     testId: test.id,
+                                    testName: test.name,
                                   ),
                                 );
                               } else {
