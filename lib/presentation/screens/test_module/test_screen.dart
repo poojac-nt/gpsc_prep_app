@@ -101,7 +101,7 @@ class _TestScreenState extends State<TestScreen> {
           automaticallyImplyLeading: false,
           title: Padding(
             padding: EdgeInsets.only(left: 20.w),
-            child: Text(widget.testName!, style: AppTexts.titleTextStyle),
+            child: Text(widget.testName, style: AppTexts.titleTextStyle),
           ),
           actions: [
             widget.isFromResult

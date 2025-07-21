@@ -33,6 +33,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    getIt<ConnectivityBloc>().add(CheckConnectivity());
+    super.initState();
+  }
+
+  @override
   void dispose() {
     email.dispose();
     name.dispose();

@@ -30,6 +30,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    getIt<ConnectivityBloc>().add(CheckConnectivity());
+    super.initState();
+  }
+
+  @override
   void dispose() {
     email.dispose();
     password.dispose();
