@@ -63,6 +63,7 @@ void setupRepositories() {
 }
 
 void setupBlocs() {
+  getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
   getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(getIt<AuthRepository>(), getIt<CacheManager>()),
   );
@@ -87,7 +88,6 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<TestCubit>(() => TestCubit());
   getIt.registerLazySingleton<QuestionCubit>(() => QuestionCubit());
-  getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
 }
 
 Future<void> setUpHive() async {

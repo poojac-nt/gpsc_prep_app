@@ -105,7 +105,18 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
             .toList();
     _log.i('Parsed headers: $headers');
 
-    final requiredHeaders = {
+    final descRequiredHeaders = {
+      'sr_no',
+      'language_code',
+      'question_type',
+      'difficulty_level',
+      'subject_name',
+      'topic_name',
+      'question_text',
+      'marks',
+    };
+
+    final otherRequiredHeaders = {
       'sr_no',
       'language_code',
       'question_type',
@@ -121,11 +132,16 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
       'explanation',
       'marks',
     };
-    final missingHeaders = requiredHeaders.difference(headers.toSet());
-    if (missingHeaders.isNotEmpty) {
-      _log.e('Missing required columns: $missingHeaders');
+
+    // Check if essential base headers are missing from the file
+    final baseHeaderCheck = descRequiredHeaders.intersection(headers.toSet());
+    if (baseHeaderCheck.length < descRequiredHeaders.length) {
+      final missingBaseHeaders = descRequiredHeaders.difference(
+        headers.toSet(),
+      );
+      _log.e('Missing required base columns: $missingBaseHeaders');
       _snackBar.showError(
-        'Missing required column(s): ${missingHeaders.join(', ')}',
+        'Missing required column(s): ${missingBaseHeaders.join(', ')}',
       );
       return null;
     }
@@ -133,6 +149,7 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
     final dataRows = rows.skip(1);
     final Map<String, Map<String, dynamic>> grouped = {};
     int rowIndex = 1;
+
     for (final row in dataRows) {
       rowIndex++;
       if (row.every(
@@ -140,7 +157,16 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
       )) {
         continue;
       }
-      final rowMap = Map.fromIterables(headers, row);
+
+      final rowMap = Map.fromIterables(
+        headers,
+        row.map((e) => e.toString().trim()),
+      );
+      final questionType = rowMap['question_type']?.toLowerCase() ?? '';
+
+      final requiredHeaders =
+          questionType == 'desc' ? descRequiredHeaders : otherRequiredHeaders;
+
       for (final key in requiredHeaders) {
         final value = rowMap[key]?.toString().trim();
         if (value == null || value.isEmpty) {
@@ -153,24 +179,30 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
           return null;
         }
       }
+
       final srNo = rowMap['sr_no'];
       final lang = rowMap['language_code'];
-      if (srNo == null || lang == null) {
-        _log.e('Null sr_no or language_code in row $rowIndex');
-        continue; // Or return null, depending on your needs
+      if (srNo == null || lang == null) continue;
+
+      Map<String, dynamic> langData;
+
+      if (questionType == 'desc') {
+        langData = {"question_txt": rowMap['question_text']};
+      } else {
+        langData = {
+          "question_txt": rowMap['question_text'],
+          "opt_a": rowMap['option_a'],
+          "opt_b": rowMap['option_b'],
+          "opt_c": rowMap['option_c'],
+          "opt_d": rowMap['option_d'],
+          "correct_answer": rowMap['correct_answer'],
+          "explanation": rowMap['explanation'],
+        };
       }
-      final langData = {
-        "question_txt": rowMap['question_text'],
-        "opt_a": rowMap['option_a'],
-        "opt_b": rowMap['option_b'],
-        "opt_c": rowMap['option_c'],
-        "opt_d": rowMap['option_d'],
-        "correct_answer": rowMap['correct_answer'],
-        "explanation": rowMap['explanation'],
-      };
+
       grouped.putIfAbsent(srNo, () {
         final base = {
-          "question_type": rowMap['question_type'],
+          "question_type": questionType,
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
           "topic_name": rowMap['topic_name'],
@@ -178,26 +210,28 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
           "languages": <String, dynamic>{},
         };
         if (headers.contains('test_name') &&
-            rowMap['test_name']?.toString().trim().isNotEmpty == true) {
+            rowMap['test_name']?.isNotEmpty == true) {
           base['test_name'] = rowMap['test_name'];
         }
         if (headers.contains('duration') &&
-            rowMap['duration']?.toString().trim().isNotEmpty == true) {
+            rowMap['duration']?.isNotEmpty == true) {
           base['duration'] = int.tryParse(rowMap['duration'].toString()) ?? 1;
         }
         return base;
       });
+
       final existing = grouped[srNo]!;
       if (existing['subject_name'] != rowMap['subject_name'] ||
           existing['topic_name'] != rowMap['topic_name'] ||
-          existing['question_type'] != rowMap['question_type']) {
+          existing['question_type'] != questionType) {
         _log.e('Conflicting metadata for sr_no $srNo at row $rowIndex');
         _snackBar.showError(
           'Conflicting metadata for sr_no $srNo at row $rowIndex: subject/topic/question_type mismatch',
         );
         return null;
       }
-      grouped[srNo]!['languages'][lang] = langData;
+
+      existing['languages'][lang] = langData;
     }
 
     if (grouped.isEmpty) {
