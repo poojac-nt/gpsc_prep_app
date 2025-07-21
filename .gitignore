@@ -43,5 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/lib/utils/secrets/secrets.dart
+lib/utils/constants/secrets.dart
 /pubspec.lock
+/supabase/functions/service-account.json
+android/app/google-services.json

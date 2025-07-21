@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/home/home_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/regitration_screen/registration_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
@@ -11,13 +16,13 @@ import '../../presentation/screens/test/mcq_test_screen.dart';
 
 final List<GoRoute> appRoutes = [
   GoRoute(
-    path: AppRoutes.auth,
+    path: AppRoutes.registrationScreen,
     pageBuilder:
         (context, state) => _slideTransition(RegistrationScreen(), state),
   ),
   GoRoute(
-    path: AppRoutes.home,
-    pageBuilder: (context, state) => _slideTransition(HomeScreen(), state),
+    path: AppRoutes.dashboard,
+    pageBuilder: (context, state) => _slideTransition(DashboardScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.login,
@@ -33,8 +38,56 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) => _slideTransition(ProfileScreen(), state),
   ),
   GoRoute(
-    path: AppRoutes.testScreen,
+    path: AppRoutes.mcqTestScreen,
     pageBuilder: (context, state) => _slideTransition(MCQTestScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.testInstructionScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as TestInstructionScreenArgs;
+      return _slideTransition(
+        TestInstructionScreen(
+          dailyTestModel: args.dailyTestModel,
+          availableLanguages: args.availableLanguages,
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.testScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as TestScreenArgs;
+
+      return _slideTransition(
+        TestScreen(
+          isFromResult: args.isFromResult,
+          testId: args.testId,
+          testDuration: args.testDuration,
+          testName: args.testName,
+          language: args.language,
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.resultScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as ResultScreenArgs;
+      return _slideTransition(
+        ResultScreen(
+          isFromTestScreen: args.isFromTest,
+          testName: args.testName,
+          testId: args.testId,
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.addQuestionScreen,
+    pageBuilder: (context, state) => _slideTransition(UploadQuestions(), state),
   ),
 ];
 

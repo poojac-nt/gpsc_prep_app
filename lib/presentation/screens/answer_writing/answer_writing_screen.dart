@@ -36,7 +36,7 @@ class AnswerWritingScreen extends StatelessWidget {
             TestModule(
               title: 'Daily Practice',
               subtitle: 'Subject Base Daily Writing Prompts',
-              icon: Icons.calendar_today_outlined,
+              prefixIcon: Icons.calendar_today_outlined,
               cards: [
                 TestTile(
                   title: 'Good Governance',
@@ -57,7 +57,7 @@ class AnswerWritingScreen extends StatelessWidget {
             TestModule(
               title: 'Weekly Practice',
               subtitle: 'Comprehensive Essay Writing',
-              icon: Icons.description_outlined,
+              prefixIcon: Icons.description_outlined,
               cards: [
                 TestTile(
                   title: 'Digital India Initiative',
@@ -71,7 +71,7 @@ class AnswerWritingScreen extends StatelessWidget {
             TestModule(
               title: 'My Submissions',
               subtitle: 'Track your Submitted Answers',
-              icon: Icons.file_upload_outlined,
+              prefixIcon: Icons.file_upload_outlined,
               cards: [
                 ActionButton(text: 'View All Submissions', onTap: () {}),
                 5.hGap,
