@@ -374,6 +374,7 @@ class _TestScreenState extends State<TestScreen> {
                                     radius: BorderRadius.circular(10),
                                     child: RadioListTile<String>(
                                       value: option,
+                                      toggleable: true,
                                       activeColor: AppColors.primary,
                                       groupValue: selectedAnswer,
                                       onChanged:
@@ -488,7 +489,7 @@ class _TestScreenState extends State<TestScreen> {
                                                               false
                                                           ? Colors.red
                                                           : Colors.green
-                                                      : Colors.green
+                                                      : Colors.black
                                                   : Colors.white,
                                           fontColor:
                                               state.currentIndex == index
@@ -505,7 +506,7 @@ class _TestScreenState extends State<TestScreen> {
                                                               false
                                                           ? Colors.red
                                                           : Colors.green
-                                                      : Colors.green
+                                                      : Colors.black
                                                   : Colors.black,
                                           onTap:
                                               () => context
@@ -517,9 +518,15 @@ class _TestScreenState extends State<TestScreen> {
                               ),
                               10.hGap,
                               QuestionIndicator(
-                                text: "Attempted",
-                                borderColor: Colors.green,
-                                fillColor: Colors.green,
+                                text: state.isReview ? "Correct" : "Attempted",
+                                borderColor:
+                                    state.isReview
+                                        ? Colors.green
+                                        : Colors.black,
+                                fillColor:
+                                    state.isReview
+                                        ? Colors.green
+                                        : Colors.black,
                               ),
                               state.isReview
                                   ? QuestionIndicator(
