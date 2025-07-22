@@ -125,7 +125,7 @@ class _TestScreenState extends State<TestScreen> {
                         builder: (context, state) {
                           if (state is TimerRunning) {
                             return SizedBox(
-                              width: 39.w,
+                              width: 43.w,
                               child: Text(
                                 "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
                               ),
@@ -199,6 +199,9 @@ class _TestScreenState extends State<TestScreen> {
 
               if (state is QuestionLoaded) {
                 final marks = state.marks;
+                final subjects = state.subjects;
+                final topics = state.topics;
+                final difficultyLevel = state.difficultyLevel;
                 return BlocBuilder<QuestionCubit, QuestionCubitState>(
                   builder: (context, state) {
                     if (state is! QuestionCubitLoaded) {
@@ -383,7 +386,7 @@ class _TestScreenState extends State<TestScreen> {
                                               : (value) {
                                                 context
                                                     .read<QuestionCubit>()
-                                                    .answerQuestion(value!);
+                                                    .answerQuestion(value);
                                               },
                                       title: Text(
                                         option,
@@ -453,6 +456,67 @@ class _TestScreenState extends State<TestScreen> {
                               ? TestModule(
                                 title: "Explanation",
                                 cards: [
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 6.w),
+                                    child: Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: "Subject: ",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14.sp,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: subjects[state.currentIndex],
+                                            style: TextStyle(fontSize: 14.sp),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 6.w),
+                                    child: Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: "Topic: ",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14.sp,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: topics[state.currentIndex],
+                                            style: TextStyle(fontSize: 14.sp),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 6.w),
+                                    child: Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: "Difficulty Level: ",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                difficultyLevel[state
+                                                    .currentIndex],
+                                            style: TextStyle(fontSize: 14.sp),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                   Padding(
                                     padding: EdgeInsets.only(left: 6.w),
                                     child:
@@ -723,6 +787,7 @@ class _TestScreenState extends State<TestScreen> {
                   extra: ResultScreenArgs(
                     isFromTest: true,
                     testId: widget.testId,
+                    testName: widget.testName,
                   ),
                 );
               },

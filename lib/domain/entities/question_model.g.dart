@@ -23,6 +23,8 @@ QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
       createdAt: json['created_at'] as String,
       marks: (json['marks'] as num).toInt(),
       questionHash: json['question_hash'] as String,
+      subjectName: json['subject_name'] as String,
+      topicName: json['topic_name'] as String,
     );
 
 Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
@@ -35,4 +37,6 @@ Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
       'created_at': instance.createdAt,
       'marks': instance.marks,
       'question_hash': instance.questionHash,
+      'subject_name': instance.subjectName,
+      'topic_name': instance.topicName,
     };

@@ -4,6 +4,8 @@ abstract class SupabaseKeys {
   static final String insertMcqMultiLingual = 'insert_multilingual_questions';
   static final String insertMcqWithTest = 'insert_questions_with_tests';
   static final String insertMcqWithTest2 = 'insert_questions_with_tests_v2';
+  static final String getTestQuestionsByTestId =
+      'get_test_questions_by_test_id';
 
   ///table
   static final String usersTable = 'users';
