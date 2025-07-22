@@ -6,7 +6,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="Exam Prep App"
+        android:label="Star ICS"
         android:resizeableActivity="false">
         <activity
             android:name=".MainActivity"
