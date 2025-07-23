@@ -36,9 +36,16 @@ class TestModule extends StatelessWidget {
                 Icon(prefixIcon, size: iconSize, color: iconColor),
                 10.wGap,
               ],
-              Text(
-                title,
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+              Flexible(
+                child: Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  title,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

@@ -6,13 +6,13 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 class CustomProgressBar extends StatelessWidget {
   const CustomProgressBar({
     super.key,
-    required this.text,
+    required this.titleText,
     required this.value,
-    required this.percentageText,
+    required this.labelText,
   });
 
-  final String text;
-  final String percentageText;
+  final String titleText;
+  final String labelText;
   final double value;
   @override
   Widget build(BuildContext context) {
@@ -21,14 +21,24 @@ class CustomProgressBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              text,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
+            Flexible(
+              child: Text(
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                titleText,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
               ),
             ),
-            Text(percentageText),
+            Flexible(
+              child: Text(
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                labelText,
+              ),
+            ),
           ],
         ),
         5.hGap,

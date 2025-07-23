@@ -16,7 +16,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/que
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
-import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/bloc/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/preview_screen/question_preview_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 

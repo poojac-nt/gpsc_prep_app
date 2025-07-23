@@ -96,529 +96,550 @@ class _TestScreenState extends State<TestScreen> {
           );
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Padding(
-            padding: EdgeInsets.only(left: 20.w),
-            child: Text(widget.testName, style: AppTexts.titleTextStyle),
+      child: PopScope(
+        canPop: false,
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Padding(
+              padding: EdgeInsets.only(left: 20.w),
+              child: Text(widget.testName, style: AppTexts.titleTextStyle),
+            ),
+            actions: [
+              widget.isFromResult
+                  ? SizedBox.shrink()
+                  : Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 3.h,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(color: Colors.black),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.timer_outlined, size: 18.sp),
+                        5.wGap,
+                        BlocBuilder<TimerBloc, TimerState>(
+                          builder: (context, state) {
+                            if (state is TimerRunning) {
+                              return SizedBox(
+                                width: 43.w,
+                                child: Text(
+                                  "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
+                                ),
+                              );
+                            }
+                            if (state is TimerStopped) {
+                              getIt<LogHelper>().w(state.totalMins.toString());
+                              getIt<LogHelper>().w(state.totalSecs.toString());
+                              return SizedBox.shrink();
+                            }
+                            return Text('00:00');
+                          },
+                        ),
+                      ],
+                    ),
+                  ).padSymmetric(horizontal: 10.w),
+            ],
           ),
-          actions: [
-            widget.isFromResult
-                ? SizedBox.shrink()
-                : Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 3.h,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: Colors.black),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.timer_outlined, size: 18.sp),
-                      5.wGap,
-                      BlocBuilder<TimerBloc, TimerState>(
-                        builder: (context, state) {
-                          if (state is TimerRunning) {
-                            return SizedBox(
-                              width: 43.w,
-                              child: Text(
-                                "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
-                              ),
-                            );
-                          }
-                          if (state is TimerStopped) {
-                            getIt<LogHelper>().w(state.totalMins.toString());
-                            getIt<LogHelper>().w(state.totalSecs.toString());
-                            return SizedBox.shrink();
-                          }
-                          return Text('00:00');
-                        },
-                      ),
-                    ],
-                  ),
-                ).padSymmetric(horizontal: 10.w),
-          ],
-        ),
-        body: BlocListener<TestCubit, TestCubitSubmitted>(
-          listener: (context, state) {
-            context.read<TestBloc>().add(
-              SubmitTest(
-                widget.testId!,
-                state.questions,
-                state.selectedOption,
-                state.answeredStatus,
-                state.totalQuestions,
-                state.correctAnswers,
-                state.inCorrectAnswers,
-                state.attemptedQuestions,
-                state.notAttemptedQuestions,
-                state.score,
-                state.timeSpent,
-              ),
-            );
-            final timerState = context.read<TimerBloc>().state;
-            final questionCubitState = context.read<QuestionCubit>().state;
-
-            if (timerState is TimerStopped && !timerState.isManual) {
-              _buildAutoSubmitDialog(context, state);
-            } else if (questionCubitState is QuestionCubitLoaded &&
-                questionCubitState.isQuitTest) {
-              context.go(AppRoutes.dashboard);
-            } else {
-              context.pushReplacement(
-                AppRoutes.resultScreen,
-                extra: ResultScreenArgs(
-                  isFromTest: true,
-                  testName: widget.testName,
-                  testId: widget.testId,
+          body: BlocListener<TestCubit, TestCubitSubmitted>(
+            listener: (context, state) {
+              context.read<TestBloc>().add(
+                SubmitTest(
+                  widget.testId!,
+                  state.questions,
+                  state.selectedOption,
+                  state.answeredStatus,
+                  state.totalQuestions,
+                  state.correctAnswers,
+                  state.inCorrectAnswers,
+                  state.attemptedQuestions,
+                  state.notAttemptedQuestions,
+                  state.score,
+                  state.timeSpent,
                 ),
               );
-            }
-          },
-          child: BlocConsumer<QuestionBloc, QuestionState>(
-            listener: (context, state) {
-              if (state is QuestionLoaded && !_initialized) {
-                _initialized = true;
+              final timerState = context.read<TimerBloc>().state;
+              final questionCubitState = context.read<QuestionCubit>().state;
 
-                if (widget.isFromResult) {
-                  context.read<QuestionCubit>().initialize(state.questions);
-                } else {
-                  context.read<QuestionCubit>()
-                    ..reset()
-                    ..initialize(state.questions);
-                  context.read<TimerBloc>().add(
-                    TimerStart(testDuration: widget.testDuration),
-                  );
-                }
+              if (timerState is TimerStopped && !timerState.isManual) {
+                _buildAutoSubmitDialog(context, state);
+              } else if (questionCubitState is QuestionCubitLoaded &&
+                  questionCubitState.isQuitTest) {
+                context.go(AppRoutes.dashboard);
+              } else {
+                context.pushReplacement(
+                  AppRoutes.resultScreen,
+                  extra: ResultScreenArgs(
+                    isFromTest: true,
+                    testName: widget.testName,
+                    testId: widget.testId,
+                  ),
+                );
               }
             },
-            builder: (context, state) {
-              if (state is QuestionLoading) {
-                return _buildWhenLoading();
-              }
+            child: BlocConsumer<QuestionBloc, QuestionState>(
+              listener: (context, state) {
+                if (state is QuestionLoaded && !_initialized) {
+                  _initialized = true;
 
-              if (state is QuestionLoaded) {
-                final marks = state.marks;
-                final subjects = state.subjects;
-                final topics = state.topics;
-                final difficultyLevel = state.difficultyLevel;
-                return BlocBuilder<QuestionCubit, QuestionCubitState>(
-                  builder: (context, state) {
-                    if (state is! QuestionCubitLoaded) {
-                      return SizedBox.shrink();
-                    }
-                    final currentIndex = state.currentIndex;
-                    final question = state.questions[currentIndex];
-                    final selectedAnswer = state.selectedOption[currentIndex];
-                    return SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          CustomProgressBar(
-                            text:
-                                "Question ${state.currentIndex + 1} of ${state.questions.length}",
-                            value: state.progress,
-                            percentageText: "${state.answered} Answered",
-                          ),
-                          20.hGap,
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5.w),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                state.isReview
-                                    ? SizedBox.shrink()
-                                    : Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.only(right: 25.w),
-                                        child: ActionButton(
-                                          text: "Quit Test",
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              builder:
-                                                  (context) => customDialogBox(
-                                                    context,
-                                                    "Confirm Exit",
-                                                    "Do you really want to leave the test in between?",
-                                                    "Your answers so far will be saved, you won’t be able to resume this test later.",
-                                                    [
-                                                      TextButton(
-                                                        child: Text(
-                                                          "Cancel",
-                                                          style: TextStyle(
-                                                            color:
-                                                                Colors
-                                                                    .grey[700],
-                                                          ),
-                                                        ),
-                                                        onPressed: () {
-                                                          Navigator.of(
-                                                            context,
-                                                          ).pop(); // Close dialog
-                                                        },
-                                                      ),
-                                                      ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              Colors.redAccent,
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  8,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        child: Text(
-                                                          "Yes, Leave",
-                                                          style: AppTexts.title
-                                                              .copyWith(
-                                                                color:
-                                                                    Colors
-                                                                        .white,
-                                                              ),
-                                                        ),
-                                                        onPressed: () {
-                                                          context
-                                                              .pop(); // Close dialog
-                                                          context
-                                                              .read<
-                                                                QuestionCubit
-                                                              >()
-                                                              .markAsQuit();
-                                                          context
-                                                              .read<TimerBloc>()
-                                                              .add(TimerStop());
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                100.wGap,
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      left: state.isReview ? 98.w : 8.w,
-                                    ),
-                                    child: ActionButton(
-                                      text:
-                                          state.isReview
-                                              ? "Back to Result"
-                                              : "Submit Test",
-                                      onTap: () {
-                                        if (!state.isReview) {
-                                          var time = totalTime(context);
-                                          _buildSubmitDialog(
-                                            context,
-                                            state,
-                                            time,
-                                            marks,
-                                          );
-                                        } else {
-                                          context.pop();
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
+                  if (widget.isFromResult) {
+                    context.read<QuestionCubit>().initialize(state.questions);
+                  } else {
+                    context.read<QuestionCubit>()
+                      ..reset()
+                      ..initialize(state.questions);
+                    context.read<TimerBloc>().add(
+                      TimerStart(testDuration: widget.testDuration),
+                    );
+                  }
+                }
+              },
+              builder: (context, state) {
+                if (state is QuestionLoading) {
+                  return _buildWhenLoading();
+                }
+
+                if (state is QuestionLoaded) {
+                  final marks = state.marks;
+                  final subjects = state.subjects;
+                  final topics = state.topics;
+                  final difficultyLevel = state.difficultyLevel;
+                  return BlocBuilder<QuestionCubit, QuestionCubitState>(
+                    builder: (context, state) {
+                      if (state is! QuestionCubitLoaded) {
+                        return SizedBox.shrink();
+                      }
+                      final currentIndex = state.currentIndex;
+                      final question = state.questions[currentIndex];
+                      final selectedAnswer = state.selectedOption[currentIndex];
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            CustomProgressBar(
+                              titleText:
+                                  "Question ${state.currentIndex + 1} of ${state.questions.length}",
+                              value: state.progress,
+                              labelText: "${state.answered} Answered",
                             ),
-                          ),
-                          20.hGap,
-                          TestModule(
-                            title: "Question ${state.currentIndex + 1}",
-                            cards: [
-                              question.questionTxt.toQuestionWidget(),
-                              10.hGap,
-                              ListView.builder(
-                                itemCount: state.options.length,
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  final option = state.options[index];
-                                  final isSelected = selectedAnswer == option;
-                                  Color? tileColor;
-                                  Color? textColor;
-
-                                  final correctAnswer = question.correctAnswer;
-
-                                  if (state.isReview) {
-                                    if (isSelected && option == correctAnswer) {
-                                      tileColor = Colors.green;
-                                      // Selected and correct
-                                      textColor = Colors.green.shade700;
-                                    } else if (isSelected &&
-                                        option != correctAnswer) {
-                                      // Selected and wrong
-                                      tileColor = Colors.red;
-                                      textColor = Colors.red.shade700;
-                                    } else if (!isSelected &&
-                                        option == correctAnswer) {
-                                      // Not selected, but correct answer
-                                      tileColor = Colors.green.withOpacity(0.3);
-                                      textColor = Colors.green.shade800;
-                                    } else {
-                                      tileColor = Colors.transparent;
-                                      textColor = Colors.black;
-                                    }
-                                  } else {
-                                    tileColor =
-                                        isSelected
-                                            ? AppColors.primary
-                                            : AppColors.accentColor;
-                                    textColor = Colors.black;
-                                  }
-                                  return BorderedContainer(
-                                    borderColor: tileColor,
-                                    padding: EdgeInsets.zero,
-                                    radius: BorderRadius.circular(10),
-                                    child: RadioListTile<String>(
-                                      value: option,
-                                      toggleable: true,
-                                      activeColor: AppColors.primary,
-                                      groupValue: selectedAnswer,
-                                      onChanged:
-                                          state.isReview
-                                              ? null
-                                              : (value) {
-                                                context
-                                                    .read<QuestionCubit>()
-                                                    .answerQuestion(value);
-                                              },
-                                      title: Text(
-                                        option,
-                                        style: TextStyle(
-                                          color:
-                                              state.isReview
-                                                  ? textColor
-                                                  : Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ).padAll(5);
-                                },
-                              ),
-                              10.hGap,
-                              Row(
+                            20.hGap,
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.w),
+                              child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
+                                  state.isReview
+                                      ? SizedBox.shrink()
+                                      : Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(right: 25.w),
+                                          child: ActionButton(
+                                            text: "Quit Test",
+                                            onTap: () {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (
+                                                      context,
+                                                    ) => customDialogBox(
+                                                      context,
+                                                      "Confirm Exit",
+                                                      "Do you really want to leave the test in between?",
+                                                      "Your answers so far will be saved, you won’t be able to resume this test later.",
+                                                      [
+                                                        TextButton(
+                                                          child: Text(
+                                                            "Cancel",
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors
+                                                                      .grey[700],
+                                                            ),
+                                                          ),
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop(); // Close dialog
+                                                          },
+                                                        ),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .redAccent,
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    8,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            "Yes, Leave",
+                                                            style: AppTexts
+                                                                .title
+                                                                .copyWith(
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                ),
+                                                          ),
+                                                          onPressed: () {
+                                                            context
+                                                                .pop(); // Close dialog
+                                                            context
+                                                                .read<
+                                                                  QuestionCubit
+                                                                >()
+                                                                .markAsQuit();
+                                                            context
+                                                                .read<
+                                                                  TimerBloc
+                                                                >()
+                                                                .add(
+                                                                  TimerStop(),
+                                                                );
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                  100.wGap,
                                   Expanded(
-                                    flex: 1,
-                                    child: ActionButton(
-                                      backgroundColor:
-                                          state.currentIndex == 0
-                                              ? Colors.grey
-                                              : AppColors.primary,
-                                      text: "Previous",
-                                      onTap: () {
-                                        state.currentIndex > 0
-                                            ? context
-                                                .read<QuestionCubit>()
-                                                .prevQuestion()
-                                            : null;
-                                      },
-                                      fontColor: Colors.white,
-                                    ),
-                                  ),
-                                  20.wGap,
-                                  Expanded(
-                                    flex: 2,
                                     child: Padding(
-                                      padding: EdgeInsets.only(left: 65.w),
+                                      padding: EdgeInsets.only(
+                                        left: state.isReview ? 98.w : 8.w,
+                                      ),
                                       child: ActionButton(
-                                        text: "Next",
-                                        backgroundColor:
-                                            state.currentIndex ==
-                                                    state.questions.length - 1
-                                                ? Colors.grey
-                                                : AppColors.primary,
+                                        text:
+                                            state.isReview
+                                                ? "Back to Result"
+                                                : "Submit Test",
                                         onTap: () {
-                                          state.currentIndex <
-                                                  state.questions.length - 1
-                                              ? context
-                                                  .read<QuestionCubit>()
-                                                  .nextQuestion()
-                                              : null;
+                                          if (!state.isReview) {
+                                            var time = totalTime(context);
+                                            _buildSubmitDialog(
+                                              context,
+                                              state,
+                                              time,
+                                              marks,
+                                            );
+                                          } else {
+                                            context.pop();
+                                          }
                                         },
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          20.hGap,
-                          state.isReview
-                              ? TestModule(
-                                title: "Explanation",
-                                cards: [
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 6.w),
-                                    child: Text.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "Subject: ",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14.sp,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: subjects[state.currentIndex],
-                                            style: TextStyle(fontSize: 14.sp),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 6.w),
-                                    child: Text.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "Topic: ",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14.sp,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: topics[state.currentIndex],
-                                            style: TextStyle(fontSize: 14.sp),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 6.w),
-                                    child: Text.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "Difficulty Level: ",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text:
-                                                difficultyLevel[state
-                                                        .currentIndex]
-                                                    .level,
-                                            style: TextStyle(fontSize: 14.sp),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 6.w),
-                                    child:
-                                        state
-                                            .questions[state.currentIndex]
-                                            .explanation
-                                            .toQuestionWidget(),
-                                  ),
-                                ],
-                              )
-                              : SizedBox.shrink(),
-                          20.hGap,
-                          TestModule(
-                            title: "Question Navigator",
-                            cards: [
-                              SizedBox(
-                                height: 30.h,
-                                child: ListView.builder(
+                            ),
+                            20.hGap,
+                            TestModule(
+                              title: "Question ${state.currentIndex + 1} ",
+                              cards: [
+                                question.questionTxt.toQuestionWidget(),
+                                10.hGap,
+                                ListView.builder(
+                                  itemCount: state.options.length,
                                   shrinkWrap: true,
                                   physics: NeverScrollableScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: state.questions.length,
-                                  itemBuilder:
-                                      (context, index) => Padding(
-                                        padding: EdgeInsets.only(right: 5.w),
-                                        child: QuestionNavigatorButton(
-                                          text: "${index + 1}",
-                                          backgroundColor:
-                                              state.currentIndex == index
-                                                  ? Colors.grey
-                                                  : state.answeredStatus[index]
-                                                  ? state.isReview
-                                                      ? state.isCorrect![index] ==
-                                                              false
-                                                          ? Colors.red
-                                                          : Colors.green
-                                                      : Colors.black
-                                                  : Colors.white,
-                                          fontColor:
-                                              state.currentIndex == index
-                                                  ? Colors.black
-                                                  : state.answeredStatus[index]
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                          borderColor:
-                                              state.currentIndex == index
-                                                  ? Colors.grey
-                                                  : state.answeredStatus[index]
-                                                  ? state.isReview
-                                                      ? state.isCorrect![index] ==
-                                                              false
-                                                          ? Colors.red
-                                                          : Colors.green
-                                                      : Colors.black
-                                                  : Colors.black,
-                                          onTap:
-                                              () => context
-                                                  .read<QuestionCubit>()
-                                                  .jumpToQuestion(index),
+                                  itemBuilder: (context, index) {
+                                    final option = state.options[index];
+                                    final isSelected = selectedAnswer == option;
+                                    Color? tileColor;
+                                    Color? textColor;
+
+                                    final correctAnswer =
+                                        question.correctAnswer;
+
+                                    if (state.isReview) {
+                                      if (isSelected &&
+                                          option == correctAnswer) {
+                                        tileColor = Colors.green;
+                                        // Selected and correct
+                                        textColor = Colors.green.shade700;
+                                      } else if (isSelected &&
+                                          option != correctAnswer) {
+                                        // Selected and wrong
+                                        tileColor = Colors.red;
+                                        textColor = Colors.red.shade700;
+                                      } else if (!isSelected &&
+                                          option == correctAnswer) {
+                                        // Not selected, but correct answer
+                                        tileColor = Colors.green.withOpacity(
+                                          0.3,
+                                        );
+                                        textColor = Colors.green.shade800;
+                                      } else {
+                                        tileColor = Colors.transparent;
+                                        textColor = Colors.black;
+                                      }
+                                    } else {
+                                      tileColor =
+                                          isSelected
+                                              ? AppColors.primary
+                                              : AppColors.accentColor;
+                                      textColor = Colors.black;
+                                    }
+                                    return BorderedContainer(
+                                      borderColor: tileColor,
+                                      padding: EdgeInsets.zero,
+                                      radius: BorderRadius.circular(10),
+                                      child: RadioListTile<String>(
+                                        value: option,
+                                        toggleable: true,
+                                        activeColor: AppColors.primary,
+                                        groupValue: selectedAnswer,
+                                        onChanged:
+                                            state.isReview
+                                                ? null
+                                                : (value) {
+                                                  context
+                                                      .read<QuestionCubit>()
+                                                      .answerQuestion(value);
+                                                },
+                                        title: Text(
+                                          option,
+                                          style: TextStyle(
+                                            color:
+                                                state.isReview
+                                                    ? textColor
+                                                    : Colors.black,
+                                          ),
                                         ),
                                       ),
+                                    ).padAll(5);
+                                  },
                                 ),
-                              ),
-                              10.hGap,
-                              QuestionIndicator(
-                                text: state.isReview ? "Correct" : "Attempted",
-                                borderColor:
-                                    state.isReview
-                                        ? Colors.green
-                                        : Colors.black,
-                                fillColor:
-                                    state.isReview
-                                        ? Colors.green
-                                        : Colors.black,
-                              ),
-                              state.isReview
-                                  ? QuestionIndicator(
-                                    text: "Incorrect",
-                                    borderColor: Colors.red,
-                                    fillColor: Colors.red,
-                                  )
-                                  : SizedBox.shrink(),
-                              QuestionIndicator(
-                                text: "Not Attempted",
-                                fillColor: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ).padAll(AppPaddings.defaultPadding),
-                    );
-                  },
-                );
-              }
-              return Container();
-            },
+                                10.hGap,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: ActionButton(
+                                        backgroundColor:
+                                            state.currentIndex == 0
+                                                ? Colors.grey
+                                                : AppColors.primary,
+                                        text: "Previous",
+                                        onTap: () {
+                                          state.currentIndex > 0
+                                              ? context
+                                                  .read<QuestionCubit>()
+                                                  .prevQuestion()
+                                              : null;
+                                        },
+                                        fontColor: Colors.white,
+                                      ),
+                                    ),
+                                    20.wGap,
+                                    Expanded(
+                                      flex: 2,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 65.w),
+                                        child: ActionButton(
+                                          text: "Next",
+                                          backgroundColor:
+                                              state.currentIndex ==
+                                                      state.questions.length - 1
+                                                  ? Colors.grey
+                                                  : AppColors.primary,
+                                          onTap: () {
+                                            state.currentIndex <
+                                                    state.questions.length - 1
+                                                ? context
+                                                    .read<QuestionCubit>()
+                                                    .nextQuestion()
+                                                : null;
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            20.hGap,
+                            state.isReview
+                                ? TestModule(
+                                  title: "Explanation",
+                                  cards: [
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 6.w),
+                                      child: Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: "Subject: ",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.sp,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text:
+                                                  subjects[state.currentIndex],
+                                              style: TextStyle(fontSize: 14.sp),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 6.w),
+                                      child: Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: "Topic: ",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.sp,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: topics[state.currentIndex],
+                                              style: TextStyle(fontSize: 14.sp),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 6.w),
+                                      child: Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: "Difficulty Level: ",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text:
+                                                  difficultyLevel[state
+                                                          .currentIndex]
+                                                      .level,
+                                              style: TextStyle(fontSize: 14.sp),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 6.w),
+                                      child:
+                                          state
+                                              .questions[state.currentIndex]
+                                              .explanation
+                                              .toQuestionWidget(),
+                                    ),
+                                  ],
+                                )
+                                : SizedBox.shrink(),
+                            20.hGap,
+                            TestModule(
+                              title: "Question Navigator",
+                              cards: [
+                                SizedBox(
+                                  height: 30.h,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: state.questions.length,
+                                    itemBuilder:
+                                        (context, index) => Padding(
+                                          padding: EdgeInsets.only(right: 5.w),
+                                          child: QuestionNavigatorButton(
+                                            text: "${index + 1}",
+                                            backgroundColor:
+                                                state.currentIndex == index
+                                                    ? Colors.grey
+                                                    : state
+                                                        .answeredStatus[index]
+                                                    ? state.isReview
+                                                        ? state.isCorrect![index] ==
+                                                                false
+                                                            ? Colors.red
+                                                            : Colors.green
+                                                        : Colors.black
+                                                    : Colors.white,
+                                            fontColor:
+                                                state.currentIndex == index
+                                                    ? Colors.black
+                                                    : state
+                                                        .answeredStatus[index]
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                            borderColor:
+                                                state.currentIndex == index
+                                                    ? Colors.grey
+                                                    : state
+                                                        .answeredStatus[index]
+                                                    ? state.isReview
+                                                        ? state.isCorrect![index] ==
+                                                                false
+                                                            ? Colors.red
+                                                            : Colors.green
+                                                        : Colors.black
+                                                    : Colors.black,
+                                            onTap:
+                                                () => context
+                                                    .read<QuestionCubit>()
+                                                    .jumpToQuestion(index),
+                                          ),
+                                        ),
+                                  ),
+                                ),
+                                10.hGap,
+                                QuestionIndicator(
+                                  text:
+                                      state.isReview ? "Correct" : "Attempted",
+                                  borderColor:
+                                      state.isReview
+                                          ? Colors.green
+                                          : Colors.black,
+                                  fillColor:
+                                      state.isReview
+                                          ? Colors.green
+                                          : Colors.black,
+                                ),
+                                state.isReview
+                                    ? QuestionIndicator(
+                                      text: "Incorrect",
+                                      borderColor: Colors.red,
+                                      fillColor: Colors.red,
+                                    )
+                                    : SizedBox.shrink(),
+                                QuestionIndicator(
+                                  text: "Not Attempted",
+                                  fillColor: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ).padAll(AppPaddings.defaultPadding),
+                      );
+                    },
+                  );
+                }
+                return Container();
+              },
+            ),
           ),
         ),
       ),
@@ -635,9 +656,9 @@ class _TestScreenState extends State<TestScreen> {
           children: [
             // Fake progress bar
             CustomProgressBar(
-              text: "Question 1 of 10",
+              titleText: "Question 1 of 10",
               value: 0.1,
-              percentageText: "0 Answered",
+              labelText: "0 Answered",
             ),
             20.hGap,
             // Question Title
