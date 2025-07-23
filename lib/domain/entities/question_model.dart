@@ -1,4 +1,5 @@
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/utils/enums/difficulty_level.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'question_model.g.dart';
@@ -6,25 +7,35 @@ part 'question_model.g.dart';
 @JsonSerializable()
 class QuestionModel {
   @JsonKey(name: "question_type")
-  String questionType;
+  final String questionType;
+
   @JsonKey(name: "difficulty_level")
-  String difficultyLevel;
+  @DifficultyLevelConverter()
+  final DifficultyLevel difficultyLevel;
+
   @JsonKey(name: "question_en")
-  QuestionLanguageData questionEn;
+  final QuestionLanguageData questionEn;
+
   @JsonKey(name: "question_hi")
-  QuestionLanguageData? questionHi;
+  final QuestionLanguageData? questionHi;
+
   @JsonKey(name: "question_gj")
-  QuestionLanguageData? questionGj;
+  final QuestionLanguageData? questionGj;
+
   @JsonKey(name: "created_at")
-  String createdAt;
+  final String createdAt;
+
   @JsonKey(name: "marks")
-  int marks;
+  final int marks;
+
   @JsonKey(name: "question_hash")
-  String questionHash;
+  final String questionHash;
+
   @JsonKey(name: "subject_name")
-  String subjectName;
+  final String subjectName;
+
   @JsonKey(name: "topic_name")
-  String topicName;
+  final String topicName;
 
   QuestionModel({
     required this.questionType,
@@ -43,4 +54,15 @@ class QuestionModel {
       _$QuestionModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$QuestionModelToJson(this);
+}
+
+class DifficultyLevelConverter
+    implements JsonConverter<DifficultyLevel, String> {
+  const DifficultyLevelConverter();
+
+  @override
+  DifficultyLevel fromJson(String json) => DifficultyLevel.fromString(json);
+
+  @override
+  String toJson(DifficultyLevel level) => level.level;
 }

@@ -245,7 +245,7 @@ class _TestScreenState extends State<TestScreen> {
                                                     context,
                                                     "Confirm Exit",
                                                     "Do you really want to leave the test in between?",
-                                                    "",
+                                                    "Your answers so far will be saved, you won’t be able to resume this test later.",
                                                     [
                                                       TextButton(
                                                         child: Text(
@@ -515,7 +515,8 @@ class _TestScreenState extends State<TestScreen> {
                                           TextSpan(
                                             text:
                                                 difficultyLevel[state
-                                                    .currentIndex],
+                                                        .currentIndex]
+                                                    .level,
                                             style: TextStyle(fontSize: 14.sp),
                                           ),
                                         ],
@@ -719,7 +720,7 @@ class _TestScreenState extends State<TestScreen> {
     BuildContext context,
     String title,
     String mainContent,
-    String? content,
+    String content,
     List<Widget> actions,
   ) {
     return AlertDialog(
@@ -746,15 +747,8 @@ class _TestScreenState extends State<TestScreen> {
               color: Colors.black87,
             ),
           ),
-          ...[
-            if (content!.isNotEmpty) ...[
-              SizedBox(height: 12),
-              Text(
-                content,
-                style: TextStyle(fontSize: 15, color: Colors.black54),
-              ),
-            ],
-          ],
+          SizedBox(height: 12),
+          Text(content, style: TextStyle(fontSize: 15, color: Colors.black54)),
         ],
       ),
       actions: actions,

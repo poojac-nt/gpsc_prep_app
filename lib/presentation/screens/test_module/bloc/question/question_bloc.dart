@@ -4,6 +4,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/utils/enums/difficulty_level.dart';
 import 'package:meta/meta.dart';
 
 part 'question_event.dart';
@@ -32,7 +33,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
               .toList();
       final List<String> subject = questions.map((e) => e.subjectName).toList();
       final List<String> topic = questions.map((e) => e.topicName).toList();
-      final List<String> difficultyLevel =
+      final List<DifficultyLevel> difficultyLevel =
           questions.map((e) => e.difficultyLevel).toList();
       log.i("topic:$topic");
       log.i("subject:$subject");

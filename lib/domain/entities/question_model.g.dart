@@ -9,7 +9,8 @@ part of 'question_model.dart';
 QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
     QuestionModel(
       questionType: json['question_type'] as String,
-      difficultyLevel: json['difficulty_level'] as String,
+      difficultyLevel: const DifficultyLevelConverter()
+          .fromJson(json['difficulty_level'] as String),
       questionEn: QuestionLanguageData.fromJson(
           json['question_en'] as Map<String, dynamic>),
       questionHi: json['question_hi'] == null
@@ -30,7 +31,8 @@ QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
     <String, dynamic>{
       'question_type': instance.questionType,
-      'difficulty_level': instance.difficultyLevel,
+      'difficulty_level':
+          const DifficultyLevelConverter().toJson(instance.difficultyLevel),
       'question_en': instance.questionEn,
       'question_hi': instance.questionHi,
       'question_gj': instance.questionGj,

@@ -12,7 +12,7 @@ final class QuestionLoaded extends QuestionState {
   final List<int> marks;
   final List<String> subjects;
   final List<String> topics;
-  final List<String> difficultyLevel;
+  final List<DifficultyLevel> difficultyLevel;
 
   QuestionLoaded({
     required this.questions,
