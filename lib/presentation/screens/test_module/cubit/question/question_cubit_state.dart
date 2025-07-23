@@ -11,6 +11,7 @@ final class QuestionCubitLoaded extends QuestionCubitState {
   final List<String?> selectedOption;
   final List<bool> answeredStatus;
   final List<bool?>? isCorrect;
+  final bool isQuitTest;
 
   QuestionCubitLoaded({
     required this.questions,
@@ -19,6 +20,7 @@ final class QuestionCubitLoaded extends QuestionCubitState {
     required this.answeredStatus,
     required this.selectedOption,
     this.isCorrect,
+    this.isQuitTest = false,
   });
 
   double get progress =>
@@ -34,6 +36,7 @@ final class QuestionCubitLoaded extends QuestionCubitState {
     List<bool?>? isCorrect,
     List<String?>? selectedOption,
     bool? isReview,
+    bool? isQuitTest,
   }) {
     return QuestionCubitLoaded(
       questions: questions ?? this.questions,
@@ -42,6 +45,7 @@ final class QuestionCubitLoaded extends QuestionCubitState {
       answeredStatus: answeredStatus ?? this.answeredStatus,
       selectedOption: selectedOption ?? this.selectedOption,
       isCorrect: isCorrect ?? this.isCorrect,
+      isQuitTest: isQuitTest ?? this.isQuitTest,
     );
   }
 }

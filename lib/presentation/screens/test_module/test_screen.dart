@@ -162,8 +162,13 @@ class _TestScreenState extends State<TestScreen> {
               ),
             );
             final timerState = context.read<TimerBloc>().state;
+            final questionCubitState = context.read<QuestionCubit>().state;
+
             if (timerState is TimerStopped && !timerState.isManual) {
               _buildAutoSubmitDialog(context, state);
+            } else if (questionCubitState is QuestionCubitLoaded &&
+                questionCubitState.isQuitTest) {
+              context.go(AppRoutes.dashboard);
             } else {
               context.pushReplacement(
                 AppRoutes.resultScreen,
@@ -279,15 +284,15 @@ class _TestScreenState extends State<TestScreen> {
                                                         ),
                                                         onPressed: () {
                                                           context
+                                                              .pop(); // Close dialog
+                                                          context
                                                               .read<
                                                                 QuestionCubit
                                                               >()
-                                                              .reset();
+                                                              .markAsQuit();
                                                           context
-                                                              .pop(); // Close dialog
-                                                          context.go(
-                                                            AppRoutes.dashboard,
-                                                          );
+                                                              .read<TimerBloc>()
+                                                              .add(TimerStop());
                                                         },
                                                       ),
                                                     ],

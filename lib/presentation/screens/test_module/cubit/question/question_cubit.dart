@@ -5,7 +5,7 @@ import '../../../../../domain/entities/question_language_model.dart';
 
 class QuestionCubit extends Cubit<QuestionCubitState> {
   QuestionCubit() : super(QuestionCubitInitial());
-
+  bool _isQuitTest = false;
   void reset() {
     emit(QuestionCubitInitial());
   }
@@ -20,6 +20,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         currentIndex: 0,
         selectedOption: List.generate(questions.length, (_) => null),
         answeredStatus: List.generate(questions.length, (_) => false),
+        isQuitTest: _isQuitTest,
       ),
     );
   }
@@ -84,5 +85,11 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         isReview: true,
       ),
     );
+  }
+
+  void markAsQuit() {
+    if (state is! QuestionCubitLoaded) return;
+    final currentState = state as QuestionCubitLoaded;
+    emit(currentState.copyWith(isQuitTest: true));
   }
 }
