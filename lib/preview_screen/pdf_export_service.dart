@@ -10,11 +10,13 @@ import 'package:pdf/widgets.dart' as pw;
 class PdfExportService {
   Future<String> exportQuestionsToPdf(
     List<QuestionLanguageData> questions,
+    String testName,
   ) async {
     var base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
-
+    final ByteData bytes = await rootBundle.load('assets/images/logo.jpeg');
+    final Uint8List imageData = bytes.buffer.asUint8List();
     final baseFont = pw.Font.ttf(base);
-
+    final image = pw.MemoryImage(imageData);
     final pdf = pw.Document(
       pageMode: PdfPageMode.fullscreen,
       theme: pw.ThemeData.withFont(
@@ -29,20 +31,11 @@ class PdfExportService {
         margin: const pw.EdgeInsets.all(24),
         build:
             (context) => [
-              pw.Center(
-                child: pw.Text(
-                  "MCQ Solutions",
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ),
+              pw.Align(alignment: pw.Alignment.center, child: pw.Image(image)),
               pw.SizedBox(height: 20),
               ...questions.asMap().entries.map((entry) {
                 final index = entry.key + 1;
                 final q = entry.value;
-
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
@@ -61,15 +54,19 @@ class PdfExportService {
                     pw.Bullet(text: "C) ${q.optC}"),
                     pw.Bullet(text: "D) ${q.optD}"),
                     pw.SizedBox(height: 5),
-                    pw.Text(
-                      "Answer:",
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
-                    pw.Text(
-                      q.correctAnswer,
-                      style: pw.TextStyle(
-                        color: PdfColors.green,
-                        fontWeight: pw.FontWeight.bold,
+                    pw.RichText(
+                      text: pw.TextSpan(
+                        text: "Answer:",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        children: [
+                          pw.TextSpan(
+                            text: q.correctAnswer,
+                            style: pw.TextStyle(
+                              color: PdfColors.green,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     pw.SizedBox(height: 4),
@@ -89,8 +86,7 @@ class PdfExportService {
 
     final outputDir =
         await getDownloadsDirectory() ?? await getTemporaryDirectory();
-    final filePath =
-        "${outputDir.path}/Test_Review_${DateTime.now().millisecondsSinceEpoch}.pdf";
+    final filePath = "${outputDir.path}/$testName.pdf";
     final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 

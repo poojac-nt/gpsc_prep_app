@@ -42,17 +42,3 @@ class TestSubmitted extends TestState {
     required this.answeredStatus,
   });
 }
-
-class PdfExportInProgress extends TestState {}
-
-class PdfExportSuccess extends TestState {
-  final String filePath;
-
-  PdfExportSuccess(this.filePath);
-}
-
-class PdfExportFailure extends TestState {
-  final Failure error;
-
-  PdfExportFailure(this.error);
-}

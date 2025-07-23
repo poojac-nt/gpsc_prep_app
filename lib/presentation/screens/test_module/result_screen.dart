@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
@@ -100,15 +98,7 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
         body: SingleChildScrollView(
           child: BlocConsumer<TestBloc, TestState>(
-            listener: (context, testBlocState) {
-              if (testBlocState is PdfExportSuccess) {
-                getIt<SnackBarHelper>().showSuccess(
-                  "PDF saved to ${testBlocState.filePath}",
-                );
-              } else if (testBlocState is PdfExportFailure) {
-                getIt<SnackBarHelper>().showError(testBlocState.error.message);
-              }
-            },
+            listener: (context, testBlocState) {},
             builder: (context, testBlocState) {
               if (testBlocState is TestSubmitted) {
                 return BlocBuilder<TestCubit, TestCubitSubmitted>(
@@ -171,12 +161,16 @@ class _ResultScreenState extends State<ResultScreen> {
                               onTap: () {
                                 final blocState =
                                     context.read<QuestionBloc>().state;
-                                context.push(AppRoutes.questionPreviewScreen);
+                                context.push(
+                                  AppRoutes.questionPreviewScreen,
+                                  extra: widget.testName!,
+                                );
                                 context.read<QuestionPreviewBloc>().add(
                                   LoadQuestionsEvent(
                                     blocState is QuestionLoaded
                                         ? blocState.questionsModels
                                         : [],
+                                    widget.testName!,
                                   ),
                                 );
                               },

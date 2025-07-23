@@ -93,7 +93,8 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.questionPreviewScreen,
     pageBuilder: (context, state) {
-      return _slideTransition(QuestionPreviewScreen(), state);
+      final extra = state.extra as String;
+      return _slideTransition(QuestionPreviewScreen(testName: extra), state);
     },
   ),
 ];

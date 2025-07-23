@@ -4,12 +4,10 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_state.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/pdf_export_service.dart';
 import 'package:hive/hive.dart';
 
 class TestBloc extends Bloc<TestEvent, TestState> {
@@ -19,7 +17,6 @@ class TestBloc extends Bloc<TestEvent, TestState> {
   TestBloc(this._testRepository) : super(TestResultInitial()) {
     on<SubmitTest>(_onSubmit);
     on<FetchSingleTestResultEvent>(_onFetchSingleResult);
-    on<DownloadPdfRequested>(_onDownloadPdfRequested);
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
@@ -81,23 +78,5 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       (failure) => emit(SingleResultFailure(failure)),
       (data) => emit(SingleResultSuccess(data!)),
     );
-  }
-
-  Future<void> _onDownloadPdfRequested(
-    DownloadPdfRequested event,
-    Emitter<TestState> emit,
-  ) async {
-    emit(PdfExportInProgress());
-    try {
-      final path = await PdfExportService().exportQuestionsToPdf(
-        event.questions,
-      );
-      emit(PdfExportSuccess(path));
-      getIt<SnackBarHelper>().showSuccess("PDF exported successfully to $path");
-    } catch (e) {
-      emit(
-        PdfExportFailure(Failure("Failed to generate PDF: ${e.toString()}")),
-      );
-    }
   }
 }
