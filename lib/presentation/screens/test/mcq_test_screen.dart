@@ -88,7 +88,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                           bool isEligibleForRetest = false;
 
                           if (hasResult) {
-                            final createdAtString = testResult?.createdAt;
+                            final createdAtString = testResult.createdAt;
 
                             // Check that createdAt is not null or empty
                             if (createdAtString != null &&

@@ -5,7 +5,7 @@ import '../../../../../domain/entities/question_language_model.dart';
 
 class QuestionCubit extends Cubit<QuestionCubitState> {
   QuestionCubit() : super(QuestionCubitInitial());
-  bool _isQuitTest = false;
+  final bool _isQuitTest = false;
   void reset() {
     emit(QuestionCubitInitial());
   }
