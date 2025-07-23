@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/pdf_export_service.dart';
 import 'package:meta/meta.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 part 'question_preview_event.dart';
 part 'question_preview_state.dart';
@@ -58,6 +59,10 @@ class QuestionPreviewBloc
   ) async {
     try {
       emit(QuestionExporting());
+      var status = await Permission.storage.status;
+      if (!status.isGranted) {
+        await Permission.storage.request();
+      }
       final path = await PdfExportService().exportQuestionsToPdf(
         event.questions,
       );

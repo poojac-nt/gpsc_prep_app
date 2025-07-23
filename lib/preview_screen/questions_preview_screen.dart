@@ -4,6 +4,69 @@ import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/preview_screen/question_preview_bloc.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
+List<QuestionLanguageData> dummy = [
+  QuestionLanguageData(
+    optA: "optA",
+    optB: 'optB',
+    optC: 'optC',
+    optD: 'optD',
+    explanation: 'explanation',
+    questionTxt: 'questionTxt',
+    correctAnswer: 'optD',
+  ),
+  QuestionLanguageData(
+    optA: "Stomach",
+    optB: "Small intestine",
+    optC: "Liver",
+    optD: "Pancreas",
+    explanation: '''
+The liver is the largest internal organ in the human body and performs several important functions.
+
+One of its key roles is to produce bile, a yellow-green fluid that helps in the digestion and absorption of fats.
+
+Bile does not contain enzymes but contains bile salts, which emulsify fats (break large fat globules into smaller ones), making it easier for lipase to act on them.
+                  ''',
+    questionTxt:
+        "**Which organ is responsible for producing bile in the animal body?**",
+    correctAnswer: "option_c",
+  ),
+  QuestionLanguageData(
+    optA: "A–2, B–1, C–3, D–4",
+    optB: "A–3, B–2, C–1, D–4",
+    optC: "A–1, B–4, C–2, D–3",
+    optD: "A–2, B–3, C–1, D–4",
+    explanation: '''
+**Pepsin → Proteins (2):** 
+
+Pepsin is an enzyme secreted by the stomach and helps break down proteins into smaller peptides.
+    
+**Lipase → Fats (1):**
+
+Lipase is an enzyme produced by the pancreas that helps in the digestion of fats into fatty acids and glycerol.
+
+**Amylase → Starch (3):**
+
+Amylase is found in saliva and also secreted by the pancreas, and it helps convert starch into sugars.
+
+**Trypsin → Proteins in the small intestine (4):**
+
+Trypsin is secreted by the pancreas and works in the small intestine, continuing protein digestion started by pepsin.
+                  ''',
+    questionTxt:
+        '''
+**Dont Match the enzymes with the substances they act on:**
+
+| Enzymes | Substances |
+| --- | --- |
+| A. Pepsin | 1. Fats |
+| B. Lipase | 2. Proteins |
+| C. Amylase | 3. Starch |
+| D. Trypsin | 4. Proteins in the small intestine |
+        ''',
+    correctAnswer: "option_a",
+  ),
+];
+
 class QuestionPreviewScreen extends StatelessWidget {
   const QuestionPreviewScreen({super.key});
 
@@ -25,13 +88,7 @@ class QuestionPreviewScreen extends StatelessWidget {
         },
         builder: (context, state) {
           // 👇 Handle both loaded and exported states
-          List<QuestionLanguageData> localizedQuestions = [];
-
-          if (state is QuestionPreviewLoaded) {
-            localizedQuestions = state.questions;
-          } else if (state is QuestionExported) {
-            localizedQuestions = state.questions;
-          }
+          List<QuestionLanguageData> localizedQuestions = dummy;
 
           if (state is QuestionExporting) {
             return const Center(child: CircularProgressIndicator());
@@ -53,14 +110,14 @@ class QuestionPreviewScreen extends StatelessWidget {
       ),
       floatingActionButton: Builder(
         builder: (context) {
-          final state = context.watch<QuestionPreviewBloc>().state;
-          List<QuestionLanguageData> currentQuestions = [];
+          // final state = context.watch<QuestionPreviewBloc>().state;
+          List<QuestionLanguageData> currentQuestions = dummy;
 
-          if (state is QuestionPreviewLoaded) {
-            currentQuestions = state.questions;
-          } else if (state is QuestionExported) {
-            currentQuestions = state.questions;
-          }
+          // if (state is QuestionPreviewLoaded) {
+          //   currentQuestions = state.questions;
+          // } else if (state is QuestionExported) {
+          //   currentQuestions = state.questions;
+          // }
 
           return FloatingActionButton.extended(
             icon: const Icon(Icons.picture_as_pdf),
@@ -97,7 +154,7 @@ class QuestionPreviewScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              SizedBox(height: 200, child: MarkdownWidget(data: q.questionTxt)),
+              MarkdownWidget(data: q.questionTxt, shrinkWrap: true),
               const SizedBox(height: 8),
               Text('A) ${q.optA}'),
               Text('B) ${q.optB}'),
@@ -124,9 +181,10 @@ class QuestionPreviewScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    SizedBox(
-                      height: 200,
-                      child: MarkdownWidget(data: q.explanation),
+                    MarkdownWidget(
+                      data: q.explanation,
+                      shrinkWrap: true,
+                      selectable: true,
                     ),
                   ],
                 ),

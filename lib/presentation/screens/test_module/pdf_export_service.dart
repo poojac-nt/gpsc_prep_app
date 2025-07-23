@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:path_provider/path_provider.dart';
@@ -10,7 +11,17 @@ class PdfExportService {
   Future<String> exportQuestionsToPdf(
     List<QuestionLanguageData> questions,
   ) async {
-    final pdf = pw.Document();
+    var base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
+
+    final baseFont = pw.Font.ttf(base);
+
+    final pdf = pw.Document(
+      pageMode: PdfPageMode.fullscreen,
+      theme: pw.ThemeData.withFont(
+        base: baseFont,
+        fontFallback: [baseFont, pw.Font.symbol()],
+      ),
+    );
 
     pdf.addPage(
       pw.MultiPage(
@@ -43,7 +54,7 @@ class PdfExportService {
                       ),
                     ),
                     pw.SizedBox(height: 5),
-                    ..._parseMarkdownToPdfWidgets(q.questionTxt), // Improved!
+                    ..._parseMarkdownToPdfWidgets(q.questionTxt),
                     pw.SizedBox(height: 5),
                     pw.Bullet(text: "A) ${q.optA}"),
                     pw.Bullet(text: "B) ${q.optB}"),
@@ -66,7 +77,7 @@ class PdfExportService {
                       "Explanation:",
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
-                    ..._parseMarkdownToPdfWidgets(q.explanation), // Improved!
+                    ..._parseMarkdownToPdfWidgets(q.explanation),
                     pw.Divider(),
                     pw.SizedBox(height: 10),
                   ],
@@ -94,14 +105,72 @@ class PdfExportService {
 
   /// Robust Markdown parser to PDF widgets (supports: paragraph, bold, italic, heading, list, line breaks)
   List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
-    final document = md.Document(encodeHtml: false);
-    final nodes = document.parseLines(markdownText.split('\n'));
+    final lines = markdownText.split('\n');
 
     List<pw.Widget> widgets = [];
-    for (var node in nodes) {
-      widgets.addAll(_markdownNodeToPdfWidget(node));
+    int i = 0;
+
+    while (i < lines.length) {
+      if (lines[i].trim().startsWith('|') &&
+          i + 2 < lines.length &&
+          lines[i + 1].contains('---')) {
+        List<String> tableLines = [];
+
+        while (i < lines.length && lines[i].trim().startsWith('|')) {
+          tableLines.add(lines[i]);
+          i++;
+        }
+
+        widgets.add(_buildPdfTableFromMarkdown(tableLines));
+        widgets.add(pw.SizedBox(height: 8));
+      } else {
+        final buffer = StringBuffer();
+        while (i < lines.length && !lines[i].trim().startsWith('|')) {
+          buffer.writeln(lines[i]);
+          i++;
+        }
+        final normalMd = buffer.toString().trim();
+        if (normalMd.isNotEmpty) {
+          final document = md.Document(encodeHtml: false);
+          final nodes = document.parseLines(normalMd.split('\n'));
+          for (var node in nodes) {
+            widgets.addAll(_markdownNodeToPdfWidget(node));
+          }
+        }
+      }
     }
+
     return widgets;
+  }
+
+  pw.Widget _buildPdfTableFromMarkdown(List<String> tableLines) {
+    List<List<String>> rows =
+        tableLines
+            .map(
+              (line) =>
+                  line
+                      .trim()
+                      .split('|')
+                      .map((cell) => cell.trim())
+                      .where((cell) => cell.isNotEmpty)
+                      .toList(),
+            )
+            .toList();
+
+    if (rows.length < 2) return pw.SizedBox(); // Not a valid table
+
+    final header = rows[0];
+    final dataRows = rows.sublist(2);
+
+    return pw.TableHelper.fromTextArray(
+      headers: header,
+      data: dataRows,
+      border: pw.TableBorder.all(width: 0.5, color: PdfColors.grey),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      headerDecoration: pw.BoxDecoration(color: PdfColors.grey200),
+      cellAlignment: pw.Alignment.centerLeft,
+      cellPadding: const pw.EdgeInsets.all(4),
+    );
   }
 
   List<pw.Widget> _markdownNodeToPdfWidget(md.Node node) {
@@ -159,10 +228,7 @@ class PdfExportService {
             ),
           ];
         case 'li':
-          return [
-            pw.Bullet(text: node.textContent),
-            // works for simple list-items, for nested formatting you'll need recursion
-          ];
+          return [pw.Bullet(text: node.textContent)];
         case 'p':
           return [
             _spanFromMarkdownInline(node.children ?? []),
@@ -170,14 +236,12 @@ class PdfExportService {
           ];
         case 'strong':
         case 'em':
-          // fallthrough: handled in _spanFromMarkdownInline
           return [
             _spanFromMarkdownInline([node]),
           ];
         case 'br':
           return [pw.SizedBox(height: 4)];
         default:
-          // Unknown node: try rendering text content
           return [pw.Text(node.textContent)];
       }
     } else if (node is md.Text) {
@@ -208,7 +272,7 @@ class PdfExportService {
                     style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
                   );
                 }
-                // For nested formatting inside paragraphs
+
                 return pw.TextSpan(
                   children:
                       node.children?.map((e) {
