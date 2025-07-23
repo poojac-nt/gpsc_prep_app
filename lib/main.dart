@@ -19,6 +19,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
+import 'package:gpsc_prep_app/preview_screen/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -65,6 +66,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<QuestionCubit>()),
           BlocProvider(create: (_) => getIt<TestCubit>()),
           BlocProvider(create: (_) => getIt<ConnectivityBloc>()),
+          BlocProvider(create: (_) => getIt<QuestionPreviewBloc>()),
         ],
         child: const MyApp(),
       ),

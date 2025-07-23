@@ -8,6 +8,7 @@ final class QuestionInitial extends QuestionState {}
 final class QuestionLoading extends QuestionState {}
 
 final class QuestionLoaded extends QuestionState {
+  final List<QuestionModel> questionsModels;
   final List<QuestionLanguageData> questions;
   final List<int> marks;
   final List<String> subjects;
@@ -15,6 +16,7 @@ final class QuestionLoaded extends QuestionState {
   final List<String> difficultyLevel;
 
   QuestionLoaded({
+    required this.questionsModels,
     required this.questions,
     required this.marks,
     required this.subjects,

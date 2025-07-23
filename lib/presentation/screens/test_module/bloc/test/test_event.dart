@@ -40,3 +40,9 @@ class FetchSingleTestResultEvent extends TestEvent {
 
   FetchSingleTestResultEvent({required this.testId});
 }
+
+class DownloadPdfRequested extends TestEvent {
+  final List<QuestionLanguageData> questions;
+
+  DownloadPdfRequested(this.questions);
+}
