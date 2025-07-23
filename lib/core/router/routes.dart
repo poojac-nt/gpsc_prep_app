@@ -8,6 +8,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dar
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
+import 'package:gpsc_prep_app/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
@@ -88,6 +89,13 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.addQuestionScreen,
     pageBuilder: (context, state) => _slideTransition(UploadQuestions(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.questionPreviewScreen,
+    pageBuilder: (context, state) {
+      final extra = state.extra as String;
+      return _slideTransition(QuestionPreviewScreen(testName: extra), state);
+    },
   ),
 ];
 

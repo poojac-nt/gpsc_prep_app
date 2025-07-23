@@ -1,0 +1,289 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+
+class PdfExportService {
+  Future<String> exportQuestionsToPdf(
+    List<QuestionLanguageData> questions,
+    String testName,
+  ) async {
+    var base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
+    final ByteData bytes = await rootBundle.load('assets/images/logo.jpeg');
+    final Uint8List imageData = bytes.buffer.asUint8List();
+    final baseFont = pw.Font.ttf(base);
+    final image = pw.MemoryImage(imageData);
+    final pdf = pw.Document(
+      pageMode: PdfPageMode.fullscreen,
+      theme: pw.ThemeData.withFont(
+        base: baseFont,
+        fontFallback: [baseFont, pw.Font.symbol()],
+      ),
+    );
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        build:
+            (context) => [
+              pw.Align(alignment: pw.Alignment.center, child: pw.Image(image)),
+              pw.SizedBox(height: 20),
+              ...questions.asMap().entries.map((entry) {
+                final index = entry.key + 1;
+                final q = entry.value;
+                return pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "Question $index:",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 5),
+                    ..._parseMarkdownToPdfWidgets(q.questionTxt),
+                    pw.SizedBox(height: 5),
+                    pw.Bullet(text: "A) ${q.optA}"),
+                    pw.Bullet(text: "B) ${q.optB}"),
+                    pw.Bullet(text: "C) ${q.optC}"),
+                    pw.Bullet(text: "D) ${q.optD}"),
+                    pw.SizedBox(height: 5),
+                    pw.RichText(
+                      text: pw.TextSpan(
+                        text: "Answer:",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        children: [
+                          pw.TextSpan(
+                            text: q.correctAnswer,
+                            style: pw.TextStyle(
+                              color: PdfColors.green,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      "Explanation:",
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                    ..._parseMarkdownToPdfWidgets(q.explanation),
+                    pw.Divider(),
+                    pw.SizedBox(height: 10),
+                  ],
+                );
+              }),
+            ],
+      ),
+    );
+
+    final outputDir =
+        await getDownloadsDirectory() ?? await getTemporaryDirectory();
+    final filePath = "${outputDir.path}/$testName.pdf";
+    final file = File(filePath);
+    await file.writeAsBytes(await pdf.save());
+
+    return filePath;
+  }
+
+  /// Platform-specific download directory
+  Future<Directory?> getDownloadsDirectory() async {
+    if (Platform.isAndroid) return Directory('/storage/emulated/0/Download');
+    return await getApplicationDocumentsDirectory();
+  }
+
+  /// Robust Markdown parser to PDF widgets (supports: paragraph, bold, italic, heading, list, line breaks)
+  List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
+    final lines = markdownText.split('\n');
+
+    List<pw.Widget> widgets = [];
+    int i = 0;
+
+    while (i < lines.length) {
+      if (lines[i].trim().startsWith('|') &&
+          i + 2 < lines.length &&
+          lines[i + 1].contains('---')) {
+        List<String> tableLines = [];
+
+        while (i < lines.length && lines[i].trim().startsWith('|')) {
+          tableLines.add(lines[i]);
+          i++;
+        }
+
+        widgets.add(_buildPdfTableFromMarkdown(tableLines));
+        widgets.add(pw.SizedBox(height: 8));
+      } else {
+        final buffer = StringBuffer();
+        while (i < lines.length && !lines[i].trim().startsWith('|')) {
+          buffer.writeln(lines[i]);
+          i++;
+        }
+        final normalMd = buffer.toString().trim();
+        if (normalMd.isNotEmpty) {
+          final document = md.Document(encodeHtml: false);
+          final nodes = document.parseLines(normalMd.split('\n'));
+          for (var node in nodes) {
+            widgets.addAll(_markdownNodeToPdfWidget(node));
+          }
+        }
+      }
+    }
+
+    return widgets;
+  }
+
+  pw.Widget _buildPdfTableFromMarkdown(List<String> tableLines) {
+    List<List<String>> rows =
+        tableLines
+            .map(
+              (line) =>
+                  line
+                      .trim()
+                      .split('|')
+                      .map((cell) => cell.trim())
+                      .where((cell) => cell.isNotEmpty)
+                      .toList(),
+            )
+            .toList();
+
+    if (rows.length < 2) return pw.SizedBox(); // Not a valid table
+
+    final header = rows[0];
+    final dataRows = rows.sublist(2);
+
+    return pw.TableHelper.fromTextArray(
+      headers: header,
+      data: dataRows,
+      border: pw.TableBorder.all(width: 0.5, color: PdfColors.grey),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      headerDecoration: pw.BoxDecoration(color: PdfColors.grey200),
+      cellAlignment: pw.Alignment.centerLeft,
+      cellPadding: const pw.EdgeInsets.all(4),
+    );
+  }
+
+  List<pw.Widget> _markdownNodeToPdfWidget(md.Node node) {
+    if (node is md.Element) {
+      switch (node.tag) {
+        case 'h1':
+        case 'h2':
+        case 'h3':
+        case 'h4':
+        case 'h5':
+        case 'h6':
+          final level = int.parse(node.tag.substring(1));
+          return [
+            pw.Text(
+              node.textContent,
+              style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 18 - (level * 2),
+              ),
+            ),
+            pw.SizedBox(height: 4),
+          ];
+        case 'ul':
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children:
+                  node.children!
+                      .expand((li) => _markdownNodeToPdfWidget(li))
+                      .toList(),
+            ),
+          ];
+        case 'ol':
+          int i = 1;
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children:
+                  node.children!
+                      .map(
+                        (li) => pw.Row(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text('$i. '),
+                            pw.Expanded(
+                              child: pw.Column(
+                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                children: _markdownNodeToPdfWidget(li),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      .toList(),
+            ),
+          ];
+        case 'li':
+          return [pw.Bullet(text: node.textContent)];
+        case 'p':
+          return [
+            _spanFromMarkdownInline(node.children ?? []),
+            pw.SizedBox(height: 4),
+          ];
+        case 'strong':
+        case 'em':
+          return [
+            _spanFromMarkdownInline([node]),
+          ];
+        case 'br':
+          return [pw.SizedBox(height: 4)];
+        default:
+          return [pw.Text(node.textContent)];
+      }
+    } else if (node is md.Text) {
+      return [pw.Text(node.text)];
+    }
+    return [];
+  }
+
+  /// Inline markdown to pw.Text (handles **bold**, *italic* etc. within a paragraph)
+  pw.Widget _spanFromMarkdownInline(List<md.Node> nodes) {
+    return pw.RichText(
+      text: pw.TextSpan(
+        children:
+            nodes.map((node) {
+              if (node is md.Text) {
+                return pw.TextSpan(text: node.text);
+              } else if (node is md.Element) {
+                final baseStyle = pw.TextStyle();
+                if (node.tag == 'strong' || node.tag == 'b') {
+                  return pw.TextSpan(
+                    text: node.textContent,
+                    style: baseStyle.copyWith(fontWeight: pw.FontWeight.bold),
+                  );
+                }
+                if (node.tag == 'em' || node.tag == 'i') {
+                  return pw.TextSpan(
+                    text: node.textContent,
+                    style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
+                  );
+                }
+
+                return pw.TextSpan(
+                  children:
+                      node.children?.map((e) {
+                        if (e is md.Text) {
+                          return pw.TextSpan(text: e.text);
+                        } else if (e is md.Element) {
+                          return pw.TextSpan(text: e.textContent);
+                        }
+                        return pw.TextSpan();
+                      }).toList(),
+                );
+              }
+              return pw.TextSpan();
+            }).toList(),
+      ),
+    );
+  }
+}

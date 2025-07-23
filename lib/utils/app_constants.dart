@@ -78,4 +78,5 @@ abstract class AppRoutes {
   static const String testScreen = '/testScreen';
   static const String resultScreen = '/resultScreen';
   static const String addQuestionScreen = '/addQuestionScreen';
+  static const String questionPreviewScreen = '/questionPreviewScreen';
 }

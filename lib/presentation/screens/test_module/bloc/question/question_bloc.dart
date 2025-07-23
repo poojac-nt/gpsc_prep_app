@@ -2,9 +2,11 @@ import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/utils/enums/difficulty_level.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:meta/meta.dart';
 
 part 'question_event.dart';
@@ -72,9 +74,11 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         );
         return;
       }
+      getIt<SharedPrefHelper>().saveUserLanguage(event.language!);
 
       emit(
         QuestionLoaded(
+          questionsModels: questions,
           questions: localizedQuestions,
           marks: marks,
           subjects: subject,
