@@ -33,6 +33,9 @@ class TestResultModel {
   @JsonKey(name: "time_taken")
   @HiveField(8)
   int timeTaken;
+  @JsonKey(name: "created_at")
+  @HiveField(9)
+  String? createdAt;
 
   TestResultModel({
     required this.userId,
@@ -44,6 +47,7 @@ class TestResultModel {
     required this.notAttemptedQuestions,
     required this.score,
     required this.timeTaken,
+    this.createdAt,
   });
 
   /// ✅ copyWith method
@@ -57,6 +61,7 @@ class TestResultModel {
     int? notAttemptedQuestions,
     double? score,
     int? timeTaken,
+    String? createdAt,
   }) {
     return TestResultModel(
       userId: userId ?? this.userId,
@@ -69,6 +74,7 @@ class TestResultModel {
           notAttemptedQuestions ?? this.notAttemptedQuestions,
       score: score ?? this.score,
       timeTaken: timeTaken ?? this.timeTaken,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 

@@ -240,6 +240,27 @@ class SupabaseHelper {
     TestResultModel test,
   ) async {
     try {
+      // Step 1: Check if result already exists for this user and test
+      final existingResult =
+          await supabase
+              .from(SupabaseKeys.testResultsTable)
+              .select()
+              .eq('user_id', test.userId)
+              .eq('test_id', test.testId)
+              .maybeSingle(); // returns null if not found
+
+      if (existingResult != null) {
+        // Step 2: Delete existing result
+        final deleteResponse = await supabase
+            .from(SupabaseKeys.testResultsTable)
+            .delete()
+            .eq('user_id', test.userId)
+            .eq('test_id', test.testId);
+
+        _log.i('Existing test result deleted: $deleteResponse');
+      }
+
+      // Step 3: Insert the new result
       final response =
           await supabase
               .from(SupabaseKeys.testResultsTable)

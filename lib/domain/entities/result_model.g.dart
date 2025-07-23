@@ -26,13 +26,14 @@ class TestResultModelAdapter extends TypeAdapter<TestResultModel> {
       notAttemptedQuestions: fields[6] as int,
       score: fields[7] as double,
       timeTaken: fields[8] as int,
+      createdAt: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TestResultModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.userId)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class TestResultModelAdapter extends TypeAdapter<TestResultModel> {
       ..writeByte(7)
       ..write(obj.score)
       ..writeByte(8)
-      ..write(obj.timeTaken);
+      ..write(obj.timeTaken)
+      ..writeByte(9)
+      ..write(obj.createdAt);
   }
 
   @override
@@ -79,6 +82,7 @@ TestResultModel _$TestResultModelFromJson(Map<String, dynamic> json) =>
       notAttemptedQuestions: (json['not_attempted_questions'] as num).toInt(),
       score: (json['score'] as num).toDouble(),
       timeTaken: (json['time_taken'] as num).toInt(),
+      createdAt: json['created_at'] as String?,
     );
 
 Map<String, dynamic> _$TestResultModelToJson(TestResultModel instance) =>
@@ -92,4 +96,5 @@ Map<String, dynamic> _$TestResultModelToJson(TestResultModel instance) =>
       'not_attempted_questions': instance.notAttemptedQuestions,
       'score': instance.score,
       'time_taken': instance.timeTaken,
+      'created_at': instance.createdAt,
     };

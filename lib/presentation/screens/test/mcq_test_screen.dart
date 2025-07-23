@@ -80,9 +80,32 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                         itemCount: state.dailyTestModel.length,
                         itemBuilder: (context, index) {
                           final test = state.dailyTestModel[index];
-                          final hasResult = state.testResults.containsKey(
-                            test.id,
-                          );
+                          final testResult = state.testResults[test.id];
+                          final hasResult = testResult != null;
+
+                          // Default values
+                          DateTime? submittedAt;
+                          bool isEligibleForRetest = false;
+
+                          if (hasResult) {
+                            final createdAtString = testResult?.createdAt;
+
+                            // Check that createdAt is not null or empty
+                            if (createdAtString != null &&
+                                createdAtString.isNotEmpty) {
+                              try {
+                                submittedAt = DateTime.parse(createdAtString);
+                                isEligibleForRetest =
+                                    DateTime.now()
+                                        .difference(submittedAt)
+                                        .inHours >=
+                                    24;
+                              } catch (e) {
+                                // Optional: log or ignore parse errors
+                              }
+                            }
+                          }
+
                           return TestTile(
                             title: test.name,
                             subtitle:
@@ -104,11 +127,32 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                     dailyTestModel: test,
                                     availableLanguages:
                                         state.languages[test.id] ?? {'en'},
-                                  ), // or testId: 123
+                                  ),
                                 );
                               }
                             },
                             buttonTitle: hasResult ? 'Result' : 'Start',
+                            widgets:
+                                hasResult && isEligibleForRetest
+                                    ? [
+                                      IntrinsicWidth(
+                                        child: ActionButton(
+                                          text: 'ReTest',
+                                          onTap: () {
+                                            context.pushReplacement(
+                                              AppRoutes.testInstructionScreen,
+                                              extra: TestInstructionScreenArgs(
+                                                dailyTestModel: test,
+                                                availableLanguages:
+                                                    state.languages[test.id] ??
+                                                    {'en'},
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ]
+                                    : [],
                           ).padSymmetric(vertical: 6.h);
                         },
                       ),
