@@ -45,7 +45,6 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
             }
           });
         }
-
         emit(DailyTestFetched(tests, resultMap, languageAvailability));
       },
     );
