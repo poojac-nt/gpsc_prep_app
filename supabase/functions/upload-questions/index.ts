@@ -11,7 +11,7 @@ interface Test {
 }
 
 interface WebhookPayload {
-  type: "INSERT" | "UPDATE";
+  type: "INSERT";
   table: string;
   record: Test;
   schema: "public";
