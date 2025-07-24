@@ -378,9 +378,7 @@ class _TestScreenState extends State<TestScreen> {
                                       } else if (!isSelected &&
                                           option == correctAnswer) {
                                         // Not selected, but correct answer
-                                        tileColor = Colors.green.withOpacity(
-                                          0.3,
-                                        );
+                                        tileColor = Colors.green;
                                         textColor = Colors.green.shade800;
                                       } else {
                                         tileColor = Colors.transparent;
