@@ -1,4 +1,4 @@
-package com.example.gpsc_prep_app
+package com.starics
 
 import io.flutter.embedding.android.FlutterActivity
 

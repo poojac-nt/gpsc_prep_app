@@ -8,7 +8,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="Exam Prep App"
+        android:label="Star ICS"
         android:requestLegacyExternalStorage="true"
         android:resizeableActivity="false">
         <activity
