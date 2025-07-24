@@ -18,6 +18,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_navigator_btn.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
+import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -246,12 +247,13 @@ class _TestScreenState extends State<TestScreen> {
                                                 builder:
                                                     (
                                                       context,
-                                                    ) => customDialogBox(
-                                                      context,
-                                                      "Confirm Exit",
-                                                      "Do you really want to leave the test in between?",
-                                                      "Your answers so far will be saved, you won’t be able to resume this test later.",
-                                                      [
+                                                    ) => CustomAlertdialog(
+                                                      title: "Confirm Exit",
+                                                      mainContent:
+                                                          "Do you really want to leave the test in between?",
+                                                      content:
+                                                          "Your answers so far will be saved, you won’t be able to resume this test later.",
+                                                      actions: [
                                                         TextButton(
                                                           child: Text(
                                                             "Cancel",
@@ -703,12 +705,11 @@ class _TestScreenState extends State<TestScreen> {
       builder: (context) {
         final total = state.questions.length;
         final attempted = state.answeredStatus.where((status) => status).length;
-        return customDialogBox(
-          context,
-          "Submit Test",
-          "You have attempted $attempted out of $total questions.",
-          "Are you sure you want to submit the test?",
-          [
+        return CustomAlertdialog(
+          title: "Submit Test",
+          mainContent: "You have attempted $attempted out of $total questions.",
+          content: "Are you sure you want to submit the test?",
+          actions: [
             TextButton(
               child: Text("Cancel", style: TextStyle(color: Colors.grey[700])),
               onPressed: () {
@@ -737,45 +738,6 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  Widget customDialogBox(
-    BuildContext context,
-    String title,
-    String mainContent,
-    String content,
-    List<Widget> actions,
-  ) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Row(
-        children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.orange),
-          SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            mainContent,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 12),
-          Text(content, style: TextStyle(fontSize: 15, color: Colors.black54)),
-        ],
-      ),
-      actions: actions,
-    );
-  }
-
   void _buildAutoSubmitDialog(BuildContext context, TestCubitSubmitted state) {
     showDialog(
       barrierDismissible: false,
@@ -783,12 +745,12 @@ class _TestScreenState extends State<TestScreen> {
       builder: (BuildContext context) {
         final total = state.totalQuestions;
         final attempted = state.answeredStatus.where((status) => status).length;
-        return customDialogBox(
-          context,
-          "Time is over",
-          "You have attempted $attempted out of $total questions.",
-          'Your time for this test has ended. Submitting your answers now and showing your results.',
-          [
+        return CustomAlertdialog(
+          title: "Time is over",
+          mainContent: "You have attempted $attempted out of $total questions.",
+          content:
+              'Your time for this test has ended. Submitting your answers now and showing your results.',
+          actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,

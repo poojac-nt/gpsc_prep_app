@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
@@ -41,7 +42,9 @@ class AnswerWritingScreen extends StatelessWidget {
                 TestTile(
                   title: 'Good Governance',
                   subtitle: 'General Studies . 250 Words',
-                  onTap: () {},
+                  onTap: () {
+                    context.pushReplacement(AppRoutes.descriptiveTestScreen);
+                  },
                   buttonTitle: 'Write',
                 ),
                 10.hGap,

@@ -277,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               //     iconColor: Colors.purple,
               //     icon: Icons.menu_book,
               //     buttonTitle: 'Start Writing',
-              //     onTap: () => AnswerWritingScreen(),
+              //     onTap: () => context.push(AppRoutes.answerWriting),
               //   ),
               // ),
               // 10.hGap,

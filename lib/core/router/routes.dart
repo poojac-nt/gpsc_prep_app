@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/dashboard_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/descriptive_test/descriptive_test.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
+import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 
@@ -103,6 +104,12 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       return _slideTransition(DescriptiveTestScreen(), state);
     },
+  ),
+  GoRoute(
+    path: AppRoutes.descriptiveTestResultScreen,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(DescriptiveTestResultScreen(), state),
   ),
 ];
 
