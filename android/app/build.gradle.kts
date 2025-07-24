@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gpsc_prep_app"
+    namespace = "com.starics"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
