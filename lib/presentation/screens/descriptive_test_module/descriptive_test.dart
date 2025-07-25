@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../core/router/args.dart';
+import '../../blocs/timer/timer_bloc.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/bordered_container.dart';
 import '../dashboard/widgets/custom_progress_bar.dart';
-import '../test_module/bloc/timer/timer_bloc.dart';
-import '../test_module/bloc/timer/timer_event.dart';
 import '../test_module/cubit/question/question_cubit_state.dart';
-import '../test_module/cubit/test/test_cubit_state.dart';
 import '../test_module/widgets/question_indicator.dart';
 import '../test_module/widgets/question_navigator_btn.dart';
 
@@ -70,7 +68,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                     child: ActionButton(
                       text: "Quit Test",
                       onTap: () {
-                        context.go(AppRoutes.dashboard);
+                        context.go(AppRoutes.studentDashboard);
                       },
                     ),
                   ),

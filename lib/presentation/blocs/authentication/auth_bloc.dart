@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:image_picker/image_picker.dart';
 
 part 'auth_event.dart';
+
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {

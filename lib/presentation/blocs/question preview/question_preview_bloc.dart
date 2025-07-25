@@ -4,7 +4,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
-import 'package:gpsc_prep_app/preview_screen/pdf_export_service.dart';
+import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
 

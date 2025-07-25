@@ -6,11 +6,12 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
@@ -25,8 +26,7 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'bloc/timer/timer_bloc.dart';
-import 'bloc/timer/timer_state.dart';
+import '../../blocs/timer/timer_bloc.dart';
 import 'cubit/test/test_cubit_state.dart';
 
 class TestScreen extends StatefulWidget {
@@ -171,7 +171,7 @@ class _TestScreenState extends State<TestScreen> {
                 _buildAutoSubmitDialog(context, state);
               } else if (questionCubitState is QuestionCubitLoaded &&
                   questionCubitState.isQuitTest) {
-                context.go(AppRoutes.dashboard);
+                context.go(AppRoutes.studentDashboard);
               } else {
                 context.pushReplacement(
                   AppRoutes.resultScreen,

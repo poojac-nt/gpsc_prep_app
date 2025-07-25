@@ -12,9 +12,9 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'bloc/daily_test_bloc.dart';
-import 'bloc/daily_test_event.dart';
-import 'bloc/daily_test_state.dart';
+import '../../blocs/daily test/daily_test_bloc.dart';
+import '../../blocs/daily test/daily_test_event.dart';
+import '../../blocs/daily test/daily_test_state.dart';
 
 class MCQTestScreen extends StatefulWidget {
   const MCQTestScreen({super.key});

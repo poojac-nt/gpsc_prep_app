@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
-import 'package:gpsc_prep_app/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
@@ -24,8 +25,14 @@ final List<GoRoute> appRoutes = [
         (context, state) => _slideTransition(RegistrationScreen(), state),
   ),
   GoRoute(
-    path: AppRoutes.dashboard,
-    pageBuilder: (context, state) => _slideTransition(DashboardScreen(), state),
+    path: AppRoutes.studentDashboard,
+    pageBuilder:
+        (context, state) => _slideTransition(StudentDashboardScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.mentorDashboard,
+    pageBuilder:
+        (context, state) => _slideTransition(MentorDashboardScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.login,

@@ -1,13 +1,13 @@
 import 'package:bloc/bloc.dart';
-import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_event.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:hive/hive.dart';
 
 class TestBloc extends Bloc<TestEvent, TestState> {

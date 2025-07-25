@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_event.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   TimerBloc() : super(TimerInitial()) {
@@ -15,12 +15,15 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     on<TimerReset>(_onTimerReset);
     on<TimerTicked>(_onTimerTicked);
   }
+
   Timer? timer;
   bool _hasTestBeenSubmitted = false;
+
   bool get hasTestBeenSubmitted => _hasTestBeenSubmitted;
 
   int tickCount = 0;
   int testDuration = 0;
+
   Future<void> _onTimerStarted(
     TimerStart event,
     Emitter<TimerState> emit,

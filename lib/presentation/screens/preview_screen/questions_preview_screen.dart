@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
-import 'package:gpsc_prep_app/preview_screen/question_preview_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 class QuestionPreviewScreen extends StatelessWidget {

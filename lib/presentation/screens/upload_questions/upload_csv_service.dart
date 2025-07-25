@@ -293,4 +293,5 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
       _snackBar.showError('Upload failed: ${e.toString()}');
     }
   }
+  return null;
 }

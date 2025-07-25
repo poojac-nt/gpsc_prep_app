@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
-import 'package:gpsc_prep_app/preview_screen/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-
-import 'bloc/test/test_event.dart';
-import 'bloc/test/test_state.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -90,7 +89,7 @@ class _ResultScreenState extends State<ResultScreen> {
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         context.read<ConnectivityBloc>().add(CheckConnectivity());
-        context.go(AppRoutes.dashboard);
+        context.go(AppRoutes.studentDashboard);
       },
       child: Scaffold(
         appBar: AppBar(
