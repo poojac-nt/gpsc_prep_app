@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -89,7 +90,7 @@ class PdfExportService {
     final filePath = "${outputDir.path}/${testName.toSafeFileName()}.pdf";
     final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
-
+    await OpenFile.open(filePath);
     return filePath;
   }
 
