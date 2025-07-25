@@ -8,7 +8,7 @@ final class UploadQuestionsInitial extends UploadQuestionsState {}
 class UploadFileInProgress extends UploadQuestionsState {}
 
 class UploadFileSuccess extends UploadQuestionsState {
-  final UploadResult result;
+  final UploadResult? result;
 
   UploadFileSuccess(this.result);
 }

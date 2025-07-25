@@ -22,7 +22,9 @@ class UploadQuestionsBloc
     emit(UploadFileInProgress());
 
     try {
-      final result = await uploadCsvOrXlsxToSupabaseMobile();
+      final result = await uploadCsvOrXlsxToSupabaseMobile(
+        isTestUpload: event.isTestUpload,
+      );
 
       emit(UploadFileSuccess(result!));
     } catch (e) {

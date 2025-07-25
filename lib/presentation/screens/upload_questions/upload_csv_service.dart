@@ -25,9 +25,10 @@ class UploadResult {
   });
 }
 
-Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
+Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
+  required bool isTestUpload,
+}) async {
   try {
-    _log.i('Starting file pick...');
     final pickedFileResult = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx'],
@@ -35,35 +36,25 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
     );
 
     if (pickedFileResult == null || pickedFileResult.files.isEmpty) {
-      _log.w('File pick cancelled or no files selected.');
-      throw Exception('Upload cancelled by user.');
+      _snackBar.showError('Upload cancelled by user.');
+      return null;
     }
 
     final file = pickedFileResult.files.single;
     final filePath = file.path;
-    _log.i('Picked file: ${file.name}, path: $filePath');
+    if (filePath == null) throw Exception('File path is null.');
 
-    if (filePath == null) {
-      _log.e('File path is null.');
-      throw Exception('File path is null.');
-    }
-
-    final ext = file.extension?.toLowerCase();
-    _log.i('File extension: $ext');
     late List<List<dynamic>> rows;
+    final ext = file.extension?.toLowerCase();
 
     if (ext == 'csv') {
-      _log.i('Reading CSV file...');
       final content = await File(filePath).readAsString();
-      final cleaned = content.replaceFirst(RegExp(r'^\ufeff'), '');
       rows = const CsvToListConverter().convert(
-        cleaned,
+        content.replaceFirst(RegExp(r'^\ufeff'), ''),
         eol: '\n',
         shouldParseNumbers: false,
       );
-      _log.i('CSV parsed, rows: ${rows.length}');
     } else if (ext == 'xlsx') {
-      _log.i('Reading XLSX file...');
       final bytes = await File(filePath).readAsBytes();
       final excel = Excel.decodeBytes(bytes);
       final sheet =
@@ -79,31 +70,23 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
                     row.map((cell) => cell?.value?.toString() ?? '').toList(),
               )
               .toList();
-      _log.i('XLSX parsed, rows: ${rows.length}');
     } else {
-      _log.e('Unsupported file format: $ext');
       _snackBar.showError('Unsupported file format');
       return null;
     }
 
     if (rows.isEmpty) {
-      _log.e('File is empty after parsing.');
       _snackBar.showError('The file is empty.');
       return null;
     }
 
     final headers =
-        rows.first
-            .map(
-              (h) =>
-                  h
-                      .toString()
-                      .replaceFirst(RegExp(r'^\ufeff'), '')
-                      .trim()
-                      .toLowerCase(),
-            )
-            .toList();
-    _log.i('Parsed headers: $headers');
+        rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
+    final dataRows = rows.skip(1).toList();
+    if (dataRows.isEmpty) {
+      _snackBar.showError('No data rows found.');
+      return null;
+    }
 
     final descRequiredHeaders = {
       'sr_no',
@@ -133,72 +116,129 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
       'marks',
     };
 
-    // Check if essential base headers are missing from the file
-    final baseHeaderCheck = descRequiredHeaders.intersection(headers.toSet());
-    if (baseHeaderCheck.length < descRequiredHeaders.length) {
-      final missingBaseHeaders = descRequiredHeaders.difference(
-        headers.toSet(),
-      );
-      _log.e('Missing required base columns: $missingBaseHeaders');
-      _snackBar.showError(
-        'Missing required column(s): ${missingBaseHeaders.join(', ')}',
-      );
-      return null;
+    final firstRowMap = Map.fromIterables(
+      headers,
+      dataRows.first.map((e) => e.toString().trim()),
+    );
+    final firstTestName = firstRowMap['test_name'] ?? '';
+    final firstTestType = firstRowMap['test_type'] ?? '';
+    final firstDuration = firstRowMap['duration'] ?? '';
+
+    if (isTestUpload) {
+      if (firstTestName.isEmpty ||
+          firstTestType.isEmpty ||
+          firstDuration.isEmpty) {
+        _snackBar.showError(
+          'Test upload requires test_name, test_type, and duration in the first row.',
+        );
+        return null;
+      }
+    } else {
+      if ([
+        firstTestName,
+        firstTestType,
+        firstDuration,
+      ].any((e) => e.trim().isNotEmpty)) {
+        _snackBar.showError(
+          'You selected Bulk Upload, but test metadata was found. Please use Test Upload instead.',
+        );
+        return null;
+      }
+
+      for (var i = 1; i < dataRows.length; i++) {
+        final rowMap = Map.fromIterables(
+          headers,
+          dataRows[i].map((e) => e.toString().trim()),
+        );
+        if ((rowMap['test_name']?.isNotEmpty ?? false) ||
+            (rowMap['test_type']?.isNotEmpty ?? false) ||
+            (rowMap['duration']?.isNotEmpty ?? false)) {
+          _snackBar.showError(
+            'Test fields should not appear in any row for bulk upload.',
+          );
+          return null;
+        }
+      }
     }
 
-    final dataRows = rows.skip(1);
-    final Map<String, Map<String, dynamic>> grouped = {};
+    final grouped = <String, Map<String, dynamic>>{};
     int rowIndex = 1;
+    bool hasStartedProcessing = false;
 
     for (final row in dataRows) {
       rowIndex++;
-      if (row.every(
+
+      final isEmptyRow = row.every(
         (field) => field == null || field.toString().trim().isEmpty,
-      )) {
-        continue;
+      );
+
+      if (isEmptyRow && hasStartedProcessing) {
+        _log.i('🛑 Stopping at first empty row at index $rowIndex.');
+        break; // Stop reading further
       }
+
+      if (isEmptyRow && !hasStartedProcessing) {
+        continue; // Skip leading empty rows
+      }
+
+      hasStartedProcessing = true;
 
       final rowMap = Map.fromIterables(
         headers,
         row.map((e) => e.toString().trim()),
       );
+      final srNo = rowMap['sr_no'] ?? 'unknown';
       final questionType = rowMap['question_type']?.toLowerCase() ?? '';
+      final lang = rowMap['language_code'];
 
       final requiredHeaders =
           questionType == 'desc' ? descRequiredHeaders : otherRequiredHeaders;
-
       for (final key in requiredHeaders) {
         final value = rowMap[key]?.toString().trim();
         if (value == null || value.isEmpty) {
-          _log.e(
-            'Missing value for "$key" in row $rowIndex (sr_no: ${rowMap['sr_no'] ?? 'unknown'})',
-          );
           _snackBar.showError(
-            'Missing value for "$key" in row $rowIndex (sr_no: ${rowMap['sr_no'] ?? 'unknown'})',
+            'Missing value for "$key" in row $rowIndex (sr_no: $srNo)',
           );
           return null;
         }
       }
 
-      final srNo = rowMap['sr_no'];
-      final lang = rowMap['language_code'];
-      if (srNo == null || lang == null) continue;
-
-      Map<String, dynamic> langData;
-
-      if (questionType == 'desc') {
-        langData = {"question_txt": rowMap['question_text']};
-      } else {
-        langData = {
-          "question_txt": rowMap['question_text'],
-          "opt_a": rowMap['option_a'],
-          "opt_b": rowMap['option_b'],
-          "opt_c": rowMap['option_c'],
-          "opt_d": rowMap['option_d'],
-          "correct_answer": rowMap['correct_answer'],
-          "explanation": rowMap['explanation'],
-        };
+      if (isTestUpload &&
+          questionType == 'desc' &&
+          firstTestType.toLowerCase() != 'desc') {
+        _snackBar.showError(
+          'Skipped question at row $rowIndex (sr_no: $srNo): DESC type must have test_type = desc',
+        );
+        continue;
       }
+
+      if (lang == null || lang.isEmpty) {
+        _snackBar.showError(
+          'Missing language_code in row $rowIndex (sr_no: $srNo)',
+        );
+        return null;
+      }
+
+      // 💥 Prevent duplicate language entry per sr_no
+      if (grouped[srNo]?['languages']?[lang] != null) {
+        _snackBar.showError(
+          'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
+        );
+        return null;
+      }
+
+      final langData =
+          questionType == 'desc'
+              ? {"question_txt": rowMap['question_text']}
+              : {
+                "question_txt": rowMap['question_text'],
+                "opt_a": rowMap['option_a'],
+                "opt_b": rowMap['option_b'],
+                "opt_c": rowMap['option_c'],
+                "opt_d": rowMap['option_d'],
+                "correct_answer": rowMap['correct_answer'],
+                "explanation": rowMap['explanation'],
+              };
 
       grouped.putIfAbsent(srNo, () {
         final base = {
@@ -206,61 +246,51 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile() async {
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
           "topic_name": rowMap['topic_name'],
-          "marks": int.tryParse(rowMap['marks'].toString()) ?? 1,
+          "marks": int.tryParse(rowMap['marks'] ?? '1') ?? 1,
           "languages": <String, dynamic>{},
         };
-        if (headers.contains('test_name') &&
-            rowMap['test_name']?.isNotEmpty == true) {
-          base['test_name'] = rowMap['test_name'];
-        }
-        if (headers.contains('duration') &&
-            rowMap['duration']?.isNotEmpty == true) {
-          base['duration'] = int.tryParse(rowMap['duration'].toString()) ?? 1;
+        if (isTestUpload) {
+          base['test_name'] = firstTestName;
+          base['duration'] = int.tryParse(firstDuration) ?? 1;
+          base['test_type'] = firstTestType;
         }
         return base;
       });
 
-      final existing = grouped[srNo]!;
-      if (existing['subject_name'] != rowMap['subject_name'] ||
-          existing['topic_name'] != rowMap['topic_name'] ||
-          existing['question_type'] != questionType) {
-        _log.e('Conflicting metadata for sr_no $srNo at row $rowIndex');
-        _snackBar.showError(
-          'Conflicting metadata for sr_no $srNo at row $rowIndex: subject/topic/question_type mismatch',
-        );
-        return null;
-      }
-
-      existing['languages'][lang] = langData;
+      grouped[srNo]!["languages"][lang] = langData;
     }
 
     if (grouped.isEmpty) {
-      _log.e('No valid data found after validation.');
+      _snackBar.showError('No valid data found.');
       return null;
     }
 
     final payload = grouped.values.toList();
-    _log.i('Prepared payload for Supabase: ${payload.length} items');
+
+    final rpcFunctionName =
+        isTestUpload
+            ? SupabaseKeys.insertMcqWithTest
+            : SupabaseKeys.insertBulkQuestions;
 
     final rpcResult = await _supabase.rpc(
-      SupabaseKeys.insertMcqWithTest2,
+      rpcFunctionName,
       params: {'payload': payload},
     );
-    _log.i('Received RPC result: $rpcResult');
 
     final response = rpcResult as Map<String, dynamic>?;
-    if (response == null) {
-      _log.e('RPC response is null.');
-      return null;
-    }
+    if (response == null) return null;
 
     return UploadResult(
-      successCount: response['inserted'] ?? 0,
+      successCount: response['inserted'] ?? response['inserted_questions'] ?? 0,
       failCount: response['failed'] ?? 0,
       duplicateCount: response['skipped_duplicates'] ?? 0,
     );
   } catch (e, stack) {
     _log.e('❌ Upload failed: $e\n$stack');
-    return null;
+    if (e.toString().toLowerCase().contains('daily test') == true) {
+      _snackBar.showError('A daily test has already been uploaded today.');
+    } else {
+      _snackBar.showError('Upload failed: ${e.toString()}');
+    }
   }
 }

@@ -86,7 +86,7 @@ class PdfExportService {
 
     final outputDir =
         await getDownloadsDirectory() ?? await getTemporaryDirectory();
-    final filePath = "${outputDir.path}/$testName.pdf";
+    final filePath = "${outputDir.path}/${testName.toSafeFileName()}.pdf";
     final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
@@ -285,5 +285,11 @@ class PdfExportService {
             }).toList(),
       ),
     );
+  }
+}
+
+extension SafeFileName on String {
+  String toSafeFileName() {
+    return replaceAll('/', '-');
   }
 }
