@@ -29,6 +29,10 @@ abstract class AppThemeData {
       color: AppColors.primary,
       refreshBackgroundColor: AppColors.scaffoldColor,
     ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+    ),
   );
 }
 

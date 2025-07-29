@@ -14,7 +14,9 @@ class PdfExportService {
     String testName,
   ) async {
     var base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
-    final ByteData bytes = await rootBundle.load('assets/images/logo.jpeg');
+    final ByteData bytes = await rootBundle.load(
+      'assets/images/logo_without_bg.png',
+    );
     final Uint8List imageData = bytes.buffer.asUint8List();
     final baseFont = pw.Font.ttf(base);
     final image = pw.MemoryImage(imageData);

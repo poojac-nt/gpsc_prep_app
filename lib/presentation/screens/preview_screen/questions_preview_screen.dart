@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 class QuestionPreviewScreen extends StatelessWidget {
@@ -81,6 +82,7 @@ class QuestionPreviewScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Card(
+        color: AppColors.accentColor,
         elevation: 2,
         child: Padding(
           padding: const EdgeInsets.all(12.0),

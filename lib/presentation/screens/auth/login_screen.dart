@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,31 +62,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.center,
                       child: Column(
                         children: [
-                          Container(
-                            height: 70.h,
-                            width: 70.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: AppColors.primary,
-                            ),
-                            child: Center(
-                              child: Icon(
-                                CupertinoIcons.book,
-                                color: Colors.white,
-                                size: 40.sp,
+                          Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(10.sp),
+                              child: Image.asset(
+                                'assets/images/logo_without_bg.png',
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),
                           10.hGap,
-                          Text(
-                            "Exam Prep",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          5.hGap,
                           Text(
                             "Smart Learning Platform",
                             style: TextStyle(
