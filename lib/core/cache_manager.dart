@@ -8,6 +8,7 @@ class CacheManager {
   CacheManager(this._prefs);
 
   UserModel? _user;
+  String userLanguage = 'en';
 
   UserRole? getUserRole() => _user?.role ?? UserRole.student;
 
@@ -24,6 +25,11 @@ class CacheManager {
   UserModel? get user => _user;
 
   int getUserId() => _user?.id ?? 0;
+
+  String userSelectedLanguage() {
+    userLanguage = _prefs.getUserLanguage();
+    return userLanguage;
+  }
 
   void clearUser() {
     _user = null;

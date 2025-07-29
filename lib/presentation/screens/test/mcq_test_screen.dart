@@ -12,9 +12,9 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'bloc/daily_test_bloc.dart';
-import 'bloc/daily_test_event.dart';
-import 'bloc/daily_test_state.dart';
+import '../../blocs/daily test/daily_test_bloc.dart';
+import '../../blocs/daily test/daily_test_event.dart';
+import '../../blocs/daily test/daily_test_state.dart';
 
 class MCQTestScreen extends StatefulWidget {
   const MCQTestScreen({super.key});
@@ -69,83 +69,136 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                   10.hGap,
 
                   /// Daily Tests Section
-                  TestModule(
-                    title: "Daily Tests",
-                    subtitle: "Subject-based Daily Practice",
-                    prefixIcon: Icons.calendar_today_outlined,
-                    cards: [
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: state.dailyTestModel.length,
-                        itemBuilder: (context, index) {
-                          final test = state.dailyTestModel[index];
-                          final hasResult = state.testResults.containsKey(
-                            test.id,
-                          );
-                          return TestTile(
-                            title: test.name,
-                            subtitle:
-                                "${test.noQuestions} Questions · ${test.duration} min",
-                            onTap: () {
-                              if (hasResult) {
-                                context.pushReplacement(
-                                  AppRoutes.resultScreen,
-                                  extra: ResultScreenArgs(
-                                    isFromTest: false,
-                                    testId: test.id,
-                                  ),
-                                );
-                              } else {
-                                context.pushReplacement(
-                                  AppRoutes.testInstructionScreen,
-                                  extra: TestInstructionScreenArgs(
-                                    dailyTestModel: test,
-                                    availableLanguages:
-                                        state.languages[test.id] ?? {'en'},
-                                  ), // or testId: 123
-                                );
-                              }
-                            },
-                            buttonTitle: hasResult ? 'Result' : 'Start',
-                          ).padSymmetric(vertical: 6.h);
-                        },
-                      ),
-                    ],
-                  ),
-                  10.hGap,
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: state.dailyTestModel.length,
+                    itemBuilder: (context, index) {
+                      final test = state.dailyTestModel[index];
+                      final testResult = state.testResults[test.id];
+                      final hasResult = testResult != null;
 
-                  /// Mock Tests Section
-                  TestModule(
-                    title: "Mock Tests",
-                    subtitle: "Full Length Practice Exams",
-                    prefixIcon: Icons.description_outlined,
-                    cards: [
-                      TestTile(
-                        title: "GPSC Mock Test #1",
-                        subtitle: "100 Questions · 2 hours",
-                        widgets: [
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black, width: 1),
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Icon(
-                              Icons.file_download_outlined,
-                              color: Colors.black,
-                            ),
+                      // Default values
+                      DateTime? submittedAt;
+                      bool isEligibleForRetest = false;
+
+                      if (hasResult) {
+                        final createdAtString = testResult.createdAt;
+
+                        // Check that createdAt is not null or empty
+                        if (createdAtString != null &&
+                            createdAtString.isNotEmpty) {
+                          try {
+                            submittedAt = DateTime.parse(createdAtString);
+                            isEligibleForRetest =
+                                DateTime.now()
+                                    .difference(submittedAt)
+                                    .inHours >=
+                                24;
+                          } catch (e) {
+                            // Optional: log or ignore parse errors
+                          }
+                        }
+                      }
+
+                      return Column(
+                        children: [
+                          TestModule(
+                            title: "Daily Tests",
+                            subtitle: "Subject-based Daily Practice",
+                            prefixIcon: Icons.calendar_today_outlined,
+                            cards: [
+                              TestTile(
+                                title: test.name,
+                                subtitle:
+                                    "${test.noQuestions} Questions · ${test.duration} min",
+                                onTap: () {
+                                  if (hasResult) {
+                                    context.pushReplacement(
+                                      AppRoutes.resultScreen,
+                                      extra: ResultScreenArgs(
+                                        isFromTest: false,
+                                        testId: test.id,
+                                        testName: test.name,
+                                      ),
+                                    );
+                                  } else {
+                                    context.pushReplacement(
+                                      AppRoutes.testInstructionScreen,
+                                      extra: TestInstructionScreenArgs(
+                                        dailyTestModel: test,
+                                        availableLanguages:
+                                            state.languages[test.id] ?? {'en'},
+                                      ),
+                                    );
+                                  }
+                                },
+                                buttonTitle: hasResult ? 'Result' : 'Start',
+                                widgets:
+                                    hasResult && isEligibleForRetest
+                                        ? [
+                                          IntrinsicWidth(
+                                            child: ActionButton(
+                                              text: 'ReTest',
+                                              onTap: () {
+                                                context.pushReplacement(
+                                                  AppRoutes
+                                                      .testInstructionScreen,
+                                                  extra:
+                                                      TestInstructionScreenArgs(
+                                                        dailyTestModel: test,
+                                                        availableLanguages:
+                                                            state.languages[test
+                                                                .id] ??
+                                                            {'en'},
+                                                      ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ]
+                                        : [],
+                              ).padSymmetric(vertical: 6.h),
+                            ],
                           ),
+                          10.hGap,
                         ],
-                        onTap: () {
-                          // Handle mock test tap
-                        },
-                        buttonTitle: 'Start',
-                      ),
-                    ],
+                      );
+                    },
                   ),
                   10.hGap,
+                  //
+                  // /// Mock Tests Section
+                  // TestModule(
+                  //   title: "Mock Tests",
+                  //   subtitle: "Full Length Practice Exams",
+                  //   prefixIcon: Icons.description_outlined,
+                  //   cards: [
+                  //     TestTile(
+                  //       title: "GPSC Mock Test #1",
+                  //       subtitle: "100 Questions · 2 hours",
+                  //       widgets: [
+                  //         Container(
+                  //           padding: EdgeInsets.all(5),
+                  //           decoration: BoxDecoration(
+                  //             border: Border.all(color: Colors.black, width: 1),
+                  //             color: Colors.white,
+                  //             borderRadius: BorderRadius.circular(5),
+                  //           ),
+                  //           child: Icon(
+                  //             Icons.file_download_outlined,
+                  //             color: Colors.black,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //       onTap: () {
+                  //         // Handle mock test tap
+                  //       },
+                  //       buttonTitle: 'Start',
+                  //     ),
+                  //   ],
+                  // ),
+                  // 10.hGap,
 
                   /// Offline Mode Section
                   // TestModule(

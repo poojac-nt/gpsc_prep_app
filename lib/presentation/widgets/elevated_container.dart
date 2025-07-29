@@ -5,6 +5,8 @@ class ElevatedContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
+  final double width;
+
   final Color? color;
 
   const ElevatedContainer({
@@ -13,11 +15,13 @@ class ElevatedContainer extends StatelessWidget {
     this.padding,
     this.borderRadius = 16.0,
     this.color,
+    this.width = double.infinity,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: width,
       padding: padding ?? EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: color ?? Colors.white,

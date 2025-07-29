@@ -29,6 +29,10 @@ abstract class AppThemeData {
       color: AppColors.primary,
       refreshBackgroundColor: AppColors.scaffoldColor,
     ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+    ),
   );
 }
 
@@ -69,7 +73,8 @@ abstract class AppTexts {
 abstract class AppRoutes {
   static const String splash = '/splash';
   static const String registrationScreen = '/registrationScreen';
-  static const String dashboard = '/dashboard';
+  static const String studentDashboard = '/studentDashboard';
+  static const String mentorDashboard = '/mentorDashboard';
   static const String login = '/login';
   static const String answerWriting = '/answerWriting';
   static const String profile = '/profile';
@@ -78,4 +83,8 @@ abstract class AppRoutes {
   static const String testScreen = '/testScreen';
   static const String resultScreen = '/resultScreen';
   static const String addQuestionScreen = '/addQuestionScreen';
+  static const String questionPreviewScreen = '/questionPreviewScreen';
+  static const String descriptiveTestScreen = '/descriptiveTestScreen';
+  static const String descriptiveTestResultScreen =
+      '/descriptiveTestResultScreen';
 }

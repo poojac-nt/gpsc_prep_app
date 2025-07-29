@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
@@ -15,9 +19,6 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-
-import 'bloc/test/test_event.dart';
-import 'bloc/test/test_state.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -88,36 +89,37 @@ class _ResultScreenState extends State<ResultScreen> {
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         context.read<ConnectivityBloc>().add(CheckConnectivity());
-        context.go(AppRoutes.dashboard);
+        context.go(AppRoutes.studentDashboard);
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text('Test Completed', style: AppTexts.titleTextStyle),
         ),
         body: SingleChildScrollView(
-          child: BlocBuilder<TestBloc, TestState>(
-            builder: (context, state) {
-              if (state is TestSubmitted) {
+          child: BlocConsumer<TestBloc, TestState>(
+            listener: (context, testBlocState) {},
+            builder: (context, testBlocState) {
+              if (testBlocState is TestSubmitted) {
                 return BlocBuilder<TestCubit, TestCubitSubmitted>(
-                  builder: (context, state) {
+                  builder: (context, testCubitState) {
                     final List<String> containerValues = [
-                      state.correctAnswers.toString(),
-                      state.inCorrectAnswers.toString(),
-                      state.notAttemptedQuestions.toString(),
-                      state.attemptedQuestions.toString(),
+                      testCubitState.correctAnswers.toString(),
+                      testCubitState.inCorrectAnswers.toString(),
+                      testCubitState.notAttemptedQuestions.toString(),
+                      testCubitState.attemptedQuestions.toString(),
                       time,
-                      state.totalQuestions.toString(),
+                      testCubitState.totalQuestions.toString(),
                     ];
                     return TestModule(
                       iconSize: 26.sp,
                       fontSize: 26.sp,
-                      title: "Test Result",
+                      title: "${widget.testName} Result",
                       cards: [
                         Center(
                           child: Column(
                             children: [
                               Text(
-                                state.score!.toStringAsFixed(2),
+                                testCubitState.score!.toStringAsFixed(2),
                                 style: TextStyle(
                                   fontSize: 26.sp,
                                   fontWeight: FontWeight.bold,
@@ -155,7 +157,22 @@ class _ResultScreenState extends State<ResultScreen> {
                           children: [
                             ActionButton(
                               text: "Download Detailed Report",
-                              onTap: () {},
+                              onTap: () {
+                                final blocState =
+                                    context.read<QuestionBloc>().state;
+                                context.push(
+                                  AppRoutes.questionPreviewScreen,
+                                  extra: widget.testName!,
+                                );
+                                context.read<QuestionPreviewBloc>().add(
+                                  LoadQuestionsEvent(
+                                    blocState is QuestionLoaded
+                                        ? blocState.questionsModels
+                                        : [],
+                                    widget.testName!,
+                                  ),
+                                );
+                              },
                             ),
                             5.hGap,
                             ActionButton(
@@ -163,10 +180,10 @@ class _ResultScreenState extends State<ResultScreen> {
                               fontColor: Colors.white,
                               onTap: () {
                                 context.read<QuestionCubit>().reviewTest(
-                                  questions: state.questions,
-                                  isCorrect: state.isAnswerCorrect,
-                                  answeredStatus: state.answeredStatus,
-                                  selectedOption: state.selectedOption,
+                                  questions: testCubitState.questions,
+                                  isCorrect: testCubitState.isAnswerCorrect,
+                                  answeredStatus: testCubitState.answeredStatus,
+                                  selectedOption: testCubitState.selectedOption,
                                 );
                                 context.push(
                                   AppRoutes.testScreen,
@@ -174,7 +191,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                     isFromResult: true,
                                     testId: null,
                                     testDuration: null,
-                                    testName: widget.testName,
+                                    testName: widget.testName!,
                                     language: null,
                                   ), // or testId: 123
                                 );
@@ -189,25 +206,25 @@ class _ResultScreenState extends State<ResultScreen> {
                   },
                 );
               }
-              if (state is SingleResultSuccess) {
+              if (testBlocState is SingleResultSuccess) {
                 final List<String> containerValues = [
-                  state.result.correctAnswers.toString(),
-                  state.result.inCorrectAnswers.toString(),
-                  state.result.notAttemptedQuestions.toString(),
-                  state.result.attemptedQuestions.toString(),
-                  formatTimeSpent(state.result.timeTaken),
-                  state.result.totalQuestions.toString(),
+                  testBlocState.result.correctAnswers.toString(),
+                  testBlocState.result.inCorrectAnswers.toString(),
+                  testBlocState.result.notAttemptedQuestions.toString(),
+                  testBlocState.result.attemptedQuestions.toString(),
+                  formatTimeSpent(testBlocState.result.timeTaken),
+                  testBlocState.result.totalQuestions.toString(),
                 ];
                 return TestModule(
                   iconSize: 26.sp,
                   fontSize: 26.sp,
-                  title: "Test Result",
+                  title: "${widget.testName!} Result",
                   cards: [
                     Center(
                       child: Column(
                         children: [
                           Text(
-                            state.result.score.toStringAsFixed(2),
+                            testBlocState.result.score.toStringAsFixed(2),
                             style: TextStyle(
                               fontSize: 26.sp,
                               fontWeight: FontWeight.bold,

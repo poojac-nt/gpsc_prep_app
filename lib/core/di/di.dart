@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:gpsc_prep_app/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
@@ -9,14 +8,16 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test/bloc/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/question/question_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/bloc/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
-import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 
 import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
@@ -63,6 +64,8 @@ void setupRepositories() {
 }
 
 void setupBlocs() {
+  getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
+  getIt.registerLazySingleton<QuestionPreviewBloc>(() => QuestionPreviewBloc());
   getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(getIt<AuthRepository>(), getIt<CacheManager>()),
   );
@@ -87,7 +90,6 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<TestCubit>(() => TestCubit());
   getIt.registerLazySingleton<QuestionCubit>(() => QuestionCubit());
-  getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
 }
 
 Future<void> setUpHive() async {

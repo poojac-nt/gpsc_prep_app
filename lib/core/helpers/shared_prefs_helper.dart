@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,14 @@ class SharedPrefHelper {
     if (jsonString == null) return null;
     final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
     return UserModel.fromJson(jsonMap);
+  }
+
+  void saveUserLanguage(String lang) {
+    _prefs.setString('userLanguage', lang);
+  }
+
+  String getUserLanguage() {
+    return _prefs.getString('userLanguage') ?? 'en';
   }
 
   Future<void> clear() async {

@@ -191,20 +191,21 @@ class SupabaseHelper {
     int testId,
   ) async {
     try {
-      final data = await supabase
-          .from(SupabaseKeys.testQuestionTable)
-          .select('questions(*)')
-          .eq('test_id', testId);
-      _log.i("Data: ${data.toString()}");
+      final List<Map<String, dynamic>> response = await supabase.rpc(
+        SupabaseKeys.getTestQuestionsByTestId,
+        params: {'p_test_id': testId},
+      );
+
+      _log.i(response.toString());
 
       final questions =
-          data
-              .where((e) => e['questions'] != null) // Safety check
-              .map((e) => QuestionModel.fromJson(e['questions']))
-              .where((q) => q.questionEn != null) // Ensure only valid entries
+          response
+              .where((e) => e != null)
+              .map((e) => QuestionModel.fromJson(e))
               .toList();
 
-      _log.i("Fetched questions: ${questions.length}");
+      _log.i(questions.toString());
+
       return Right(questions);
     } catch (e, stackTrace) {
       _snackBar.showError('Error fetching test questions: ${e.toString()}');
@@ -222,6 +223,7 @@ class SupabaseHelper {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
           .select()
+          .filter('test_type', 'in', '(dtmcq,mcq)')
           .order('id', ascending: false);
 
       var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
@@ -239,6 +241,27 @@ class SupabaseHelper {
     TestResultModel test,
   ) async {
     try {
+      // Step 1: Check if result already exists for this user and test
+      final existingResult =
+          await supabase
+              .from(SupabaseKeys.testResultsTable)
+              .select()
+              .eq('user_id', test.userId)
+              .eq('test_id', test.testId)
+              .maybeSingle(); // returns null if not found
+
+      if (existingResult != null) {
+        // Step 2: Delete existing result
+        final deleteResponse = await supabase
+            .from(SupabaseKeys.testResultsTable)
+            .delete()
+            .eq('user_id', test.userId)
+            .eq('test_id', test.testId);
+
+        _log.i('Existing test result deleted: $deleteResponse');
+      }
+
+      // Step 3: Insert the new result
       final response =
           await supabase
               .from(SupabaseKeys.testResultsTable)

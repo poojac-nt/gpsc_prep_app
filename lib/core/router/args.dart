@@ -4,7 +4,7 @@ class TestScreenArgs {
   final bool isFromResult;
   final int? testId;
   final String? language;
-  final String? testName;
+  final String testName;
   final int? testDuration;
 
   TestScreenArgs({
@@ -12,7 +12,7 @@ class TestScreenArgs {
     this.testId,
     this.language,
     this.testDuration,
-    this.testName,
+    required this.testName,
   });
 }
 

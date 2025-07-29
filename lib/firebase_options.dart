@@ -54,10 +54,9 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAZF4EHwCy3Bzy-YlXFnK9yizZyNEHtep8',
-    appId: '1:869201417049:android:d434d4c12539da952b7248',
+    appId: '1:869201417049:android:b73d4778deb77b092b7248',
     messagingSenderId: '869201417049',
     projectId: 'gpsc-prep-33759',
     storageBucket: 'gpsc-prep-33759.firebasestorage.app',
   );
-
 }

@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -84,7 +84,7 @@ class SelectionDrawer extends StatelessWidget {
                   ? commonWidget(
                     () {
                       context.pop();
-                      context.go(AppRoutes.dashboard);
+                      context.go(AppRoutes.studentDashboard);
                     },
                     Icons.dashboard,
                     'Dashboard',
@@ -100,6 +100,17 @@ class SelectionDrawer extends StatelessWidget {
                     'MCQ Tests',
                   )
                   : SizedBox.shrink(),
+              // isStudent
+              //     ? commonWidget(
+              //       () {
+              //         context.pop();
+              //         context.push(AppRoutes.answerWriting);
+              //       },
+              //       Icons.description,
+              //       'Descriptive Tests',
+              //     )
+              //     : SizedBox.shrink(),
+
               // commonWidget(
               //   () => context.push(AppRoutes.answerWriting),
               //   Icons.edit_document,

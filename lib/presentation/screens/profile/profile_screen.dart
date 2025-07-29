@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
-import 'package:gpsc_prep_app/presentation/screens/auth/auth_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/quick_stats.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/validator.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../widgets/custom_text_field.dart';
 
@@ -73,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               state is EditProfileInitial ||
               state is EditImagePicking ||
               state is EditImageUploading) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildWhenLoading(context);
           }
 
           if (state is EditProfileLoaded ||
@@ -90,7 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             name.text = user.name;
             number.text = user.number.toString();
             address.text = user.address!;
-
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -345,6 +345,160 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Skeletonizer _buildWhenLoading(BuildContext context) {
+    return Skeletonizer(
+      enabled: true, // true = loading state, false = show real content
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            /// Profile Photo Placeholder
+            TestModule(
+              title: "Profile Photo",
+              cards: [
+                Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            height: 75.h,
+                            width: 75.h,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.grey.shade400,
+                                  Colors.grey.shade600,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: Icon(
+                                Icons.person,
+                                size: 35.sp,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              height: 28.h,
+                              width: 28.h,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey,
+                              ),
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 12.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        "Loading Name",
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "loading@email.com",
+                        textAlign: TextAlign.center,
+                        style: AppTexts.labelTextStyle.copyWith(
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            10.hGap,
+
+            /// Quick Stats Placeholder
+            TestModule(
+              title: 'Quick Stats',
+              cards: [
+                QuickStats(text: "Test Taken", num: "64"),
+                10.hGap,
+                QuickStats(text: "Average Score", num: "83"),
+                10.hGap,
+                QuickStats(text: "Study Strike", num: "12 days"),
+                10.hGap,
+                QuickStats(text: "Rank", num: "#264"),
+              ],
+            ),
+
+            10.hGap,
+
+            /// Personal Info Form Placeholder
+            Form(
+              key: _formKey,
+              child: TestModule(
+                title: 'Personal Information',
+                prefixIcon: Icons.person_outline,
+                cards: [
+                  10.hGap,
+                  Text("Full Name", style: AppTexts.labelTextStyle),
+                  5.hGap,
+                  CustomTextField(),
+                  10.hGap,
+                  Text("Mobile Number", style: AppTexts.labelTextStyle),
+                  5.hGap,
+                  CustomTextField(),
+                  10.hGap,
+                  Text("Address", style: AppTexts.labelTextStyle),
+                  5.hGap,
+                  CustomTextField(maxLine: 3),
+                  10.hGap,
+                  ActionButton(
+                    text: 'Update Information',
+                    onTap: () {}, // no-op during loading
+                  ),
+                ],
+              ),
+            ),
+
+            10.hGap,
+
+            /// Account Actions Placeholder
+            TestModule(
+              title: "Account Actions",
+              cards: [
+                BorderedContainer(
+                  borderColor: Colors.red,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 7.h,
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Delete Account",
+                      style: AppTexts.labelTextStyle.copyWith(
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ).padAll(AppPaddings.defaultPadding),
       ),
     );
   }
