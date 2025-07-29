@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
@@ -62,10 +63,28 @@ class QuestionPreviewBloc
   ) async {
     try {
       emit(QuestionExporting());
-      var status = await Permission.storage.status;
-      if (!status.isGranted) {
-        await Permission.storage.request();
+
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 30) {
+        if (!await Permission.manageExternalStorage.isGranted) {
+          await Permission.manageExternalStorage.request();
+        }
+        if (!await Permission.manageExternalStorage.isGranted) {
+          emit(QuestionPreviewError('Storage permission denied'));
+          return;
+        }
+      } else {
+        if (!await Permission.storage.isGranted) {
+          await Permission.storage.request();
+        }
+        if (!await Permission.storage.isGranted) {
+          emit(QuestionPreviewError('Storage permission denied'));
+          return;
+        }
       }
+
       final path = await PdfExportService().exportQuestionsToPdf(
         event.questions,
         event.testName,
