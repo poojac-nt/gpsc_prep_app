@@ -223,6 +223,7 @@ class SupabaseHelper {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
           .select()
+          .filter('test_type', 'in', '(dtmcq,mcq)')
           .order('id', ascending: false);
 
       var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
