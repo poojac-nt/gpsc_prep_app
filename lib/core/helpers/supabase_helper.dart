@@ -192,7 +192,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions(
+  Future<Either<Failure, List<QuestionModel>>> fetchMCQTestQuestions(
     int testId,
   ) async {
     try {
@@ -223,7 +223,7 @@ class SupabaseHelper {
   }
 
   ///Insert Daily Tests Results
-  Future<Either<Failure, List<DailyTestModel>>> fetchDailyTests() async {
+  Future<Either<Failure, List<DailyTestModel>>> fetchDailyMcqTests() async {
     try {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
@@ -242,7 +242,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<TestResultModel>>> insertDailyTestsResults(
+  Future<Either<Failure, List<TestResultModel>>> insertDailyMcqTestsResults(
     TestResultModel test,
   ) async {
     try {
@@ -297,7 +297,7 @@ class SupabaseHelper {
   }
 
   ///Fetch Daily Test Results
-  Future<Either<Failure, TestResultModel?>> fetchResultForSingleTest({
+  Future<Either<Failure, TestResultModel?>> fetchResultForSingleMcqTest({
     required int testId,
   }) async {
     try {
@@ -406,6 +406,22 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('❌ Error in appVersionCheck: $e');
       return AppVersionStatus.needsUpdate;
+    }
+  }
+
+  Future<Either<Failure, List<DailyTestModel>>> fetchDescriptiveTests() async {
+    try {
+      final response = await supabase
+          .from(SupabaseKeys.testsTable)
+          .select()
+          .filter('test_type', 'eq', 'desc')
+          .order('id', ascending: false);
+      final result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+      _log.i('Total test : ${result.length}');
+      return Right(result);
+    } catch (e) {
+      _log.e('Error in fetching test: $e');
+      return Left(Failure("Error in Fetching test"));
     }
   }
 }

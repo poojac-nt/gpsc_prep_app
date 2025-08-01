@@ -37,8 +37,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       final List<String> topic = questions.map((e) => e.topicName).toList();
       final List<DifficultyLevel> difficultyLevel =
           questions.map((e) => e.difficultyLevel).toList();
-      log.i("topic:$topic");
-      log.i("subject:$subject");
+
       switch (event.language) {
         case 'hi':
           localizedQuestions =

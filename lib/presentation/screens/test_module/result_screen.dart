@@ -20,17 +20,17 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
+import '../../../domain/entities/daily_test_model.dart';
+
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
     super.key,
     this.isFromTestScreen = false,
-    this.testId,
-    this.testName,
+    required this.dailyTestModel,
   });
 
   final bool isFromTestScreen;
-  final int? testId;
-  final String? testName;
+  final DailyTestModel dailyTestModel;
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -41,9 +41,9 @@ class _ResultScreenState extends State<ResultScreen> {
   void initState() {
     super.initState();
 
-    if (!widget.isFromTestScreen && widget.testId != null) {
+    if (!widget.isFromTestScreen && widget.dailyTestModel.id != null) {
       context.read<TestBloc>().add(
-        FetchSingleTestResultEvent(testId: widget.testId!),
+        FetchSingleTestResultEvent(testId: widget.dailyTestModel.id),
       );
     }
   }
@@ -113,7 +113,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     return TestModule(
                       iconSize: 26.sp,
                       fontSize: 26.sp,
-                      title: "${widget.testName} Result",
+                      title: "${widget.dailyTestModel.name} Result",
                       cards: [
                         Center(
                           child: Column(
@@ -162,14 +162,14 @@ class _ResultScreenState extends State<ResultScreen> {
                                     context.read<QuestionBloc>().state;
                                 context.push(
                                   AppRoutes.questionPreviewScreen,
-                                  extra: widget.testName!,
+                                  extra: widget.dailyTestModel.name,
                                 );
                                 context.read<QuestionPreviewBloc>().add(
                                   LoadQuestionsEvent(
                                     blocState is QuestionLoaded
                                         ? blocState.questionsModels
                                         : [],
-                                    widget.testName!,
+                                    widget.dailyTestModel.name,
                                   ),
                                 );
                               },
@@ -189,9 +189,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                   AppRoutes.testScreen,
                                   extra: TestScreenArgs(
                                     isFromResult: true,
-                                    testId: null,
-                                    testDuration: null,
-                                    testName: widget.testName!,
+                                    dailyTestModel: widget.dailyTestModel,
                                     language: null,
                                   ), // or testId: 123
                                 );
@@ -218,7 +216,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 return TestModule(
                   iconSize: 26.sp,
                   fontSize: 26.sp,
-                  title: "${widget.testName!} Result",
+                  title: "${widget.dailyTestModel.name} Result",
                   cards: [
                     Center(
                       child: Column(

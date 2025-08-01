@@ -2,26 +2,21 @@ import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
-  final int? testId;
+  final DailyTestModel dailyTestModel;
   final String? language;
-  final String testName;
-  final int? testDuration;
 
   TestScreenArgs({
     required this.isFromResult,
-    this.testId,
+    required this.dailyTestModel,
     this.language,
-    this.testDuration,
-    required this.testName,
   });
 }
 
 class ResultScreenArgs {
   final bool isFromTest;
-  final int? testId;
-  final String? testName;
+  final DailyTestModel dailyTestModel;
 
-  ResultScreenArgs({required this.isFromTest, this.testName, this.testId});
+  ResultScreenArgs({required this.isFromTest, required this.dailyTestModel});
 }
 
 class TestInstructionScreenArgs {

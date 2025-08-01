@@ -148,10 +148,8 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                   AppRoutes.testScreen,
                   extra: TestScreenArgs(
                     isFromResult: false,
-                    testId: widget.dailyTestModel.id,
-                    testName: widget.dailyTestModel.name,
-                    testDuration: widget.dailyTestModel.duration,
                     language: selectedLanguage,
+                    dailyTestModel: widget.dailyTestModel,
                   ), // or testId: 123
                 );
               },

@@ -16,6 +16,7 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
+import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 
@@ -77,9 +78,7 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         TestScreen(
           isFromResult: args.isFromResult,
-          testId: args.testId,
-          testDuration: args.testDuration,
-          testName: args.testName,
+          dailyTestModel: args.dailyTestModel,
           language: args.language,
         ),
         state,
@@ -93,8 +92,7 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         ResultScreen(
           isFromTestScreen: args.isFromTest,
-          testName: args.testName,
-          testId: args.testId,
+          dailyTestModel: args.dailyTestModel,
         ),
         state,
       );
@@ -122,6 +120,12 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) =>
             _slideTransition(DescriptiveTestResultScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.descriptiveTestInstructionScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(DescriptiveTestInstructionScreen(), state);
+    },
   ),
 ];
 

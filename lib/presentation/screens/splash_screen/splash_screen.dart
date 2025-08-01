@@ -34,9 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _startInitializationIfOnline() {
     if (_initializationStarted) return;
 
-    final state = context
-        .read<ConnectivityBloc>()
-        .state;
+    final state = context.read<ConnectivityBloc>().state;
     if (state is ConnectivityOnline) {
       _initializationStarted = true;
       _initializeApp();
@@ -103,6 +101,9 @@ class _SplashScreenState extends State<SplashScreen> {
       case UserRole.mentor:
         context.go(AppRoutes.mentorDashboard);
         break;
+      case UserRole.admin:
+        context.go(AppRoutes.studentDashboard);
+        break;
       default:
         context.go(AppRoutes.login);
     }
@@ -113,8 +114,7 @@ class _SplashScreenState extends State<SplashScreen> {
       context: context,
       barrierDismissible: false,
       builder:
-          (_) =>
-          AlertDialog(
+          (_) => AlertDialog(
             title: const Text('Update Required'),
             content: const Text(
               'Your app version is outdated. Please update to continue using the app.',

@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/desc_test_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
@@ -20,6 +21,7 @@ import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_quest
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 
+import '../../presentation/screens/descriptive_test_module/bloc/daily_descriptive_test_bloc.dart';
 import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
 
 final getIt = GetIt.instance;
@@ -61,6 +63,10 @@ void setupRepositories() {
   getIt.registerLazySingleton<TestRepository>(
     () => TestRepository(getIt<SupabaseHelper>()),
   );
+
+  getIt.registerLazySingleton(
+    () => DescTestRepository(getIt<SupabaseHelper>()),
+  );
 }
 
 void setupBlocs() {
@@ -90,6 +96,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<TestCubit>(() => TestCubit());
   getIt.registerLazySingleton<QuestionCubit>(() => QuestionCubit());
+  getIt.registerLazySingleton<DailyDescTestBloc>(
+    () => DailyDescTestBloc(getIt<DescTestRepository>()),
+  );
 }
 
 Future<void> setUpHive() async {

@@ -25,6 +25,7 @@ class DescriptiveTestScreen extends StatefulWidget {
 }
 
 class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
+  ScrollController _scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +51,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
         ],
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -137,7 +139,13 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                   child: ActionButton(
                     backgroundColor: AppColors.primary,
                     text: "Previous",
-                    onTap: () {},
+                    onTap: () {
+                      _scrollController.animateTo(
+                        0.0,
+                        duration: Duration(milliseconds: 600),
+                        curve: Curves.easeOut,
+                      );
+                    },
                     fontColor: Colors.white,
                   ),
                 ),
@@ -146,7 +154,13 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                   child: ActionButton(
                     text: "Next",
                     backgroundColor: AppColors.primary,
-                    onTap: () {},
+                    onTap: () {
+                      _scrollController.animateTo(
+                        0.0,
+                        duration: Duration(milliseconds: 600),
+                        curve: Curves.easeOut,
+                      );
+                    },
                   ),
                 ),
               ],

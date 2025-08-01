@@ -502,7 +502,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         context.read<ConnectivityBloc>().state is ConnectivityOnline;
     if (isOnline) {
       try {
-        await getIt<SupabaseHelper>().insertDailyTestsResults(latest);
+        await getIt<SupabaseHelper>().insertDailyMcqTestsResults(latest);
         await testResultBox.delete('latest');
         log.i('✅ Synced test result to Supabase and removed from Hive');
       } catch (e) {

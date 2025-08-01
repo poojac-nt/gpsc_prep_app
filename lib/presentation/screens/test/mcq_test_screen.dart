@@ -100,7 +100,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                           }
                         }
                       }
-
                       return Column(
                         children: [
                           TestModule(
@@ -118,8 +117,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       AppRoutes.resultScreen,
                                       extra: ResultScreenArgs(
                                         isFromTest: false,
-                                        testId: test.id,
-                                        testName: test.name,
+                                        dailyTestModel: test,
                                       ),
                                     );
                                   } else {
