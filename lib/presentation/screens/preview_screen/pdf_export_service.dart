@@ -52,10 +52,10 @@ class PdfExportService {
                     pw.SizedBox(height: 5),
                     ..._parseMarkdownToPdfWidgets(q.questionTxt),
                     pw.SizedBox(height: 5),
-                    pw.Bullet(text: "A) ${q.optA}"),
-                    pw.Bullet(text: "B) ${q.optB}"),
-                    pw.Bullet(text: "C) ${q.optC}"),
-                    pw.Bullet(text: "D) ${q.optD}"),
+                    pw.Bullet(text: "${q.optA}"),
+                    pw.Bullet(text: "${q.optB}"),
+                    pw.Bullet(text: "${q.optC}"),
+                    pw.Bullet(text: "${q.optD}"),
                     pw.SizedBox(height: 5),
                     pw.RichText(
                       text: pw.TextSpan(

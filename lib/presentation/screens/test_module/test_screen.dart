@@ -52,6 +52,7 @@ class TestScreen extends StatefulWidget {
 class _TestScreenState extends State<TestScreen> {
   late QuestionLanguageData question;
   bool _initialized = false;
+  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -108,7 +109,19 @@ class _TestScreenState extends State<TestScreen> {
             ),
             actions: [
               widget.isFromResult
-                  ? SizedBox.shrink()
+                  ? TextButton(
+                    onPressed: () {
+                      context.pop();
+                    },
+                    child: Text(
+                      "Back to Result",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  )
                   : Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.w,
@@ -219,6 +232,7 @@ class _TestScreenState extends State<TestScreen> {
                       final question = state.questions[currentIndex];
                       final selectedAnswer = state.selectedOption[currentIndex];
                       return SingleChildScrollView(
+                        controller: scrollController,
                         child: Column(
                           children: [
                             CustomProgressBar(
@@ -227,107 +241,104 @@ class _TestScreenState extends State<TestScreen> {
                               value: state.progress,
                               labelText: "${state.answered} Answered",
                             ),
-                            20.hGap,
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 5.w),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  state.isReview
-                                      ? SizedBox.shrink()
-                                      : Expanded(
-                                        child: Padding(
-                                          padding: EdgeInsets.only(right: 25.w),
-                                          child: ActionButton(
-                                            text: "Quit Test",
-                                            onTap: () {
-                                              showDialog(
-                                                context: context,
-                                                builder:
-                                                    (
-                                                      context,
-                                                    ) => CustomAlertdialog(
-                                                      title: "Confirm Exit",
-                                                      mainContent:
-                                                          "Do you really want to leave the test in between?",
-                                                      content:
-                                                          "Your answers so far will be saved, you won’t be able to resume this test later.",
-                                                      actions: [
-                                                        TextButton(
-                                                          child: Text(
-                                                            "Cancel",
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors
-                                                                      .grey[700],
+                            if (!state.isReview) ...[
+                              20.hGap,
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5.w),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    state.isReview
+                                        ? SizedBox.shrink()
+                                        : Expanded(
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                              right: 25.w,
+                                            ),
+                                            child: ActionButton(
+                                              text: "Quit Test",
+                                              onTap: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (
+                                                        context,
+                                                      ) => CustomAlertdialog(
+                                                        title: "Confirm Exit",
+                                                        mainContent:
+                                                            "Do you really want to leave the test in between?",
+                                                        content:
+                                                            "Your answers so far will be saved, you won’t be able to resume this test later.",
+                                                        actions: [
+                                                          TextButton(
+                                                            child: Text(
+                                                              "Cancel",
+                                                              style: TextStyle(
+                                                                color:
+                                                                    Colors
+                                                                        .grey[700],
+                                                              ),
                                                             ),
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                context,
+                                                              ).pop(); // Close dialog
+                                                            },
                                                           ),
-                                                          onPressed: () {
-                                                            Navigator.of(
-                                                              context,
-                                                            ).pop(); // Close dialog
-                                                          },
-                                                        ),
-                                                        ElevatedButton(
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor:
-                                                                Colors
-                                                                    .redAccent,
-                                                            shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    8,
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor:
+                                                                  Colors
+                                                                      .redAccent,
+                                                              shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      8,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            child: Text(
+                                                              "Yes, Leave",
+                                                              style: AppTexts
+                                                                  .title
+                                                                  .copyWith(
+                                                                    color:
+                                                                        Colors
+                                                                            .white,
                                                                   ),
                                                             ),
+                                                            onPressed: () {
+                                                              context
+                                                                  .pop(); // Close dialog
+                                                              context
+                                                                  .read<
+                                                                    QuestionCubit
+                                                                  >()
+                                                                  .markAsQuit();
+                                                              context
+                                                                  .read<
+                                                                    TimerBloc
+                                                                  >()
+                                                                  .add(
+                                                                    TimerStop(),
+                                                                  );
+                                                            },
                                                           ),
-                                                          child: Text(
-                                                            "Yes, Leave",
-                                                            style: AppTexts
-                                                                .title
-                                                                .copyWith(
-                                                                  color:
-                                                                      Colors
-                                                                          .white,
-                                                                ),
-                                                          ),
-                                                          onPressed: () {
-                                                            context
-                                                                .pop(); // Close dialog
-                                                            context
-                                                                .read<
-                                                                  QuestionCubit
-                                                                >()
-                                                                .markAsQuit();
-                                                            context
-                                                                .read<
-                                                                  TimerBloc
-                                                                >()
-                                                                .add(
-                                                                  TimerStop(),
-                                                                );
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                              );
-                                            },
+                                                        ],
+                                                      ),
+                                                );
+                                              },
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                  100.wGap,
-                                  Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        left: state.isReview ? 98.w : 8.w,
-                                      ),
-                                      child: ActionButton(
-                                        text:
-                                            state.isReview
-                                                ? "Back to Result"
-                                                : "Submit Test",
-                                        onTap: () {
-                                          if (!state.isReview) {
+                                    100.wGap,
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 8.w),
+                                        child: ActionButton(
+                                          text: "Submit Test",
+                                          onTap: () {
                                             var time = totalTime(context);
                                             _buildSubmitDialog(
                                               context,
@@ -335,16 +346,14 @@ class _TestScreenState extends State<TestScreen> {
                                               time,
                                               marks,
                                             );
-                                          } else {
-                                            context.pop();
-                                          }
-                                        },
+                                          },
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                             20.hGap,
                             TestModule(
                               title: "Question ${state.currentIndex + 1} ",
@@ -435,11 +444,18 @@ class _TestScreenState extends State<TestScreen> {
                                                 : AppColors.primary,
                                         text: "Previous",
                                         onTap: () {
-                                          state.currentIndex > 0
-                                              ? context
-                                                  .read<QuestionCubit>()
-                                                  .prevQuestion()
-                                              : null;
+                                          if (state.currentIndex > 0) {
+                                            context
+                                                .read<QuestionCubit>()
+                                                .prevQuestion();
+                                            scrollController.animateTo(
+                                              0.0,
+                                              duration: Duration(
+                                                milliseconds: 500,
+                                              ),
+                                              curve: Curves.easeOut,
+                                            );
+                                          }
                                         },
                                         fontColor: Colors.white,
                                       ),
@@ -457,12 +473,19 @@ class _TestScreenState extends State<TestScreen> {
                                                   ? Colors.grey
                                                   : AppColors.primary,
                                           onTap: () {
-                                            state.currentIndex <
-                                                    state.questions.length - 1
-                                                ? context
-                                                    .read<QuestionCubit>()
-                                                    .nextQuestion()
-                                                : null;
+                                            if (state.currentIndex <
+                                                state.questions.length - 1) {
+                                              context
+                                                  .read<QuestionCubit>()
+                                                  .nextQuestion();
+                                              scrollController.animateTo(
+                                                0.0,
+                                                duration: Duration(
+                                                  milliseconds: 500,
+                                                ),
+                                                curve: Curves.easeOut,
+                                              );
+                                            }
                                           },
                                         ),
                                       ),
@@ -554,56 +577,49 @@ class _TestScreenState extends State<TestScreen> {
                             TestModule(
                               title: "Question Navigator",
                               cards: [
-                                SizedBox(
-                                  height: 30.h,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: state.questions.length,
-                                    itemBuilder:
-                                        (context, index) => Padding(
-                                          padding: EdgeInsets.only(right: 5.w),
-                                          child: QuestionNavigatorButton(
-                                            text: "${index + 1}",
-                                            backgroundColor:
-                                                state.currentIndex == index
-                                                    ? Colors.grey
-                                                    : state
-                                                        .answeredStatus[index]
-                                                    ? state.isReview
-                                                        ? state.isCorrect![index] ==
-                                                                false
-                                                            ? Colors.red
-                                                            : Colors.green
-                                                        : Colors.black
-                                                    : Colors.white,
-                                            fontColor:
-                                                state.currentIndex == index
-                                                    ? Colors.black
-                                                    : state
-                                                        .answeredStatus[index]
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                            borderColor:
-                                                state.currentIndex == index
-                                                    ? Colors.grey
-                                                    : state
-                                                        .answeredStatus[index]
-                                                    ? state.isReview
-                                                        ? state.isCorrect![index] ==
-                                                                false
-                                                            ? Colors.red
-                                                            : Colors.green
-                                                        : Colors.black
-                                                    : Colors.black,
-                                            onTap:
-                                                () => context
-                                                    .read<QuestionCubit>()
-                                                    .jumpToQuestion(index),
-                                          ),
-                                        ),
-                                  ),
+                                Wrap(
+                                  children: List.generate(state.questions.length, (
+                                    index,
+                                  ) {
+                                    return Padding(
+                                      padding: EdgeInsets.only(right: 5.w),
+                                      child: QuestionNavigatorButton(
+                                        text: "${index + 1}",
+                                        backgroundColor:
+                                            state.currentIndex == index
+                                                ? Colors.grey
+                                                : state.answeredStatus[index]
+                                                ? state.isReview
+                                                    ? state.isCorrect![index] ==
+                                                            false
+                                                        ? Colors.red
+                                                        : Colors.green
+                                                    : Colors.black
+                                                : Colors.white,
+                                        fontColor:
+                                            state.currentIndex == index
+                                                ? Colors.black
+                                                : state.answeredStatus[index]
+                                                ? Colors.white
+                                                : Colors.black,
+                                        borderColor:
+                                            state.currentIndex == index
+                                                ? Colors.grey
+                                                : state.answeredStatus[index]
+                                                ? state.isReview
+                                                    ? state.isCorrect![index] ==
+                                                            false
+                                                        ? Colors.red
+                                                        : Colors.green
+                                                    : Colors.black
+                                                : Colors.black,
+                                        onTap:
+                                            () => context
+                                                .read<QuestionCubit>()
+                                                .jumpToQuestion(index),
+                                      ),
+                                    );
+                                  }),
                                 ),
                                 10.hGap,
                                 QuestionIndicator(
