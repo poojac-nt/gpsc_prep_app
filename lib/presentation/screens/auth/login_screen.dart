@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            context.pushReplacement(AppRoutes.studentDashboard);
+            context.pushReplacement(AppRoutes.splashScreen);
           }
         },
         builder: (context, state) {

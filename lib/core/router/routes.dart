@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_s
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
@@ -19,6 +20,10 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 
 final List<GoRoute> appRoutes = [
+  GoRoute(
+    path: AppRoutes.splashScreen,
+    pageBuilder: (context, state) => _slideTransition(SplashScreen(), state),
+  ),
   GoRoute(
     path: AppRoutes.registrationScreen,
     pageBuilder:

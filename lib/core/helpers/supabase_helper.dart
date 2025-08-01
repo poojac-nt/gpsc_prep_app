@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
@@ -9,6 +11,9 @@ import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'log_helper.dart';
@@ -334,6 +339,73 @@ class SupabaseHelper {
       }
     } catch (e) {
       _log.e('Exception in updateOrInsertFcmToken: $e');
+    }
+  }
+
+  Future<AppVersionStatus> appVersionCheck() async {
+    try {
+      // Get current app version string (e.g., "1.0.0")
+      final info = await PackageInfo.fromPlatform();
+      final currentVersionStr = info.version;
+      final currentVersion = Version.parse(currentVersionStr);
+      _log.i('Current app version: $currentVersion');
+
+      // Determine platform-specific key
+      final platformKey =
+          Platform.isAndroid
+              ? 'min_android_version'
+              : Platform.isIOS
+              ? 'min_ios_version'
+              : null;
+
+      if (platformKey == null) {
+        _log.e('Unsupported platform for version check.');
+        _snackBar.showError('Unsupported platform for version check.');
+        return AppVersionStatus.upToDate;
+      }
+
+      // Fetch version requirement from Supabase
+      final response =
+          await supabase
+              .from(SupabaseKeys.config)
+              .select()
+              .eq("key", platformKey)
+              .single();
+
+      _log.i('Config response: $response');
+      if (response.isEmpty) {
+        _snackBar.showError('🚫 No config entry found for "$platformKey"');
+        _log.e('🚫 No config entry found for "$platformKey"');
+        return AppVersionStatus.upToDate; // Fail open
+      }
+
+      final value = response["value"] as String?;
+      if (value == null || value.isEmpty) {
+        _snackBar.showError(
+          '⚠️ Empty or missing version string for "$platformKey"',
+        );
+        _log.e('⚠️ Empty or missing version string for "$platformKey"');
+        return AppVersionStatus.upToDate;
+      }
+
+      Version requiredVersion;
+      try {
+        requiredVersion = Version.parse(value);
+      } catch (e) {
+        _snackBar.showError('⚠️ Invalid version format in config: "$value"');
+        _log.e('⚠️ Invalid version format in config: "$value"');
+        return AppVersionStatus.upToDate;
+      }
+
+      // Compare versions
+      if (currentVersion < requiredVersion) {
+        return AppVersionStatus.needsUpdate;
+      }
+
+      return AppVersionStatus.upToDate;
+    } catch (e) {
+      _log.e('❌ Error in appVersionCheck: $e');
+      return AppVersionStatus.needsUpdate;
     }
   }
 }

@@ -14,6 +14,7 @@ abstract class SupabaseKeys {
   static final String testsTable = 'tests';
   static final String testQuestionTable = 'test_questions';
   static final String testResultsTable = 'test_results';
+  static final String config = 'config';
 
   ///columns
   static final String email = 'user_email';

@@ -31,3 +31,5 @@ enum UserRole {
     }
   }
 }
+
+enum AppVersionStatus { upToDate, needsUpdate }

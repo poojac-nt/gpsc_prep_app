@@ -71,7 +71,7 @@ abstract class AppTexts {
 }
 
 abstract class AppRoutes {
-  static const String splash = '/splash';
+  static const String splashScreen = '/splashScreen';
   static const String registrationScreen = '/registrationScreen';
   static const String studentDashboard = '/studentDashboard';
   static const String mentorDashboard = '/mentorDashboard';
