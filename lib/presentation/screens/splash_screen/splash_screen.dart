@@ -34,7 +34,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void _startInitializationIfOnline() {
     if (_initializationStarted) return;
 
-    final state = context.read<ConnectivityBloc>().state;
+    final state = context
+        .read<ConnectivityBloc>()
+        .state;
     if (state is ConnectivityOnline) {
       _initializationStarted = true;
       _initializeApp();
@@ -111,7 +113,8 @@ class _SplashScreenState extends State<SplashScreen> {
       context: context,
       barrierDismissible: false,
       builder:
-          (_) => AlertDialog(
+          (_) =>
+          AlertDialog(
             title: const Text('Update Required'),
             content: const Text(
               'Your app version is outdated. Please update to continue using the app.',
@@ -127,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _launchAppStore() async {
-    const url = "";
+    const url = "https://play.google.com/store/apps/details?id=app.starics";
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
