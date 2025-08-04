@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,7 +10,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 class PdfExportService {
   Future<String> exportQuestionsToPdf(
-    List<QuestionLanguageData> questions,
+    List<QuestionModel> questions,
     String testName,
   ) async {
     final telegramLogo = pw.MemoryImage(
@@ -26,14 +26,14 @@ class PdfExportService {
     final xLogo = pw.MemoryImage(
       (await rootBundle.load('assets/images/x_logo.png')).buffer.asUint8List(),
     );
-
-    var base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
-    final ByteData bytes = await rootBundle.load(
-      'assets/images/logo_without_bg.png',
-    );
-    final Uint8List imageData = bytes.buffer.asUint8List();
+    final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
     final baseFont = pw.Font.ttf(base);
-    final image = pw.MemoryImage(imageData);
+    final logoImage = pw.MemoryImage(
+      (await rootBundle.load(
+        'assets/images/logo_without_bg.png',
+      )).buffer.asUint8List(),
+    );
+
     final pdf = pw.Document(
       pageMode: PdfPageMode.fullscreen,
       theme: pw.ThemeData.withFont(
@@ -116,28 +116,25 @@ class PdfExportService {
                 ],
               ),
             ),
-
         build:
             (context) => [
               pw.Container(
                 padding: const pw.EdgeInsets.all(16),
-                // Inner padding inside the border
                 decoration: pw.BoxDecoration(
-                  border: pw.Border.all(
-                    color: PdfColors.black,
-                    width: 1.5, // You can adjust thickness
-                  ),
+                  border: pw.Border.all(color: PdfColors.black, width: 1.5),
                 ),
                 child: pw.Column(
                   children: [
                     pw.Align(
                       alignment: pw.Alignment.center,
-                      child: pw.Image(image),
+                      child: pw.Image(logoImage),
                     ),
                     pw.SizedBox(height: 20),
                     ...questions.asMap().entries.map((entry) {
                       final index = entry.key + 1;
                       final q = entry.value;
+                      final qLang = q.questionEn;
+
                       return pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
@@ -149,12 +146,12 @@ class PdfExportService {
                             ),
                           ),
                           pw.SizedBox(height: 5),
-                          ..._parseMarkdownToPdfWidgets(q.questionTxt),
+                          ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
                           pw.SizedBox(height: 5),
-                          pw.Bullet(text: q.optA),
-                          pw.Bullet(text: q.optB),
-                          pw.Bullet(text: q.optC),
-                          pw.Bullet(text: q.optD),
+                          pw.Bullet(text: qLang.optA),
+                          pw.Bullet(text: qLang.optB),
+                          pw.Bullet(text: qLang.optC),
+                          pw.Bullet(text: qLang.optD),
                           pw.SizedBox(height: 5),
                           pw.Container(
                             padding: pw.EdgeInsets.all(10),
@@ -165,21 +162,19 @@ class PdfExportService {
                                 width: 1,
                               ),
                             ),
-
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
                                 pw.RichText(
                                   text: pw.TextSpan(
-                                    text: "Answer:",
+                                    text: "Answer: ",
                                     style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold,
                                     ),
                                     children: [
                                       pw.TextSpan(
-                                        text: q.correctAnswer,
+                                        text: qLang.correctAnswer,
                                         style: pw.TextStyle(
-                                          color: PdfColors.green,
                                           fontWeight: pw.FontWeight.bold,
                                         ),
                                       ),
@@ -188,18 +183,25 @@ class PdfExportService {
                                 ),
                                 pw.RichText(
                                   text: pw.TextSpan(
-                                    text: "Difficulty Level:",
+                                    text: "Difficulty Level: ",
                                     style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold,
                                     ),
                                     children: [
                                       pw.TextSpan(
-                                        text: q.correctAnswer,
-                                        style: pw.TextStyle(
-                                          color: PdfColors.green,
-                                          fontWeight: pw.FontWeight.bold,
-                                        ),
+                                        text: q.difficultyLevel.level,
                                       ),
+                                    ],
+                                  ),
+                                ),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    text: "Subject: ",
+                                    style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                    children: [
+                                      pw.TextSpan(text: q.subjectName),
                                     ],
                                   ),
                                 ),
@@ -210,11 +212,12 @@ class PdfExportService {
                                     fontWeight: pw.FontWeight.bold,
                                   ),
                                 ),
-                                ..._parseMarkdownToPdfWidgets(q.explanation),
+                                ..._parseMarkdownToPdfWidgets(
+                                  qLang.explanation,
+                                ),
                               ],
                             ),
                           ),
-
                           pw.Divider(),
                         ],
                       );

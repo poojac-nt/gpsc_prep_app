@@ -12,7 +12,7 @@ class LoadQuestionsEvent extends QuestionPreviewEvent {
 
 class ExportQuestionsToPdfEvent extends QuestionPreviewEvent {
   final String testName;
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
 
   ExportQuestionsToPdfEvent(this.questions, this.testName);
 }
