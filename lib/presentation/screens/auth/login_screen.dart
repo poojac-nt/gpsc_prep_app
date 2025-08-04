@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool isObscure = true;
 
   @override
   void initState() {
@@ -141,6 +142,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: password,
                                 validator: Validator.validatePassword,
                                 isLoading: isLoading,
+                                isPassword: isObscure,
+                                maxLine: 1,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    isObscure
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: AppColors.accentColor,
+                                    size: 20.sp,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      isObscure = !isObscure;
+                                    });
+                                  },
+                                ),
                               );
                             },
                           ),

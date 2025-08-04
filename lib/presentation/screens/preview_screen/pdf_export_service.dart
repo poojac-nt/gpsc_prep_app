@@ -13,6 +13,20 @@ class PdfExportService {
     List<QuestionLanguageData> questions,
     String testName,
   ) async {
+    final telegramLogo = pw.MemoryImage(
+      (await rootBundle.load(
+        'assets/images/telegram_logo.png',
+      )).buffer.asUint8List(),
+    );
+    final gmailLogo = pw.MemoryImage(
+      (await rootBundle.load(
+        'assets/images/gmail_logo.png',
+      )).buffer.asUint8List(),
+    );
+    final xLogo = pw.MemoryImage(
+      (await rootBundle.load('assets/images/x_logo.png')).buffer.asUint8List(),
+    );
+
     var base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
     final ByteData bytes = await rootBundle.load(
       'assets/images/logo_without_bg.png',
@@ -32,57 +46,182 @@ class PdfExportService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
+        footer:
+            (context) => pw.Container(
+              alignment: pw.Alignment.center,
+              margin: const pw.EdgeInsets.only(top: 10),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                children: [
+                  pw.Text(
+                    'Click here to Join us:',
+                    style: pw.TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.Row(
+                    children: [
+                      pw.Image(telegramLogo, width: 10, height: 10),
+                      pw.SizedBox(width: 4),
+                      pw.UrlLink(
+                        destination: 'https://t.me/starics_prep',
+                        child: pw.Text(
+                          '@starics_prep',
+                          style: pw.TextStyle(
+                            color: PdfColors.blue,
+                            decoration: pw.TextDecoration.underline,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                  pw.Row(
+                    children: [
+                      pw.Image(gmailLogo, width: 10, height: 10),
+                      pw.SizedBox(width: 4),
+                      pw.UrlLink(
+                        destination: 'mailto:star.ics89@gmail.com',
+                        child: pw.Text(
+                          'star.ics89@gmail.com',
+                          style: pw.TextStyle(
+                            color: PdfColors.blue,
+                            decoration: pw.TextDecoration.underline,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                  pw.Row(
+                    children: [
+                      pw.Image(xLogo, width: 10, height: 10),
+                      pw.SizedBox(width: 4),
+                      pw.UrlLink(
+                        destination: 'https://x.com/star_ics89',
+                        child: pw.Text(
+                          '@star_ics89',
+                          style: pw.TextStyle(
+                            color: PdfColors.blue,
+                            decoration: pw.TextDecoration.underline,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
         build:
             (context) => [
-              pw.Align(alignment: pw.Alignment.center, child: pw.Image(image)),
-              pw.SizedBox(height: 20),
-              ...questions.asMap().entries.map((entry) {
-                final index = entry.key + 1;
-                final q = entry.value;
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+              pw.Container(
+                padding: const pw.EdgeInsets.all(16),
+                // Inner padding inside the border
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(
+                    color: PdfColors.black,
+                    width: 1.5, // You can adjust thickness
+                  ),
+                ),
+                child: pw.Column(
                   children: [
-                    pw.Text(
-                      "Question $index:",
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
+                    pw.Align(
+                      alignment: pw.Alignment.center,
+                      child: pw.Image(image),
                     ),
-                    pw.SizedBox(height: 5),
-                    ..._parseMarkdownToPdfWidgets(q.questionTxt),
-                    pw.SizedBox(height: 5),
-                    pw.Bullet(text: "${q.optA}"),
-                    pw.Bullet(text: "${q.optB}"),
-                    pw.Bullet(text: "${q.optC}"),
-                    pw.Bullet(text: "${q.optD}"),
-                    pw.SizedBox(height: 5),
-                    pw.RichText(
-                      text: pw.TextSpan(
-                        text: "Answer:",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    pw.SizedBox(height: 20),
+                    ...questions.asMap().entries.map((entry) {
+                      final index = entry.key + 1;
+                      final q = entry.value;
+                      return pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.TextSpan(
-                            text: q.correctAnswer,
+                          pw.Text(
+                            "Question $index:",
                             style: pw.TextStyle(
-                              color: PdfColors.green,
+                              fontSize: 14,
                               fontWeight: pw.FontWeight.bold,
                             ),
                           ),
+                          pw.SizedBox(height: 5),
+                          ..._parseMarkdownToPdfWidgets(q.questionTxt),
+                          pw.SizedBox(height: 5),
+                          pw.Bullet(text: q.optA),
+                          pw.Bullet(text: q.optB),
+                          pw.Bullet(text: q.optC),
+                          pw.Bullet(text: q.optD),
+                          pw.SizedBox(height: 5),
+                          pw.Container(
+                            padding: pw.EdgeInsets.all(10),
+                            decoration: pw.BoxDecoration(
+                              color: PdfColor.fromHex('#e1d2c8'),
+                              border: pw.Border.all(
+                                color: PdfColors.black,
+                                width: 1,
+                              ),
+                            ),
+
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    text: "Answer:",
+                                    style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                    children: [
+                                      pw.TextSpan(
+                                        text: q.correctAnswer,
+                                        style: pw.TextStyle(
+                                          color: PdfColors.green,
+                                          fontWeight: pw.FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    text: "Difficulty Level:",
+                                    style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                    children: [
+                                      pw.TextSpan(
+                                        text: q.correctAnswer,
+                                        style: pw.TextStyle(
+                                          color: PdfColors.green,
+                                          fontWeight: pw.FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(height: 4),
+                                pw.Text(
+                                  "Explanation:",
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
+                                ),
+                                ..._parseMarkdownToPdfWidgets(q.explanation),
+                              ],
+                            ),
+                          ),
+
+                          pw.Divider(),
                         ],
-                      ),
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      "Explanation:",
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
-                    ..._parseMarkdownToPdfWidgets(q.explanation),
-                    pw.Divider(),
-                    pw.SizedBox(height: 10),
+                      );
+                    }),
                   ],
-                );
-              }),
+                ),
+              ),
             ],
       ),
     );
