@@ -464,11 +464,20 @@ class _TestScreenState extends State<TestScreen> {
                                       child: Padding(
                                         padding: EdgeInsets.only(left: 65.w),
                                         child: ActionButton(
-                                          text: "Next",
-                                          backgroundColor:
-                                              state.currentIndex ==
+                                          text:
+                                              state.currentIndex <
                                                       state.questions.length - 1
-                                                  ? Colors.grey
+                                                  ? "Next"
+                                                  : "Finish",
+                                          backgroundColor:
+                                              state.isReview
+                                                  ? state.currentIndex <
+                                                          state
+                                                                  .questions
+                                                                  .length -
+                                                              1
+                                                      ? AppColors.primary
+                                                      : Colors.grey
                                                   : AppColors.primary,
                                           onTap: () {
                                             if (state.currentIndex <
@@ -483,6 +492,18 @@ class _TestScreenState extends State<TestScreen> {
                                                 ),
                                                 curve: Curves.easeOut,
                                               );
+                                            } else {
+                                              if (!state.isReview) {
+                                                var time = totalTime(context);
+                                                _buildSubmitDialog(
+                                                  context,
+                                                  state,
+                                                  time,
+                                                  marks,
+                                                );
+                                              } else {
+                                                null;
+                                              }
                                             }
                                           },
                                         ),

@@ -56,14 +56,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Available Tests', style: AppTexts.heading),
-                      IntrinsicWidth(
-                        child: ActionButton(
-                          text: 'Generate Test',
-                          onTap: () {
-                            // Handle Generate Test
-                          },
-                        ),
-                      ),
                     ],
                   ),
                   10.hGap,
@@ -251,12 +243,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Available Tests', style: AppTexts.heading),
-                  IntrinsicWidth(
-                    child: ActionButton(text: 'Generate Test', onTap: () {}),
-                  ),
-                ],
+                children: [Text('Available Tests', style: AppTexts.heading)],
               ),
               10.hGap,
 
