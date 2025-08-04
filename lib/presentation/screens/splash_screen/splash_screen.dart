@@ -103,6 +103,9 @@ class _SplashScreenState extends State<SplashScreen> {
       case UserRole.mentor:
         context.go(AppRoutes.mentorDashboard);
         break;
+      case UserRole.admin:
+        context.go(AppRoutes.studentDashboard);
+        break;
       default:
         context.go(AppRoutes.login);
     }
