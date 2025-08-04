@@ -56,14 +56,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Available Tests', style: AppTexts.heading),
-                      IntrinsicWidth(
-                        child: ActionButton(
-                          text: 'Generate Test',
-                          onTap: () {
-                            // Handle Generate Test
-                          },
-                        ),
-                      ),
                     ],
                   ),
                   10.hGap,
@@ -100,7 +92,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                           }
                         }
                       }
-
                       return Column(
                         children: [
                           TestModule(
@@ -118,8 +109,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       AppRoutes.resultScreen,
                                       extra: ResultScreenArgs(
                                         isFromTest: false,
-                                        testId: test.id,
-                                        testName: test.name,
+                                        dailyTestModel: test,
                                       ),
                                     );
                                   } else {
@@ -253,12 +243,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Available Tests', style: AppTexts.heading),
-                  IntrinsicWidth(
-                    child: ActionButton(text: 'Generate Test', onTap: () {}),
-                  ),
-                ],
+                children: [Text('Available Tests', style: AppTexts.heading)],
               ),
               10.hGap,
 

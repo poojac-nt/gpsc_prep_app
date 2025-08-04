@@ -16,6 +16,7 @@ import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.da
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/bloc/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
@@ -67,6 +68,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<TestCubit>()),
           BlocProvider(create: (_) => getIt<ConnectivityBloc>()),
           BlocProvider(create: (_) => getIt<QuestionPreviewBloc>()),
+          BlocProvider(create: (_) => getIt<DailyDescTestBloc>()),
         ],
         child: const MyApp(),
       ),

@@ -12,17 +12,17 @@ class TestRepository {
   TestRepository(this._supabase);
 
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyTest() async =>
-      await _supabase.fetchDailyTests();
+      await _supabase.fetchDailyMcqTests();
 
   Future<Either<Failure, List<QuestionModel>>> fetchTestQuestions(
     int testID,
-  ) async => await _supabase.fetchTestQuestions(testID);
+  ) async => await _supabase.fetchMCQTestQuestions(testID);
 
   Future<Either<Failure, List<TestResultModel>>> insertTestResult(
     TestResultModel testResult,
-  ) async => await _supabase.insertDailyTestsResults(testResult);
+  ) async => await _supabase.insertDailyMcqTestsResults(testResult);
 
   Future<Either<Failure, TestResultModel?>> singleTestResult(
     int testId,
-  ) async => await _supabase.fetchResultForSingleTest(testId: testId);
+  ) async => await _supabase.fetchResultForSingleMcqTest(testId: testId);
 }

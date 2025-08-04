@@ -25,7 +25,7 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
+import '../../../domain/entities/daily_test_model.dart';
 import '../../blocs/timer/timer_bloc.dart';
 import 'cubit/test/test_cubit_state.dart';
 
@@ -33,17 +33,13 @@ class TestScreen extends StatefulWidget {
   const TestScreen({
     super.key,
     this.isFromResult = false,
-    required this.testId,
-    required this.testName,
-    required this.testDuration,
     required this.language,
+    required this.dailyTestModel,
   });
 
   final bool isFromResult;
   final String? language;
-  final int? testId;
-  final String testName;
-  final int? testDuration;
+  final DailyTestModel dailyTestModel;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -61,7 +57,7 @@ class _TestScreenState extends State<TestScreen> {
       bloc.add(TimerStop());
     } else {
       context.read<QuestionBloc>().add(
-        LoadQuestion(widget.testId!, widget.language),
+        LoadQuestion(widget.dailyTestModel.id, widget.language),
       );
     }
     super.initState();
@@ -105,7 +101,10 @@ class _TestScreenState extends State<TestScreen> {
             automaticallyImplyLeading: false,
             title: Padding(
               padding: EdgeInsets.only(left: 20.w),
-              child: Text(widget.testName, style: AppTexts.titleTextStyle),
+              child: Text(
+                widget.dailyTestModel.name,
+                style: AppTexts.titleTextStyle,
+              ),
             ),
             actions: [
               widget.isFromResult
@@ -164,7 +163,7 @@ class _TestScreenState extends State<TestScreen> {
             listener: (context, state) {
               context.read<TestBloc>().add(
                 SubmitTest(
-                  widget.testId!,
+                  widget.dailyTestModel.id,
                   state.questions,
                   state.selectedOption,
                   state.answeredStatus,
@@ -190,8 +189,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    testName: widget.testName,
-                    testId: widget.testId,
+                    dailyTestModel: widget.dailyTestModel,
                   ),
                 );
               }
@@ -208,7 +206,7 @@ class _TestScreenState extends State<TestScreen> {
                       ..reset()
                       ..initialize(state.questions);
                     context.read<TimerBloc>().add(
-                      TimerStart(testDuration: widget.testDuration),
+                      TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
                   }
                 }
@@ -466,11 +464,20 @@ class _TestScreenState extends State<TestScreen> {
                                       child: Padding(
                                         padding: EdgeInsets.only(left: 65.w),
                                         child: ActionButton(
-                                          text: "Next",
-                                          backgroundColor:
-                                              state.currentIndex ==
+                                          text:
+                                              state.currentIndex <
                                                       state.questions.length - 1
-                                                  ? Colors.grey
+                                                  ? "Next"
+                                                  : "Finish",
+                                          backgroundColor:
+                                              state.isReview
+                                                  ? state.currentIndex <
+                                                          state
+                                                                  .questions
+                                                                  .length -
+                                                              1
+                                                      ? AppColors.primary
+                                                      : Colors.grey
                                                   : AppColors.primary,
                                           onTap: () {
                                             if (state.currentIndex <
@@ -485,6 +492,18 @@ class _TestScreenState extends State<TestScreen> {
                                                 ),
                                                 curve: Curves.easeOut,
                                               );
+                                            } else {
+                                              if (!state.isReview) {
+                                                var time = totalTime(context);
+                                                _buildSubmitDialog(
+                                                  context,
+                                                  state,
+                                                  time,
+                                                  marks,
+                                                );
+                                              } else {
+                                                null;
+                                              }
                                             }
                                           },
                                         ),
@@ -613,10 +632,18 @@ class _TestScreenState extends State<TestScreen> {
                                                         : Colors.green
                                                     : Colors.black
                                                 : Colors.black,
-                                        onTap:
-                                            () => context
-                                                .read<QuestionCubit>()
-                                                .jumpToQuestion(index),
+                                        onTap: () {
+                                          scrollController.animateTo(
+                                            0.0,
+                                            duration: Duration(
+                                              milliseconds: 500,
+                                            ),
+                                            curve: Curves.easeOut,
+                                          );
+                                          context
+                                              .read<QuestionCubit>()
+                                              .jumpToQuestion(index);
+                                        },
                                       ),
                                     );
                                   }),
@@ -782,8 +809,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    testId: widget.testId,
-                    testName: widget.testName,
+                    dailyTestModel: widget.dailyTestModel,
                   ),
                 );
               },
