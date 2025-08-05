@@ -28,3 +28,11 @@ class TestInstructionScreenArgs {
     required this.availableLanguages,
   });
 }
+
+class ReviewQuestionScreenArgs {
+  final bool isTestUpload;
+
+  List<Map<String, dynamic>> payload;
+
+  ReviewQuestionScreenArgs({required this.isTestUpload, required this.payload});
+}

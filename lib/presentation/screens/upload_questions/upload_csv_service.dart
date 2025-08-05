@@ -25,7 +25,7 @@ class UploadResult {
   });
 }
 
-Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
+Future<List<Map<String, dynamic>>?> parseUploadFile({
   required bool isTestUpload,
 }) async {
   try {
@@ -172,14 +172,8 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
         (field) => field == null || field.toString().trim().isEmpty,
       );
 
-      if (isEmptyRow && hasStartedProcessing) {
-        _log.i('🛑 Stopping at first empty row at index $rowIndex.');
-        break; // Stop reading further
-      }
-
-      if (isEmptyRow && !hasStartedProcessing) {
-        continue; // Skip leading empty rows
-      }
+      if (isEmptyRow && hasStartedProcessing) break;
+      if (isEmptyRow && !hasStartedProcessing) continue;
 
       hasStartedProcessing = true;
 
@@ -219,7 +213,6 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
         return null;
       }
 
-      // 💥 Prevent duplicate language entry per sr_no
       if (grouped[srNo]?['languages']?[lang] != null) {
         _snackBar.showError(
           'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
@@ -265,8 +258,19 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
       return null;
     }
 
-    final payload = grouped.values.toList();
+    return grouped.values.toList();
+  } catch (e, stack) {
+    _log.e('❌ Parsing failed: $e\n$stack');
+    _snackBar.showError('Parsing failed: ${e.toString()}');
+    return null;
+  }
+}
 
+Future<UploadResult?> submitParsedDataToSupabase({
+  required List<Map<String, dynamic>> payload,
+  required bool isTestUpload,
+}) async {
+  try {
     final rpcFunctionName =
         isTestUpload
             ? SupabaseKeys.insertMcqWithTest
@@ -287,11 +291,11 @@ Future<UploadResult?> uploadCsvOrXlsxToSupabaseMobile({
     );
   } catch (e, stack) {
     _log.e('❌ Upload failed: $e\n$stack');
-    if (e.toString().toLowerCase().contains('daily test') == true) {
+    if (e.toString().toLowerCase().contains('daily test')) {
       _snackBar.showError('A daily test has already been uploaded today.');
     } else {
       _snackBar.showError('Upload failed: ${e.toString()}');
     }
+    return null;
   }
-  return null;
 }
