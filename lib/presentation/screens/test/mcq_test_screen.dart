@@ -86,7 +86,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                 DateTime.now()
                                     .difference(submittedAt)
                                     .inHours >=
-                                24;
+                                12;
                           } catch (e) {
                             // Optional: log or ignore parse errors
                           }
