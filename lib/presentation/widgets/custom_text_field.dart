@@ -7,8 +7,10 @@ class CustomTextField extends StatelessWidget {
     super.key,
     this.hintText,
     this.prefixIcon,
+    this.suffixIcon,
     this.controller,
     this.isLoading = false,
+    this.isPassword = false,
     this.maxLine = 1,
     this.keyboardType = TextInputType.text,
     this.validator,
@@ -16,9 +18,11 @@ class CustomTextField extends StatelessWidget {
 
   final String? hintText;
   final IconData? prefixIcon;
+  final Widget? suffixIcon;
   final TextEditingController? controller;
   final int maxLine;
   final bool isLoading;
+  final bool isPassword;
   final TextInputType? keyboardType;
   final FormFieldValidator<String>? validator;
 
@@ -29,6 +33,7 @@ class CustomTextField extends StatelessWidget {
         validator: validator,
         controller: controller,
         maxLines: maxLine,
+        obscureText: isPassword ? true : false,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey),
@@ -36,6 +41,7 @@ class CustomTextField extends StatelessWidget {
           enabled: !isLoading,
           labelStyle: TextStyle(color: Colors.black),
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+          suffixIcon: suffixIcon,
           prefixIconColor: Colors.grey.shade700,
           errorBorder: OutlineInputBorder(
             borderRadius: AppBorders.borderRadius,

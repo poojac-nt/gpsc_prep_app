@@ -25,7 +25,7 @@ class DescriptiveTestScreen extends StatefulWidget {
 }
 
 class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(

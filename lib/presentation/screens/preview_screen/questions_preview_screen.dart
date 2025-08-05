@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:markdown_widget/markdown_widget.dart';
@@ -27,7 +28,7 @@ class QuestionPreviewScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          List<QuestionLanguageData> localizedQuestions = [];
+          List<QuestionModel> localizedQuestions = [];
           if (state is QuestionPreviewLoaded) {
             localizedQuestions = state.questions;
           } else if (state is QuestionExported) {
@@ -46,14 +47,14 @@ class QuestionPreviewScreen extends StatelessWidget {
             itemCount: localizedQuestions.length,
             itemBuilder: (context, index) {
               final q = localizedQuestions[index];
-              return _buildQuestionCard(q, index);
+              return _buildQuestionCard(q.questionEn, index);
             },
           );
         },
       ),
       floatingActionButton: Builder(
         builder: (context) {
-          List<QuestionLanguageData> currentQuestions = [];
+          List<QuestionModel> currentQuestions = [];
           final state = context.watch<QuestionPreviewBloc>().state;
           if (state is QuestionPreviewLoaded) {
             currentQuestions = state.questions;
@@ -99,10 +100,10 @@ class QuestionPreviewScreen extends StatelessWidget {
               const SizedBox(height: 8),
               MarkdownWidget(data: q.questionTxt, shrinkWrap: true),
               const SizedBox(height: 8),
-              Text('${q.optA}'),
-              Text('${q.optB}'),
-              Text('${q.optC}'),
-              Text('${q.optD}'),
+              Text(q.optA),
+              Text(q.optB),
+              Text(q.optC),
+              Text(q.optD),
               const SizedBox(height: 8),
               Text(
                 'Answer: ${q.correctAnswer} ${_getAnswerText(q)}',

@@ -54,7 +54,7 @@ class QuestionPreviewBloc
           );
         }).toList();
 
-    emit(QuestionPreviewLoaded(questions));
+    emit(QuestionPreviewLoaded(event.questions));
   }
 
   Future<void> _onExportQuestionsToPdf(

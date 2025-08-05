@@ -7,7 +7,7 @@ final class QuestionPreviewInitial extends QuestionPreviewState {}
 
 class QuestionPreviewLoaded extends QuestionPreviewState {
   final String testName;
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
 
   QuestionPreviewLoaded(this.questions, {this.testName = "Test"});
 }
@@ -15,7 +15,7 @@ class QuestionPreviewLoaded extends QuestionPreviewState {
 class QuestionExporting extends QuestionPreviewState {}
 
 class QuestionExported extends QuestionPreviewState {
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
   final String filePath;
   final String testName;
 
