@@ -267,7 +267,7 @@ class _TestScreenState extends State<TestScreen> {
                                                         mainContent:
                                                             "Do you really want to leave the test in between?",
                                                         content:
-                                                            "Your answers so far will be saved, you won’t be able to resume this test later.",
+                                                            "Your answers so far won’t be saved, you won’t be able to resume this test later.",
                                                         actions: [
                                                           TextButton(
                                                             child: Text(
@@ -307,20 +307,10 @@ class _TestScreenState extends State<TestScreen> {
                                                                   ),
                                                             ),
                                                             onPressed: () {
-                                                              context
-                                                                  .pop(); // Close dialog
-                                                              context
-                                                                  .read<
-                                                                    QuestionCubit
-                                                                  >()
-                                                                  .markAsQuit();
-                                                              context
-                                                                  .read<
-                                                                    TimerBloc
-                                                                  >()
-                                                                  .add(
-                                                                    TimerStop(),
-                                                                  );
+                                                              context.go(
+                                                                AppRoutes
+                                                                    .studentDashboard,
+                                                              ); // Close dialog
                                                             },
                                                           ),
                                                         ],
