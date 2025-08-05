@@ -424,4 +424,29 @@ class SupabaseHelper {
       return Left(Failure("Error in Fetching test"));
     }
   }
+
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+  fetchAttemptedAllTests() async {
+    try {
+      final result = await supabase
+          .from('test_results')
+          .select('score, tests(total_marks)')
+          .eq('user_id', _cache.user!.id!);
+      final response =
+          result
+              .map(
+                (row) => {
+                  'score': row['score'],
+                  'total_marks': row['tests']['total_marks'],
+                },
+              )
+              .toList();
+      _log.i('Attempted Tests: $response');
+
+      return Right(response);
+    } catch (e) {
+      _log.e('Error in fetching attempted tests: $e');
+      return Left(Failure("Error in fetching attempted tests"));
+    }
+  }
 }

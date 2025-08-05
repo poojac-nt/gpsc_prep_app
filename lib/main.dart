@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
@@ -69,6 +70,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<ConnectivityBloc>()),
           BlocProvider(create: (_) => getIt<QuestionPreviewBloc>()),
           BlocProvider(create: (_) => getIt<DailyDescTestBloc>()),
+          BlocProvider(create: (_) => getIt<DashboardBloc>()),
         ],
         child: const MyApp(),
       ),

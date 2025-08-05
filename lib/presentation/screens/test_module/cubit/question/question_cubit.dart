@@ -86,10 +86,4 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
       ),
     );
   }
-
-  void markAsQuit() {
-    if (state is! QuestionCubitLoaded) return;
-    final currentState = state as QuestionCubitLoaded;
-    emit(currentState.copyWith(isQuitTest: true));
-  }
 }

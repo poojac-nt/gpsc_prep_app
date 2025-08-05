@@ -159,7 +159,7 @@ class PdfExportService {
                                   child: pw.Text(
                                     testName,
                                     style: pw.TextStyle(
-                                      fontSize: 16.sp,
+                                      fontSize: 16,
                                       fontWeight: pw.FontWeight.bold,
                                     ),
                                   ),
