@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:open_file/open_file.dart';
@@ -13,6 +14,11 @@ class PdfExportService {
     List<QuestionModel> questions,
     String testName,
   ) async {
+    final mcqPdfHeader = pw.MemoryImage(
+      (await rootBundle.load(
+        'assets/images/mcq_pdf_header.jpeg',
+      )).buffer.asUint8List(),
+    );
     final telegramLogo = pw.MemoryImage(
       (await rootBundle.load(
         'assets/images/telegram_logo.png',
@@ -124,10 +130,51 @@ class PdfExportService {
                   border: pw.Border.all(color: PdfColors.black, width: 1.5),
                 ),
                 child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  mainAxisSize: pw.MainAxisSize.min,
                   children: [
-                    pw.Align(
-                      alignment: pw.Alignment.center,
-                      child: pw.Image(logoImage),
+                    pw.Stack(
+                      fit: pw.StackFit.loose,
+                      children: [
+                        pw.Image(mcqPdfHeader, fit: pw.BoxFit.fitWidth),
+                        pw.Positioned(
+                          left: 40,
+                          top: 100,
+                          child: pw.Container(
+                            width: 250,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Divider(
+                                  indent: 0,
+                                  color: PdfColor.fromHex('#d8b7b2'),
+                                  thickness: 5,
+                                  height: 5,
+                                ),
+                                pw.Padding(
+                                  padding: pw.EdgeInsets.only(
+                                    top: 10,
+                                    bottom: 10,
+                                  ),
+                                  child: pw.Text(
+                                    testName,
+                                    style: pw.TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                pw.Divider(
+                                  indent: 0,
+                                  color: PdfColor.fromHex('#d8b7b2'),
+                                  thickness: 5,
+                                  height: 5,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     pw.SizedBox(height: 20),
                     ...questions.asMap().entries.map((entry) {
@@ -218,7 +265,6 @@ class PdfExportService {
                               ],
                             ),
                           ),
-                          pw.Divider(),
                         ],
                       );
                     }),

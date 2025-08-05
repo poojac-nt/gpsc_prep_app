@@ -41,7 +41,7 @@ class _ResultScreenState extends State<ResultScreen> {
   void initState() {
     super.initState();
 
-    if (!widget.isFromTestScreen && widget.dailyTestModel.id != null) {
+    if (!widget.isFromTestScreen) {
       context.read<TestBloc>().add(
         FetchSingleTestResultEvent(testId: widget.dailyTestModel.id),
       );

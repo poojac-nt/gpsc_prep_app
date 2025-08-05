@@ -29,7 +29,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController name = TextEditingController();
-  final TextEditingController address = TextEditingController();
+  final TextEditingController city = TextEditingController();
   final TextEditingController number = TextEditingController();
   List<String> items = ["GPSC", "UPSC", "GSSSB"];
   final _formKey = GlobalKey<FormState>();
@@ -45,7 +45,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     email.dispose();
     name.dispose();
     password.dispose();
-    address.dispose();
+    city.dispose();
     number.dispose();
     super.dispose();
   }
@@ -219,10 +219,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
 
                           _buildInputText(
-                            "Address",
-                            "Enter your address",
+                            "City",
+                            "Enter your City Name",
                             10.hGap,
-                            address,
+                            city,
                             validator: Validator.validateAddress,
                           ),
 
@@ -267,7 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                               number: int.parse(
                                                 number.text.trim(),
                                               ),
-                                              address: address.text.trim(),
+                                              address: city.text.trim(),
                                               profilePicture:
                                                   state is ImageUploaded
                                                       ? state.imageUrl
@@ -459,7 +459,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         "Address",
                         "Enter your address",
                         10.hGap,
-                        address,
+                        city,
                         validator: Validator.validateAddress,
                       ),
                       _buildInputText(
