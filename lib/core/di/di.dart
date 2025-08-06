@@ -6,7 +6,6 @@ import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
-import 'package:gpsc_prep_app/data/repositories/desc_test_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
@@ -64,10 +63,6 @@ void setupRepositories() {
   getIt.registerLazySingleton<TestRepository>(
     () => TestRepository(getIt<SupabaseHelper>()),
   );
-
-  getIt.registerLazySingleton(
-    () => DescTestRepository(getIt<SupabaseHelper>()),
-  );
 }
 
 void setupBlocs() {
@@ -98,7 +93,7 @@ void setupBlocs() {
   getIt.registerLazySingleton<TestCubit>(() => TestCubit());
   getIt.registerLazySingleton<QuestionCubit>(() => QuestionCubit());
   getIt.registerLazySingleton<DailyDescTestBloc>(
-    () => DailyDescTestBloc(getIt<DescTestRepository>()),
+    () => DailyDescTestBloc(getIt<TestRepository>()),
   );
   getIt.registerLazySingleton<DashboardBloc>(
     () => DashboardBloc(getIt<TestRepository>()),

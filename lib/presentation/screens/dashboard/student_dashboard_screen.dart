@@ -118,7 +118,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             ),
                             child: StatsWidget(
                               text: 'Test taken ',
-                              num: '24',
+                              num: state.totalTests.toString(),
                               icon: Icons.radar,
                               iconColor: Colors.green,
                             ),
@@ -133,7 +133,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             ),
                             child: StatsWidget(
                               text: 'Avg Score',
-                              num: '78%',
+                              num: "${state.avgScore.toStringAsFixed(2)} %",
                               icon: Icons.score_outlined,
                               iconColor: Colors.blue,
                             ),

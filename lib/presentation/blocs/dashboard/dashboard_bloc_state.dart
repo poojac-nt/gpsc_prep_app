@@ -10,7 +10,7 @@ class FetchingAttemptedTests extends DashboardBlocState {}
 class AttemptedTestsFetched extends DashboardBlocState {
   final int totalTests;
   final double avgScore;
-  AttemptedTestsFetched({this.totalTests = 0, this.avgScore = 0.0});
+  AttemptedTestsFetched({required this.totalTests, required this.avgScore});
 }
 
 class AttemptedTestsFetchedFailed extends DashboardBlocState {

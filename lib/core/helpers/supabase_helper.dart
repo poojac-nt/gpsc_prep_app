@@ -428,22 +428,24 @@ class SupabaseHelper {
   Future<Either<Failure, List<Map<String, dynamic>>>>
   fetchAttemptedAllTests() async {
     try {
-      final result = await supabase
+      final response = await supabase
           .from('test_results')
           .select('score, tests(total_marks)')
           .eq('user_id', _cache.user!.id!);
-      final response =
-          result
-              .map(
-                (row) => {
-                  'score': row['score'],
-                  'total_marks': row['tests']['total_marks'],
-                },
-              )
-              .toList();
-      _log.i('Attempted Tests: $response');
 
-      return Right(response);
+      final result =
+          response.map<Map<String, dynamic>>((row) {
+            final test = row['tests'];
+
+            if (test == null || test['total_marks'] == null) {
+              throw Exception('Missing test or total_marks data');
+            }
+            return {'score': row['score'], 'total_marks': test['total_marks']};
+          }).toList();
+
+      _log.i('Attempted Tests: $result');
+
+      return Right(result);
     } catch (e) {
       _log.e('Error in fetching attempted tests: $e');
       return Left(Failure("Error in fetching attempted tests"));

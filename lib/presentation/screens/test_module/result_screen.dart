@@ -21,6 +21,8 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../domain/entities/daily_test_model.dart';
+import '../../blocs/dashboard/dashboard_bloc.dart';
+import '../../blocs/dashboard/dashboard_bloc_event.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -89,6 +91,9 @@ class _ResultScreenState extends State<ResultScreen> {
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         context.read<ConnectivityBloc>().add(CheckConnectivity());
+        if (widget.isFromTestScreen) {
+          context.read<DashboardBloc>().add(FetchAttemptedTests());
+        }
         context.go(AppRoutes.studentDashboard);
       },
       child: Scaffold(
