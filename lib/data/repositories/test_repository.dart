@@ -29,6 +29,6 @@ class TestRepository {
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyDescTest() async =>
       await _supabase.fetchDescriptiveTests();
 
-  Future<Either<Failure, List<Map<String, dynamic>>>>
+  Future<Either<Failure, Map<String, dynamic>>>
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();
 }

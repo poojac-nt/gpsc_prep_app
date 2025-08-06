@@ -20,16 +20,12 @@ class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
           emit(AttemptedTestsFetchedFailed(failure));
         },
         (tests) {
-          final totalTest = tests.length;
-          final scoreList = tests.map((test) => test['score']).toList();
-          final totalMarkList =
-              tests.map((test) => test['total_marks']).toList();
+          ;
+          final int totalTest = tests['attempted_tests'];
+          final double avgScore = tests['average_score'];
 
-          final avgScore =
-              (scoreList.reduce((a, b) => a + b) /
-                  totalMarkList.reduce((a, b) => a + b)) *
-              100;
-
+          print(totalTest);
+          print(avgScore);
           emit(
             AttemptedTestsFetched(totalTests: totalTest, avgScore: avgScore),
           );
