@@ -1,4 +1,4 @@
-import '../../../../../domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 class TestCubitSubmitted {
   final int? totalQuestions;
@@ -7,7 +7,7 @@ class TestCubitSubmitted {
   final int? correctAnswers;
   final int? inCorrectAnswers;
   final bool isReview;
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
   final List<String?> selectedOption;
   final List<bool?> isAnswerCorrect;
   final double? score;
@@ -38,7 +38,7 @@ class TestCubitSubmitted {
     int? correctAnswers,
     int? inCorrectAnswers,
     bool? isReview,
-    List<QuestionLanguageData>? questions,
+    List<QuestionModel>? questions,
     List<String?>? selectedOption,
     List<bool?>? isAnswerCorrect,
     double? score,

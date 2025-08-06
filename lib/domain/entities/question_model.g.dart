@@ -8,6 +8,7 @@ part of 'question_model.dart';
 
 QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
     QuestionModel(
+      questionId: (json['id'] as num).toInt(),
       questionType: json['question_type'] as String,
       difficultyLevel: const DifficultyLevelConverter()
           .fromJson(json['difficulty_level'] as String),
@@ -30,6 +31,7 @@ QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
     <String, dynamic>{
+      'id': instance.questionId,
       'question_type': instance.questionType,
       'difficulty_level':
           const DifficultyLevelConverter().toJson(instance.difficultyLevel),

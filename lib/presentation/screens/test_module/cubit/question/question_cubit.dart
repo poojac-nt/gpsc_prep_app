@@ -1,17 +1,17 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
-
-import '../../../../../domain/entities/question_language_model.dart';
 
 class QuestionCubit extends Cubit<QuestionCubitState> {
   QuestionCubit() : super(QuestionCubitInitial());
   final bool _isQuitTest = false;
+
   void reset() {
     emit(QuestionCubitInitial());
   }
 
   /// Call this after Bloc loads questions
-  void initialize(List<QuestionLanguageData> questions) {
+  void initialize(List<QuestionModel> questions, {String languageCode = 'en'}) {
     if (state is QuestionCubitLoaded) return;
 
     emit(
@@ -21,6 +21,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         selectedOption: List.generate(questions.length, (_) => null),
         answeredStatus: List.generate(questions.length, (_) => false),
         isQuitTest: _isQuitTest,
+        languageCode: languageCode,
       ),
     );
   }
@@ -68,10 +69,11 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   }
 
   void reviewTest({
+    required List<QuestionModel> questions,
     required List<bool> answeredStatus,
     required List<String?> selectedOption,
     required List<bool?> isCorrect,
-    required List<QuestionLanguageData> questions,
+    required String languageCode,
   }) {
     if (state is! QuestionCubitLoaded) return;
     final currentState = state as QuestionCubitLoaded;
@@ -85,5 +87,11 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         isReview: true,
       ),
     );
+  }
+
+  void changeLanguage(String newLanguageCode) {
+    if (state is! QuestionCubitLoaded) return;
+    final currentState = state as QuestionCubitLoaded;
+    emit(currentState.copyWith(languageCode: newLanguageCode));
   }
 }

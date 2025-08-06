@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
@@ -24,7 +25,9 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
+import 'package:gpsc_prep_app/utils/extensions/question_model_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
 import '../../../domain/entities/daily_test_model.dart';
 import '../../blocs/timer/timer_bloc.dart';
 import 'cubit/test/test_cubit_state.dart';
@@ -33,12 +36,10 @@ class TestScreen extends StatefulWidget {
   const TestScreen({
     super.key,
     this.isFromResult = false,
-    required this.language,
     required this.dailyTestModel,
   });
 
   final bool isFromResult;
-  final String? language;
   final DailyTestModel dailyTestModel;
 
   @override
@@ -49,15 +50,17 @@ class _TestScreenState extends State<TestScreen> {
   late QuestionLanguageData question;
   bool _initialized = false;
   ScrollController scrollController = ScrollController();
+  String? language;
 
   @override
   void initState() {
     final bloc = context.read<TimerBloc>();
+    language = getIt<CacheManager>().userSelectedLanguage();
     if (widget.isFromResult) {
       bloc.add(TimerStop());
     } else {
       context.read<QuestionBloc>().add(
-        LoadQuestion(widget.dailyTestModel.id, widget.language),
+        FetchQuestions(widget.dailyTestModel.id),
       );
     }
     super.initState();
@@ -91,6 +94,7 @@ class _TestScreenState extends State<TestScreen> {
             marks: questionBlocState.marks,
             minSpent: state.totalMins,
             secSpent: state.totalSecs,
+            languageCode: language!,
           );
         }
       },
@@ -204,7 +208,7 @@ class _TestScreenState extends State<TestScreen> {
                   } else {
                     context.read<QuestionCubit>()
                       ..reset()
-                      ..initialize(state.questions);
+                      ..initialize(state.questions, languageCode: language!);
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
@@ -346,7 +350,10 @@ class _TestScreenState extends State<TestScreen> {
                             TestModule(
                               title: "Question ${state.currentIndex + 1} ",
                               cards: [
-                                question.questionTxt.toQuestionWidget(),
+                                question
+                                    .getLanguageData(language!)
+                                    .questionTxt
+                                    .toQuestionWidget(),
                                 10.hGap,
                                 ListView.builder(
                                   itemCount: state.options.length,
@@ -359,7 +366,9 @@ class _TestScreenState extends State<TestScreen> {
                                     Color? textColor;
 
                                     final correctAnswer =
-                                        question.correctAnswer;
+                                        question
+                                            .getLanguageData(language!)
+                                            .correctAnswer;
 
                                     if (state.isReview) {
                                       if (isSelected &&
@@ -574,8 +583,8 @@ class _TestScreenState extends State<TestScreen> {
                                     Padding(
                                       padding: EdgeInsets.only(left: 6.w),
                                       child:
-                                          state
-                                              .questions[state.currentIndex]
+                                          state.questions[state.currentIndex]
+                                              .getLanguageData(language!)
                                               .explanation
                                               .toQuestionWidget(),
                                     ),

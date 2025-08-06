@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 import '../../../../../core/error/failure.dart';
-import '../../../../../domain/entities/question_language_model.dart';
 import '../../../../../domain/entities/result_model.dart';
 
 @immutable
@@ -32,7 +32,7 @@ class TestSubmissionFailed extends TestState {
 }
 
 class TestSubmitted extends TestState {
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
   final List<String?> selectedOption;
   final List<bool> answeredStatus;
 

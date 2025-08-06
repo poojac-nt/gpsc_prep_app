@@ -1,18 +1,19 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
-
-import '../../../../../domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/utils/extensions/question_model_extension.dart';
 
 class TestCubit extends Cubit<TestCubitSubmitted> {
   TestCubit() : super(TestCubitSubmitted.initial());
 
   void calculateAndEmitTestResult({
-    required List<QuestionLanguageData> questions,
+    required List<QuestionModel> questions,
     required List<String?> selectedOption,
     required List<bool> answeredStatus,
     required List<int> marks,
     required int minSpent,
     required int secSpent,
+    required String languageCode,
   }) {
     final attempted = answeredStatus.where((status) => status).length;
     final notAttempted = questions.length - attempted;
@@ -25,7 +26,8 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
 
     for (int i = 0; i < questions.length; i++) {
       final userAnswer = selectedOption[i];
-      final correctAnswer = questions[i].correctAnswer;
+      final correctAnswer =
+          questions[i].getLanguageData(languageCode).correctAnswer;
 
       if (userAnswer != null) {
         if (userAnswer.trim() == correctAnswer.trim()) {

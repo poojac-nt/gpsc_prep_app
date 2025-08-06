@@ -80,7 +80,6 @@ final List<GoRoute> appRoutes = [
         TestScreen(
           isFromResult: args.isFromResult,
           dailyTestModel: args.dailyTestModel,
-          language: args.language,
         ),
         state,
       );

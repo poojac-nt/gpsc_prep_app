@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
@@ -172,7 +174,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                 context.read<QuestionPreviewBloc>().add(
                                   LoadQuestionsEvent(
                                     blocState is QuestionLoaded
-                                        ? blocState.questionsModels
+                                        ? blocState.questions
                                         : [],
                                     widget.dailyTestModel.name,
                                   ),
@@ -185,6 +187,9 @@ class _ResultScreenState extends State<ResultScreen> {
                               fontColor: Colors.white,
                               onTap: () {
                                 context.read<QuestionCubit>().reviewTest(
+                                  languageCode:
+                                      getIt<SharedPrefHelper>()
+                                          .getUserLanguage(),
                                   questions: testCubitState.questions,
                                   isCorrect: testCubitState.isAnswerCorrect,
                                   answeredStatus: testCubitState.answeredStatus,
@@ -195,7 +200,6 @@ class _ResultScreenState extends State<ResultScreen> {
                                   extra: TestScreenArgs(
                                     isFromResult: true,
                                     dailyTestModel: widget.dailyTestModel,
-                                    language: null,
                                   ), // or testId: 123
                                 );
                               },

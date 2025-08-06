@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
-
-import '../../../../../domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 @immutable
 sealed class TestEvent {}
 
 class SubmitTest extends TestEvent {
   final int testId;
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
   final List<String?> selectedOptions;
   final List<bool> answeredStatus;
   final int? totalQuestions;

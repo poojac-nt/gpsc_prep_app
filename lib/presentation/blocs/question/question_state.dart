@@ -5,18 +5,18 @@ sealed class QuestionState {}
 
 final class QuestionInitial extends QuestionState {}
 
+final class QuestionFetching extends QuestionState {}
+
 final class QuestionLoading extends QuestionState {}
 
 final class QuestionLoaded extends QuestionState {
-  final List<QuestionModel> questionsModels;
-  final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questions;
   final List<int> marks;
   final List<String> subjects;
   final List<String> topics;
   final List<DifficultyLevel> difficultyLevel;
 
   QuestionLoaded({
-    required this.questionsModels,
     required this.questions,
     required this.marks,
     required this.subjects,
@@ -25,7 +25,7 @@ final class QuestionLoaded extends QuestionState {
   });
 }
 
-class QuestionLoadFailed extends QuestionState {
+final class QuestionLoadFailed extends QuestionState {
   final Failure failure;
 
   QuestionLoadFailed(this.failure);

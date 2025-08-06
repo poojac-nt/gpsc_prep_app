@@ -3,13 +3,8 @@ import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 class TestScreenArgs {
   final bool isFromResult;
   final DailyTestModel dailyTestModel;
-  final String? language;
 
-  TestScreenArgs({
-    required this.isFromResult,
-    required this.dailyTestModel,
-    this.language,
-  });
+  TestScreenArgs({required this.isFromResult, required this.dailyTestModel});
 }
 
 class ResultScreenArgs {

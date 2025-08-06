@@ -203,13 +203,7 @@ class SupabaseHelper {
 
       _log.i(response.toString());
 
-      final questions =
-          response
-              .where((e) => e != null)
-              .map((e) => QuestionModel.fromJson(e))
-              .toList();
-
-      _log.i(questions.toString());
+      final questions = response.map((e) => QuestionModel.fromJson(e)).toList();
 
       return Right(questions);
     } catch (e, stackTrace) {
@@ -449,6 +443,30 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error in fetching attempted tests: $e');
       return Left(Failure("Error in fetching attempted tests"));
+    }
+  }
+
+  Future<Either<Failure, void>> insertTestDetailedResult({
+    required int userId,
+    required int testId,
+    required int questionId,
+    required bool isCorrect,
+  }) async {
+    try {
+      final result = await supabase
+          .from(SupabaseKeys.testDetailedResults)
+          .insert({
+            'user_id': userId,
+            'test_id': testId,
+            'question_id': questionId,
+            'is_correct': isCorrect,
+          });
+
+      _log.i('Inserted test detailed result: $result');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error inserting test detailed result: $e');
+      return Left(Failure("Error inserting test detailed result"));
     }
   }
 }

@@ -6,6 +6,9 @@ part 'question_model.g.dart';
 
 @JsonSerializable()
 class QuestionModel {
+  @JsonKey(name: "id")
+  final int questionId;
+
   @JsonKey(name: "question_type")
   final String questionType;
 
@@ -38,6 +41,7 @@ class QuestionModel {
   final String topicName;
 
   QuestionModel({
+    required this.questionId,
     required this.questionType,
     required this.difficultyLevel,
     required this.questionEn,

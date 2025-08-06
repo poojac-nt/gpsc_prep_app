@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
@@ -144,11 +146,11 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             ActionButton(
               text: "Start Test",
               onTap: () {
+                getIt<SharedPrefHelper>().saveUserLanguage(selectedLanguage);
                 context.pushReplacement(
                   AppRoutes.testScreen,
                   extra: TestScreenArgs(
                     isFromResult: false,
-                    language: selectedLanguage,
                     dailyTestModel: widget.dailyTestModel,
                   ), // or testId: 123
                 );
