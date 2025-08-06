@@ -88,6 +88,7 @@ class _TestScreenState extends State<TestScreen> {
           if (questionBlocState is! QuestionLoaded) return;
 
           context.read<TestCubit>().calculateAndEmitTestResult(
+            testId: widget.dailyTestModel.id,
             questions: questionCubitState.questions,
             selectedOption: questionCubitState.selectedOption,
             answeredStatus: questionCubitState.answeredStatus,

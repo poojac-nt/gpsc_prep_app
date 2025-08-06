@@ -8,17 +8,17 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:hive_flutter/adapters.dart';
 
 import '../../presentation/screens/descriptive_test_module/bloc/daily_descriptive_test_bloc.dart';
@@ -107,5 +107,9 @@ Future<void> setUpHive() async {
   Hive.registerAdapter(TestResultModelAdapter());
   // Open Hive box and register it
   final testResultBox = await Hive.openBox<TestResultModel>('test_results');
+  final detailedTestResultBox = await Hive.openBox<TestResultModel>(
+    'detailed_test_results',
+  );
   getIt.registerSingleton<Box<TestResultModel>>(testResultBox);
+  getIt.registerSingleton<Box<TestResultModel>>(detailedTestResultBox);
 }

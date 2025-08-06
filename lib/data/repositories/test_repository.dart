@@ -31,4 +31,18 @@ class TestRepository {
 
   Future<Either<Failure, List<Map<String, dynamic>>>>
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();
+
+  Future<Either<Failure, void>> insertTestResultDetail({
+    required int userId,
+    required int testId,
+    required int questionId,
+    required bool isCorrect,
+  }) {
+    return _supabase.insertTestDetailedResult(
+      userId: userId,
+      testId: testId,
+      questionId: questionId,
+      isCorrect: isCorrect,
+    );
+  }
 }
