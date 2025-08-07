@@ -422,10 +422,6 @@ class SupabaseHelper {
 
   Future<Either<Failure, Map<String, dynamic>>> fetchAttemptedAllTests() async {
     try {
-      final response = await supabase
-          .from(SupabaseKeys.testResultsTable)
-          .select('score, tests(total_marks)')
-          .eq('user_id', _cache.user!.id!);
       final response = await supabase.rpc(
         SupabaseKeys.getAttemptedTestStats,
         params: {'user_id': _cache.user!.id},
