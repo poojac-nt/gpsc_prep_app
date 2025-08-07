@@ -450,7 +450,7 @@ class SupabaseHelper {
     try {
       final result = await supabase
           .from(SupabaseKeys.testDetailedResults)
-          .insert({
+          .upsert({
             'user_id': detailedTestResult.userId,
             'test_id': detailedTestResult.testId,
             'question_id': detailedTestResult.questionId,
