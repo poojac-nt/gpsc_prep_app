@@ -5,9 +5,11 @@ import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_state.
 
 class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
   final TestRepository _testRepository;
+
   DashboardBloc(this._testRepository) : super(FetchingAttemptedTests()) {
     on<FetchAttemptedTests>(_fetchAttemptedTests);
   }
+
   Future<void> _fetchAttemptedTests(
     DashboardBlocEvent event,
     Emitter<DashboardBlocState> emit,
@@ -20,12 +22,8 @@ class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
           emit(AttemptedTestsFetchedFailed(failure));
         },
         (tests) {
-          ;
           final int totalTest = tests['attempted_tests'];
           final double avgScore = tests['average_score'];
-
-          print(totalTest);
-          print(avgScore);
           emit(
             AttemptedTestsFetched(totalTests: totalTest, avgScore: avgScore),
           );

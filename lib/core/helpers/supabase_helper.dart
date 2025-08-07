@@ -464,4 +464,33 @@ class SupabaseHelper {
       return Left(Failure("Error inserting test detailed result"));
     }
   }
+
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+  fetchTestQuestionCorrectness(int testId) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getQuestionCorrectnessCounts,
+        params: {'test_id': testId},
+      );
+
+      final resultData = response;
+
+      if (resultData is List && resultData.isNotEmpty) {
+        final List<Map<String, dynamic>> data =
+            resultData.map((item) => Map<String, dynamic>.from(item)).toList();
+
+        _log.i(
+          'Fetched ${data.length} question correctness rows for testId: $testId',
+        );
+
+        return Right(data);
+      } else {
+        _log.w('No question correctness data found for test ID: $testId');
+        return Left(Failure("No data found for test ID $testId"));
+      }
+    } catch (e) {
+      _log.e('Error fetching question correctness for test ID $testId: $e');
+      return Left(Failure("Failed to fetch data for test ID $testId"));
+    }
+  }
 }

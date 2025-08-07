@@ -7,6 +7,8 @@ abstract class SupabaseKeys {
   static final String getTestQuestionsByTestId =
       'get_test_questions_by_test_id';
   static final String getAttemptedTestStats = 'fetch_attempted_test_stats';
+  static final String getQuestionCorrectnessCounts =
+      'get_test_question_correctness_counts';
 
   ///table
   static final String usersTable = 'users';

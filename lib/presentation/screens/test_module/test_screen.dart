@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
@@ -21,6 +22,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
+import 'package:gpsc_prep_app/presentation/widgets/question_review_pie_chart.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -349,6 +351,13 @@ class _TestScreenState extends State<TestScreen> {
                             ],
                             20.hGap,
                             TestModule(
+                              isReview: state.isReview,
+                              onTap:
+                                  () => context.read<TestBloc>().add(
+                                    FetchCorrectnessCountsEvent(
+                                      testId: widget.dailyTestModel.id,
+                                    ),
+                                  ),
                               title: "Question ${state.currentIndex + 1} ",
                               cards: [
                                 question
@@ -592,6 +601,48 @@ class _TestScreenState extends State<TestScreen> {
                                   ],
                                 )
                                 : SizedBox.shrink(),
+                            20.hGap,
+                            if (state.isReview) ...[
+                              BlocBuilder<TestBloc, TestState>(
+                                builder: (context, correctState) {
+                                  if (correctState
+                                          is CorrectnessCountsSuccess &&
+                                      state.currentIndex >= 0 &&
+                                      state.currentIndex <
+                                          state.questions.length) {
+                                    final questionId =
+                                        state
+                                            .questions[state.currentIndex]
+                                            .questionId;
+                                    final stats = correctState.questionStats
+                                        .firstWhere(
+                                          (entry) =>
+                                              entry['question_id'] ==
+                                              questionId,
+                                        );
+                                    final correct = stats['correct_count'] ?? 0;
+                                    final incorrect =
+                                        stats['incorrect_count'] ?? 0;
+
+                                    return TestModule(
+                                      title: "Performance Breakdown",
+                                      cards: [
+                                        SizedBox(
+                                          width: double.maxFinite,
+                                          height: 200.h,
+                                          child: QuestionPieChart(
+                                            correct: correct,
+                                            incorrect: incorrect,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return SizedBox.shrink();
+                                },
+                              ),
+                            ],
+                            SizedBox.shrink(),
                             20.hGap,
                             TestModule(
                               title: "Question Navigator",

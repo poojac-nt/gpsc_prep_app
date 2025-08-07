@@ -39,3 +39,9 @@ class FetchSingleTestResultEvent extends TestEvent {
 
   FetchSingleTestResultEvent({required this.testId});
 }
+
+class FetchCorrectnessCountsEvent extends TestEvent {
+  final int testId;
+
+  FetchCorrectnessCountsEvent({required this.testId});
+}

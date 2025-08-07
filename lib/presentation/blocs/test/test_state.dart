@@ -42,3 +42,11 @@ class TestSubmitted extends TestState {
     required this.answeredStatus,
   });
 }
+
+class CorrectnessCountsLoading extends TestState {}
+
+class CorrectnessCountsSuccess extends TestState {
+  final List<Map<String, dynamic>> questionStats;
+
+  CorrectnessCountsSuccess(this.questionStats);
+}
