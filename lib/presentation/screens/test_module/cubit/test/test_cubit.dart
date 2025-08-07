@@ -3,10 +3,12 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_model_extension.dart';
+import 'package:hive/hive.dart';
 
 class TestCubit extends Cubit<TestCubitSubmitted> {
   TestCubit() : super(TestCubitSubmitted.initial());
@@ -58,27 +60,31 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
       isCorrect.add(isAnswerCorrect);
 
       if (isAnswerCorrect != null) {
-        final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
-        if (isOnline) {
-          _log.e(
-            "❌ No internet connection, skipping insert for question $questionId",
-          );
-          continue; // ✅ FIXED
-        }
-
-        final result = await _repository.insertTestResultDetail(
+        final detailedTestResult = DetailedTestResult(
           userId: cache.getUserId(),
           testId: testId,
           questionId: questionId,
           isCorrect: isAnswerCorrect,
         );
+        final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+        if (!isOnline) {
+          final box = Hive.box<DetailedTestResult>('detailed_test_results');
+          box.add(detailedTestResult);
+          _log.e(
+            "❌ No internet connection, skipping insert for question $questionId",
+          );
+        } else {
+          final result = await _repository.insertTestResultDetail(
+            detailedTestResult: detailedTestResult,
+          );
 
-        result.fold(
-          (failure) => _log.e(
-            'Insert failed for question $questionId: ${failure.message}',
-          ),
-          (_) => _log.i('Insert successful for question $questionId'),
-        );
+          result.fold(
+            (failure) => _log.e(
+              'Insert failed for question $questionId: ${failure.message}',
+            ),
+            (_) => _log.i('Insert successful for question $questionId'),
+          );
+        }
       }
     }
 

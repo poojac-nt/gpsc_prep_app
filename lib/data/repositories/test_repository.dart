@@ -1,6 +1,7 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 
 import '../../core/error/failure.dart';
@@ -33,16 +34,10 @@ class TestRepository {
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();
 
   Future<Either<Failure, void>> insertTestResultDetail({
-    required int userId,
-    required int testId,
-    required int questionId,
-    required bool isCorrect,
+    required DetailedTestResult detailedTestResult,
   }) {
     return _supabase.insertTestDetailedResult(
-      userId: userId,
-      testId: testId,
-      questionId: questionId,
-      isCorrect: isCorrect,
+      detailedTestResult: detailedTestResult,
     );
   }
 }

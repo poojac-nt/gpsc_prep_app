@@ -1,9 +1,9 @@
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'detailed_test_reult_model.g.dart';
+part 'detailed_test_result_model.g.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 2)
 @JsonSerializable()
 class DetailedTestResult extends HiveObject {
   @HiveField(0)

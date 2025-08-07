@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'detailed_test_reult_model.dart';
+part of 'detailed_test_result_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
@@ -8,7 +8,7 @@ part of 'detailed_test_reult_model.dart';
 
 class DetailedTestResultAdapter extends TypeAdapter<DetailedTestResult> {
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
   DetailedTestResult read(BinaryReader reader) {

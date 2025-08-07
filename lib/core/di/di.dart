@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
@@ -105,11 +106,12 @@ Future<void> setUpHive() async {
   await Hive.initFlutter();
   // Register Hive adapters
   Hive.registerAdapter(TestResultModelAdapter());
+  Hive.registerAdapter(DetailedTestResultAdapter());
   // Open Hive box and register it
   final testResultBox = await Hive.openBox<TestResultModel>('test_results');
-  final detailedTestResultBox = await Hive.openBox<TestResultModel>(
+  final detailedTestResultBox = await Hive.openBox<DetailedTestResult>(
     'detailed_test_results',
   );
   getIt.registerSingleton<Box<TestResultModel>>(testResultBox);
-  getIt.registerSingleton<Box<TestResultModel>>(detailedTestResultBox);
+  getIt.registerSingleton<Box<DetailedTestResult>>(detailedTestResultBox);
 }

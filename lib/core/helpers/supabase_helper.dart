@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
@@ -423,7 +424,7 @@ class SupabaseHelper {
   fetchAttemptedAllTests() async {
     try {
       final response = await supabase
-          .from('test_results')
+          .from(SupabaseKeys.testResultsTable)
           .select('score, tests(total_marks)')
           .eq('user_id', _cache.user!.id!);
 
@@ -447,19 +448,16 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, void>> insertTestDetailedResult({
-    required int userId,
-    required int testId,
-    required int questionId,
-    required bool isCorrect,
+    required DetailedTestResult detailedTestResult,
   }) async {
     try {
       final result = await supabase
           .from(SupabaseKeys.testDetailedResults)
           .insert({
-            'user_id': userId,
-            'test_id': testId,
-            'question_id': questionId,
-            'is_correct': isCorrect,
+            'user_id': detailedTestResult.userId,
+            'test_id': detailedTestResult.testId,
+            'question_id': detailedTestResult.questionId,
+            'is_correct': detailedTestResult.isCorrect,
           });
 
       _log.i('Inserted test detailed result: $result');
