@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
@@ -9,6 +11,7 @@ class CacheManager {
 
   UserModel? _user;
   String userLanguage = 'en';
+  final Map<String, String> _cache = {};
 
   UserRole? getUserRole() => _user?.role ?? UserRole.student;
 
@@ -29,6 +32,17 @@ class CacheManager {
   String userSelectedLanguage() {
     userLanguage = _prefs.getUserLanguage();
     return userLanguage;
+  }
+
+  void saveTestStats(Map<String, dynamic> stats) {
+    final jsonString = jsonEncode(stats);
+    _cache['attempted_tests_data'] = jsonString;
+  }
+
+  Map<String, dynamic> getTestStats() {
+    final jsonString = _cache['attempted_tests_data'];
+    if (jsonString == null) return {};
+    return jsonDecode(jsonString);
   }
 
   void clearUser() {

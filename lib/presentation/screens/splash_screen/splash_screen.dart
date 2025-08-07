@@ -5,9 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/connectivity_handler_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
@@ -97,12 +101,15 @@ class _SplashScreenState extends State<SplashScreen> {
     switch (role) {
       case UserRole.student:
         context.go(AppRoutes.studentDashboard);
+        context.read<DashboardBloc>().add(FetchAttemptedTests());
         break;
       case UserRole.mentor:
         context.go(AppRoutes.mentorDashboard);
         break;
       case UserRole.admin:
         context.go(AppRoutes.studentDashboard);
+        context.read<DashboardBloc>().add(FetchAttemptedTests());
+
         break;
       default:
         context.go(AppRoutes.login);

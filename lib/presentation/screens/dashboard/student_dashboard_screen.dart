@@ -35,7 +35,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    context.read<DashboardBloc>().add(FetchAttemptedTests());
     super.initState();
   }
 
@@ -526,6 +525,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       try {
         await getIt<SupabaseHelper>().insertDailyMcqTestsResults(latest);
         await testResultBox.delete('latest');
+        context.read<DashboardBloc>().add(FetchAttemptedTests());
         log.i('✅ Synced test result to Supabase and removed from Hive');
       } catch (e) {
         log.e('❌ Sync failed: $e');

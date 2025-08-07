@@ -436,8 +436,7 @@ class SupabaseHelper {
       final attemptedTests = data['attempted_tests'];
       final averageScore = data['average_score'];
 
-      _log.i('Attempted Tests: $attemptedTests');
-      _log.i('Average Score: $averageScore');
+      _log.i('Attempted Tests: $attemptedTests Average Score: $averageScore');
 
       return Right({
         'attempted_tests': attemptedTests,
