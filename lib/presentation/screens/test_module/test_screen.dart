@@ -7,10 +7,11 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie%20chart/pie_chart_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie%20chart/pie_chart_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
@@ -351,13 +352,6 @@ class _TestScreenState extends State<TestScreen> {
                             ],
                             20.hGap,
                             TestModule(
-                              isReview: state.isReview,
-                              onTap:
-                                  () => context.read<TestBloc>().add(
-                                    FetchCorrectnessCountsEvent(
-                                      testId: widget.dailyTestModel.id,
-                                    ),
-                                  ),
                               title: "Question ${state.currentIndex + 1} ",
                               cards: [
                                 question
@@ -603,7 +597,7 @@ class _TestScreenState extends State<TestScreen> {
                                 : SizedBox.shrink(),
                             20.hGap,
                             if (state.isReview) ...[
-                              BlocBuilder<TestBloc, TestState>(
+                              BlocBuilder<PieChartBloc, PieChartState>(
                                 builder: (context, correctState) {
                                   if (correctState
                                           is CorrectnessCountsSuccess &&
@@ -624,18 +618,10 @@ class _TestScreenState extends State<TestScreen> {
                                     final incorrect =
                                         stats['incorrect_count'] ?? 0;
 
-                                    return TestModule(
-                                      title: "Performance Breakdown",
-                                      cards: [
-                                        SizedBox(
-                                          width: double.maxFinite,
-                                          height: 200.h,
-                                          child: QuestionPieChart(
-                                            correct: correct,
-                                            incorrect: incorrect,
-                                          ),
-                                        ),
-                                      ],
+                                    return QuestionPieChart(
+                                      correct: correct,
+                                      incorrect: incorrect,
+                                      height: 200,
                                     );
                                   }
                                   return SizedBox.shrink();

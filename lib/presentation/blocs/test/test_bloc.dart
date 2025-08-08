@@ -17,7 +17,6 @@ class TestBloc extends Bloc<TestEvent, TestState> {
   TestBloc(this._testRepository) : super(TestResultInitial()) {
     on<SubmitTest>(_onSubmit);
     on<FetchSingleTestResultEvent>(_onFetchSingleResult);
-    on<FetchCorrectnessCountsEvent>(_onFetchCorrectnessCounts);
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
@@ -79,26 +78,5 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       (failure) => emit(SingleResultFailure(failure)),
       (data) => emit(SingleResultSuccess(data!)),
     );
-  }
-
-  Future<void> _onFetchCorrectnessCounts(
-    FetchCorrectnessCountsEvent event,
-    Emitter<TestState> emit,
-  ) async {
-    emit(CorrectnessCountsLoading());
-
-    final result = await _testRepository.fetchQuestionCorrectnessCounts(
-      event.testId,
-    );
-
-    result.fold((failure) => emit(SingleResultFailure(failure)), (
-      List<Map<String, dynamic>> countsList,
-    ) {
-      emit(
-        CorrectnessCountsSuccess(
-          countsList, // 🆕 pass the full per-question data here
-        ),
-      );
-    });
   }
 }

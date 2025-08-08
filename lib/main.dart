@@ -9,19 +9,20 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie%20chart/pie_chart_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/bloc/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
-import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -71,6 +72,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<QuestionPreviewBloc>()),
           BlocProvider(create: (_) => getIt<DailyDescTestBloc>()),
           BlocProvider(create: (_) => getIt<DashboardBloc>()),
+          BlocProvider(create: (_) => getIt<PieChartBloc>()),
         ],
         child: const MyApp(),
       ),

@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie%20chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
@@ -25,6 +26,7 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import '../../../domain/entities/daily_test_model.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
+import '../../blocs/pie chart/pie_chart_event.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -186,6 +188,11 @@ class _ResultScreenState extends State<ResultScreen> {
                               text: "Review Answers",
                               fontColor: Colors.white,
                               onTap: () {
+                                context.read<PieChartBloc>().add(
+                                  FetchCorrectnessCountsEvent(
+                                    testId: widget.dailyTestModel.id,
+                                  ),
+                                );
                                 context.read<QuestionCubit>().reviewTest(
                                   languageCode:
                                       getIt<SharedPrefHelper>()

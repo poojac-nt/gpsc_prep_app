@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/selection_drawer.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/stats_widget.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/test_container.dart';
@@ -22,7 +23,6 @@ import 'package:hive/hive.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
-import '../../blocs/dashboard/dashboard_bloc_state.dart';
 import '../answer_writing/answer_writing_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {

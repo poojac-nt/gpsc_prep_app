@@ -14,6 +14,7 @@ import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_
 import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie%20chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
@@ -88,6 +89,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<UploadQuestionsBloc>(() => UploadQuestionsBloc());
   getIt.registerLazySingleton<TimerBloc>(() => TimerBloc());
+  getIt.registerLazySingleton<PieChartBloc>(
+    () => PieChartBloc(getIt<TestRepository>()),
+  );
   getIt.registerLazySingleton<DailyTestBloc>(
     () => DailyTestBloc(getIt<TestRepository>()),
   );
