@@ -40,7 +40,7 @@
 
                 <!-- Scheme and Host -->
                 <data
-                    android:scheme="myapp"
+                    android:scheme="https"
                     android:host="splashScreen"
                     android:pathPrefix="/studentDashboard/mcqTestScreen/testInstructionScreen" />
 
