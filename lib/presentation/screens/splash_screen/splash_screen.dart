@@ -101,15 +101,12 @@ class _SplashScreenState extends State<SplashScreen> {
     switch (role) {
       case UserRole.student:
         context.go(AppRoutes.studentDashboard);
-        context.read<DashboardBloc>().add(FetchAttemptedTests());
         break;
       case UserRole.mentor:
         context.go(AppRoutes.mentorDashboard);
         break;
       case UserRole.admin:
         context.go(AppRoutes.studentDashboard);
-        context.read<DashboardBloc>().add(FetchAttemptedTests());
-
         break;
       default:
         context.go(AppRoutes.login);

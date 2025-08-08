@@ -41,8 +41,8 @@
                 <!-- Scheme and Host -->
                 <data
                     android:scheme="myapp"
-                    android:host="studentDashboard"
-                    android:pathPrefix="/mcqTestScreen/testInstructionScreen" />
+                    android:host="splashScreen"
+                    android:pathPrefix="/studentDashboard/mcqTestScreen/testInstructionScreen" />
 
             </intent-filter>
         </activity>

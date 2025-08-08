@@ -79,9 +79,7 @@ abstract class AppRoutes {
   static const String answerWriting = '/answerWriting';
   static const String profile = '/profile';
   static const String mcqTestScreen = '/mcqTestScreen';
-  // static const String testInstructionScreen = '/testInstructionScreen';
-  static const String testInstructionScreen =
-      '/studentDashboard/mcqTestScreen/testInstructionScreen';
+  static const String testInstructionScreen = '/testInstructionScreen';
   static const String testScreen = '/testScreen';
   static const String resultScreen = '/resultScreen';
   static const String addQuestionScreen = '/addQuestionScreen';

@@ -33,9 +33,32 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.studentDashboard,
+    routes: [
+      GoRoute(
+        path: 'mcqTestScreen',
+        pageBuilder:
+            (context, state) => _slideTransition(MCQTestScreen(), state),
+        routes: [
+          GoRoute(
+            path: 'testInstructionScreen/:testId',
+            pageBuilder: (context, state) {
+              final testIdParam = state.pathParameters['testId'];
+              final testId = int.tryParse(testIdParam ?? '');
+              final args = state.extra as TestInstructionScreenArgs?;
+
+              return _slideTransition(
+                TestInstructionScreen(testId: args?.testId ?? testId),
+                state,
+              );
+            },
+          ),
+        ],
+      ),
+    ],
     pageBuilder:
         (context, state) => _slideTransition(StudentDashboardScreen(), state),
   ),
+
   GoRoute(
     path: AppRoutes.mentorDashboard,
     pageBuilder:
@@ -58,44 +81,19 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.mcqTestScreen,
     pageBuilder: (context, state) => _slideTransition(MCQTestScreen(), state),
   ),
-  // GoRoute(
-  //   path: AppRoutes.testInstructionScreen,
-  //   pageBuilder: (context, state) {
-  //     final args = state.extra as TestInstructionScreenArgs;
-  //     return _slideTransition(
-  //       TestInstructionScreen(
-  //         dailyTestModel: args.dailyTestModel,
-  //         availableLanguages: args.availableLanguages,
-  //       ),
-  //       state,
-  //     );
-  //   },
-  // ),
+
   GoRoute(
-    path: '/mcqTestScreen/testInstructionScreen/:testId?',
-    // path: AppRoutes.testInstructionScreen,
-    // name: AppRoutes.testInstructionScreen,
-    builder: (context, state) {
-      // Deep link case
-      final testIdParam = state.pathParameters['testId'];
-      final testId = int.tryParse(testIdParam ?? '');
-
-      // Normal app navigation case
-      final args = state.extra as TestInstructionScreenArgs?;
-
-      return TestInstructionScreen(
-        testId: args?.testId ?? testId,
-        dailyTestModel: args?.dailyTestModel,
-      );
-    },
+    path: '/mcqTestScreen',
+    pageBuilder: (context, state) => _slideTransition(MCQTestScreen(), state),
   ),
+
   GoRoute(
-    path: '/studentDashboard/mcqTestScreen/testInstructionScreen',
+    path: '/testInstructionScreen',
     name: AppRoutes.testInstructionScreen,
     builder: (context, state) {
       final args = state.extra as TestInstructionScreenArgs?;
       return TestInstructionScreen(
-        testId: args?.testId,
+        // testId: args?.testId,
         dailyTestModel: args?.dailyTestModel,
       );
     },
