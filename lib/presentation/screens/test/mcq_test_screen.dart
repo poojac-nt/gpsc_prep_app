@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/daily test/daily_test_bloc.dart';
@@ -95,6 +96,13 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                       return Column(
                         children: [
                           TestModule(
+                            showShareButton: true,
+                            onShare: () {
+                              final uri = Uri.parse(
+                                "https://splashscreen/studentDashboard/mcqTestScreen/testInstructionScreen/${test.id}",
+                              );
+                              SharePlus.instance.share(ShareParams(uri: uri));
+                            },
                             title: "Daily Tests",
                             subtitle: "Subject-based Daily Practice",
                             prefixIcon: Icons.calendar_today_outlined,

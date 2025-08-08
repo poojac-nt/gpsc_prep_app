@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -11,6 +10,8 @@ class TestModule extends StatelessWidget {
     this.subtitle,
     this.iconSize = 24,
     this.fontSize = 24,
+    this.showShareButton = false,
+    this.onShare,
     this.iconColor = Colors.black,
     this.prefixIcon,
     this.cards = const <Widget>[],
@@ -21,6 +22,8 @@ class TestModule extends StatelessWidget {
   final double? iconSize;
   final double? fontSize;
   final Color? iconColor;
+  final bool showShareButton;
+  final VoidCallback? onShare;
   final IconData? prefixIcon;
   final List<Widget> cards;
 
@@ -34,19 +37,25 @@ class TestModule extends StatelessWidget {
             children: [
               if (prefixIcon != null) ...[
                 Icon(prefixIcon, size: iconSize, color: iconColor),
-                10.wGap,
+                const SizedBox(width: 10),
               ],
-              Flexible(
+              Expanded(
                 child: Text(
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  title,
                   style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              showShareButton
+                  ? IconButton(
+                    icon: const Icon(Icons.share),
+                    onPressed: onShare,
+                  )
+                  : SizedBox.shrink(),
             ],
           ),
           Text(subtitle ?? '', style: AppTexts.subTitle),
