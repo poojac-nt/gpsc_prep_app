@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -13,12 +17,14 @@ import '../../widgets/action_button.dart';
 class TestInstructionScreen extends StatefulWidget {
   const TestInstructionScreen({
     super.key,
-    required this.dailyTestModel,
+    this.dailyTestModel,
     required this.availableLanguages,
+    this.testId,
   });
 
-  final DailyTestModel dailyTestModel;
+  final DailyTestModel? dailyTestModel;
   final Set<String> availableLanguages;
+  final int? testId;
 
   @override
   State<TestInstructionScreen> createState() => _TestInstructionScreenState();
@@ -26,6 +32,7 @@ class TestInstructionScreen extends StatefulWidget {
 
 class _TestInstructionScreenState extends State<TestInstructionScreen> {
   String selectedLanguage = 'en';
+  DailyTestModel? _fetchedTestModel;
 
   @override
   void initState() {
@@ -34,13 +41,43 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
         widget.availableLanguages.contains('en')
             ? 'en'
             : widget.availableLanguages.first;
+    if (widget.dailyTestModel == null) {
+      context.read<DailyTestBloc>().add(FetchSingleTestFromId(widget.testId!));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<DailyTestBloc, DailyTestState>(
+      builder: (context, state) {
+        if (state is SingleTestFetching) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (state is SingleTestFetchingFailed) {
+          return Center(child: Text(state.failure.message));
+        }
+        if (state is SingleTestFetched) {
+          _fetchedTestModel = state.dailyTestModel;
+        }
+        final DailyTestModel? testModel =
+            widget.dailyTestModel ?? _fetchedTestModel;
+
+        if (testModel != null) {
+          return buildScaffoldWithModel(context, testModel);
+        }
+
+        return Center(child: Text('No data'));
+      },
+    );
+  }
+
+  Widget buildScaffoldWithModel(
+    BuildContext context,
+    DailyTestModel dailyTestModel,
+  ) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.dailyTestModel.name, style: AppTexts.titleTextStyle),
+        title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
       ),
       body: SingleChildScrollView(
         child: TestModule(
@@ -54,7 +91,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                 child: Column(
                   children: [
                     Text(
-                      widget.dailyTestModel.noQuestions.toString(),
+                      dailyTestModel.noQuestions.toString(),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -76,7 +113,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                 child: Column(
                   children: [
                     Text(
-                      widget.dailyTestModel.duration.toString(),
+                      dailyTestModel.duration.toString(),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -113,7 +150,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
             Text("Instructions: ", style: AppTexts.labelTextStyle),
             10.hGap,
             _buildInstructionTile(
-              "This test contains ${widget.dailyTestModel.noQuestions} multiple choice questions",
+              "This test contains ${dailyTestModel.noQuestions} multiple choice questions",
             ),
             3.hGap,
             _buildInstructionTile(
@@ -149,7 +186,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
                   extra: TestScreenArgs(
                     isFromResult: false,
                     language: selectedLanguage,
-                    dailyTestModel: widget.dailyTestModel,
+                    dailyTestModel: dailyTestModel,
                   ), // or testId: 123
                 );
               },

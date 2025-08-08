@@ -31,4 +31,8 @@ class TestRepository {
 
   Future<Either<Failure, Map<String, dynamic>>>
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();
+
+  Future<Either<Failure, DailyTestModel>> fetchSingleTestFromId(
+    int testId,
+  ) async => await _supabase.fetchSingleTestFromId(testId);
 }

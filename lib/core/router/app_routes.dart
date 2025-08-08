@@ -11,6 +11,16 @@ class AppRouter {
       debugLogDiagnostics: true,
       requestFocus: true,
       initialLocation: isLoggedIn ? AppRoutes.splashScreen : AppRoutes.login,
+      redirect: (context, state) {
+        final goingToLogin = state.matchedLocation == AppRoutes.login;
+        if (!isLoggedIn && !goingToLogin) {
+          return AppRoutes.login;
+        }
+        if (isLoggedIn && goingToLogin) {
+          return AppRoutes.splashScreen;
+        }
+        return null;
+      },
       routes: appRoutes,
     );
   }

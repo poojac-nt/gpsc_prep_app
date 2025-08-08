@@ -38,3 +38,16 @@ class DailyTestResultFetched extends DailyTestState {
 
   DailyTestResultFetched(this.testResults);
 }
+
+class SingleTestFetching extends DailyTestState {}
+
+class SingleTestFetched extends DailyTestState {
+  final DailyTestModel dailyTestModel;
+  final Map<int, Set<String>> languages;
+  SingleTestFetched(this.dailyTestModel, this.languages);
+}
+
+class SingleTestFetchingFailed extends DailyTestState {
+  final Failure failure;
+  SingleTestFetchingFailed(this.failure);
+}

@@ -113,7 +113,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       ),
                                     );
                                   } else {
-                                    context.pushReplacement(
+                                    context.pushReplacementNamed(
                                       AppRoutes.testInstructionScreen,
                                       extra: TestInstructionScreenArgs(
                                         dailyTestModel: test,
