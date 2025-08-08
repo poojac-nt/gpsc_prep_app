@@ -117,8 +117,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       AppRoutes.testInstructionScreen,
                                       extra: TestInstructionScreenArgs(
                                         dailyTestModel: test,
-                                        availableLanguages:
-                                            state.languages[test.id] ?? {'en'},
                                       ),
                                     );
                                   }
@@ -137,10 +135,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                                   extra:
                                                       TestInstructionScreenArgs(
                                                         dailyTestModel: test,
-                                                        availableLanguages:
-                                                            state.languages[test
-                                                                .id] ??
-                                                            {'en'},
                                                       ),
                                                 );
                                               },

@@ -28,16 +28,8 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
       },
       (tests) async {
         final resultMap = <int, TestResultModel>{};
-        final languageAvailability = <int, Set<String>>{};
-
-        final getLanguages = GetAvailableLanguagesForTestUseCase(
-          _testRepository,
-        );
 
         for (final test in tests) {
-          final availableLanguages = await getLanguages(test.id);
-          languageAvailability[test.id] = availableLanguages;
-
           final result = await _testRepository.singleTestResult(test.id);
 
           result.fold((_) {}, (testResult) {
@@ -46,7 +38,7 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
             }
           });
         }
-        emit(DailyTestFetched(tests, resultMap, languageAvailability));
+        emit(DailyTestFetched(tests, resultMap));
       },
     );
   }

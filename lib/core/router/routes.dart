@@ -86,7 +86,6 @@ final List<GoRoute> appRoutes = [
       return TestInstructionScreen(
         testId: args?.testId ?? testId,
         dailyTestModel: args?.dailyTestModel,
-        availableLanguages: args?.availableLanguages ?? {},
       );
     },
   ),
@@ -98,7 +97,6 @@ final List<GoRoute> appRoutes = [
       return TestInstructionScreen(
         testId: args?.testId,
         dailyTestModel: args?.dailyTestModel,
-        availableLanguages: args?.availableLanguages ?? {},
       );
     },
   ),
