@@ -36,25 +36,29 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   String selectedLanguage = 'en';
   late Set<String> availableLanguagesButton = {'en'};
   DailyTestModel? _fetchedTestModel;
+  late bool isFromId;
 
   @override
   void initState() {
     super.initState();
+    isFromId = widget.testId != null;
+    if (isFromId) {
+      context.read<DailyTestBloc>().add(FetchSingleTestFromId(widget.testId!));
+    }
     fetchAvailableLanguages();
     selectedLanguage =
         availableLanguagesButton.contains('en')
             ? 'en'
             : availableLanguagesButton.first;
-    if (widget.dailyTestModel == null) {
-      context.read<DailyTestBloc>().add(FetchSingleTestFromId(widget.testId!));
-    }
   }
 
   Future<void> fetchAvailableLanguages() async {
     final getLanguages = GetAvailableLanguagesForTestUseCase(
       getIt<TestRepository>(),
     );
-    var availableLanguages = await getLanguages(widget.dailyTestModel!.id);
+    var availableLanguages = await getLanguages(
+      widget.testId ?? widget.dailyTestModel!.id,
+    );
     setState(() {
       availableLanguagesButton = availableLanguages;
     });
@@ -64,23 +68,31 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<DailyTestBloc, DailyTestState>(
       builder: (context, state) {
-        if (state is SingleTestFetching) {
-          return Center(child: CircularProgressIndicator());
+        // Show loading while fetching
+        if (state is SingleTestFetching || state is DailyTestInit) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
+        // Show error message
         if (state is SingleTestFetchingFailed) {
-          return Center(child: Text(state.failure.message));
+          return Scaffold(body: Center(child: Text(state.failure.message)));
         }
+
+        // Store fetched model
         if (state is SingleTestFetched) {
           _fetchedTestModel = state.dailyTestModel;
         }
+
+        // Use either provided or fetched model
         final DailyTestModel? testModel =
             widget.dailyTestModel ?? _fetchedTestModel;
 
-        if (testModel != null) {
-          return buildScaffoldWithModel(context, testModel);
+        if (isFromId) {
+          return buildScaffoldWithModel(context, testModel!);
         }
 
-        return Center(child: Text('No data'));
+        return const Scaffold(body: Center(child: Text('No data available')));
       },
     );
   }
@@ -91,6 +103,16 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   ) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            if (widget.testId == null) {
+              context.pop();
+            } else {
+              context.pushReplacement(AppRoutes.studentDashboard);
+            }
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
       ),
       body: SingleChildScrollView(
