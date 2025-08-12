@@ -230,6 +230,7 @@ class _TestScreenState extends State<TestScreen> {
                       }
                       final currentIndex = state.currentIndex;
                       final question = state.questions[currentIndex];
+
                       final selectedAnswer = state.selectedOption[currentIndex];
                       return SingleChildScrollView(
                         controller: scrollController,
@@ -672,7 +673,9 @@ class _TestScreenState extends State<TestScreen> {
                     },
                   );
                 }
-                return Container();
+                return Center(
+                  child: Text("No questions available in this test"),
+                );
               },
             ),
           ),

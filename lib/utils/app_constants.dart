@@ -94,6 +94,6 @@ abstract class AppRoutes {
 
 class AdUnitIds {
   static const String interstitialUnitId =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String bannerUnitId = 'ca-app-pub-3940256099942544/9214589741';
+      'ca-app-pub-8716682122656450/8164132644';
+  static const String bannerUnitId = 'ca-app-pub-8716682122656450/7494048801';
 }
