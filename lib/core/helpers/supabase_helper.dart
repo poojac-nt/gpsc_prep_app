@@ -222,7 +222,6 @@ class SupabaseHelper {
     }
   }
 
-  ///Insert Daily Tests Results
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyMcqTests() async {
     try {
       final response = await supabase
@@ -445,6 +444,28 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error in fetching attempted tests: $e');
       return Left(Failure("Error in fetching attempted tests"));
+    }
+  }
+
+  Future<Either<Failure, DailyTestModel>> fetchSingleTestFromId(
+    int testId,
+  ) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.testsTable)
+              .select()
+              .eq('id', testId)
+              .single();
+
+      var result = DailyTestModel.fromJson(response);
+
+      _log.i('Link test : $result');
+      return Right(result);
+    } catch (e, s) {
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      _log.e('Error in fetching test: $e', s: s);
+      return Left(Failure("Error fetching test : ${e.toString()}"));
     }
   }
 }

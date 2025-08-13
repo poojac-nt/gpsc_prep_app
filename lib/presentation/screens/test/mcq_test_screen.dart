@@ -95,6 +95,8 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                       return Column(
                         children: [
                           TestModule(
+                            showShareButton: true,
+                            testId: test.id,
                             title: "Daily Tests",
                             subtitle: "Subject-based Daily Practice",
                             prefixIcon: Icons.calendar_today_outlined,
@@ -113,12 +115,10 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       ),
                                     );
                                   } else {
-                                    context.pushReplacement(
+                                    context.pushReplacementNamed(
                                       AppRoutes.testInstructionScreen,
                                       extra: TestInstructionScreenArgs(
                                         dailyTestModel: test,
-                                        availableLanguages:
-                                            state.languages[test.id] ?? {'en'},
                                       ),
                                     );
                                   }
@@ -137,10 +137,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                                   extra:
                                                       TestInstructionScreenArgs(
                                                         dailyTestModel: test,
-                                                        availableLanguages:
-                                                            state.languages[test
-                                                                .id] ??
-                                                            {'en'},
                                                       ),
                                                 );
                                               },

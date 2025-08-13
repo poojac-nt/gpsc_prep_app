@@ -7,6 +7,11 @@ class DailyTestInit extends DailyTestEvent {}
 
 class FetchDailyTest extends DailyTestEvent {}
 
+class FetchSingleTestFromId extends DailyTestEvent {
+  final int testId;
+  FetchSingleTestFromId(this.testId);
+}
+
 class FetchResults extends DailyTestEvent {
   final int testId;
 

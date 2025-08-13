@@ -36,6 +36,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    context.read<DashboardBloc>().add(FetchAttemptedTests());
   }
 
   @override

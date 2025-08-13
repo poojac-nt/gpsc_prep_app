@@ -20,13 +20,10 @@ class ResultScreenArgs {
 }
 
 class TestInstructionScreenArgs {
-  final DailyTestModel dailyTestModel;
-  final Set<String> availableLanguages;
+  final int? testId;
+  final DailyTestModel? dailyTestModel;
 
-  TestInstructionScreenArgs({
-    required this.dailyTestModel,
-    required this.availableLanguages,
-  });
+  TestInstructionScreenArgs({this.testId, this.dailyTestModel});
 }
 
 class ReviewQuestionScreenArgs {
