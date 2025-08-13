@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
@@ -15,6 +16,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/qu
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/presentation/widgets/banner_ad.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -39,6 +41,7 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
+  late final BannerAd? bannerAd;
   @override
   void initState() {
     super.initState();
@@ -115,7 +118,120 @@ class _ResultScreenState extends State<ResultScreen> {
                       time,
                       testCubitState.totalQuestions.toString(),
                     ];
-                    return TestModule(
+                    return Column(
+                      children: [
+                        TestModule(
+                          iconSize: 26.sp,
+                          fontSize: 26.sp,
+                          title: "${widget.dailyTestModel.name} Result",
+                          cards: [
+                            Center(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    testCubitState.score!.toStringAsFixed(2),
+                                    style: TextStyle(
+                                      fontSize: 26.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Your Score",
+                                    style: AppTexts.subTitle.copyWith(
+                                      fontSize: 14.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            20.hGap,
+                            GridView.builder(
+                              shrinkWrap: true,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    childAspectRatio: 0.9,
+                                    crossAxisSpacing: 5,
+                                    mainAxisSpacing: 5,
+                                  ),
+                              itemCount: containerTitle.length,
+                              itemBuilder:
+                                  (context, index) => containerWidget(
+                                    containerValues[index],
+                                    containerTitle[index],
+                                    containerColors[index],
+                                  ),
+                            ),
+                            20.hGap,
+                            Column(
+                              children: [
+                                ActionButton(
+                                  text: "Download Detailed Report",
+                                  onTap: () {
+                                    final blocState =
+                                        context.read<QuestionBloc>().state;
+                                    context.push(
+                                      AppRoutes.questionPreviewScreen,
+                                      extra: widget.dailyTestModel.name,
+                                    );
+                                    context.read<QuestionPreviewBloc>().add(
+                                      LoadQuestionsEvent(
+                                        blocState is QuestionLoaded
+                                            ? blocState.questionsModels
+                                            : [],
+                                        widget.dailyTestModel.name,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                5.hGap,
+                                ActionButton(
+                                  text: "Review Answers",
+                                  fontColor: Colors.white,
+                                  onTap: () {
+                                    context.read<QuestionCubit>().reviewTest(
+                                      questions: testCubitState.questions,
+                                      isCorrect: testCubitState.isAnswerCorrect,
+                                      answeredStatus:
+                                          testCubitState.answeredStatus,
+                                      selectedOption:
+                                          testCubitState.selectedOption,
+                                    );
+                                    context.push(
+                                      AppRoutes.testScreen,
+                                      extra: TestScreenArgs(
+                                        isFromResult: true,
+                                        dailyTestModel: widget.dailyTestModel,
+                                        language: null,
+                                      ), // or testId: 123
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                          prefixIcon: Icons.check_circle_outline_sharp,
+                          iconColor: Colors.green,
+                        ).padAll(AppPaddings.defaultPadding),
+                        20.hGap,
+                        BannerAdWidget(adUnitId: AdUnitIds.bannerUnitId),
+                      ],
+                    );
+                  },
+                );
+              }
+              if (testBlocState is SingleResultSuccess) {
+                final List<String> containerValues = [
+                  testBlocState.result.correctAnswers.toString(),
+                  testBlocState.result.inCorrectAnswers.toString(),
+                  testBlocState.result.notAttemptedQuestions.toString(),
+                  testBlocState.result.attemptedQuestions.toString(),
+                  formatTimeSpent(testBlocState.result.timeTaken),
+                  testBlocState.result.totalQuestions.toString(),
+                ];
+                return Column(
+                  children: [
+                    TestModule(
                       iconSize: 26.sp,
                       fontSize: 26.sp,
                       title: "${widget.dailyTestModel.name} Result",
@@ -124,7 +240,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           child: Column(
                             children: [
                               Text(
-                                testCubitState.score!.toStringAsFixed(2),
+                                testBlocState.result.score.toStringAsFixed(2),
                                 style: TextStyle(
                                   fontSize: 26.sp,
                                   fontWeight: FontWeight.bold,
@@ -158,110 +274,14 @@ class _ResultScreenState extends State<ResultScreen> {
                               ),
                         ),
                         20.hGap,
-                        Column(
-                          children: [
-                            ActionButton(
-                              text: "Download Detailed Report",
-                              onTap: () {
-                                final blocState =
-                                    context.read<QuestionBloc>().state;
-                                context.push(
-                                  AppRoutes.questionPreviewScreen,
-                                  extra: widget.dailyTestModel.name,
-                                );
-                                context.read<QuestionPreviewBloc>().add(
-                                  LoadQuestionsEvent(
-                                    blocState is QuestionLoaded
-                                        ? blocState.questionsModels
-                                        : [],
-                                    widget.dailyTestModel.name,
-                                  ),
-                                );
-                              },
-                            ),
-                            5.hGap,
-                            ActionButton(
-                              text: "Review Answers",
-                              fontColor: Colors.white,
-                              onTap: () {
-                                context.read<QuestionCubit>().reviewTest(
-                                  questions: testCubitState.questions,
-                                  isCorrect: testCubitState.isAnswerCorrect,
-                                  answeredStatus: testCubitState.answeredStatus,
-                                  selectedOption: testCubitState.selectedOption,
-                                );
-                                context.push(
-                                  AppRoutes.testScreen,
-                                  extra: TestScreenArgs(
-                                    isFromResult: true,
-                                    dailyTestModel: widget.dailyTestModel,
-                                    language: null,
-                                  ), // or testId: 123
-                                );
-                              },
-                            ),
-                          ],
-                        ),
                       ],
                       prefixIcon: Icons.check_circle_outline_sharp,
                       iconColor: Colors.green,
-                    ).padAll(AppPaddings.defaultPadding);
-                  },
-                );
-              }
-              if (testBlocState is SingleResultSuccess) {
-                final List<String> containerValues = [
-                  testBlocState.result.correctAnswers.toString(),
-                  testBlocState.result.inCorrectAnswers.toString(),
-                  testBlocState.result.notAttemptedQuestions.toString(),
-                  testBlocState.result.attemptedQuestions.toString(),
-                  formatTimeSpent(testBlocState.result.timeTaken),
-                  testBlocState.result.totalQuestions.toString(),
-                ];
-                return TestModule(
-                  iconSize: 26.sp,
-                  fontSize: 26.sp,
-                  title: "${widget.dailyTestModel.name} Result",
-                  cards: [
-                    Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            testBlocState.result.score.toStringAsFixed(2),
-                            style: TextStyle(
-                              fontSize: 26.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            "Your Score",
-                            style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
-                          ),
-                        ],
-                      ),
-                    ),
+                    ).padAll(AppPaddings.defaultPadding),
                     20.hGap,
-                    GridView.builder(
-                      shrinkWrap: true,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        childAspectRatio: 0.9,
-                        crossAxisSpacing: 5,
-                        mainAxisSpacing: 5,
-                      ),
-                      itemCount: containerTitle.length,
-                      itemBuilder:
-                          (context, index) => containerWidget(
-                            containerValues[index],
-                            containerTitle[index],
-                            containerColors[index],
-                          ),
-                    ),
-                    20.hGap,
+                    BannerAdWidget(adUnitId: AdUnitIds.bannerUnitId),
                   ],
-                  prefixIcon: Icons.check_circle_outline_sharp,
-                  iconColor: Colors.green,
-                ).padAll(AppPaddings.defaultPadding);
+                );
               }
               return SizedBox.shrink();
             },

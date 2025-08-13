@@ -24,6 +24,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
+import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../domain/entities/daily_test_model.dart';
 import '../../blocs/timer/timer_bloc.dart';
@@ -52,6 +53,7 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   void initState() {
+    AdService().showInterstitialAd();
     final bloc = context.read<TimerBloc>();
     if (widget.isFromResult) {
       bloc.add(TimerStop());
@@ -228,6 +230,7 @@ class _TestScreenState extends State<TestScreen> {
                       }
                       final currentIndex = state.currentIndex;
                       final question = state.questions[currentIndex];
+
                       final selectedAnswer = state.selectedOption[currentIndex];
                       return SingleChildScrollView(
                         controller: scrollController,
@@ -670,7 +673,9 @@ class _TestScreenState extends State<TestScreen> {
                     },
                   );
                 }
-                return Container();
+                return Center(
+                  child: Text("No questions available in this test"),
+                );
               },
             ),
           ),

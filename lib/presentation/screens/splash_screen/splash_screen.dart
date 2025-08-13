@@ -15,6 +15,7 @@ import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.
 import 'package:gpsc_prep_app/presentation/widgets/connectivity_handler_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
+import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Start listening to connectivity changes
     context.read<ConnectivityBloc>().add(CheckConnectivity());
+    AdService().loadInterstitialAd();
   }
 
   void _startInitializationIfOnline() {

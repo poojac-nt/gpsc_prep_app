@@ -91,3 +91,9 @@ abstract class AppRoutes {
   static const String descriptiveTestInstructionScreen =
       '/descriptiveTestInstructionScreen';
 }
+
+class AdUnitIds {
+  static const String interstitialUnitId =
+      'ca-app-pub-8716682122656450/8164132644';
+  static const String bannerUnitId = 'ca-app-pub-8716682122656450/7494048801';
+}
