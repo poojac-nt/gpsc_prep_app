@@ -68,7 +68,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<DailyTestBloc, DailyTestState>(
       builder: (context, state) {
-        if (state is SingleTestFetching) {
+        if (state is DailyTestInitial || state is SingleTestFetching) {
           return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
@@ -83,11 +83,17 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
         final DailyTestModel? testModel =
             widget.dailyTestModel ?? _fetchedTestModel;
 
+        // Show No data only if we have *already fetched* and still got nothing
+        if (state is SingleTestFetched && testModel == null) {
+          return Scaffold(body: Center(child: Text('No data')));
+        }
+
         if (testModel != null) {
           return buildScaffoldWithModel(context, testModel);
         }
 
-        return Scaffold(body: Center(child: Text('No data')));
+        // Fallback: still show loader instead of No data
+        return Scaffold(body: Center(child: CircularProgressIndicator()));
       },
     );
   }
