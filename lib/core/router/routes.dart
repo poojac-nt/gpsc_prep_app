@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.dart';
@@ -32,7 +33,10 @@ final List<GoRoute> appRoutes = [
         (context, state) => _slideTransition(RegistrationScreen(), state),
   ),
   GoRoute(
+    // Assuming AppRoutes.studentDashboard is '/studentDashboard'
     path: AppRoutes.studentDashboard,
+    pageBuilder:
+        (context, state) => _slideTransition(StudentDashboardScreen(), state),
     routes: [
       GoRoute(
         path: 'mcqTestScreen',
@@ -42,12 +46,25 @@ final List<GoRoute> appRoutes = [
           GoRoute(
             path: 'testInstructionScreen/:testId',
             pageBuilder: (context, state) {
+              // Improve parameter handling for both deep links and normal navigation
               final testIdParam = state.pathParameters['testId'];
               final testId = int.tryParse(testIdParam ?? '');
+
+              // Handle both deep link and normal navigation cases
               final args = state.extra as TestInstructionScreenArgs?;
+              final finalTestId = args?.testId ?? testId;
+
+              // Add null check and fallback
+              if (finalTestId == null) {
+                // Handle invalid testId case
+                return _slideTransition(
+                  const ErrorScreen(message: 'Invalid Test ID'),
+                  state,
+                );
+              }
 
               return _slideTransition(
-                TestInstructionScreen(testId: args?.testId ?? testId),
+                TestInstructionScreen(testId: finalTestId),
                 state,
               );
             },
@@ -55,10 +72,7 @@ final List<GoRoute> appRoutes = [
         ],
       ),
     ],
-    pageBuilder:
-        (context, state) => _slideTransition(StudentDashboardScreen(), state),
   ),
-
   GoRoute(
     path: AppRoutes.mentorDashboard,
     pageBuilder:

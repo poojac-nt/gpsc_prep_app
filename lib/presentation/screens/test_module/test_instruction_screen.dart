@@ -68,31 +68,26 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<DailyTestBloc, DailyTestState>(
       builder: (context, state) {
-        // Show loading while fetching
-        if (state is SingleTestFetching || state is DailyTestInit) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+        if (state is SingleTestFetching) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        // Show error message
+
         if (state is SingleTestFetchingFailed) {
           return Scaffold(body: Center(child: Text(state.failure.message)));
         }
 
-        // Store fetched model
         if (state is SingleTestFetched) {
           _fetchedTestModel = state.dailyTestModel;
         }
 
-        // Use either provided or fetched model
         final DailyTestModel? testModel =
             widget.dailyTestModel ?? _fetchedTestModel;
 
-        if (isFromId) {
-          return buildScaffoldWithModel(context, testModel!);
+        if (testModel != null) {
+          return buildScaffoldWithModel(context, testModel);
         }
 
-        return const Scaffold(body: Center(child: Text('No data available')));
+        return Scaffold(body: Center(child: Text('No data')));
       },
     );
   }

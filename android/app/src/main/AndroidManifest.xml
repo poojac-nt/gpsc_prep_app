@@ -33,7 +33,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -43,6 +43,18 @@
                     android:host="starics.netlify.app"
                     android:pathPrefix="/studentDashboard/mcqTestScreen/testInstructionScreen"
                     android:scheme="https" />
+            </intent-filter>
+
+            <!-- For Custom Scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="app"
+                    android:scheme="starics" />
             </intent-filter>
 
         </activity>
