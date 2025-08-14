@@ -37,6 +37,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   late Set<String> availableLanguagesButton = {'en'};
   DailyTestModel? _fetchedTestModel;
   late bool isFromId;
+  bool _noTestDetected = false;
 
   @override
   void initState() {
@@ -68,33 +69,51 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<DailyTestBloc, DailyTestState>(
       builder: (context, state) {
+        if (_noTestDetected) {
+          return _buildNoTestScreen(context);
+        }
+
         if (state is DailyTestInitial || state is SingleTestFetching) {
           return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        if (state is SingleTestFetchingFailed) {
-          return Scaffold(body: Center(child: Text(state.failure.message)));
+        if (state is SingleTestFetchingFailed ||
+            (state is SingleTestFetched &&
+                (widget.dailyTestModel ?? _fetchedTestModel) == null)) {
+          _noTestDetected = true;
+          return _buildNoTestScreen(context);
         }
 
         if (state is SingleTestFetched) {
           _fetchedTestModel = state.dailyTestModel;
         }
 
-        final DailyTestModel? testModel =
-            widget.dailyTestModel ?? _fetchedTestModel;
-
-        // Show No data only if we have *already fetched* and still got nothing
-        if (state is SingleTestFetched && testModel == null) {
-          return Scaffold(body: Center(child: Text('No data')));
-        }
+        final testModel = widget.dailyTestModel ?? _fetchedTestModel;
 
         if (testModel != null) {
           return buildScaffoldWithModel(context, testModel);
         }
 
-        // Fallback: still show loader instead of No data
         return Scaffold(body: Center(child: CircularProgressIndicator()));
       },
+    );
+  }
+
+  Widget _buildNoTestScreen(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('This test does not exist.', style: TextStyle(fontSize: 18)),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => context.go(AppRoutes.studentDashboard),
+              child: Text('Go back to Dashboard'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -347,7 +366,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
       final submittedAt = DateTime.parse(createdAtString);
       return DateTime.now().difference(submittedAt).inHours >= 12;
     } catch (_) {
-      return true; // If parsing fails, allow retest by default
+      return true;
     }
   }
 }
