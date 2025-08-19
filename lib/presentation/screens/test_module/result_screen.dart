@@ -23,6 +23,7 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../domain/entities/daily_test_model.dart';
+import '../../../utils/services/ad_service.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 
@@ -45,7 +46,7 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   void initState() {
     super.initState();
-
+    AdService().showInterstitialAd();
     if (!widget.isFromTestScreen) {
       context.read<TestBloc>().add(
         FetchSingleTestResultEvent(testId: widget.dailyTestModel.id),

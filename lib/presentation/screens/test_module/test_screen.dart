@@ -53,7 +53,6 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   void initState() {
-    AdService().showInterstitialAd();
     final bloc = context.read<TimerBloc>();
     if (widget.isFromResult) {
       bloc.add(TimerStop());
