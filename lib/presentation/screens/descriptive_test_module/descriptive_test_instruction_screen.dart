@@ -57,28 +57,6 @@ class _DescriptiveTestInstructionScreenState
                     ),
                   ),
                 ),
-                10.hGap,
-                BorderedContainer(
-                  padding: EdgeInsets.all(AppPaddings.defaultPadding),
-                  radius: BorderRadius.zero,
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          10.toString(),
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "Minutes",
-                          style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 20.hGap,
                 Container(
                   padding: EdgeInsets.symmetric(
@@ -101,7 +79,7 @@ class _DescriptiveTestInstructionScreenState
                       ),
                       5.hGap,
                       _buildInstructionTile(
-                        "Each question has suggested time limits - manage your time wisely",
+                        "You can type your answer directly or upload a PDF file",
                       ),
                       5.hGap,
                       _buildInstructionTile(
@@ -114,15 +92,15 @@ class _DescriptiveTestInstructionScreenState
                     ],
                   ),
                 ),
-                20.hGap,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _languageButton(context, "English", "en"),
-                    _languageButton(context, "Gujarati", "en"),
-                    _languageButton(context, "Hindi", "en"),
-                  ],
-                ),
+                // 20.hGap,
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     _languageButton(context, "English", "en"),
+                //     _languageButton(context, "Gujarati", "en"),
+                //     _languageButton(context, "Hindi", "en"),
+                //   ],
+                // ),
                 20.hGap,
                 ActionButton(
                   backgroundColor: AppColors.primary,

@@ -6,19 +6,25 @@ sealed class UploadQuestionsEvent {}
 class ResetUploadState extends UploadQuestionsEvent {}
 
 /// Triggers file selection + parsing (CSV/XLSX to List<Map>)
-class ParseUploadFile extends UploadQuestionsEvent {
+class McqParseUploadFile extends UploadQuestionsEvent {
   final bool isTestUpload;
 
-  ParseUploadFile({required this.isTestUpload});
+  McqParseUploadFile({required this.isTestUpload});
 }
 
 /// Uploads the previously parsed payload to Supabase
-class UploadParsedQuestionsToSupabase extends UploadQuestionsEvent {
+class McqUploadParsedQuestions extends UploadQuestionsEvent {
   final List<Map<String, dynamic>> payload;
   final bool isTestUpload;
 
-  UploadParsedQuestionsToSupabase({
-    required this.payload,
-    required this.isTestUpload,
-  });
+  McqUploadParsedQuestions({required this.payload, required this.isTestUpload});
+}
+
+class DescParseUploadFile extends UploadQuestionsEvent {}
+
+/// Uploads the previously parsed payload to Supabase
+class DescUploadParsedQuestions extends UploadQuestionsEvent {
+  final List<Map<String, dynamic>> payload;
+
+  DescUploadParsedQuestions({required this.payload});
 }

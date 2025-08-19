@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../blocs/timer/timer_bloc.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/bordered_container.dart';
 import '../dashboard/widgets/custom_progress_bar.dart';
-import '../test_module/cubit/question/question_cubit_state.dart';
 import '../test_module/widgets/question_indicator.dart';
 import '../test_module/widgets/question_navigator_btn.dart';
 
@@ -26,29 +22,12 @@ class DescriptiveTestScreen extends StatefulWidget {
 
 class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   final ScrollController _scrollController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Descriptive Test', style: AppTexts.titleTextStyle),
-        actions: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: Colors.black),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.timer_outlined, size: 18.sp),
-                5.wGap,
-                SizedBox(width: 43.w, child: Text(" 0:10")),
-              ],
-            ),
-          ).padSymmetric(horizontal: 10.w),
-        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -79,9 +58,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                     child: ActionButton(
                       text: "Submit Test",
                       onTap: () {
-                        context.pushReplacement(
-                          AppRoutes.descriptiveTestResultScreen,
-                        );
+                        _buildSubmitDialog(context);
                       },
                     ),
                   ),
@@ -111,7 +88,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
               ),
             ),
             20.hGap,
-            Text("Your Answer ", style: AppTexts.labelTextStyle),
+            Text("Your Answer", style: AppTexts.labelTextStyle),
             20.hGap,
             Container(
               decoration: BoxDecoration(
@@ -129,6 +106,36 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                     borderSide: BorderSide(width: 2, color: Colors.blueAccent),
                   ),
                 ),
+              ),
+            ),
+            20.hGap,
+            Text("Or Upload PDF Answer", style: AppTexts.labelTextStyle),
+            20.hGap,
+            BorderedContainer(
+              borderColor: Colors.grey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          color: Colors.grey.shade600,
+                          size: 80.sp,
+                        ),
+                        Text(
+                          "Upload PDF for this questions",
+                          style: AppTexts.labelTextStyle,
+                        ),
+                        10.hGap,
+                        ActionButton(text: 'Choose PDF', onTap: () {}),
+                        10.hGap,
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             20.hGap,
@@ -251,20 +258,13 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   //   );
   // }
 
-  void _buildSubmitDialog(
-    BuildContext context,
-    QuestionCubitLoaded state,
-    int timeTaken,
-    List<int> marks,
-  ) {
+  void _buildSubmitDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
-        final total = state.questions.length;
-        final attempted = state.answeredStatus.where((status) => status).length;
         return CustomAlertdialog(
           title: "Submit Test",
-          mainContent: "You have attempted $attempted out of $total questions.",
+          mainContent: "You have attempted  out of  questions.",
           content: "Are you sure you want to submit the test?",
           actions: [
             TextButton(
@@ -286,7 +286,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
               ),
               onPressed: () {
                 context.pop(); // close dialog
-                context.read<TimerBloc>().add(TimerStop());
+                context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
               },
             ),
           ],

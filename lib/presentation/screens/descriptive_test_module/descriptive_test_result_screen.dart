@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -74,7 +75,9 @@ class DescriptiveTestResultScreen extends StatelessWidget {
                 ActionButton(
                   backgroundColor: AppColors.primary,
                   text: "Back to Dashboard",
-                  onTap: () {},
+                  onTap: () {
+                    context.go(AppRoutes.studentDashboard);
+                  },
                   fontColor: Colors.white,
                 ),
                 // 15.wGap,

@@ -33,3 +33,9 @@ class ReviewQuestionScreenArgs {
 
   ReviewQuestionScreenArgs({required this.isTestUpload, required this.payload});
 }
+
+class DescReviewQuestionScreenArgs {
+  List<Map<String, dynamic>> payload;
+
+  DescReviewQuestionScreenArgs({required this.payload});
+}

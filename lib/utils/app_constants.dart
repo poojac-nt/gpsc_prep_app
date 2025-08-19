@@ -90,6 +90,7 @@ abstract class AppRoutes {
       '/descriptiveTestResultScreen';
   static const String descriptiveTestInstructionScreen =
       '/descriptiveTestInstructionScreen';
+  static const String descReviewQuestion = '/descReviewQuestion';
 }
 
 class AdUnitIds {
