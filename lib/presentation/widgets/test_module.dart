@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -54,7 +55,7 @@ class TestModule extends StatelessWidget {
               ),
               showShareButton
                   ? IconButton(
-                    icon: const Icon(Icons.share),
+                    icon: const Icon(AppIcons.share_test),
                     onPressed: () {
                       _handleShare(context);
                     },

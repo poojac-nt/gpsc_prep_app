@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
@@ -408,14 +409,17 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchDescriptiveTests() async {
+  Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests() async {
     try {
       final response = await supabase
-          .from(SupabaseKeys.testsTable)
+          .from(SupabaseKeys.descTests)
           .select()
-          .filter('test_type', 'eq', 'desc')
           .order('id', ascending: false);
-      final result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+      final result = response.map((e) => DescTestModel.fromJson(e)).toList();
+      if (result.isEmpty) {
+        _log.w('No descriptive tests found');
+        return Right([]);
+      }
       _log.i('Total test : ${result.length}');
       return Right(result);
     } catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
@@ -75,14 +76,14 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                         cards: [
                           TestTile(
                             title: descTests[index].name,
-                            subtitle:
-                                '${descTests[index].noQuestions.toString()} Questions · ${descTests[index].duration.toString()} Mins',
                             onTap: () {
                               context.pushReplacement(
                                 AppRoutes.descriptiveTestInstructionScreen,
+                                extra: DescTestInstructionScreenArgs(
+                                  dailyTestModel: descTests[index],
+                                ),
                               );
                             },
-                            buttonTitle: 'Write',
                             // widgets: [
                             //   IconButton(
                             //     onPressed: () {},
@@ -159,7 +160,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                     title: "Loading Test $index",
                     subtitle: "00 Questions · 0 min",
                     onTap: () {},
-                    buttonTitle: 'Start',
                   ).padSymmetric(vertical: 6.h),
                 ),
               ),
@@ -192,7 +192,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                       ),
                     ],
                     onTap: () {},
-                    buttonTitle: 'Start',
                   ),
                 ],
               ),

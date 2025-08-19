@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
@@ -123,24 +123,24 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                     );
                                   }
                                 },
-                                buttonTitle: hasResult ? 'Result' : 'Start',
+                                hasResult: hasResult,
                                 widgets:
                                     hasResult && isEligibleForRetest
                                         ? [
-                                          IntrinsicWidth(
-                                            child: ActionButton(
-                                              text: 'ReTest',
-                                              onTap: () {
-                                                context.pushReplacement(
-                                                  AppRoutes
-                                                      .testInstructionScreen,
-                                                  extra:
-                                                      TestInstructionScreenArgs(
-                                                        dailyTestModel: test,
-                                                      ),
-                                                );
-                                              },
+                                          IconButton(
+                                            icon: Icon(
+                                              AppIcons.retest_icon,
+                                              color: AppColors.primary,
                                             ),
+                                            onPressed: () {
+                                              context.pushReplacement(
+                                                AppRoutes.testInstructionScreen,
+                                                extra:
+                                                    TestInstructionScreenArgs(
+                                                      dailyTestModel: test,
+                                                    ),
+                                              );
+                                            },
                                           ),
                                         ]
                                         : [],
@@ -254,7 +254,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                     title: "Loading Test $index",
                     subtitle: "00 Questions · 0 min",
                     onTap: () {},
-                    buttonTitle: 'Start',
                   ).padSymmetric(vertical: 6.h),
                 ),
               ),
@@ -287,7 +286,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                       ),
                     ],
                     onTap: () {},
-                    buttonTitle: 'Start',
                   ),
                 ],
               ),

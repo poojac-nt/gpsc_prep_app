@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -14,7 +15,9 @@ import '../test_module/widgets/question_indicator.dart';
 import '../test_module/widgets/question_navigator_btn.dart';
 
 class DescriptiveTestScreen extends StatefulWidget {
-  const DescriptiveTestScreen({super.key});
+  final DescTestModel descTestModel;
+
+  const DescriptiveTestScreen({super.key, required this.descTestModel});
 
   @override
   State<DescriptiveTestScreen> createState() => _DescriptiveTestScreenState();

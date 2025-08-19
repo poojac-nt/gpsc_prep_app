@@ -180,7 +180,11 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.descriptiveTestScreen,
     pageBuilder: (context, state) {
-      return _slideTransition(DescriptiveTestScreen(), state);
+      final args = state.extra as DescTestScreenArgs;
+      return _slideTransition(
+        DescriptiveTestScreen(descTestModel: args.dailyTestModel),
+        state,
+      );
     },
   ),
   GoRoute(
@@ -189,10 +193,16 @@ final List<GoRoute> appRoutes = [
         (context, state) =>
             _slideTransition(DescriptiveTestResultScreen(), state),
   ),
+
   GoRoute(
     path: AppRoutes.descriptiveTestInstructionScreen,
     pageBuilder: (context, state) {
-      return _slideTransition(DescriptiveTestInstructionScreen(), state);
+      final args = state.extra as DescTestInstructionScreenArgs;
+
+      return _slideTransition(
+        DescriptiveTestInstructionScreen(descTestModel: args.dailyTestModel),
+        state,
+      );
     },
   ),
 ];
