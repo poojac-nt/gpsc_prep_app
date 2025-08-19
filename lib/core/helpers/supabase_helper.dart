@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
@@ -208,6 +209,36 @@ class SupabaseHelper {
           response
               .where((e) => e != null)
               .map((e) => QuestionModel.fromJson(e))
+              .toList();
+
+      _log.i(questions.toString());
+
+      return Right(questions);
+    } catch (e, stackTrace) {
+      _snackBar.showError('Error fetching test questions: ${e.toString()}');
+      _log.e(
+        "Fetch Error: $e"
+        "\nStackTrace: $stackTrace",
+      );
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<DescQuestionModel>>> fetchDescTestQuestions(
+    int testId,
+  ) async {
+    try {
+      final List<Map<String, dynamic>> response = await supabase.rpc(
+        SupabaseKeys.getDescTestQuestionsByTestId,
+        params: {'p_desc_test_id': testId},
+      );
+
+      _log.i(response.toString());
+
+      final questions =
+          response
+              .where((e) => e != null)
+              .map((e) => DescQuestionModel.fromJson(e))
               .toList();
 
       _log.i(questions.toString());

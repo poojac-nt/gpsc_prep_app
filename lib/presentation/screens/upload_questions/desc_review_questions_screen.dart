@@ -97,7 +97,7 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
                                   10.hGap,
                                   // Question text
                                   MarkdownWidget(
-                                    data: data['question'] ?? '',
+                                    data: data['question_txt'] ?? '',
                                     shrinkWrap: true,
                                   ),
                                   10.hGap,

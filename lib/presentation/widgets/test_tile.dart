@@ -44,6 +44,7 @@ class TestTile extends StatelessWidget {
           ...widgets,
           IconButton(
             onPressed: onTap,
+            tooltip: hasResult ? 'View Result' : 'Start Test',
             icon:
                 hasResult
                     ? Icon(AppIcons.result_icon, color: AppColors.primary)

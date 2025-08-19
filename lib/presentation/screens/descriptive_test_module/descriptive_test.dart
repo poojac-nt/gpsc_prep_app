@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -25,6 +27,16 @@ class DescriptiveTestScreen extends StatefulWidget {
 
 class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    context.read<QuestionBloc>().add(
+      LoadDescQuestion(widget.descTestModel.id, "en"),
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

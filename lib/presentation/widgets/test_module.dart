@@ -55,6 +55,7 @@ class TestModule extends StatelessWidget {
               ),
               showShareButton
                   ? IconButton(
+                    tooltip: "Share Test",
                     icon: const Icon(AppIcons.share_test),
                     onPressed: () {
                       _handleShare(context);

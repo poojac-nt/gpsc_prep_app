@@ -26,6 +26,7 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
 import '../../../domain/entities/daily_test_model.dart';
 import '../../blocs/timer/timer_bloc.dart';
 import 'cubit/test/test_cubit_state.dart';
@@ -59,7 +60,7 @@ class _TestScreenState extends State<TestScreen> {
       bloc.add(TimerStop());
     } else {
       context.read<QuestionBloc>().add(
-        LoadQuestion(widget.dailyTestModel.id, widget.language),
+        LoadMcqQuestion(widget.dailyTestModel.id, widget.language),
       );
     }
     super.initState();
@@ -84,7 +85,7 @@ class _TestScreenState extends State<TestScreen> {
 
           // Get data from QuestionBloc
           final questionBlocState = context.read<QuestionBloc>().state;
-          if (questionBlocState is! QuestionLoaded) return;
+          if (questionBlocState is! McqQuestionLoaded) return;
 
           context.read<TestCubit>().calculateAndEmitTestResult(
             questions: questionCubitState.questions,
@@ -198,7 +199,7 @@ class _TestScreenState extends State<TestScreen> {
             },
             child: BlocConsumer<QuestionBloc, QuestionState>(
               listener: (context, state) {
-                if (state is QuestionLoaded && !_initialized) {
+                if (state is McqQuestionLoaded && !_initialized) {
                   _initialized = true;
 
                   if (widget.isFromResult) {
@@ -218,7 +219,7 @@ class _TestScreenState extends State<TestScreen> {
                   return _buildWhenLoading();
                 }
 
-                if (state is QuestionLoaded) {
+                if (state is McqQuestionLoaded) {
                   final marks = state.marks;
                   final subjects = state.subjects;
                   final topics = state.topics;

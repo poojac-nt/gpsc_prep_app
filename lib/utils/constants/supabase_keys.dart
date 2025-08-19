@@ -7,6 +7,7 @@ abstract class SupabaseKeys {
   static final String insertBulkQuestions = 'insert_bulk_questions';
   static final String getTestQuestionsByTestId =
       'get_test_questions_by_test_id';
+  static final String getDescTestQuestionsByTestId = 'get_desc_test_questions';
   static final String getAttemptedTestStats = 'fetch_attempted_test_stats';
   static final String insertDescWithTest = 'insert_desc_questions_with_tests';
 

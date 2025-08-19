@@ -7,7 +7,7 @@ class GetAvailableLanguagesForTestUseCase {
   GetAvailableLanguagesForTestUseCase(this.repository);
 
   Future<Set<String>> call(int testId) async {
-    final questionsResult = await repository.fetchTestQuestions(testId);
+    final questionsResult = await repository.fetchMcqTestQuestions(testId);
 
     return questionsResult.fold(
       (failure) => {'en'},
