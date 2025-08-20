@@ -451,7 +451,6 @@ class SupabaseHelper {
         _log.w('No descriptive tests found');
         return Right([]);
       }
-      _log.i('Total test : ${result.length}');
       return Right(result);
     } catch (e) {
       _log.e('Error in fetching test: $e');
@@ -504,36 +503,55 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, void>> submitDescriptiveTest({
-    required int testId,
-    required Map<int, String> answers, // questionId -> answer text
-  }) async {
-    final user = _cache.user;
-
-    if (user == null) {
-      _log.e("Submit failed: No user logged in DescriptiveTest");
-      return Left(Failure("You must be logged in to submit the test."));
-    }
-
+  Future<Either<Failure, String>> submitDescriptiveTest(
+    int testId,
+    Map<int, String> answers,
+  ) async {
     try {
-      // Prepare rows
-      final rows =
-          answers.entries.map((entry) {
-            return {
-              'user_id': user.id, // ⚠ adjust if user.id is uuid
-              'test_id': testId,
-              'question_id': entry.key,
-              'answer': {'text': entry.value},
-            };
-          }).toList();
+      await supabase
+          .from(SupabaseKeys.descTestResult)
+          .insert(
+            answers.entries.map((e) {
+              return {
+                'user_id': _cache.user!.id,
+                'test_id': testId,
+                'question_id': e.key,
+                'answer': e.value, // could be text or pdf url
+              };
+            }).toList(),
+          );
 
-      await supabase.from('desc_test_detailed_results').insert(rows);
-
-      _log.i("Test submitted successfully DescriptiveTest");
-      return Right(null);
+      return Right("Test submitted successfully!");
     } catch (e) {
-      _log.e("Error submitting test: $e DescriptiveTest");
-      return Left(Failure("Error submitting test. Please try again."));
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, String>> uploadPdfAnswer({
+    required int testId,
+    required int questionId,
+    required File file,
+  }) async {
+    try {
+      final fileName =
+          "test_${testId}_q_${questionId}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+
+      final filePath = "answers/$fileName";
+
+      // Upload file
+      await supabase.storage.from(SupabaseKeys.answers).upload(filePath, file);
+
+      // Get public URL
+      final publicUrl = supabase.storage
+          .from(SupabaseKeys.answers)
+          .getPublicUrl(filePath);
+      _log.i(
+        "PDF uploaded successfully for Questions Id $questionId : $publicUrl",
+      );
+      return Right(publicUrl);
+    } catch (e) {
+      _log.e("PDF upload failed: $e");
+      return Left(Failure("PDF upload failed: ${e.toString()}"));
     }
   }
 }

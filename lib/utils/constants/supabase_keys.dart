@@ -25,4 +25,8 @@ abstract class SupabaseKeys {
   static final String email = 'user_email';
   static final String authId = 'auth_id';
   static final String fcmToken = 'fcm_token';
+
+  ///Buckets
+  static final String answers = 'answers';
+  static final String profilePicture = 'profile-picture';
 }

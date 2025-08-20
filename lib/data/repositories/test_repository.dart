@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
@@ -45,6 +47,15 @@ class TestRepository {
   Future<Either<Failure, void>> submitDescriptiveTest(
     int testId,
     Map<int, String> answers,
-  ) async =>
-      await _supabase.submitDescriptiveTest(testId: testId, answers: answers);
+  ) async => await _supabase.submitDescriptiveTest(testId, answers);
+
+  Future<Either<Failure, String>> uploadPdfAnswer(
+    int testId,
+    int questionId,
+    File file,
+  ) async => await _supabase.uploadPdfAnswer(
+    testId: testId,
+    file: file,
+    questionId: questionId,
+  );
 }

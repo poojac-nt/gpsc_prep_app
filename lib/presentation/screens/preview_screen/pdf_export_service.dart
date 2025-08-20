@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:open_file/open_file.dart';

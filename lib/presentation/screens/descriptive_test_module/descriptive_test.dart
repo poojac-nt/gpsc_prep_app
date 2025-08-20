@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -30,6 +33,9 @@ class DescriptiveTestScreen extends StatefulWidget {
 
 class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   final ScrollController _scrollController = ScrollController();
+  final Map<int, AnswerState> _answers = {};
+  int currentIndex = 0;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -38,10 +44,6 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
     );
     super.initState();
   }
-
-  int currentIndex = 0;
-  Map<int, String> answers = {};
-  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +58,8 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
             context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
           } else if (state is DescTestSubmitFailed) {
             getIt<SnackBarHelper>().showError(state.failure.message);
+          } else if (state is DailyDescTestMessage) {
+            getIt<SnackBarHelper>().showError(state.message);
           }
         },
         child: BlocBuilder<QuestionBloc, QuestionState>(
@@ -65,6 +69,8 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
             } else if (state is DescQuestionLoaded) {
               final questions = state.questionsModels;
               final question = questions[currentIndex];
+              final answer = _answers[question.id];
+              final selectedFile = answer?.pdf;
               return SingleChildScrollView(
                 controller: _scrollController,
                 child: Column(
@@ -74,7 +80,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       titleText:
                           "Question ${currentIndex + 1} of ${questions.length}",
                       value: (currentIndex + 1) / questions.length,
-                      labelText: "$currentIndex Answered",
+                      labelText: "",
                     ),
                     20.hGap,
                     Padding(
@@ -148,10 +154,19 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                             ),
                           ),
                         ),
-                        onChanged: (value) {
-                          answers[question.id] = value;
-                        },
                         controller: _controller,
+                        onChanged: (value) {
+                          setState(() {
+                            final existing =
+                                _answers[question.id] ?? AnswerState();
+                            existing.text = value;
+                            _answers[question.id] = existing; // ✅ update map
+                          });
+
+                          context.read<DailyDescTestBloc>().add(
+                            AddTextAnswer(questionId: question.id, text: value),
+                          );
+                        },
                       ),
                     ),
                     20.hGap,
@@ -175,11 +190,79 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                   size: 80.sp,
                                 ),
                                 Text(
-                                  "Upload PDF for this questions",
+                                  "Upload PDF for this question",
                                   style: AppTexts.labelTextStyle,
                                 ),
                                 10.hGap,
-                                ActionButton(text: 'Choose PDF', onTap: () {}),
+                                if (selectedFile != null) ...[
+                                  10.hGap,
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.picture_as_pdf,
+                                        color: Colors.red,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          selectedFile.path.split('/').last,
+                                          style: AppTexts.labelTextStyle,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.close,
+                                          color: Colors.grey,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            final existing =
+                                                _answers[question.id];
+                                            if (existing != null) {
+                                              existing.pdf =
+                                                  null; // ✅ remove pdf only
+                                              _answers[question.id] = existing;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                10.hGap,
+                                ActionButton(
+                                  text: 'Choose PDF',
+                                  onTap: () async {
+                                    FilePickerResult? result = await FilePicker
+                                        .platform
+                                        .pickFiles(
+                                          type: FileType.custom,
+                                          allowedExtensions: ['pdf'],
+                                        );
+                                    if (result != null &&
+                                        result.files.single.path != null) {
+                                      final file = File(
+                                        result.files.single.path!,
+                                      );
+
+                                      setState(() {
+                                        final existing =
+                                            _answers[question.id] ??
+                                            AnswerState();
+                                        existing.pdf = file;
+                                        _answers[question.id] =
+                                            existing; // ✅ update map
+                                      });
+                                      context.read<DailyDescTestBloc>().add(
+                                        AddPdfAnswer(
+                                          questionId: question.id,
+                                          file: file,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
                                 10.hGap,
                               ],
                             ),
@@ -195,17 +278,18 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                           child: ActionButton(
                             backgroundColor: AppColors.primary,
                             text: "Previous",
-                            isLoading: (currentIndex == 0) ? true : false,
+                            isLoading: (currentIndex == 0),
                             onTap:
                                 currentIndex == 0
                                     ? () {}
                                     : () {
                                       setState(() {
                                         currentIndex--;
-                                        final prevQuestion =
-                                            questions[currentIndex];
-                                        _controller.text =
-                                            answers[prevQuestion.id] ?? '';
+                                        _restoreAnswerForCurrentQuestion(
+                                          state
+                                              .questionsModels[currentIndex]
+                                              .id,
+                                        );
                                       });
                                       goTop();
                                     },
@@ -215,22 +299,19 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                         150.wGap,
                         Expanded(
                           child: ActionButton(
-                            isLoading:
-                                (currentIndex == questions.length - 1)
-                                    ? true
-                                    : false,
+                            isLoading: (currentIndex == questions.length - 1),
                             text: "Next",
                             backgroundColor: AppColors.primary,
                             onTap: () {
-                              if (currentIndex < state.questions.length - 1) {
+                              if (currentIndex < questions.length - 1) {
                                 setState(() {
                                   currentIndex++;
-                                  final nextQuestion = questions[currentIndex];
-                                  _controller.text =
-                                      answers[nextQuestion.id] ?? '';
+                                  _restoreAnswerForCurrentQuestion(
+                                    state.questionsModels[currentIndex].id,
+                                  );
                                 });
+                                goTop();
                               }
-                              goTop();
                             },
                           ),
                         ),
@@ -267,13 +348,13 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
       builder: (context) {
         return CustomAlertdialog(
           title: "Submit Test",
-          mainContent: "You have attempted  out of  questions.",
+          mainContent: "You have attempted some questions.",
           content: "Are you sure you want to submit the test?",
           actions: [
             TextButton(
               child: Text("Cancel", style: TextStyle(color: Colors.grey[700])),
               onPressed: () {
-                Navigator.of(context).pop(); // close dialog
+                Navigator.of(context).pop();
               },
             ),
             ElevatedButton(
@@ -288,9 +369,9 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                 style: AppTexts.title.copyWith(color: Colors.white),
               ),
               onPressed: () {
-                context.pop(); // close dialog
+                context.pop();
                 context.read<DailyDescTestBloc>().add(
-                  SubmitDescTest(answers, widget.descTestModel.id),
+                  SubmitDescTest(widget.descTestModel.id),
                 );
               },
             ),
@@ -308,21 +389,17 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Fake progress bar
             CustomProgressBar(
               titleText: "Question 1 of 10",
               value: 0.1,
               labelText: "0 Answered",
             ),
             20.hGap,
-            // Question Title
             TestModule(
               title: "Question 1",
               cards: [
-                // Fake question
                 Text("This is a sample question text."),
                 10.hGap,
-                // Fake options
                 Column(
                   children: List.generate(4, (index) {
                     return BorderedContainer(
@@ -344,5 +421,10 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
         ),
       ),
     );
+  }
+
+  void _restoreAnswerForCurrentQuestion(int questionId) {
+    final answer = _answers[questionId];
+    _controller.text = answer?.text ?? '';
   }
 }

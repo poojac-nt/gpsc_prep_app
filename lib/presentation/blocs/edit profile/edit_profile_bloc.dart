@@ -10,11 +10,11 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
 part 'edit_profile_event.dart';
-
 part 'edit_profile_state.dart';
 
 class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
@@ -113,12 +113,12 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
 
       // Upload new image
       await _supabase.storage
-          .from('profile-picture')
+          .from(SupabaseKeys.profilePicture)
           .upload(storagePath, imageFile);
 
       // Get new public URL
       final String newImageUrl = _supabase.storage
-          .from('profile-picture')
+          .from(SupabaseKeys.profilePicture)
           .getPublicUrl(storagePath);
 
       final String? oldImageUrl = _currentUser?.profilePicture;
@@ -136,9 +136,9 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
         try {
           final oldImagePath = _extractStoragePathFromUrl(oldImageUrl);
           _log.i('Attempting to delete old image at path: $oldImagePath');
-          final result = await _supabase.storage.from('profile-picture').remove(
-            [oldImagePath!],
-          );
+          final result = await _supabase.storage
+              .from(SupabaseKeys.profilePicture)
+              .remove([oldImagePath!]);
           _log.i('Supabase delete result: $result');
         } catch (e) {
           _log.e('Failed to delete old image from Supabase', error: e);

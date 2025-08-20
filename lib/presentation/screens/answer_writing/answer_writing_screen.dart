@@ -54,16 +54,9 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
             final descTests = state.dailyTestModel;
             return SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Writing Practice', style: AppTexts.heading),
-                      IntrinsicWidth(
-                        child: ActionButton(text: 'Start New', onTap: () {}),
-                      ),
-                    ],
-                  ),
+                  Text('Writing Practice', style: AppTexts.heading),
                   10.hGap,
                   ListView.builder(
                     shrinkWrap: true,
@@ -99,27 +92,27 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                       ).padSymmetric(vertical: 6.h);
                     },
                   ),
-                  10.hGap,
-                  TestModule(
-                    title: 'My Submissions',
-                    subtitle: 'Track your Submitted Answers',
-                    prefixIcon: Icons.file_upload_outlined,
-                    cards: [
-                      ActionButton(text: 'View All Submissions', onTap: () {}),
-                      5.hGap,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Column(
-                            children: [
-                              Text('5 Pending Reviews'),
-                              Text('12 Reviewed'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  // 10.hGap,
+                  // TestModule(
+                  //   title: 'My Submissions',
+                  //   subtitle: 'Track your Submitted Answers',
+                  //   prefixIcon: Icons.file_upload_outlined,
+                  //   cards: [
+                  //     ActionButton(text: 'View All Submissions', onTap: () {}),
+                  //     5.hGap,
+                  //     Row(
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         Column(
+                  //           children: [
+                  //             Text('5 Pending Reviews'),
+                  //             Text('12 Reviewed'),
+                  //           ],
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ).padAll(AppPaddings.appPaddingInt);
