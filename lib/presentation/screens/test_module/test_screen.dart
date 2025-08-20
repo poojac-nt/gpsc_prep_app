@@ -81,7 +81,7 @@ class _TestScreenState extends State<TestScreen> {
         if (state is TimerStopped) {
           // Get data from QuestionCubit
           final questionCubitState = context.read<QuestionCubit>().state;
-          if (questionCubitState is! QuestionCubitLoaded) return;
+          if (questionCubitState is! McqQuestionCubitLoaded) return;
 
           // Get data from QuestionBloc
           final questionBlocState = context.read<QuestionBloc>().state;
@@ -184,7 +184,7 @@ class _TestScreenState extends State<TestScreen> {
 
               if (timerState is TimerStopped && !timerState.isManual) {
                 _buildAutoSubmitDialog(context, state);
-              } else if (questionCubitState is QuestionCubitLoaded &&
+              } else if (questionCubitState is McqQuestionCubitLoaded &&
                   questionCubitState.isQuitTest) {
                 context.go(AppRoutes.studentDashboard);
               } else {
@@ -226,7 +226,7 @@ class _TestScreenState extends State<TestScreen> {
                   final difficultyLevel = state.difficultyLevel;
                   return BlocBuilder<QuestionCubit, QuestionCubitState>(
                     builder: (context, state) {
-                      if (state is! QuestionCubitLoaded) {
+                      if (state is! McqQuestionCubitLoaded) {
                         return SizedBox.shrink();
                       }
                       final currentIndex = state.currentIndex;
@@ -733,7 +733,7 @@ class _TestScreenState extends State<TestScreen> {
 
   void _buildSubmitDialog(
     BuildContext context,
-    QuestionCubitLoaded state,
+    McqQuestionCubitLoaded state,
     int timeTaken,
     List<int> marks,
   ) {
