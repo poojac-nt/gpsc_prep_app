@@ -8,6 +8,7 @@ part of 'desc_question_model.dart';
 
 DescQuestionModel _$DescQuestionModelFromJson(Map<String, dynamic> json) =>
     DescQuestionModel(
+      id: (json['id'] as num).toInt(),
       questionType: json['question_type'] as String,
       difficultyLevel: const DifficultyLevelConverter()
           .fromJson(json['difficulty_level'] as String),
@@ -30,6 +31,7 @@ DescQuestionModel _$DescQuestionModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$DescQuestionModelToJson(DescQuestionModel instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'question_type': instance.questionType,
       'difficulty_level':
           const DifficultyLevelConverter().toJson(instance.difficultyLevel),

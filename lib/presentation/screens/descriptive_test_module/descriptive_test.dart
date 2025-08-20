@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
@@ -35,6 +40,8 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   }
 
   int currentIndex = 0;
+  Map<int, String> answers = {};
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -42,227 +49,217 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
       appBar: AppBar(
         title: Text('Descriptive Test', style: AppTexts.titleTextStyle),
       ),
-      body: BlocBuilder<QuestionBloc, QuestionState>(
-        builder: (context, state) {
-          if (state is QuestionLoading) {
-            return _buildWhenLoading();
-          } else if (state is DescQuestionLoaded) {
-            final questions = state.questions;
-            final question = questions[currentIndex];
-            return SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomProgressBar(
-                    titleText:
-                        "Question ${currentIndex + 1} of ${questions.length}",
-                    value: (currentIndex + 1),
-                    labelText: "$currentIndex Answered",
-                  ),
-                  20.hGap,
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 5.w),
-                    child: Row(
+      body: BlocListener<DailyDescTestBloc, DailyDescTestState>(
+        listener: (context, state) {
+          if (state is DescTestSubmitSuccess) {
+            getIt<SnackBarHelper>().showSuccess(state.message);
+            context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
+          } else if (state is DescTestSubmitFailed) {
+            getIt<SnackBarHelper>().showError(state.failure.message);
+          }
+        },
+        child: BlocBuilder<QuestionBloc, QuestionState>(
+          builder: (context, state) {
+            if (state is QuestionLoading) {
+              return _buildWhenLoading();
+            } else if (state is DescQuestionLoaded) {
+              final questions = state.questionsModels;
+              final question = questions[currentIndex];
+              return SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomProgressBar(
+                      titleText:
+                          "Question ${currentIndex + 1} of ${questions.length}",
+                      value: (currentIndex + 1) / questions.length,
+                      labelText: "$currentIndex Answered",
+                    ),
+                    20.hGap,
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: ActionButton(
+                              text: "Quit Test",
+                              onTap: () {
+                                context.go(AppRoutes.studentDashboard);
+                              },
+                            ),
+                          ),
+                          100.wGap,
+                          Expanded(
+                            child: ActionButton(
+                              text: "Submit Test",
+                              onTap: () {
+                                _buildSubmitDialog(context);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    20.hGap,
+                    Container(
+                      padding: EdgeInsets.all(18.w),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: AppBorders.borderRadius,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Question ${currentIndex + 1}",
+                            style: AppTexts.labelTextStyle.copyWith(
+                              fontSize: 20.sp,
+                            ),
+                          ),
+                          15.hGap,
+                          Text(
+                            question.questionEn.questionTxt,
+                            style: AppTexts.labelTextStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    20.hGap,
+                    Text("Your Answer", style: AppTexts.labelTextStyle),
+                    20.hGap,
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: AppBorders.borderRadius,
+                      ),
+                      child: TextField(
+                        maxLines: 10,
+                        decoration: InputDecoration(
+                          hintText: "Type your answer here...",
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(10.w),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: AppBorders.borderRadius,
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.blueAccent,
+                            ),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          answers[question.id] = value;
+                        },
+                        controller: _controller,
+                      ),
+                    ),
+                    20.hGap,
+                    Text(
+                      "Or Upload PDF Answer",
+                      style: AppTexts.labelTextStyle,
+                    ),
+                    20.hGap,
+                    BorderedContainer(
+                      borderColor: Colors.grey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.description_outlined,
+                                  color: Colors.grey.shade600,
+                                  size: 80.sp,
+                                ),
+                                Text(
+                                  "Upload PDF for this questions",
+                                  style: AppTexts.labelTextStyle,
+                                ),
+                                10.hGap,
+                                ActionButton(text: 'Choose PDF', onTap: () {}),
+                                10.hGap,
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    20.hGap,
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: ActionButton(
-                            text: "Quit Test",
-                            onTap: () {
-                              context.go(AppRoutes.studentDashboard);
-                            },
+                            backgroundColor: AppColors.primary,
+                            text: "Previous",
+                            isLoading: (currentIndex == 0) ? true : false,
+                            onTap:
+                                currentIndex == 0
+                                    ? () {}
+                                    : () {
+                                      setState(() {
+                                        currentIndex--;
+                                        final prevQuestion =
+                                            questions[currentIndex];
+                                        _controller.text =
+                                            answers[prevQuestion.id] ?? '';
+                                      });
+                                      goTop();
+                                    },
+                            fontColor: Colors.white,
                           ),
                         ),
-                        100.wGap,
+                        150.wGap,
                         Expanded(
                           child: ActionButton(
-                            text: "Submit Test",
+                            isLoading:
+                                (currentIndex == questions.length - 1)
+                                    ? true
+                                    : false,
+                            text: "Next",
+                            backgroundColor: AppColors.primary,
                             onTap: () {
-                              _buildSubmitDialog(context);
+                              if (currentIndex < state.questions.length - 1) {
+                                setState(() {
+                                  currentIndex++;
+                                  final nextQuestion = questions[currentIndex];
+                                  _controller.text =
+                                      answers[nextQuestion.id] ?? '';
+                                });
+                              }
+                              goTop();
                             },
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  20.hGap,
-                  Container(
-                    padding: EdgeInsets.all(18.w),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: AppBorders.borderRadius,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Question ${currentIndex + 1}",
-                          style: AppTexts.labelTextStyle.copyWith(
-                            fontSize: 20.sp,
-                          ),
-                        ),
-                        15.hGap,
-                        Text(
-                          question.questionTxt,
-                          style: AppTexts.labelTextStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                  20.hGap,
-                  Text("Your Answer", style: AppTexts.labelTextStyle),
-                  20.hGap,
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: AppBorders.borderRadius,
-                    ),
-                    child: TextField(
-                      maxLines: 10,
-                      decoration: InputDecoration(
-                        hintText: "Type your answer here...",
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.all(10.w),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: AppBorders.borderRadius,
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: Colors.blueAccent,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  20.hGap,
-                  Text("Or Upload PDF Answer", style: AppTexts.labelTextStyle),
-                  20.hGap,
-                  BorderedContainer(
-                    borderColor: Colors.grey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.description_outlined,
-                                color: Colors.grey.shade600,
-                                size: 80.sp,
-                              ),
-                              Text(
-                                "Upload PDF for this questions",
-                                style: AppTexts.labelTextStyle,
-                              ),
-                              10.hGap,
-                              ActionButton(text: 'Choose PDF', onTap: () {}),
-                              10.hGap,
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  20.hGap,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: ActionButton(
-                          backgroundColor: AppColors.primary,
-                          text: "Previous",
-                          onTap: () {
-                            if (currentIndex > 0) {
-                              setState(() {
-                                currentIndex--;
-                              });
-                            }
-                            _scrollController.animateTo(
-                              0.0,
-                              duration: Duration(milliseconds: 600),
-                              curve: Curves.easeOut,
-                            );
-                          },
-                          fontColor: Colors.white,
-                        ),
-                      ),
-                      150.wGap,
-                      Expanded(
-                        child: ActionButton(
-                          text: "Next",
-                          backgroundColor: AppColors.primary,
-                          onTap: () {
-                            if (currentIndex < state.questions.length - 1) {
-                              setState(() {
-                                currentIndex++;
-                              });
-                            }
-                            _scrollController.animateTo(
-                              0.0,
-                              duration: Duration(milliseconds: 600),
-                              curve: Curves.easeOut,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ).padAll(AppPaddings.defaultPadding),
-            );
-          } else if (state is QuestionLoadFailed) {
-            return Center(
-              child: Text('Failed to load questions: ${state.failure.message}'),
-            );
-          }
-          return Center(child: Text('No Questions Available'));
-        },
+                  ],
+                ).padAll(AppPaddings.defaultPadding),
+              );
+            } else if (state is QuestionLoadFailed) {
+              return Center(
+                child: Text(
+                  'Failed to load questions: ${state.failure.message}',
+                ),
+              );
+            }
+            return Center(child: Text('No Questions Available'));
+          },
+        ),
       ),
     );
   }
 
-  // void _buildAutoSubmitDialog(BuildContext context, TestCubitSubmitted state) {
-  //   showDialog(
-  //     barrierDismissible: false,
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       final total = state.totalQuestions;
-  //       final attempted = state.answeredStatus.where((status) => status).length;
-  //       return CustomAlertdialog(
-  //         title: "Time is over",
-  //         mainContent: "You have attempted $attempted out of $total questions.",
-  //         content:
-  //             'Your time for this test has ended. Submitting your answers now and showing your results.',
-  //         actions: [
-  //           ElevatedButton(
-  //             style: ElevatedButton.styleFrom(
-  //               backgroundColor: AppColors.primary,
-  //               shape: RoundedRectangleBorder(
-  //                 borderRadius: BorderRadius.circular(8),
-  //               ),
-  //             ),
-  //             child: Text(
-  //               "View Result",
-  //               style: AppTexts.title.copyWith(color: Colors.white),
-  //             ),
-  //             onPressed: () {
-  //               context.pop(); // close dialog
-  //               context.pushReplacement(
-  //                 AppRoutes.resultScreen,
-  //                 extra: ResultScreenArgs(
-  //                   isFromTest: true,
-  //                   testId: widget.testId,
-  //                   testName: widget.testName,
-  //                 ),
-  //               );
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  void goTop() {
+    _scrollController.animateTo(
+      0.0,
+      duration: Duration(milliseconds: 600),
+      curve: Curves.easeOut,
+    );
+  }
 
   void _buildSubmitDialog(BuildContext context) {
     showDialog(
@@ -292,7 +289,9 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
               ),
               onPressed: () {
                 context.pop(); // close dialog
-                context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
+                context.read<DailyDescTestBloc>().add(
+                  SubmitDescTest(answers, widget.descTestModel.id),
+                );
               },
             ),
           ],

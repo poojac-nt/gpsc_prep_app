@@ -10,6 +10,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
 
   DailyDescTestBloc(this._testRepository) : super(DailyTestInitial()) {
     on<FetchAllTests>(_fetchAllTests);
+    on<SubmitDescTest>(_submitDescTest);
   }
 
   Future<void> _fetchAllTests(
@@ -32,6 +33,25 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
           return;
         }
         emit(DailyDescTestFetched(tests));
+      },
+    );
+  }
+
+  Future<void> _submitDescTest(
+    SubmitDescTest event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    emit(DescTestSubmit());
+    final submitResult = await _testRepository.submitDescriptiveTest(
+      event.testId,
+      event.answers,
+    );
+    submitResult.fold(
+      (failure) {
+        emit(DescTestSubmitFailed(failure));
+      },
+      (message) {
+        emit(DescTestSubmitSuccess("Test submitted successfully!"));
       },
     );
   }

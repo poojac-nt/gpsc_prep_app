@@ -20,3 +20,17 @@ final class DailyDescTestFetchFailed extends DailyDescTestState {
 
   DailyDescTestFetchFailed(this.failure);
 }
+
+final class DescTestSubmit extends DailyDescTestState {}
+
+final class DescTestSubmitFailed extends DailyDescTestState {
+  final Failure failure;
+
+  DescTestSubmitFailed(this.failure);
+}
+
+final class DescTestSubmitSuccess extends DailyDescTestState {
+  final String message;
+
+  DescTestSubmitSuccess(this.message);
+}

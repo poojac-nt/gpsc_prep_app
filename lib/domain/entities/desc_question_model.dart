@@ -1,5 +1,4 @@
 import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart';
-import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/utils/enums/difficulty_level.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -7,6 +6,9 @@ part 'desc_question_model.g.dart';
 
 @JsonSerializable()
 class DescQuestionModel {
+  @JsonKey(name: "id")
+  final int id;
+
   @JsonKey(name: "question_type")
   final String questionType;
 
@@ -39,6 +41,7 @@ class DescQuestionModel {
   final String topicName;
 
   DescQuestionModel({
+    required this.id,
     required this.questionType,
     required this.difficultyLevel,
     required this.questionEn,

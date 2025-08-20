@@ -503,4 +503,37 @@ class SupabaseHelper {
       return Left(Failure("Error fetching test : ${e.toString()}"));
     }
   }
+
+  Future<Either<Failure, void>> submitDescriptiveTest({
+    required int testId,
+    required Map<int, String> answers, // questionId -> answer text
+  }) async {
+    final user = _cache.user;
+
+    if (user == null) {
+      _log.e("Submit failed: No user logged in DescriptiveTest");
+      return Left(Failure("You must be logged in to submit the test."));
+    }
+
+    try {
+      // Prepare rows
+      final rows =
+          answers.entries.map((entry) {
+            return {
+              'user_id': user.id, // ⚠ adjust if user.id is uuid
+              'test_id': testId,
+              'question_id': entry.key,
+              'answer': {'text': entry.value},
+            };
+          }).toList();
+
+      await supabase.from('desc_test_detailed_results').insert(rows);
+
+      _log.i("Test submitted successfully DescriptiveTest");
+      return Right(null);
+    } catch (e) {
+      _log.e("Error submitting test: $e DescriptiveTest");
+      return Left(Failure("Error submitting test. Please try again."));
+    }
+  }
 }
