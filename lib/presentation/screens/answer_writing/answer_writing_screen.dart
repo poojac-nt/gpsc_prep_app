@@ -70,7 +70,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                           TestTile(
                             title: descTests[index].name,
                             onTap: () {
-                              context.pushReplacement(
+                              context.push(
                                 AppRoutes.descriptiveTestInstructionScreen,
                                 extra: DescTestInstructionScreenArgs(
                                   dailyTestModel: descTests[index],

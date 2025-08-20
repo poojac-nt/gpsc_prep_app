@@ -115,7 +115,7 @@ class _DescriptiveTestInstructionScreenState
                   backgroundColor: AppColors.primary,
                   text: "Start Test",
                   onTap: () {
-                    context.pushReplacement(
+                    context.go(
                       AppRoutes.descriptiveTestScreen,
                       extra: DescTestScreenArgs(
                         dailyTestModel: widget.descTestModel,

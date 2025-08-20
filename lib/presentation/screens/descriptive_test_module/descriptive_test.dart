@@ -49,7 +49,10 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Descriptive Test', style: AppTexts.titleTextStyle),
+        title: Padding(
+          padding: EdgeInsets.only(left: 10.w),
+          child: Text('Descriptive Test', style: AppTexts.titleTextStyle),
+        ),
       ),
       body: BlocListener<DailyDescTestBloc, DailyDescTestState>(
         listener: (context, state) {
@@ -92,7 +95,52 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                             child: ActionButton(
                               text: "Quit Test",
                               onTap: () {
-                                context.go(AppRoutes.studentDashboard);
+                                showDialog(
+                                  context: context,
+                                  builder:
+                                      (context) => CustomAlertdialog(
+                                        title: "Confirm Exit",
+                                        mainContent:
+                                            "Do you really want to leave the test in between?",
+                                        content:
+                                            "Your answers so far won’t be saved, you won’t be able to resume this test later.",
+                                        actions: [
+                                          TextButton(
+                                            child: Text(
+                                              "Cancel",
+                                              style: TextStyle(
+                                                color: Colors.grey[700],
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              Navigator.of(
+                                                context,
+                                              ).pop(); // Close dialog
+                                            },
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.redAccent,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              "Yes, Leave",
+                                              style: AppTexts.title.copyWith(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              context.go(
+                                                AppRoutes.studentDashboard,
+                                              ); // Close dialog
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                );
                               },
                             ),
                           ),

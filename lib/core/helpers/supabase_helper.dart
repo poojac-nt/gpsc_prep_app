@@ -510,7 +510,7 @@ class SupabaseHelper {
     try {
       await supabase
           .from(SupabaseKeys.descTestResult)
-          .insert(
+          .upsert(
             answers.entries.map((e) {
               return {
                 'user_id': _cache.user!.id,
