@@ -13,7 +13,12 @@ class DescriptiveTestResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Test Name", style: AppTexts.titleTextStyle)),
+      appBar: AppBar(
+        title: Padding(
+          padding: EdgeInsets.only(left: 10.w),
+          child: Text("Test Name", style: AppTexts.titleTextStyle),
+        ),
+      ),
       body: IntrinsicHeight(
         child: ElevatedContainer(
           child: Column(

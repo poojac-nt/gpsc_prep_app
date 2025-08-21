@@ -90,14 +90,6 @@ class _DescriptiveTestInstructionScreenState
                       _buildInstructionTile(
                         "You can type your answer directly or upload a PDF file",
                       ),
-                      5.hGap,
-                      _buildInstructionTile(
-                        "Your answers will be sent to mentors for evaluation",
-                      ),
-                      5.hGap,
-                      _buildInstructionTile(
-                        "Make sure to submit before time expires",
-                      ),
                     ],
                   ),
                 ),

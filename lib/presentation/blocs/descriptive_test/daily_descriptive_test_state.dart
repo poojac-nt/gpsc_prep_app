@@ -78,4 +78,8 @@ class AnswerState {
   File? pdf;
 
   AnswerState({this.text = '', this.pdf});
+
+  AnswerState copyWith({String? text, File? pdf}) {
+    return AnswerState(text: text ?? this.text, pdf: pdf ?? this.pdf);
+  }
 }

@@ -39,10 +39,20 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
 
   @override
   void initState() {
+    _answers.clear();
+    _controller.clear();
+    currentIndex = 0;
     context.read<QuestionBloc>().add(
       LoadDescQuestion(widget.descTestModel.id, "en"),
     );
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -57,6 +67,9 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
       body: BlocListener<DailyDescTestBloc, DailyDescTestState>(
         listener: (context, state) {
           if (state is DescTestSubmitSuccess) {
+            _answers.clear();
+            _controller.clear();
+            currentIndex = 0;
             getIt<SnackBarHelper>().showSuccess(state.message);
             context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
           } else if (state is DescTestSubmitFailed) {
@@ -190,25 +203,19 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       ),
                       child: TextField(
                         maxLines: 10,
+                        controller: _controller,
                         decoration: InputDecoration(
                           hintText: "Type your answer here...",
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(10.w),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: AppBorders.borderRadius,
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: Colors.blueAccent,
-                            ),
-                          ),
                         ),
-                        controller: _controller,
                         onChanged: (value) {
                           setState(() {
-                            final existing =
-                                _answers[question.id] ?? AnswerState();
-                            existing.text = value;
-                            _answers[question.id] = existing; // ✅ update map
+                            // Clear PDF when typing
+                            _answers[question.id] = AnswerState(
+                              text: value,
+                              pdf: null,
+                            );
                           });
 
                           context.read<DailyDescTestBloc>().add(
@@ -265,13 +272,12 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                         ),
                                         onPressed: () {
                                           setState(() {
-                                            final existing =
-                                                _answers[question.id];
-                                            if (existing != null) {
-                                              existing.pdf =
-                                                  null; // ✅ remove pdf only
-                                              _answers[question.id] = existing;
-                                            }
+                                            _answers[question.id] = AnswerState(
+                                              text: '',
+                                              pdf: null,
+                                            );
+                                            _controller
+                                                .clear(); // clear TextField too
                                           });
                                         },
                                       ),
@@ -288,6 +294,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                           type: FileType.custom,
                                           allowedExtensions: ['pdf'],
                                         );
+
                                     if (result != null &&
                                         result.files.single.path != null) {
                                       final file = File(
@@ -295,13 +302,14 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                       );
 
                                       setState(() {
-                                        final existing =
-                                            _answers[question.id] ??
-                                            AnswerState();
-                                        existing.pdf = file;
-                                        _answers[question.id] =
-                                            existing; // ✅ update map
+                                        // Clear text when PDF selected
+                                        _answers[question.id] = AnswerState(
+                                          text: '',
+                                          pdf: file,
+                                        );
+                                        _controller.clear(); // clear TextField
                                       });
+
                                       context.read<DailyDescTestBloc>().add(
                                         AddPdfAnswer(
                                           questionId: question.id,
