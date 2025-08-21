@@ -21,7 +21,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/dashboard/dashboard_bloc_state.dart';
-import '../answer_writing/answer_writing_screen.dart';
+import '../descriptive_test_module/answer_writing_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});

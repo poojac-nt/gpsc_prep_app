@@ -12,12 +12,15 @@ class DescTestModel {
   int noQuestions;
   @JsonKey(name: "total_marks")
   int totalMarks;
+  @JsonKey(name: "created_at")
+  String createdAt;
 
   DescTestModel({
     required this.id,
     required this.name,
     required this.totalMarks,
     required this.noQuestions,
+    required this.createdAt,
   });
 
   factory DescTestModel.fromJson(Map<String, dynamic> json) =>

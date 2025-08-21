@@ -13,7 +13,6 @@
 ///
 /// 
 ///
-library;
 import 'package:flutter/widgets.dart';
 
 class AppIcons {
@@ -22,8 +21,9 @@ class AppIcons {
   static const _kFontFam = 'AppIcons';
   static const String? _kFontPkg = null;
 
-  static const IconData result_icon = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData retest_icon = IconData(0xe801, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData share_test = IconData(0xe802, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-  static const IconData start_test = IconData(0xe803, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData desc_ans_icon = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData result_icon = IconData(0xe801, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData retest_icon = IconData(0xe802, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData share_test = IconData(0xe803, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData start_test = IconData(0xe804, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

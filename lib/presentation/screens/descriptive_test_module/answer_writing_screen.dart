@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
@@ -77,16 +81,23 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                                 ),
                               );
                             },
-                            // widgets: [
-                            //   IconButton(
-                            //     onPressed: () {},
-                            //     icon: Icon(
-                            //       Icons.download,
-                            //       size: 25.sp,
-                            //       color: AppColors.accentColor,
-                            //     ),
-                            //   ),
-                            // ],
+                            widgets: [
+                              if (isAnswerUnlocked(descTests[index].createdAt))
+                                IconButton(
+                                  onPressed: () {
+                                    context.push(
+                                      AppRoutes.descAnswerScreen,
+                                      extra: descTests[index],
+                                    );
+                                  },
+                                  icon: Icon(
+                                    AppIcons.desc_ans_icon,
+                                    size: 25.sp,
+                                    color: AppColors.primary,
+                                  ),
+                                  tooltip: "Answer Module",
+                                ),
+                            ],
                           ),
                         ],
                       ).padSymmetric(vertical: 6.h);
@@ -228,5 +239,37 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
         ),
       ),
     );
+  }
+
+  bool isAnswerUnlocked(String createdAtString) {
+    try {
+      // Parse created_at from Supabase (UTC string)
+      final createdAtUtc = DateTime.parse(createdAtString);
+
+      // Convert UTC -> IST
+      final createdAtIst = createdAtUtc.add(
+        const Duration(hours: 5, minutes: 30),
+      );
+
+      // Build unlock time = 8 PM IST of created date
+      final unlockTimeIst = DateTime(
+        createdAtIst.year,
+        createdAtIst.month,
+        createdAtIst.day,
+        20, // 8 PM
+      );
+
+      // Current time in IST
+      final nowIst = DateTime.now().toUtc().add(
+        const Duration(hours: 5, minutes: 30),
+      );
+
+      // Return true if current IST is after unlock time
+      return nowIst.isAfter(unlockTimeIst);
+    } catch (e) {
+      getIt<LogHelper>().e("Error parsing createdAt: $e");
+      getIt<SnackBarHelper>().showError("Error parsing createdAt: $e");
+      return false; // Default to locked if parsing fails
+    }
   }
 }

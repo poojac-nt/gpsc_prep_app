@@ -537,11 +537,8 @@ class SupabaseHelper {
           "test_${testId}_q_${questionId}_${DateTime.now().millisecondsSinceEpoch}.pdf";
 
       final filePath = "answers/$fileName";
-
-      // Upload file
       await supabase.storage.from(SupabaseKeys.answers).upload(filePath, file);
 
-      // Get public URL
       final publicUrl = supabase.storage
           .from(SupabaseKeys.answers)
           .getPublicUrl(filePath);

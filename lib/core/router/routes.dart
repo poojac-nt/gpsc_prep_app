@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
@@ -17,7 +19,7 @@ import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_q
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
-import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
+import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
@@ -192,6 +194,16 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) =>
             _slideTransition(DescriptiveTestResultScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.descAnswerScreen,
+    pageBuilder: (context, state) {
+      final descTestModel = state.extra as DescTestModel;
+      return _slideTransition(
+        DescriptiveAnswersScreen(descTestModel: descTestModel),
+        state,
+      );
+    },
   ),
 
   GoRoute(
