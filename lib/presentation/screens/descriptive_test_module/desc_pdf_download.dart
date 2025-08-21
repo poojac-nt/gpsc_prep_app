@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -48,7 +49,7 @@ Future<String> generateDescTestPdf(
                   pw.Text(
                     "Q1 ${question.questionEn.questionTxt}",
                     style: pw.TextStyle(
-                      fontSize: 16,
+                      fontSize: 12.sp,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),

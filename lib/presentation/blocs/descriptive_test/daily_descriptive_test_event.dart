@@ -10,7 +10,11 @@ sealed class DailyDescTestEvent {}
 class DailyTestInit extends DailyDescTestEvent {}
 
 /// Fetch all descriptive tests for the user
-class FetchAllTests extends DailyDescTestEvent {}
+class FetchAllTests extends DailyDescTestEvent {
+  final int userId;
+
+  FetchAllTests(this.userId);
+}
 
 /// Add or update a text answer for a specific question
 class AddTextAnswer extends DailyDescTestEvent {

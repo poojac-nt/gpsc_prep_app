@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -37,20 +39,47 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     Emitter<DailyDescTestState> emit,
   ) async {
     emit(DailyDescTestFetching());
+
+    // 1. Fetch all descriptive tests
     final testsResult = await _testRepository.fetchDailyDescTest();
-    testsResult.fold((failure) => emit(DailyDescTestFetchFailed(failure)), (
-      tests,
-    ) {
-      if (tests.isEmpty) {
-        _log.e("No descriptive tests available at the moment.");
-        emit(
-          DailyDescTestFetchFailed(Failure('No tests available at the moment')),
-        );
-        return;
-      }
-      emit(DailyDescTestFetched(tests));
-      _log.i("Fetched ${tests.length} descriptive tests successfully.");
-    });
+
+    await testsResult.fold(
+      (failure) async {
+        emit(DailyDescTestFetchFailed(failure));
+      },
+      (tests) async {
+        if (tests.isEmpty) {
+          _log.e("No descriptive tests available at the moment.");
+          emit(
+            DailyDescTestFetchFailed(
+              Failure('No tests available at the moment'),
+            ),
+          );
+          return;
+        }
+
+        // 2. Fetch answers for each test
+        final answersMap = <int, List<DescAnswerModel>>{};
+        final userId = getIt<CacheManager>().getUserId();
+
+        for (final test in tests) {
+          final answersResult = await _testRepository.fetchAnswersForTest(
+            test.id,
+            userId,
+          );
+
+          answersResult.fold((_) {}, (ansList) {
+            if (ansList.isNotEmpty) {
+              answersMap[test.id] = ansList;
+            }
+          });
+        }
+
+        // 3. Emit success state with both tests and answers
+        emit(DailyDescTestFetched(tests, answersMap));
+        _log.i("Fetched ${tests.length} descriptive tests successfully.");
+      },
+    );
   }
 
   /// Add a text answer (clears PDF if it exists)

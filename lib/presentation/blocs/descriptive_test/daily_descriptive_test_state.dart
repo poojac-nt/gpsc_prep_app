@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 
 @immutable
@@ -16,8 +17,9 @@ final class DailyDescTestFetching extends DailyDescTestState {}
 /// Fetched descriptive tests successfully
 final class DailyDescTestFetched extends DailyDescTestState {
   final List<DescTestModel> dailyTestModel;
+  final Map<int, List<DescAnswerModel>> answersMap;
 
-  DailyDescTestFetched(this.dailyTestModel);
+  DailyDescTestFetched(this.dailyTestModel, this.answersMap);
 }
 
 /// Failed fetching descriptive tests

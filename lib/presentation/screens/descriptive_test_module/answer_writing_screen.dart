@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -29,9 +30,9 @@ class AnswerWritingScreen extends StatefulWidget {
 class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    context.read<DailyDescTestBloc>().add(FetchAllTests());
+    final userId = getIt<CacheManager>().getUserId();
+    context.read<DailyDescTestBloc>().add(FetchAllTests(userId));
   }
 
   @override
@@ -66,6 +67,8 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                     shrinkWrap: true,
                     itemCount: descTests.length,
                     itemBuilder: (context, index) {
+                      final test = descTests[index];
+                      final hasAnswer = state.answersMap.containsKey(test.id);
                       return TestModule(
                         title: "Daily Practice",
                         subtitle: "Subject based Daily test",
@@ -74,13 +77,67 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                           TestTile(
                             title: descTests[index].name,
                             onTap: () {
-                              context.push(
-                                AppRoutes.descriptiveTestInstructionScreen,
-                                extra: DescTestInstructionScreenArgs(
-                                  dailyTestModel: descTests[index],
-                                ),
-                              );
+                              if (hasAnswer) {
+                                showDialog(
+                                  context: context,
+                                  builder:
+                                      (context) => AlertDialog(
+                                        title: Text(
+                                          "Answer Already Submitted",
+                                          style: AppTexts.titleTextStyle,
+                                        ),
+                                        content: Text(
+                                          "If you submit again, your previous answer will be overwritten.",
+                                          style: AppTexts.subTitle,
+                                        ),
+                                        actions: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              IntrinsicWidth(
+                                                child: ActionButton(
+                                                  text: "Cancel",
+                                                  onTap: () {
+                                                    context
+                                                        .pop(); // close dialog
+                                                  },
+                                                ),
+                                              ),
+                                              10.wGap,
+                                              IntrinsicWidth(
+                                                child: ActionButton(
+                                                  text: "Submit Again",
+                                                  onTap: () {
+                                                    context
+                                                        .pop(); // close dialog first
+                                                    context.push(
+                                                      AppRoutes
+                                                          .descriptiveTestInstructionScreen,
+                                                      extra:
+                                                          DescTestInstructionScreenArgs(
+                                                            dailyTestModel:
+                                                                descTests[index],
+                                                          ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                );
+                              } else {
+                                context.push(
+                                  AppRoutes.descriptiveTestInstructionScreen,
+                                  extra: DescTestInstructionScreenArgs(
+                                    dailyTestModel: descTests[index],
+                                  ),
+                                );
+                              }
                             },
+
                             widgets: [
                               if (isAnswerUnlocked(descTests[index].createdAt))
                                 IconButton(

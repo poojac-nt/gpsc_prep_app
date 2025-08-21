@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
@@ -36,6 +37,11 @@ class TestRepository {
 
   Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest() async =>
       await _supabase.fetchDescriptiveTests();
+
+  Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
+    int testId,
+    int userId,
+  ) async => await _supabase.fetchAnswersForTest(testId, userId);
 
   Future<Either<Failure, Map<String, dynamic>>>
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();

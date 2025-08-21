@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
@@ -549,6 +550,30 @@ class SupabaseHelper {
     } catch (e) {
       _log.e("PDF upload failed: $e");
       return Left(Failure("PDF upload failed: ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
+    int testId,
+    int userId,
+  ) async {
+    try {
+      final response = await supabase
+          .from('desc_test_detailed_results')
+          .select()
+          .eq('test_id', testId)
+          .eq('user_id', userId);
+
+      final answers =
+          (response as List<dynamic>)
+              .map(
+                (row) => DescAnswerModel.fromJson(row as Map<String, dynamic>),
+              )
+              .toList();
+
+      return Right(answers);
+    } catch (e) {
+      return Left(Failure('Error fetching answers: $e'));
     }
   }
 }
