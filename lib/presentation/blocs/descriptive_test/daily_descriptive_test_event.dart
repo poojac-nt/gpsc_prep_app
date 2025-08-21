@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 
 @immutable
 sealed class DailyDescTestEvent {}
@@ -41,4 +42,16 @@ class SubmitDescTest extends DailyDescTestEvent {
   final int testId;
 
   SubmitDescTest(this.testId);
+}
+
+class DownloadDescTestPdf extends DailyDescTestEvent {
+  final DescQuestionModel questionId;
+  final int index;
+  final String testName;
+
+  DownloadDescTestPdf({
+    required this.questionId,
+    required this.index,
+    required this.testName,
+  });
 }

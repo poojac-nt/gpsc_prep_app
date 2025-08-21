@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'daily_descriptive_test_event.dart';
 import 'daily_descriptive_test_state.dart';
@@ -25,6 +28,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     on<AddPdfAnswer>(_addPdfAnswer);
     on<RemoveAnswer>(_removeAnswer);
     on<SubmitDescTest>(_submitDescTest);
+    on<DownloadDescTestPdf>(_downloadDescTestPdf);
   }
 
   /// Fetch all tests
@@ -179,6 +183,54 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     } catch (e) {
       _log.e("Error submitting descriptive test: $e");
       emit(DescTestSubmitFailed(Failure(e.toString())));
+    }
+  }
+
+  Future<void> _downloadDescTestPdf(
+    DownloadDescTestPdf event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    emit(PdfDownloadInit());
+
+    try {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 30) {
+        if (!await Permission.manageExternalStorage.isGranted) {
+          await Permission.manageExternalStorage.request();
+        }
+        if (!await Permission.manageExternalStorage.isGranted) {
+          emit(PdfDownloadFailure(Failure('Storage permission denied')));
+          return;
+        }
+      } else {
+        if (!await Permission.storage.isGranted) {
+          await Permission.storage.request();
+        }
+        if (!await Permission.storage.isGranted) {
+          emit(PdfDownloadFailure(Failure('Storage permission denied')));
+          return;
+        }
+      }
+
+      final result = await generateDescTestPdf(
+        event.questionId,
+        event.index,
+        event.testName,
+      );
+
+      if (result.isEmpty) {
+        _log.e("Failed to generate PDF for question ${event.questionId.id}");
+        emit(PdfDownloadFailure(Failure("Failed to generate PDF")));
+        return;
+      }
+      _log.i("PDF generated successfully: $result");
+      emit(PdfDownloadSuccess(result));
+      _snackBar.showSuccess("PDF downloaded successfully: $result");
+    } catch (e) {
+      _log.e("Error downloading PDF: $e");
+      emit(PdfDownloadFailure(Failure(e.toString())));
     }
   }
 }

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
@@ -76,6 +77,12 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
             getIt<SnackBarHelper>().showError(state.failure.message);
           } else if (state is DailyDescTestMessage) {
             getIt<SnackBarHelper>().showError(state.message);
+          } else if (state is PdfDownloadFailure) {
+            getIt<SnackBarHelper>().showError(state.failure.message);
+          } else if (state is PdfDownloadSuccess) {
+            getIt<SnackBarHelper>().showSuccess(
+              "Pdf is Save at :${state.filePath}",
+            );
           }
         },
         child: BlocBuilder<QuestionBloc, QuestionState>(
@@ -179,11 +186,33 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Question ${currentIndex + 1}",
-                            style: AppTexts.labelTextStyle.copyWith(
-                              fontSize: 20.sp,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Question ${currentIndex + 1}",
+                                  style: AppTexts.labelTextStyle.copyWith(
+                                    fontSize: 20.sp,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  AppIcons.desc_pdf_download,
+                                  color: AppColors.primary,
+                                  weight: 50.sp,
+                                ),
+                                onPressed: () {
+                                  context.read<DailyDescTestBloc>().add(
+                                    DownloadDescTestPdf(
+                                      questionId: question,
+                                      index: (currentIndex + 1),
+                                      testName: widget.descTestModel.name,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                           15.hGap,
                           Text(

@@ -83,3 +83,17 @@ class AnswerState {
     return AnswerState(text: text ?? this.text, pdf: pdf ?? this.pdf);
   }
 }
+
+final class PdfDownloadInit extends DailyDescTestState {}
+
+final class PdfDownloadSuccess extends DailyDescTestState {
+  final String filePath;
+
+  PdfDownloadSuccess(this.filePath);
+}
+
+final class PdfDownloadFailure extends DailyDescTestState {
+  final Failure failure;
+
+  PdfDownloadFailure(this.failure);
+}

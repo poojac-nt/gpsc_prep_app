@@ -27,6 +27,7 @@ DescQuestionModel _$DescQuestionModelFromJson(Map<String, dynamic> json) =>
       questionHash: json['question_hash'] as String,
       subjectName: json['subject_name'] as String,
       topicName: json['topic_name'] as String,
+      pages: (json['pages'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$DescQuestionModelToJson(DescQuestionModel instance) =>
@@ -43,4 +44,5 @@ Map<String, dynamic> _$DescQuestionModelToJson(DescQuestionModel instance) =>
       'question_hash': instance.questionHash,
       'subject_name': instance.subjectName,
       'topic_name': instance.topicName,
+      'pages': instance.pages,
     };
