@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -32,208 +31,179 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
-        centerTitle: false,
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 12.w),
-            child: Icon(CupertinoIcons.bell_fill, color: Colors.black),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
+          centerTitle: false,
+          bottom: TabBar(
+            tabAlignment: TabAlignment.center,
+            padding: EdgeInsets.zero,
+            isScrollable: true,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: Colors.black54,
+            labelStyle: AppTexts.titleTextStyle.copyWith(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelStyle: AppTexts.titleTextStyle.copyWith(
+              fontWeight: FontWeight.w500,
+              fontSize: 14.sp,
+            ),
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(width: 3, color: AppColors.primary),
+              insets: EdgeInsets.symmetric(horizontal: 16.w),
+            ),
+            indicatorSize: TabBarIndicatorSize.label,
+            labelPadding: EdgeInsets.symmetric(
+              horizontal: 18.w,
+              vertical: 10.h,
+            ),
+            tabs: const [
+              Tab(text: "All Subjects"),
+              Tab(text: "Current Affairs"),
+              Tab(text: "Math"),
+            ],
           ),
-        ],
-      ),
-      body: BlocConsumer<DailyTestBloc, DailyTestState>(
-        listener: (context, state) {},
-        builder: (context, state) {
-          if (state is DailyTestFetching) {
-            return _buildWhenLoading();
-          } else if (state is DailyTestFetched) {
-            return SingleChildScrollView(
-              child: Column(
+        ),
+        body: BlocConsumer<DailyTestBloc, DailyTestState>(
+          listener: (context, state) {},
+          builder: (context, state) {
+            if (state is DailyTestFetching) {
+              return _buildWhenLoading();
+            } else if (state is DailyTestFetched) {
+              final tests = state.dailyTestModel;
+
+              return TabBarView(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Available Tests', style: AppTexts.heading),
-                    ],
-                  ),
-                  10.hGap,
+                  _buildFilteredList(tests, null, state), // all subjects
+                  _buildFilteredList(tests, "Current Affairs", state),
+                  _buildFilteredList(tests, "Math", state),
+                ],
+              );
+            }
+            return Container();
+          },
+        ),
+      ),
+    );
+  }
 
-                  /// Daily Tests Section
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: state.dailyTestModel.length,
-                    itemBuilder: (context, index) {
-                      final test = state.dailyTestModel[index];
-                      final testResult = state.testResults[test.id];
-                      final hasResult = testResult != null;
+  /// Build filtered list for each tab
+  Widget _buildFilteredList(
+    List tests,
+    String? filter,
+    DailyTestFetched state,
+  ) {
+    final filtered =
+        filter == null
+            ? tests
+            : tests
+                .where(
+                  (t) => t.name.toLowerCase().contains(filter.toLowerCase()),
+                )
+                .toList();
 
-                      // Default values
-                      DateTime? submittedAt;
-                      bool isEligibleForRetest = false;
+    if (filtered.isEmpty) {
+      return Center(
+        child: Text("No tests available for ${filter ?? "All Subjects"}"),
+      );
+    }
 
-                      if (hasResult) {
-                        final createdAtString = testResult.createdAt;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          ...filtered.map((test) {
+            final testResult = state.testResults[test.id];
+            final hasResult = testResult != null;
 
-                        // Check that createdAt is not null or empty
-                        if (createdAtString != null &&
-                            createdAtString.isNotEmpty) {
-                          try {
-                            submittedAt = DateTime.parse(createdAtString);
-                            isEligibleForRetest =
-                                DateTime.now()
-                                    .difference(submittedAt)
-                                    .inHours >=
-                                12;
-                          } catch (e) {
-                            // Optional: log or ignore parse errors
-                          }
+            // Default values
+            DateTime? submittedAt;
+            bool isEligibleForRetest = false;
+
+            if (hasResult) {
+              final createdAtString = testResult.createdAt;
+              if (createdAtString != null && createdAtString.isNotEmpty) {
+                try {
+                  submittedAt = DateTime.parse(createdAtString);
+                  isEligibleForRetest =
+                      DateTime.now().difference(submittedAt).inHours >= 12;
+                } catch (e) {
+                  // ignore parse error
+                }
+              }
+            }
+
+            return Column(
+              children: [
+                TestModule(
+                  showShareButton: true,
+                  testModel: test,
+                  title: "Daily Tests",
+                  subtitle: "Subject-based Daily Practice",
+                  prefixIcon: Icons.calendar_today_outlined,
+                  cards: [
+                    TestTile(
+                      title: test.name,
+                      subtitle:
+                          "${test.noQuestions} Questions · ${test.duration} min",
+                      onTap: () {
+                        if (hasResult) {
+                          context.pushReplacement(
+                            AppRoutes.resultScreen,
+                            extra: ResultScreenArgs(
+                              isFromTest: false,
+                              dailyTestModel: test,
+                            ),
+                          );
+                        } else {
+                          context.pushReplacementNamed(
+                            AppRoutes.testInstructionScreen,
+                            extra: TestInstructionScreenArgs(
+                              dailyTestModel: test,
+                            ),
+                          );
                         }
-                      }
-                      return Column(
-                        children: [
-                          TestModule(
-                            showShareButton: true,
-                            testModel: test,
-                            title: "Daily Tests",
-                            subtitle: "Subject-based Daily Practice",
-                            prefixIcon: Icons.calendar_today_outlined,
-                            cards: [
-                              TestTile(
-                                title: test.name,
-                                subtitle:
-                                    "${test.noQuestions} Questions · ${test.duration} min",
-                                onTap: () {
-                                  if (hasResult) {
+                      },
+                      hasResult: hasResult,
+                      widgets:
+                          hasResult && isEligibleForRetest
+                              ? [
+                                IconButton(
+                                  icon: Icon(
+                                    AppIcons.retest_icon,
+                                    color: AppColors.primary,
+                                  ),
+                                  onPressed: () {
                                     context.pushReplacement(
-                                      AppRoutes.resultScreen,
-                                      extra: ResultScreenArgs(
-                                        isFromTest: false,
-                                        dailyTestModel: test,
-                                      ),
-                                    );
-                                  } else {
-                                    context.pushReplacementNamed(
                                       AppRoutes.testInstructionScreen,
                                       extra: TestInstructionScreenArgs(
                                         dailyTestModel: test,
                                       ),
                                     );
-                                  }
-                                },
-                                hasResult: hasResult,
-                                widgets:
-                                    hasResult && isEligibleForRetest
-                                        ? [
-                                          IconButton(
-                                            icon: Icon(
-                                              AppIcons.retest_icon,
-                                              color: AppColors.primary,
-                                            ),
-                                            onPressed: () {
-                                              context.pushReplacement(
-                                                AppRoutes.testInstructionScreen,
-                                                extra:
-                                                    TestInstructionScreenArgs(
-                                                      dailyTestModel: test,
-                                                    ),
-                                              );
-                                            },
-                                          ),
-                                        ]
-                                        : [],
-                              ).padSymmetric(vertical: 6.h),
-                            ],
-                          ),
-                          10.hGap,
-                        ],
-                      );
-                    },
-                  ),
-                  10.hGap,
-                  //
-                  // /// Mock Tests Section
-                  // TestModule(
-                  //   title: "Mock Tests",
-                  //   subtitle: "Full Length Practice Exams",
-                  //   prefixIcon: Icons.description_outlined,
-                  //   cards: [
-                  //     TestTile(
-                  //       title: "GPSC Mock Test #1",
-                  //       subtitle: "100 Questions · 2 hours",
-                  //       widgets: [
-                  //         Container(
-                  //           padding: EdgeInsets.all(5),
-                  //           decoration: BoxDecoration(
-                  //             border: Border.all(color: Colors.black, width: 1),
-                  //             color: Colors.white,
-                  //             borderRadius: BorderRadius.circular(5),
-                  //           ),
-                  //           child: Icon(
-                  //             Icons.file_download_outlined,
-                  //             color: Colors.black,
-                  //           ),
-                  //         ),
-                  //       ],
-                  //       onTap: () {
-                  //         // Handle mock test tap
-                  //       },
-                  //       buttonTitle: 'Start',
-                  //     ),
-                  //   ],
-                  // ),
-                  // 10.hGap,
-
-                  /// Offline Mode Section
-                  // TestModule(
-                  //   title: 'Offline Mode',
-                  //   subtitle: 'Download tests for offline Practice',
-                  //   prefixIcon: Icons.file_download_outlined,
-                  //   cards: [
-                  //     BorderedContainer(
-                  //       borderColor: AppColors.accentColor,
-                  //       padding: EdgeInsets.all(5),
-                  //       child: Row(
-                  //         mainAxisAlignment: MainAxisAlignment.center,
-                  //         children: [
-                  //           Icon(Icons.file_download_outlined),
-                  //           10.wGap,
-                  //           Text('Download PDF Test', style: AppTexts.title),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //     10.hGap,
-                  //     BorderedContainer(
-                  //       borderColor: AppColors.accentColor,
-                  //       padding: EdgeInsets.all(5),
-                  //       child: Row(
-                  //         mainAxisAlignment: MainAxisAlignment.center,
-                  //         children: [
-                  //           Icon(Icons.file_upload_outlined),
-                  //           10.wGap,
-                  //           Text('Upload Answers', style: AppTexts.title),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
-              ).padAll(AppPaddings.appPaddingInt),
+                                  },
+                                ),
+                              ]
+                              : [],
+                    ).padSymmetric(vertical: 6.h),
+                  ],
+                ),
+                10.hGap,
+              ],
             );
-          }
-          return Container(); // fallback UI for unhandled states
-        },
-      ),
+          }),
+        ],
+      ).padAll(AppPaddings.appPaddingInt),
     );
   }
 
+  /// Skeleton for loading state
   Padding _buildWhenLoading() {
     return Padding(
       padding: EdgeInsets.all(AppPaddings.appPaddingInt),
       child: Skeletonizer(
-        enabled: true, // Set this to false when actual data is loaded
+        enabled: true,
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -242,8 +212,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                 children: [Text('Available Tests', style: AppTexts.heading)],
               ),
               10.hGap,
-
-              /// Daily Tests Section
               TestModule(
                 title: "Daily Tests",
                 subtitle: "Subject-based Daily Practice",
@@ -258,8 +226,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                 ),
               ),
               10.hGap,
-
-              /// Mock Tests Section
               TestModule(
                 title: "Mock Tests",
                 subtitle: "Full Length Practice Exams",
@@ -290,8 +256,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                 ],
               ),
               10.hGap,
-
-              /// Offline Mode Section
               TestModule(
                 title: 'Offline Mode',
                 subtitle: 'Download tests for offline Practice',
