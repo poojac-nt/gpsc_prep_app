@@ -147,7 +147,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                                 10.hGap,
                                 ActionButton(
                                   isLoading: isLoading,
-                                  text: 'Bulk Insertion',
+                                  text: 'Insert Question with Tests',
                                   onTap: () {
                                     context.read<UploadQuestionsBloc>().add(
                                       DescParseUploadFile(),

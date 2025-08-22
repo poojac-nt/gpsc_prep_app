@@ -19,7 +19,7 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
     final pickedFileResult = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx'],
-      withData: false,
+      withData: true,
     );
 
     if (pickedFileResult == null || pickedFileResult.files.isEmpty) {
@@ -29,25 +29,34 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
 
     final file = pickedFileResult.files.single;
     final filePath = file.path;
-    if (filePath == null) throw Exception('File path is null.');
+    if (filePath == null) {
+      _log.e("❌ File path is null.");
+      _snackBar.showError('File path is null.');
+      return null;
+    }
 
     late List<List<dynamic>> rows;
     final ext = file.extension?.toLowerCase();
 
+    // --- CSV ---
     if (ext == 'csv') {
       final content = await File(filePath).readAsString();
       rows = const CsvToListConverter().convert(
-        content.replaceFirst(RegExp(r'^\ufeff'), ''),
+        content.replaceFirst(RegExp(r'^\ufeff'), ''), // remove BOM
         eol: '\n',
         shouldParseNumbers: false,
       );
-    } else if (ext == 'xlsx') {
+    }
+    // --- XLSX ---
+    else if (ext == 'xlsx') {
       final bytes = await File(filePath).readAsBytes();
       final excel = Excel.decodeBytes(bytes);
       final sheet =
           excel.tables.values.isNotEmpty ? excel.tables.values.first : null;
       if (sheet == null || sheet.rows.isEmpty) {
-        throw Exception('Excel file has no data.');
+        _log.e("❌ Excel file has no data.");
+        _snackBar.showError('Excel file has no data.');
+        return null;
       }
       rows =
           sheet.rows
@@ -57,25 +66,29 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
               )
               .toList();
     } else {
+      _log.e("❌ Unsupported file format: $ext");
       _snackBar.showError('Unsupported file format');
       return null;
     }
 
     if (rows.isEmpty) {
+      _log.e("❌ The file is empty.");
       _snackBar.showError('The file is empty.');
       return null;
     }
 
+    // --- Headers ---
     final headers =
         rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
     final dataRows = rows.skip(1).toList();
 
     if (dataRows.isEmpty) {
+      _log.e("❌ No data rows found.");
       _snackBar.showError('No data rows found.');
       return null;
     }
 
-    // ✅ Required headers for descriptive test
+    // ✅ Required headers
     const requiredHeaders = {
       'sr_no',
       'question',
@@ -92,16 +105,29 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
 
     for (final header in requiredHeaders) {
       if (!headers.contains(header)) {
+        _log.e("❌ Missing required header: $header");
         _snackBar.showError('Missing required header: $header');
         return null;
       }
     }
 
     final grouped = <String, Map<String, dynamic>>{};
-    int rowIndex = 1;
+    int rowIndex = 1; // start after header
 
     for (final row in dataRows) {
       rowIndex++;
+
+      // --- Skip empty/invisible rows ---
+      final isEmptyRow = row.every((cell) {
+        final val = cell?.toString().trim() ?? '';
+        return val.isEmpty ||
+            val.toLowerCase() == 'null' ||
+            val.startsWith('=');
+      });
+      if (isEmptyRow) {
+        _log.i("ℹ️ Skipping empty row $rowIndex");
+        continue;
+      }
 
       final rowMap = Map.fromIterables(
         headers,
@@ -111,9 +137,13 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
       final srNo = rowMap['sr_no'] ?? 'unknown';
       final lang = rowMap['language_code'];
 
+      // --- Check required values ---
       for (final key in requiredHeaders) {
         final value = rowMap[key]?.toString().trim();
         if (value == null || value.isEmpty) {
+          _log.e(
+            "❌ Missing value for \"$key\" in row $rowIndex (sr_no: $srNo)",
+          );
           _snackBar.showError(
             'Missing value for "$key" in row $rowIndex (sr_no: $srNo)',
           );
@@ -121,7 +151,11 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
         }
       }
 
+      // --- Prevent duplicate language for same sr_no ---
       if (grouped[srNo]?['languages']?[lang] != null) {
+        _log.e(
+          "❌ Duplicate language \"$lang\" for sr_no \"$srNo\" at row $rowIndex",
+        );
         _snackBar.showError(
           'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
         );
@@ -151,6 +185,7 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
     }
 
     if (grouped.isEmpty) {
+      _log.e("❌ No valid data found.");
       _snackBar.showError('No valid data found.');
       return null;
     }
