@@ -33,11 +33,19 @@ class PdfExportService {
     );
     final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
     final baseFont = pw.Font.ttf(base);
-    final logoImage = pw.MemoryImage(
-      (await rootBundle.load(
-        'assets/images/logo_without_bg.png',
-      )).buffer.asUint8List(),
+
+    final imageProvider = PdfImage.file(
+      pw.Document().document,
+      bytes:
+          (await rootBundle.load(
+            'assets/images/mcq_pdf_header.jpeg',
+          )).buffer.asUint8List(),
     );
+    final imageHeight = imageProvider.height.toDouble();
+    final imageWidth = imageProvider.width.toDouble();
+
+    final pageWidth = PdfPageFormat.a4.width - 48; // minus 24 margin each side
+    final scaledHeight = (imageHeight / imageWidth) * pageWidth;
 
     final pdf = pw.Document(
       pageMode: PdfPageMode.fullscreen,
@@ -121,156 +129,143 @@ class PdfExportService {
                 ],
               ),
             ),
+
         build:
             (context) => [
               pw.Container(
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.black, width: 1.5),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  mainAxisSize: pw.MainAxisSize.min,
+                height: scaledHeight,
+                child: pw.Stack(
+                  fit: pw.StackFit.expand,
                   children: [
-                    pw.Stack(
-                      fit: pw.StackFit.loose,
-                      children: [
-                        pw.Image(mcqPdfHeader, fit: pw.BoxFit.fitWidth),
-                        pw.Positioned(
-                          left: 40,
-                          top: 100,
-                          child: pw.Container(
-                            width: 250,
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Divider(
-                                  indent: 0,
-                                  color: PdfColor.fromHex('#d8b7b2'),
-                                  thickness: 5,
-                                  height: 5,
-                                ),
-                                pw.Padding(
-                                  padding: pw.EdgeInsets.only(
-                                    top: 10,
-                                    bottom: 10,
-                                  ),
-                                  child: pw.Text(
-                                    testName,
-                                    style: pw.TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                pw.Divider(
-                                  indent: 0,
-                                  color: PdfColor.fromHex('#d8b7b2'),
-                                  thickness: 5,
-                                  height: 5,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 20),
-                    ...questions.asMap().entries.map((entry) {
-                      final index = entry.key + 1;
-                      final q = entry.value;
-                      final qLang = q.questionEn;
-                      return pw.Padding(
-                        padding: pw.EdgeInsets.all(20),
+                    pw.Image(mcqPdfHeader, fit: pw.BoxFit.cover),
+                    pw.Positioned(
+                      left: 40,
+                      top: scaledHeight * 0.5 - 10,
+                      child: pw.Container(
+                        width: 250,
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(
-                              "Question $index:",
-                              style: pw.TextStyle(
-                                fontSize: 14,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
+                            pw.Divider(
+                              indent: 0,
+                              color: PdfColor.fromHex('#d8b7b2'),
+                              thickness: 5,
+                              height: 5,
                             ),
-                            pw.SizedBox(height: 5),
-                            ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
-                            pw.SizedBox(height: 5),
-                            pw.Bullet(text: qLang.optA),
-                            pw.Bullet(text: qLang.optB),
-                            pw.Bullet(text: qLang.optC),
-                            pw.Bullet(text: qLang.optD),
-                            pw.SizedBox(height: 5),
-                            pw.Container(
-                              padding: pw.EdgeInsets.all(10),
-                              decoration: pw.BoxDecoration(
-                                color: PdfColor.fromHex('#e1d2c8'),
-                                border: pw.Border.all(
-                                  color: PdfColors.black,
-                                  width: 1,
+                            pw.Padding(
+                              padding: pw.EdgeInsets.symmetric(vertical: 10),
+                              child: pw.Text(
+                                testName,
+                                style: pw.TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: pw.FontWeight.bold,
                                 ),
                               ),
-                              child: pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            ),
+                            pw.Divider(
+                              indent: 0,
+                              color: PdfColor.fromHex('#d8b7b2'),
+                              thickness: 5,
+                              height: 5,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ...questions.asMap().entries.map((entry) {
+                final index = entry.key + 1;
+                final q = entry.value;
+                final qLang = q.questionEn;
+
+                return pw.Padding(
+                  padding: pw.EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 20,
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        "Question $index:",
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.SizedBox(height: 5),
+                      ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
+                      pw.SizedBox(height: 5),
+                      pw.Bullet(text: qLang.optA),
+                      pw.Bullet(text: qLang.optB),
+                      pw.Bullet(text: qLang.optC),
+                      pw.Bullet(text: qLang.optD),
+                      pw.SizedBox(height: 5),
+                      pw.Container(
+                        padding: pw.EdgeInsets.all(10),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColor.fromHex('#e1d2c8'),
+                          border: pw.Border.all(
+                            color: PdfColors.black,
+                            width: 1,
+                          ),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                text: "Answer: ",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
                                 children: [
-                                  pw.RichText(
-                                    text: pw.TextSpan(
-                                      text: "Answer: ",
-                                      style: pw.TextStyle(
-                                        fontWeight: pw.FontWeight.bold,
-                                      ),
-                                      children: [
-                                        pw.TextSpan(
-                                          text: qLang.correctAnswer,
-                                          style: pw.TextStyle(
-                                            fontWeight: pw.FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  pw.RichText(
-                                    text: pw.TextSpan(
-                                      text: "Difficulty Level: ",
-                                      style: pw.TextStyle(
-                                        fontWeight: pw.FontWeight.bold,
-                                      ),
-                                      children: [
-                                        pw.TextSpan(
-                                          text: q.difficultyLevel.level,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  pw.RichText(
-                                    text: pw.TextSpan(
-                                      text: "Subject: ",
-                                      style: pw.TextStyle(
-                                        fontWeight: pw.FontWeight.bold,
-                                      ),
-                                      children: [
-                                        pw.TextSpan(text: q.subjectName),
-                                      ],
-                                    ),
-                                  ),
-                                  pw.SizedBox(height: 4),
-                                  pw.Text(
-                                    "Explanation:",
+                                  pw.TextSpan(
+                                    text: qLang.correctAnswer,
                                     style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold,
                                     ),
-                                  ),
-                                  ..._parseMarkdownToPdfWidgets(
-                                    qLang.explanation,
                                   ),
                                 ],
                               ),
                             ),
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                text: "Difficulty Level: ",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                                children: [
+                                  pw.TextSpan(text: q.difficultyLevel.level),
+                                ],
+                              ),
+                            ),
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                text: "Subject: ",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                                children: [pw.TextSpan(text: q.subjectName)],
+                              ),
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Text(
+                              "Explanation:",
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            ..._parseMarkdownToPdfWidgets(qLang.explanation),
                           ],
                         ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ],
       ),
     );
