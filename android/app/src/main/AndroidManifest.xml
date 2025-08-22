@@ -14,7 +14,7 @@
         android:resizeableActivity="false">
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8716682122656450~8296844640"/>
+            android:value="ca-app-pub-4018950905393948~3067997872"/>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

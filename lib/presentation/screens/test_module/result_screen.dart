@@ -46,7 +46,6 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   void initState() {
     super.initState();
-    AdService().showInterstitialAd();
     if (!widget.isFromTestScreen) {
       context.read<TestBloc>().add(
         FetchSingleTestResultEvent(testId: widget.dailyTestModel.id),
@@ -147,6 +146,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             ),
                             20.hGap,
                             GridView.builder(
+                              physics: NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(

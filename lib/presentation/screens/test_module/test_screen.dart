@@ -111,6 +111,7 @@ class _TestScreenState extends State<TestScreen> {
               widget.isFromResult
                   ? TextButton(
                     onPressed: () {
+                      AdService().showInterstitialAd();
                       context.pop();
                     },
                     child: Text(
@@ -186,6 +187,7 @@ class _TestScreenState extends State<TestScreen> {
                   questionCubitState.isQuitTest) {
                 context.go(AppRoutes.studentDashboard);
               } else {
+                AdService().showInterstitialAd();
                 context.pushReplacement(
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
