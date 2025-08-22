@@ -20,14 +20,14 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
   final _snackBar = getIt<SnackBarHelper>();
   final _log = getIt<LogHelper>();
 
-  /// Keep text answers and pdf answers separately
+  /// Keep text answers and files (PDFs/images) separately
   final Map<int, String> _answers = {};
-  final Map<int, File?> _pdfCache = {};
+  final Map<int, List<File>> _fileCache = {}; // updated to hold multiple files
 
   DailyDescTestBloc(this._testRepository) : super(DailyTestInitial()) {
     on<FetchAllTests>(_fetchAllTests);
     on<AddTextAnswer>(_addTextAnswer);
-    on<AddPdfAnswer>(_addPdfAnswer);
+    on<AddFilesAnswer>(_addFilesAnswer);
     on<RemoveAnswer>(_removeAnswer);
     on<SubmitDescTest>(_submitDescTest);
     on<DownloadDescTestPdf>(_downloadDescTestPdf);
@@ -82,14 +82,14 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     );
   }
 
-  /// Add a text answer (clears PDF if it exists)
+  /// Add a text answer (clears file cache if it exists)
   void _addTextAnswer(AddTextAnswer event, Emitter<DailyDescTestState> emit) {
     _answers[event.questionId] = event.text;
 
     String? message;
-    if (_pdfCache.containsKey(event.questionId)) {
-      _pdfCache.remove(event.questionId);
-      message = "PDF will not be saved because you typed text.";
+    if (_fileCache.containsKey(event.questionId)) {
+      _fileCache.remove(event.questionId);
+      message = "Files will not be saved because you typed text.";
       _log.i(message);
     }
 
@@ -100,46 +100,50 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         DailyDescTestMessage(
           message: message,
           answers: Map.from(_answers),
-          pdfCache: Map.from(_pdfCache),
+          pdfCache: Map.from(_fileCache),
         ),
       );
     } else {
-      _log.i("No PDF answer to clear, just updating text answer.");
+      _log.i("No file answer to clear, just updating text answer.");
       emit(
         DailyDescTestInProgress(
           answers: Map.from(_answers),
-          pdfCache: Map.from(_pdfCache),
+          pdfCache: Map.from(_fileCache),
         ),
       );
     }
   }
 
-  /// Add a PDF answer (clears text if it exists)
-  void _addPdfAnswer(AddPdfAnswer event, Emitter<DailyDescTestState> emit) {
-    _pdfCache[event.questionId] = event.file;
+  /// Add files (PDFs/images) answer (clears text if it exists)
+  void _addFilesAnswer(AddFilesAnswer event, Emitter<DailyDescTestState> emit) {
+    // Store multiple files for this question
+    _fileCache[event.questionId] = event.files;
 
     String? message;
+
+    // Clear any existing text answer for this question
     if (_answers.containsKey(event.questionId)) {
       _answers.remove(event.questionId);
-      _log.i("Text answer cleared because you uploaded a PDF.");
-      message = "Text will not be saved because you uploaded a PDF.";
+      _log.i("Text answer cleared because you uploaded files.");
+      message = "Text will not be saved because you uploaded files.";
     }
 
+    // Emit state based on whether there was a message
     if (message != null) {
       _snackBar.showSuccess(message);
       emit(
         DailyDescTestMessage(
           message: message,
           answers: Map.from(_answers),
-          pdfCache: Map.from(_pdfCache),
+          pdfCache: Map.from(_fileCache),
         ),
       );
     } else {
-      _log.i("No text answer to clear, just updating PDF answer.");
+      _log.i("No text answer to clear, just updating file answers.");
       emit(
         DailyDescTestInProgress(
           answers: Map.from(_answers),
-          pdfCache: Map.from(_pdfCache),
+          pdfCache: Map.from(_fileCache),
         ),
       );
     }
@@ -148,12 +152,12 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
   /// Remove answer completely
   void _removeAnswer(RemoveAnswer event, Emitter<DailyDescTestState> emit) {
     _answers.remove(event.questionId);
-    _pdfCache.remove(event.questionId);
+    _fileCache.remove(event.questionId);
 
     emit(
       DailyDescTestInProgress(
         answers: Map.from(_answers),
-        pdfCache: Map.from(_pdfCache),
+        pdfCache: Map.from(_fileCache),
       ),
     );
     _log.i("Removed answer for question ${event.questionId}.");
@@ -167,33 +171,41 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     emit(DescTestSubmit());
 
     try {
-      // 1. Upload PDFs first and replace with URLs
-      final Map<int, String> finalAnswers = Map.from(_answers);
+      // 1. Prepare final answers map
+      final Map<int, dynamic> finalAnswers = Map.from(_answers); // text answers
 
-      for (final entry in _pdfCache.entries) {
+      // 2. Upload files for each question
+      for (final entry in _fileCache.entries) {
         final int questionId = entry.key;
-        final File? file = entry.value;
+        final List<File> files = entry.value;
 
-        if (file != null) {
+        if (files.isNotEmpty) {
           final result = await _testRepository.uploadPdfAnswer(
             event.testId,
             questionId,
-            file,
+            files,
           );
 
           result.fold(
             (failure) {
-              _log.e("Failed to upload PDF for question $questionId: $failure");
+              _log.e(
+                "Failed to upload files for question $questionId: $failure",
+              );
               emit(DescTestSubmitFailed(failure));
+              return; // stop further processing on failure
             },
-            (url) {
-              finalAnswers[questionId] = url; // store PDF URL as answer
+            (urls) {
+              // store list of file URLs as answer
+              finalAnswers[questionId] = urls;
+              _log.i(
+                "Files uploaded successfully for question $questionId: $urls",
+              );
             },
           );
         }
       }
 
-      // 2. Submit final answers (both text + pdf urls)
+      // 3. Submit final answers (text + file URLs)
       final submitResult = await _testRepository.submitDescriptiveTest(
         event.testId,
         finalAnswers,

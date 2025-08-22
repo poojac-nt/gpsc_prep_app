@@ -93,7 +93,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
               final questions = state.questionsModels;
               final question = questions[currentIndex];
               final answer = _answers[question.id];
-              final selectedFile = answer?.pdf;
+              final selectedFile = answer?.files;
               return SingleChildScrollView(
                 controller: _scrollController,
                 child: Column(
@@ -243,7 +243,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                             // Clear PDF when typing
                             _answers[question.id] = AnswerState(
                               text: value,
-                              pdf: null,
+                              files: [],
                             );
                           });
 
@@ -280,38 +280,41 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                 10.hGap,
                                 if (selectedFile != null) ...[
                                   10.hGap,
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.picture_as_pdf,
-                                        color: Colors.red,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          selectedFile.path.split('/').last,
-                                          style: AppTexts.labelTextStyle,
-                                          overflow: TextOverflow.ellipsis,
+                                  for (var file in selectedFile) ...[
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.picture_as_pdf,
+                                          color: Colors.red,
                                         ),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.close,
-                                          color: Colors.grey,
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            file!.path.split('/').last,
+                                            style: AppTexts.labelTextStyle,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _answers[question.id] = AnswerState(
-                                              text: '',
-                                              pdf: null,
-                                            );
-                                            _controller
-                                                .clear(); // clear TextField too
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.close,
+                                            color: Colors.grey,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _answers[question
+                                                  .id] = AnswerState(
+                                                text: '',
+                                                files: [],
+                                              );
+                                              _controller
+                                                  .clear(); // clear TextField too
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ],
                                 10.hGap,
                                 ActionButton(
@@ -321,30 +324,39 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                         .platform
                                         .pickFiles(
                                           type: FileType.custom,
-                                          allowedExtensions: ['pdf'],
+                                          allowedExtensions: [
+                                            'pdf',
+                                            'jpg',
+                                            'jpeg',
+                                            'png',
+                                          ],
+                                          allowMultiple: true,
                                         );
 
-                                    if (result != null &&
-                                        result.files.single.path != null) {
-                                      final file = File(
-                                        result.files.single.path!,
-                                      );
+                                    if (result != null) {
+                                      final files =
+                                          result.paths
+                                              .where((path) => path != null)
+                                              .map((path) => File(path!))
+                                              .toList();
 
-                                      setState(() {
-                                        // Clear text when PDF selected
-                                        _answers[question.id] = AnswerState(
-                                          text: '',
-                                          pdf: file,
+                                      if (files.isNotEmpty) {
+                                        setState(() {
+                                          _answers[question.id] = AnswerState(
+                                            text: '',
+                                            files: files,
+                                          );
+                                          _controller.clear();
+                                        });
+
+                                        // Add files to bloc
+                                        context.read<DailyDescTestBloc>().add(
+                                          AddFilesAnswer(
+                                            questionId: question.id,
+                                            files: files,
+                                          ),
                                         );
-                                        _controller.clear(); // clear TextField
-                                      });
-
-                                      context.read<DailyDescTestBloc>().add(
-                                        AddPdfAnswer(
-                                          questionId: question.id,
-                                          file: file,
-                                        ),
-                                      );
+                                      }
                                     }
                                   },
                                 ),

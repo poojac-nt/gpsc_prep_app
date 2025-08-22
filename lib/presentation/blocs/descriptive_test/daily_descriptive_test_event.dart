@@ -24,14 +24,6 @@ class AddTextAnswer extends DailyDescTestEvent {
   AddTextAnswer({required this.questionId, required this.text});
 }
 
-/// Add or update a PDF answer for a specific question
-class AddPdfAnswer extends DailyDescTestEvent {
-  final int questionId;
-  final File file;
-
-  AddPdfAnswer({required this.questionId, required this.file});
-}
-
 /// Remove an answer completely for a specific question
 class RemoveAnswer extends DailyDescTestEvent {
   final int questionId;
@@ -58,4 +50,11 @@ class DownloadDescTestPdf extends DailyDescTestEvent {
     required this.index,
     required this.testName,
   });
+}
+
+class AddFilesAnswer extends DailyDescTestEvent {
+  final int questionId;
+  final List<File> files;
+
+  AddFilesAnswer({required this.questionId, required this.files});
 }

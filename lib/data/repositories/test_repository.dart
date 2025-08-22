@@ -52,16 +52,16 @@ class TestRepository {
 
   Future<Either<Failure, void>> submitDescriptiveTest(
     int testId,
-    Map<int, String> answers,
+    Map<int, dynamic> answers,
   ) async => await _supabase.submitDescriptiveTest(testId, answers);
 
-  Future<Either<Failure, String>> uploadPdfAnswer(
+  Future<Either<Failure, List<String>>> uploadPdfAnswer(
     int testId,
     int questionId,
-    File file,
+    List<File> files,
   ) async => await _supabase.uploadPdfAnswer(
     testId: testId,
-    file: file,
+    files: files,
     questionId: questionId,
   );
 }

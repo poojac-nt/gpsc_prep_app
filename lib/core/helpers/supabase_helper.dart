@@ -506,7 +506,7 @@ class SupabaseHelper {
 
   Future<Either<Failure, String>> submitDescriptiveTest(
     int testId,
-    Map<int, String> answers,
+    Map<int, dynamic> answers,
   ) async {
     try {
       await supabase
@@ -528,28 +528,37 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, String>> uploadPdfAnswer({
+  Future<Either<Failure, List<String>>> uploadPdfAnswer({
     required int testId,
     required int questionId,
-    required File file,
+    required List<File> files,
   }) async {
     try {
-      final fileName =
-          "test_${testId}_q_${questionId}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      List<String> publicUrls = [];
 
-      final filePath = "answers/$fileName";
-      await supabase.storage.from(SupabaseKeys.answers).upload(filePath, file);
+      for (var file in files) {
+        final fileName =
+            "${testId}_${questionId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}";
+        final filePath = "answers/$fileName";
 
-      final publicUrl = supabase.storage
-          .from(SupabaseKeys.answers)
-          .getPublicUrl(filePath);
-      _log.i(
-        "PDF uploaded successfully for Questions Id $questionId : $publicUrl",
-      );
-      return Right(publicUrl);
+        await supabase.storage
+            .from(SupabaseKeys.answers)
+            .upload(filePath, file);
+
+        final publicUrl = supabase.storage
+            .from(SupabaseKeys.answers)
+            .getPublicUrl(filePath);
+        publicUrls.add(publicUrl);
+
+        _log.i(
+          "File uploaded successfully for Question Id $questionId: $publicUrl",
+        );
+      }
+
+      return Right(publicUrls);
     } catch (e) {
-      _log.e("PDF upload failed: $e");
-      return Left(Failure("PDF upload failed: ${e.toString()}"));
+      _log.e("File upload failed: $e");
+      return Left(Failure("File upload failed: ${e.toString()}"));
     }
   }
 

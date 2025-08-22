@@ -77,12 +77,12 @@ final class DailyDescTestMessage extends DailyDescTestInProgress {
 
 class AnswerState {
   String text;
-  File? pdf;
+  List<File?> files;
 
-  AnswerState({this.text = '', this.pdf});
+  AnswerState({this.text = '', this.files = const []});
 
-  AnswerState copyWith({String? text, File? pdf}) {
-    return AnswerState(text: text ?? this.text, pdf: pdf ?? this.pdf);
+  AnswerState copyWith({String? text, List<File?>? files}) {
+    return AnswerState(text: text ?? this.text, files: files ?? this.files);
   }
 }
 
