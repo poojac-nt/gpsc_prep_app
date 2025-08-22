@@ -58,3 +58,5 @@ class AddFilesAnswer extends DailyDescTestEvent {
 
   AddFilesAnswer({required this.questionId, required this.files});
 }
+
+class ResetDescTestState extends DailyDescTestEvent {}

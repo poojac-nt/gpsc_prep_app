@@ -21,6 +21,9 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   QuestionBloc(this._testRepository) : super(QuestionLoading()) {
     on<LoadMcqQuestion>(_loadMcqQuestion);
     on<LoadDescQuestion>(_loadDescQuestion);
+    on<ResetQuestionState>((event, emit) {
+      emit(QuestionLoading());
+    });
   }
 
   Future<void> _loadMcqQuestion(

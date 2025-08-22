@@ -68,11 +68,16 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
       body: BlocListener<DailyDescTestBloc, DailyDescTestState>(
         listener: (context, state) {
           if (state is DescTestSubmitSuccess) {
-            _answers.clear();
-            _controller.clear();
-            currentIndex = 0;
+            setState(() {
+              _answers.clear();
+              _controller.clear();
+              currentIndex = 0;
+            });
+            // Reset the bloc state to initial
             getIt<SnackBarHelper>().showSuccess(state.message);
             context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
+            context.read<DailyDescTestBloc>().add(ResetDescTestState());
+            context.read<QuestionBloc>().add(ResetQuestionState());
           } else if (state is DescTestSubmitFailed) {
             getIt<SnackBarHelper>().showError(state.failure.message);
           } else if (state is DailyDescTestMessage) {

@@ -16,3 +16,5 @@ class LoadDescQuestion extends QuestionEvent {
 
   LoadDescQuestion(this.testId, this.language);
 }
+
+class ResetQuestionState extends QuestionEvent {}

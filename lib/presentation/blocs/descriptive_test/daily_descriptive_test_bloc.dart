@@ -31,6 +31,11 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     on<RemoveAnswer>(_removeAnswer);
     on<SubmitDescTest>(_submitDescTest);
     on<DownloadDescTestPdf>(_downloadDescTestPdf);
+    on<ResetDescTestState>((event, emit) {
+      _answers.clear();
+      _fileCache.clear();
+      emit(DailyTestInitial());
+    });
   }
 
   /// Fetch all tests
