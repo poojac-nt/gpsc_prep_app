@@ -6,16 +6,17 @@ import '../../../../../domain/entities/question_language_model.dart';
 class QuestionCubit extends Cubit<QuestionCubitState> {
   QuestionCubit() : super(QuestionCubitInitial());
   final bool _isQuitTest = false;
+
   void reset() {
     emit(QuestionCubitInitial());
   }
 
   /// Call this after Bloc loads questions
   void initialize(List<QuestionLanguageData> questions) {
-    if (state is QuestionCubitLoaded) return;
+    if (state is McqQuestionCubitLoaded) return;
 
     emit(
-      QuestionCubitLoaded(
+      McqQuestionCubitLoaded(
         questions: questions,
         currentIndex: 0,
         selectedOption: List.generate(questions.length, (_) => null),
@@ -26,8 +27,8 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   }
 
   void answerQuestion(String? option) {
-    if (state is! QuestionCubitLoaded) return;
-    final currentState = state as QuestionCubitLoaded;
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
 
     final updatedSelected = List<String?>.from(currentState.selectedOption)
       ..[currentState.currentIndex] = option;
@@ -44,24 +45,24 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   }
 
   void nextQuestion() {
-    if (state is! QuestionCubitLoaded) return;
-    final currentState = state as QuestionCubitLoaded;
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
     if (currentState.currentIndex < currentState.questions.length - 1) {
       emit(currentState.copyWith(currentIndex: currentState.currentIndex + 1));
     }
   }
 
   void prevQuestion() {
-    if (state is! QuestionCubitLoaded) return;
-    final currentState = state as QuestionCubitLoaded;
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
     if (currentState.currentIndex > 0) {
       emit(currentState.copyWith(currentIndex: currentState.currentIndex - 1));
     }
   }
 
   void jumpToQuestion(int index) {
-    if (state is! QuestionCubitLoaded) return;
-    final currentState = state as QuestionCubitLoaded;
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
     if (index >= 0 && index < currentState.questions.length) {
       emit(currentState.copyWith(currentIndex: index));
     }
@@ -73,8 +74,8 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     required List<bool?> isCorrect,
     required List<QuestionLanguageData> questions,
   }) {
-    if (state is! QuestionCubitLoaded) return;
-    final currentState = state as QuestionCubitLoaded;
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
     emit(
       currentState.copyWith(
         questions: questions,

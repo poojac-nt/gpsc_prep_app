@@ -9,7 +9,6 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/selection_drawer.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/stats_widget.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/test_container.dart';
@@ -22,7 +21,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/dashboard/dashboard_bloc_state.dart';
-import '../answer_writing/answer_writing_screen.dart';
+import '../descriptive_test_module/answer_writing_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -220,6 +219,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     //   ),
                     // ),
                     10.hGap,
+                    Text(
+                      'Daily MCQ Tests',
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    10.hGap,
                     ElevatedContainer(
                       child: TestContainer(
                         title: "Daily Test",
@@ -252,23 +259,26 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     //     onTap: () {},
                     //   ),
                     // ),
-                    // 10.hGap,
-                    // Text(
-                    //   'Answer Writing Practice',
-                    //   style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-                    // ),
-                    // 10.hGap,
-                    // ElevatedContainer(
-                    //   child: TestContainer(
-                    //     title: "Daily Writing Practice",
-                    //     description:
-                    //         "Practice descriptive answers and improve overall performance",
-                    //     iconColor: Colors.purple,
-                    //     icon: Icons.menu_book,
-                    //     buttonTitle: 'Start Writing',
-                    //     onTap: () => context.push(AppRoutes.answerWriting),
-                    //   ),
-                    // ),
+                    10.hGap,
+                    Text(
+                      'Answer Writing Practice',
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    10.hGap,
+                    ElevatedContainer(
+                      child: TestContainer(
+                        title: "Daily Writing Practice",
+                        description:
+                            "Practice descriptive answers and improve overall performance",
+                        iconColor: Colors.purple,
+                        icon: Icons.menu_book,
+                        buttonTitle: 'Start Writing',
+                        onTap: () => context.push(AppRoutes.answerWriting),
+                      ),
+                    ),
                     // 10.hGap,
                     // ElevatedContainer(
                     //   child: TestContainer(

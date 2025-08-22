@@ -197,7 +197,7 @@ class ReviewQuestionUploadScreen extends StatelessWidget {
                           isLoading: isUploading,
                           onTap: () {
                             context.read<UploadQuestionsBloc>().add(
-                              UploadParsedQuestionsToSupabase(
+                              McqUploadParsedQuestions(
                                 payload: payload,
                                 isTestUpload: isTestUpload,
                               ),

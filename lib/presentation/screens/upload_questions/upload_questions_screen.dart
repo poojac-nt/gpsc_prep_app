@@ -40,14 +40,19 @@ class _UploadQuestionsState extends State<UploadQuestions> {
           if (state is ParseFileFailure) {
             getIt<SnackBarHelper>().showError(state.errorMessage);
           }
-
-          if (state is ParseFileSuccess) {
+          if (state is McqParseFileSuccess) {
             context.push(
               AppRoutes.reviewQuestion,
               extra: ReviewQuestionScreenArgs(
                 isTestUpload: state.isTestUpload,
                 payload: state.parsedPayload,
               ),
+            );
+          }
+          if (state is DescParseFileSuccess) {
+            context.push(
+              AppRoutes.descReviewQuestion,
+              extra: DescReviewQuestionScreenArgs(payload: state.parsedPayload),
             );
           }
         },
@@ -87,7 +92,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                                   text: 'Bulk Insertion',
                                   onTap: () {
                                     context.read<UploadQuestionsBloc>().add(
-                                      ParseUploadFile(isTestUpload: false),
+                                      McqParseUploadFile(isTestUpload: false),
                                     );
                                   },
                                 ),
@@ -97,7 +102,55 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                                   text: 'Insert Question with Tests',
                                   onTap: () {
                                     context.read<UploadQuestionsBloc>().add(
-                                      ParseUploadFile(isTestUpload: true),
+                                      McqParseUploadFile(isTestUpload: true),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              30.hGap,
+              Center(
+                child: ElevatedContainer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Desc Select CSV or XLSX File',
+                        style: AppTexts.heading,
+                      ),
+                      Text(
+                        'Desc Upload your MCQ questions in CSV or Excel format',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      20.hGap,
+                      Align(
+                        child: BorderedContainer(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.file_upload_outlined,
+                                  color: Colors.grey.shade600,
+                                  size: 80.sp,
+                                ),
+                                10.hGap,
+                                ActionButton(
+                                  isLoading: isLoading,
+                                  text: 'Insert Question with Tests',
+                                  onTap: () {
+                                    context.read<UploadQuestionsBloc>().add(
+                                      DescParseUploadFile(),
                                     );
                                   },
                                 ),

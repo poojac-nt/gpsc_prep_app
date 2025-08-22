@@ -1,8 +1,6 @@
-import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
-import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_state.dart';

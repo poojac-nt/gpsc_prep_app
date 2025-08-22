@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../utils/app_constants.dart';
@@ -9,7 +11,12 @@ import '../../widgets/bordered_container.dart';
 import '../../widgets/elevated_container.dart';
 
 class DescriptiveTestInstructionScreen extends StatefulWidget {
-  const DescriptiveTestInstructionScreen({super.key});
+  final DescTestModel descTestModel;
+
+  const DescriptiveTestInstructionScreen({
+    super.key,
+    required this.descTestModel,
+  });
 
   @override
   State<DescriptiveTestInstructionScreen> createState() =>
@@ -21,7 +28,9 @@ class _DescriptiveTestInstructionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Test Name", style: AppTexts.titleTextStyle)),
+      appBar: AppBar(
+        title: Text(widget.descTestModel.name, style: AppTexts.titleTextStyle),
+      ),
       body: SingleChildScrollView(
         child: ElevatedContainer(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
@@ -43,7 +52,7 @@ class _DescriptiveTestInstructionScreenState
                     child: Column(
                       children: [
                         Text(
-                          5.toString(),
+                          widget.descTestModel.noQuestions.toString(),
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
@@ -51,28 +60,6 @@ class _DescriptiveTestInstructionScreenState
                         ),
                         Text(
                           "Questions",
-                          style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                10.hGap,
-                BorderedContainer(
-                  padding: EdgeInsets.all(AppPaddings.defaultPadding),
-                  radius: BorderRadius.zero,
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          10.toString(),
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "Minutes",
                           style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
                         ),
                       ],
@@ -101,34 +88,31 @@ class _DescriptiveTestInstructionScreenState
                       ),
                       5.hGap,
                       _buildInstructionTile(
-                        "Each question has suggested time limits - manage your time wisely",
-                      ),
-                      5.hGap,
-                      _buildInstructionTile(
-                        "Your answers will be sent to mentors for evaluation",
-                      ),
-                      5.hGap,
-                      _buildInstructionTile(
-                        "Make sure to submit before time expires",
+                        "You can type your answer directly or upload a PDF file",
                       ),
                     ],
                   ),
                 ),
-                20.hGap,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _languageButton(context, "English", "en"),
-                    _languageButton(context, "Gujarati", "en"),
-                    _languageButton(context, "Hindi", "en"),
-                  ],
-                ),
+                // 20.hGap,
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     _languageButton(context, "English", "en"),
+                //     _languageButton(context, "Gujarati", "en"),
+                //     _languageButton(context, "Hindi", "en"),
+                //   ],
+                // ),
                 20.hGap,
                 ActionButton(
                   backgroundColor: AppColors.primary,
                   text: "Start Test",
                   onTap: () {
-                    context.pushReplacement(AppRoutes.descriptiveTestScreen);
+                    context.go(
+                      AppRoutes.descriptiveTestScreen,
+                      extra: DescTestScreenArgs(
+                        dailyTestModel: widget.descTestModel,
+                      ),
+                    );
                   },
                   fontColor: Colors.white,
                 ),

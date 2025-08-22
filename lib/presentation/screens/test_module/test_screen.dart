@@ -26,6 +26,7 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
 import '../../../domain/entities/daily_test_model.dart';
 import '../../blocs/timer/timer_bloc.dart';
 import 'cubit/test/test_cubit_state.dart';
@@ -58,7 +59,7 @@ class _TestScreenState extends State<TestScreen> {
       bloc.add(TimerStop());
     } else {
       context.read<QuestionBloc>().add(
-        LoadQuestion(widget.dailyTestModel.id, widget.language),
+        LoadMcqQuestion(widget.dailyTestModel.id, widget.language),
       );
     }
     super.initState();
@@ -79,11 +80,11 @@ class _TestScreenState extends State<TestScreen> {
         if (state is TimerStopped) {
           // Get data from QuestionCubit
           final questionCubitState = context.read<QuestionCubit>().state;
-          if (questionCubitState is! QuestionCubitLoaded) return;
+          if (questionCubitState is! McqQuestionCubitLoaded) return;
 
           // Get data from QuestionBloc
           final questionBlocState = context.read<QuestionBloc>().state;
-          if (questionBlocState is! QuestionLoaded) return;
+          if (questionBlocState is! McqQuestionLoaded) return;
 
           context.read<TestCubit>().calculateAndEmitTestResult(
             questions: questionCubitState.questions,
@@ -183,7 +184,7 @@ class _TestScreenState extends State<TestScreen> {
 
               if (timerState is TimerStopped && !timerState.isManual) {
                 _buildAutoSubmitDialog(context, state);
-              } else if (questionCubitState is QuestionCubitLoaded &&
+              } else if (questionCubitState is McqQuestionCubitLoaded &&
                   questionCubitState.isQuitTest) {
                 context.go(AppRoutes.studentDashboard);
               } else {
@@ -199,7 +200,7 @@ class _TestScreenState extends State<TestScreen> {
             },
             child: BlocConsumer<QuestionBloc, QuestionState>(
               listener: (context, state) {
-                if (state is QuestionLoaded && !_initialized) {
+                if (state is McqQuestionLoaded && !_initialized) {
                   _initialized = true;
 
                   if (widget.isFromResult) {
@@ -219,14 +220,14 @@ class _TestScreenState extends State<TestScreen> {
                   return _buildWhenLoading();
                 }
 
-                if (state is QuestionLoaded) {
+                if (state is McqQuestionLoaded) {
                   final marks = state.marks;
                   final subjects = state.subjects;
                   final topics = state.topics;
                   final difficultyLevel = state.difficultyLevel;
                   return BlocBuilder<QuestionCubit, QuestionCubitState>(
                     builder: (context, state) {
-                      if (state is! QuestionCubitLoaded) {
+                      if (state is! McqQuestionCubitLoaded) {
                         return SizedBox.shrink();
                       }
                       final currentIndex = state.currentIndex;
@@ -733,7 +734,7 @@ class _TestScreenState extends State<TestScreen> {
 
   void _buildSubmitDialog(
     BuildContext context,
-    QuestionCubitLoaded state,
+    McqQuestionCubitLoaded state,
     int timeTaken,
     List<int> marks,
   ) {

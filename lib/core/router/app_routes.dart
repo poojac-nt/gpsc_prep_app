@@ -19,6 +19,7 @@ class AppRouter {
         if (user == null) {
           return AppRoutes.login;
         }
+        return null;
       },
       routes: appRoutes,
     );

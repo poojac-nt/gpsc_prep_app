@@ -43,6 +43,7 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   late final BannerAd? bannerAd;
+
   @override
   void initState() {
     super.initState();
@@ -177,7 +178,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                     );
                                     context.read<QuestionPreviewBloc>().add(
                                       LoadQuestionsEvent(
-                                        blocState is QuestionLoaded
+                                        blocState is McqQuestionLoaded
                                             ? blocState.questionsModels
                                             : [],
                                         widget.dailyTestModel.name,

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_test_upload.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
 import 'package:meta/meta.dart';
 
@@ -11,13 +12,15 @@ class UploadQuestionsBloc
     on<ResetUploadState>((event, emit) {
       emit(UploadQuestionsInitial()); // or your initial state
     });
-    on<ParseUploadFile>(_onParseUploadFile);
-    on<UploadParsedQuestionsToSupabase>(_onUploadParsedQuestionsToSupabase);
+    on<McqParseUploadFile>(_onMcqParseUploadFile);
+    on<McqUploadParsedQuestions>(_onMcqUploadParsedQuestions);
+    on<DescParseUploadFile>(_onDescParseUploadFile);
+    on<DescUploadParsedQuestions>(_onDescUploadParsedQuestions);
   }
 
   /// Handles parsing of the file (CSV/XLSX)
-  Future<void> _onParseUploadFile(
-    ParseUploadFile event,
+  Future<void> _onMcqParseUploadFile(
+    McqParseUploadFile event,
     Emitter<UploadQuestionsState> emit,
   ) async {
     emit(ParseFileInProgress());
@@ -31,7 +34,7 @@ class UploadQuestionsBloc
         emit(ParseFileFailure('Parsing returned null. Please check the file.'));
       } else {
         emit(
-          ParseFileSuccess(
+          McqParseFileSuccess(
             parsedPayload: parsedPayload,
             isTestUpload: event.isTestUpload,
           ),
@@ -43,8 +46,8 @@ class UploadQuestionsBloc
   }
 
   /// Handles final upload to Supabase
-  Future<void> _onUploadParsedQuestionsToSupabase(
-    UploadParsedQuestionsToSupabase event,
+  Future<void> _onMcqUploadParsedQuestions(
+    McqUploadParsedQuestions event,
     Emitter<UploadQuestionsState> emit,
   ) async {
     emit(UploadFileInProgress());
@@ -71,6 +74,58 @@ class UploadQuestionsBloc
       }
 
       emit(UploadFileSuccess(result));
+    } catch (e) {
+      final errorMessage = e.toString();
+      if (errorMessage.contains(
+        'A Daily test has already been created today',
+      )) {
+        emit(
+          UploadFileFailure(
+            'A daily test has already been uploaded today. Only one allowed per day.',
+          ),
+        );
+      } else {
+        emit(UploadFileFailure('❌ Upload failed: $errorMessage'));
+      }
+    }
+  }
+
+  /// Handles parsing of the file (CSV/XLSX)
+  Future<void> _onDescParseUploadFile(
+    DescParseUploadFile event,
+    Emitter<UploadQuestionsState> emit,
+  ) async {
+    emit(ParseFileInProgress());
+
+    try {
+      final parsedPayload = await parseDescUploadFile();
+
+      if (parsedPayload == null) {
+        emit(ParseFileFailure('Parsing returned null. Please check the file.'));
+      } else {
+        emit(DescParseFileSuccess(parsedPayload: parsedPayload));
+      }
+    } catch (e) {
+      emit(ParseFileFailure('Failed to parse file: ${e.toString()}'));
+    }
+  }
+
+  /// Handles final upload to Supabase
+  Future<void> _onDescUploadParsedQuestions(
+    DescUploadParsedQuestions event,
+    Emitter<UploadQuestionsState> emit,
+  ) async {
+    emit(UploadFileInProgress());
+
+    try {
+      final result = await submitDescTestToSupabase(payload: event.payload);
+
+      // 🚨 Handle null response case
+      if (result == null) {
+        emit(UploadFileFailure('❌ Upload failed: No response received.'));
+      }
+
+      emit(UploadFileSuccess(result!));
     } catch (e) {
       final errorMessage = e.toString();
       if (errorMessage.contains(

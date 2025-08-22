@@ -100,22 +100,17 @@ class SelectionDrawer extends StatelessWidget {
                     'MCQ Tests',
                   )
                   : SizedBox.shrink(),
-              // isStudent
-              //     ? commonWidget(
-              //       () {
-              //         context.pop();
-              //         context.push(AppRoutes.answerWriting);
-              //       },
-              //       Icons.description,
-              //       'Descriptive Tests',
-              //     )
-              //     : SizedBox.shrink(),
+              isStudent
+                  ? commonWidget(
+                    () {
+                      context.pop();
+                      context.push(AppRoutes.answerWriting);
+                    },
+                    Icons.description,
+                    'Descriptive Tests',
+                  )
+                  : SizedBox.shrink(),
 
-              // commonWidget(
-              //   () => context.push(AppRoutes.answerWriting),
-              //   Icons.edit_document,
-              //   'Answer Writing',
-              // ),
               isStudent
                   ? commonWidget(
                     () {

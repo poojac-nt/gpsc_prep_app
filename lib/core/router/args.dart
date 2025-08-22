@@ -1,4 +1,5 @@
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
@@ -32,4 +33,22 @@ class ReviewQuestionScreenArgs {
   List<Map<String, dynamic>> payload;
 
   ReviewQuestionScreenArgs({required this.isTestUpload, required this.payload});
+}
+
+class DescReviewQuestionScreenArgs {
+  List<Map<String, dynamic>> payload;
+
+  DescReviewQuestionScreenArgs({required this.payload});
+}
+
+class DescTestInstructionScreenArgs {
+  final DescTestModel dailyTestModel;
+
+  DescTestInstructionScreenArgs({required this.dailyTestModel});
+}
+
+class DescTestScreenArgs {
+  final DescTestModel dailyTestModel;
+
+  DescTestScreenArgs({required this.dailyTestModel});
 }

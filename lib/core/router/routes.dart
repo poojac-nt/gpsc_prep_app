@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
@@ -12,11 +14,12 @@ import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.d
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/upload_questions/review_question_upload_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_review_questions_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_question_upload_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
-import '../../presentation/screens/answer_writing/answer_writing_screen.dart';
+import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
@@ -160,6 +163,16 @@ final List<GoRoute> appRoutes = [
     },
   ),
   GoRoute(
+    path: AppRoutes.descReviewQuestion,
+    pageBuilder: (context, state) {
+      final args = state.extra as DescReviewQuestionScreenArgs;
+      return _slideTransition(
+        DescReviewQuestionUploadScreen(payload: args.payload),
+        state,
+      );
+    },
+  ),
+  GoRoute(
     path: AppRoutes.questionPreviewScreen,
     pageBuilder: (context, state) {
       final extra = state.extra as String;
@@ -169,7 +182,11 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.descriptiveTestScreen,
     pageBuilder: (context, state) {
-      return _slideTransition(DescriptiveTestScreen(), state);
+      final args = state.extra as DescTestScreenArgs;
+      return _slideTransition(
+        DescriptiveTestScreen(descTestModel: args.dailyTestModel),
+        state,
+      );
     },
   ),
   GoRoute(
@@ -179,9 +196,25 @@ final List<GoRoute> appRoutes = [
             _slideTransition(DescriptiveTestResultScreen(), state),
   ),
   GoRoute(
+    path: AppRoutes.descAnswerScreen,
+    pageBuilder: (context, state) {
+      final descTestModel = state.extra as DescTestModel;
+      return _slideTransition(
+        DescriptiveAnswersScreen(descTestModel: descTestModel),
+        state,
+      );
+    },
+  ),
+
+  GoRoute(
     path: AppRoutes.descriptiveTestInstructionScreen,
     pageBuilder: (context, state) {
-      return _slideTransition(DescriptiveTestInstructionScreen(), state);
+      final args = state.extra as DescTestInstructionScreenArgs;
+
+      return _slideTransition(
+        DescriptiveTestInstructionScreen(descTestModel: args.dailyTestModel),
+        state,
+      );
     },
   ),
 ];

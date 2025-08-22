@@ -9,10 +9,10 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:image_picker/image_picker.dart';
 
 part 'auth_event.dart';
-
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -101,11 +101,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final File imageFile = File(pickedFile.path);
       final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       await _supabase.storage
-          .from('profile-picture')
+          .from(SupabaseKeys.profilePicture)
           .upload('uploads/$fileName', imageFile);
 
       final String publicUrl = _supabase.storage
-          .from('profile-picture')
+          .from(SupabaseKeys.profilePicture)
           .getPublicUrl('uploads/$fileName');
       emit(ImageUploaded(publicUrl));
     } catch (e) {

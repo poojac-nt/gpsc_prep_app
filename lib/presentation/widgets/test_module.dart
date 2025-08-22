@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -10,7 +12,7 @@ class TestModule extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
-    this.testId,
+    this.testModel,
     this.iconSize = 24,
     this.fontSize = 24,
     this.showShareButton = false,
@@ -21,7 +23,7 @@ class TestModule extends StatelessWidget {
 
   final String title;
   final String? subtitle;
-  final int? testId;
+  final DailyTestModel? testModel;
   final double? iconSize;
   final double? fontSize;
   final Color? iconColor;
@@ -54,7 +56,8 @@ class TestModule extends StatelessWidget {
               ),
               showShareButton
                   ? IconButton(
-                    icon: const Icon(Icons.share),
+                    tooltip: "Share Test",
+                    icon: const Icon(AppIcons.share_test),
                     onPressed: () {
                       _handleShare(context);
                     },
@@ -71,7 +74,7 @@ class TestModule extends StatelessWidget {
   }
 
   Future<void> _handleShare(BuildContext context) async {
-    if (testId == null) {
+    if (testModel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cannot share this test at the moment')),
       );
@@ -80,12 +83,15 @@ class TestModule extends StatelessWidget {
 
     try {
       final shareableUrl = DeepLinkGenerator.generateShareableUrl(
-        testId: testId!,
+        testId: testModel!.id,
       );
 
       final uri = Uri.parse(shareableUrl);
       await SharePlus.instance.share(
-        ShareParams(uri: uri, subject: 'GPSC Prep Test Share'),
+        ShareParams(
+          text: "Check out this ${testModel!.name} Test! 🚀\n$uri",
+          subject: 'GPSC Prep Test Share',
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

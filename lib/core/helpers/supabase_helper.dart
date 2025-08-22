@@ -6,6 +6,9 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
@@ -222,6 +225,36 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<DescQuestionModel>>> fetchDescTestQuestions(
+    int testId,
+  ) async {
+    try {
+      final List<Map<String, dynamic>> response = await supabase.rpc(
+        SupabaseKeys.getDescTestQuestionsByTestId,
+        params: {'p_desc_test_id': testId},
+      );
+
+      _log.i(response.toString());
+
+      final questions =
+          response
+              .where((e) => e != null)
+              .map((e) => DescQuestionModel.fromJson(e))
+              .toList();
+
+      _log.i(questions.toString());
+
+      return Right(questions);
+    } catch (e, stackTrace) {
+      _snackBar.showError('Error fetching test questions: ${e.toString()}');
+      _log.e(
+        "Fetch Error: $e"
+        "\nStackTrace: $stackTrace",
+      );
+      return Left(Failure(e.toString()));
+    }
+  }
+
   Future<Either<Failure, List<DailyTestModel>>> fetchDailyMcqTests() async {
     try {
       final response = await supabase
@@ -408,15 +441,17 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchDescriptiveTests() async {
+  Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests() async {
     try {
       final response = await supabase
-          .from(SupabaseKeys.testsTable)
+          .from(SupabaseKeys.descTests)
           .select()
-          .filter('test_type', 'eq', 'desc')
           .order('id', ascending: false);
-      final result = response.map((e) => DailyTestModel.fromJson(e)).toList();
-      _log.i('Total test : ${result.length}');
+      final result = response.map((e) => DescTestModel.fromJson(e)).toList();
+      if (result.isEmpty) {
+        _log.w('No descriptive tests found');
+        return Right([]);
+      }
       return Right(result);
     } catch (e) {
       _log.e('Error in fetching test: $e');
@@ -466,6 +501,88 @@ class SupabaseHelper {
       _snackBar.showError('Error fetching tests: ${e.toString()}');
       _log.e('Error in fetching test: $e', s: s);
       return Left(Failure("Error fetching test : ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, String>> submitDescriptiveTest(
+    int testId,
+    Map<int, dynamic> answers,
+  ) async {
+    try {
+      await supabase
+          .from(SupabaseKeys.descTestResult)
+          .upsert(
+            answers.entries.map((e) {
+              return {
+                'user_id': _cache.user!.id,
+                'test_id': testId,
+                'question_id': e.key,
+                'answer': e.value, // could be text or pdf url
+              };
+            }).toList(),
+          );
+
+      return Right("Test submitted successfully!");
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<String>>> uploadPdfAnswer({
+    required int testId,
+    required int questionId,
+    required List<File> files,
+  }) async {
+    try {
+      List<String> publicUrls = [];
+
+      for (var file in files) {
+        final fileName =
+            "${testId}_${questionId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}";
+        final filePath = "answers/$fileName";
+
+        await supabase.storage
+            .from(SupabaseKeys.answers)
+            .upload(filePath, file);
+
+        final publicUrl = supabase.storage
+            .from(SupabaseKeys.answers)
+            .getPublicUrl(filePath);
+        publicUrls.add(publicUrl);
+
+        _log.i(
+          "File uploaded successfully for Question Id $questionId: $publicUrl",
+        );
+      }
+
+      return Right(publicUrls);
+    } catch (e) {
+      _log.e("File upload failed: $e");
+      return Left(Failure("File upload failed: ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
+    int testId,
+    int userId,
+  ) async {
+    try {
+      final response = await supabase
+          .from('desc_test_detailed_results')
+          .select()
+          .eq('test_id', testId)
+          .eq('user_id', userId);
+
+      final answers =
+          (response as List<dynamic>)
+              .map(
+                (row) => DescAnswerModel.fromJson(row as Map<String, dynamic>),
+              )
+              .toList();
+
+      return Right(answers);
+    } catch (e) {
+      return Left(Failure('Error fetching answers: $e'));
     }
   }
 }

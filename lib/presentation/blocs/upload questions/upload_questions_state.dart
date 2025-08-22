@@ -10,11 +10,20 @@ final class UploadQuestionsInitial extends UploadQuestionsState {}
 final class ParseFileInProgress extends UploadQuestionsState {}
 
 /// Parsing complete and valid payload ready for review
-final class ParseFileSuccess extends UploadQuestionsState {
+final class McqParseFileSuccess extends UploadQuestionsState {
   final List<Map<String, dynamic>> parsedPayload;
   final bool isTestUpload;
 
-  ParseFileSuccess({required this.parsedPayload, required this.isTestUpload});
+  McqParseFileSuccess({
+    required this.parsedPayload,
+    required this.isTestUpload,
+  });
+}
+
+final class DescParseFileSuccess extends UploadQuestionsState {
+  final List<Map<String, dynamic>> parsedPayload;
+
+  DescParseFileSuccess({required this.parsedPayload});
 }
 
 /// Parsing failed (invalid file, validation error, etc.)
