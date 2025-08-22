@@ -318,8 +318,51 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                 ],
                                 10.hGap,
                                 ActionButton(
-                                  text: 'Choose PDF',
+                                  text: 'Choose PDF or Images',
                                   onTap: () async {
+                                    // Check if there are already selected files for this question
+                                    if (_answers[question.id]?.files != null &&
+                                        _answers[question.id]!
+                                            .files
+                                            .isNotEmpty) {
+                                      final shouldOverwrite = await showDialog<
+                                        bool
+                                      >(
+                                        context: context,
+                                        builder:
+                                            (context) => AlertDialog(
+                                              title: const Text(
+                                                "Overwrite Files?",
+                                              ),
+                                              content: const Text(
+                                                "You have already selected files. Selecting new files will overwrite the existing ones. Do you want to continue?",
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(false),
+                                                  child: const Text("Cancel"),
+                                                ),
+                                                TextButton(
+                                                  onPressed:
+                                                      () => Navigator.of(
+                                                        context,
+                                                      ).pop(true),
+                                                  child: const Text(
+                                                    "Overwrite",
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                      );
+
+                                      // If user cancels, just return without opening file picker
+                                      if (shouldOverwrite != true) return;
+                                    }
+
+                                    // Open file picker
                                     FilePickerResult? result = await FilePicker
                                         .platform
                                         .pickFiles(

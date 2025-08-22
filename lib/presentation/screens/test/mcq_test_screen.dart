@@ -96,7 +96,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                         children: [
                           TestModule(
                             showShareButton: true,
-                            testId: test.id,
+                            testModel: test,
                             title: "Daily Tests",
                             subtitle: "Subject-based Daily Practice",
                             prefixIcon: Icons.calendar_today_outlined,
