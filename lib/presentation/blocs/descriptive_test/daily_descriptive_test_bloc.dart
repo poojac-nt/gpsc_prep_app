@@ -10,7 +10,7 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'daily_descriptive_test_event.dart';
 import 'daily_descriptive_test_state.dart';
@@ -239,25 +239,14 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     emit(PdfDownloadInit());
 
     try {
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      final sdkInt = androidInfo.version.sdkInt;
-
-      if (sdkInt >= 30) {
-        if (!await Permission.manageExternalStorage.isGranted) {
-          await Permission.manageExternalStorage.request();
-        }
-        if (!await Permission.manageExternalStorage.isGranted) {
-          emit(PdfDownloadFailure(Failure('Storage permission denied')));
-          return;
-        }
+      final Directory? outputDir;
+      if (Platform.isAndroid &&
+          (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 30) {
+        outputDir = await getExternalStorageDirectory();
       } else {
-        if (!await Permission.storage.isGranted) {
-          await Permission.storage.request();
-        }
-        if (!await Permission.storage.isGranted) {
-          emit(PdfDownloadFailure(Failure('Storage permission denied')));
-          return;
-        }
+        outputDir =
+            await getDownloadsDirectory() ??
+            await getApplicationDocumentsDirectory();
       }
 
       final result = await generateDescTestPdf(

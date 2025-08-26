@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
@@ -7,7 +9,7 @@ import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:meta/meta.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 
 part 'question_preview_event.dart';
 part 'question_preview_state.dart';
@@ -63,26 +65,14 @@ class QuestionPreviewBloc
   ) async {
     try {
       emit(QuestionExporting());
-
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      final sdkInt = androidInfo.version.sdkInt;
-
-      if (sdkInt >= 30) {
-        if (!await Permission.manageExternalStorage.isGranted) {
-          await Permission.manageExternalStorage.request();
-        }
-        if (!await Permission.manageExternalStorage.isGranted) {
-          emit(QuestionPreviewError('Storage permission denied'));
-          return;
-        }
+      final Directory? outputDir;
+      if (Platform.isAndroid &&
+          (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 30) {
+        outputDir = await getExternalStorageDirectory();
       } else {
-        if (!await Permission.storage.isGranted) {
-          await Permission.storage.request();
-        }
-        if (!await Permission.storage.isGranted) {
-          emit(QuestionPreviewError('Storage permission denied'));
-          return;
-        }
+        outputDir =
+            await getDownloadsDirectory() ??
+            await getApplicationDocumentsDirectory();
       }
 
       final path = await PdfExportService().exportQuestionsToPdf(
