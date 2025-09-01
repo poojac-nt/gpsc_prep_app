@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -197,18 +196,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               isLoadingSelector:
                                   (state) => state is AuthLoading,
                               builder: (isLoading) {
-                                return Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "Don't have an account?",
-                                        style: TextStyle(
-                                          fontSize: 13.sp,
-                                          color: Colors.black,
-                                        ),
+                                return Wrap(
+                                  children: [
+                                    Text(
+                                      "Don't have an account?",
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        color: Colors.black,
                                       ),
-                                      TextSpan(
-                                        text: ' Create one',
+                                    ),
+                                    GestureDetector(
+                                      onTap:
+                                          isLoading
+                                              ? null
+                                              : () => context.go(
+                                                AppRoutes.registrationScreen,
+                                              ),
+                                      child: Text(
+                                        ' Create one',
                                         style: TextStyle(
                                           color:
                                               isLoading
@@ -216,19 +221,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   : AppColors.primary,
                                           fontWeight: FontWeight.w600,
                                         ),
-                                        recognizer:
-                                            TapGestureRecognizer()
-                                              ..onTap = () {
-                                                if (!isLoading) {
-                                                  context.go(
-                                                    AppRoutes
-                                                        .registrationScreen,
-                                                  );
-                                                }
-                                              },
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 );
                               },
                             ),
