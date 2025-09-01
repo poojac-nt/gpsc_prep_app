@@ -13,7 +13,16 @@ Future<String> generateDescTestPdf(
   int index,
   String testName,
 ) async {
-  final pdf = pw.Document();
+  final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
+  final baseFont = pw.Font.ttf(base);
+
+  final pdf = pw.Document(
+    pageMode: PdfPageMode.fullscreen,
+    theme: pw.ThemeData.withFont(
+      base: baseFont,
+      fontFallback: [baseFont, pw.Font.symbol()],
+    ),
+  );
 
   // Load logo
   final logoData = await rootBundle.load('assets/images/logo_without_bg.png');

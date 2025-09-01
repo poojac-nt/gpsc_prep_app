@@ -116,61 +116,8 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: ActionButton(
-                              text: "Quit Test",
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder:
-                                      (context) => CustomAlertdialog(
-                                        title: "Confirm Exit",
-                                        mainContent:
-                                            "Do you really want to leave the test in between?",
-                                        content:
-                                            "Your answers so far won’t be saved, you won’t be able to resume this test later.",
-                                        actions: [
-                                          TextButton(
-                                            child: Text(
-                                              "Cancel",
-                                              style: TextStyle(
-                                                color: Colors.grey[700],
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              Navigator.of(
-                                                context,
-                                              ).pop(); // Close dialog
-                                            },
-                                          ),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.redAccent,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              "Yes, Leave",
-                                              style: AppTexts.title.copyWith(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              context.go(
-                                                AppRoutes.studentDashboard,
-                                              ); // Close dialog
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                );
-                              },
-                            ),
-                          ),
-                          100.wGap,
-                          Expanded(
+                          Expanded(child: SizedBox.shrink()),
+                          IntrinsicWidth(
                             child: ActionButton(
                               text: "Submit Test",
                               onTap: () {
@@ -224,6 +171,16 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                             question.questionEn.questionTxt,
                             style: AppTexts.labelTextStyle,
                           ),
+                          15.hGap,
+                          Text(
+                            question.questionHi?.questionTxt ?? "",
+                            style: AppTexts.labelTextStyle,
+                          ),
+                          15.hGap,
+                          Text(
+                            question.questionGj?.questionTxt ?? "",
+                            style: AppTexts.labelTextStyle,
+                          ),
                         ],
                       ),
                     ),
@@ -236,7 +193,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                         borderRadius: AppBorders.borderRadius,
                       ),
                       child: TextField(
-                        maxLines: 10,
+                        maxLines: 5,
                         controller: _controller,
                         decoration: InputDecoration(
                           hintText: "Type your answer here...",
@@ -260,160 +217,108 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                     ),
                     20.hGap,
                     Text(
-                      "Or Upload PDF Answer",
+                      "Or Upload PDF / Images",
                       style: AppTexts.labelTextStyle,
                     ),
                     20.hGap,
-                    BorderedContainer(
-                      borderColor: Colors.grey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.description_outlined,
-                                  color: Colors.grey.shade600,
-                                  size: 80.sp,
-                                ),
-                                Text(
-                                  "Upload PDF for this question",
-                                  style: AppTexts.labelTextStyle,
-                                ),
-                                10.hGap,
-                                if (selectedFile != null) ...[
-                                  10.hGap,
-                                  for (var file in selectedFile) ...[
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.picture_as_pdf,
-                                          color: Colors.red,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            file!.path.split('/').last,
-                                            style: AppTexts.labelTextStyle,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.close,
-                                            color: Colors.grey,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _answers[question
-                                                  .id] = AnswerState(
-                                                text: '',
-                                                files: [],
-                                              );
-                                              _controller
-                                                  .clear(); // clear TextField too
-                                            });
-                                          },
-                                        ),
-                                      ],
+                    if (selectedFile != null) ...[
+                      10.hGap,
+                      for (var file in selectedFile) ...[
+                        Row(
+                          children: [
+                            Icon(Icons.picture_as_pdf, color: Colors.red),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                file!.path.split('/').last,
+                                style: AppTexts.labelTextStyle,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.close, color: Colors.grey),
+                              onPressed: () {
+                                setState(() {
+                                  _answers[question.id] = AnswerState(
+                                    text: '',
+                                    files: [],
+                                  );
+                                  _controller.clear(); // clear TextField too
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                    ActionButton(
+                      text: 'Choose PDF or Images',
+                      onTap: () async {
+                        // Check if there are already selected files for this question
+                        if (_answers[question.id]?.files != null &&
+                            _answers[question.id]!.files.isNotEmpty) {
+                          final shouldOverwrite = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (context) => AlertDialog(
+                                  title: const Text("Overwrite Files?"),
+                                  content: const Text(
+                                    "You have already selected files. Selecting new files will overwrite the existing ones. Do you want to continue?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () =>
+                                              Navigator.of(context).pop(false),
+                                      child: const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(true),
+                                      child: const Text("Overwrite"),
                                     ),
                                   ],
-                                ],
-                                10.hGap,
-                                ActionButton(
-                                  text: 'Choose PDF or Images',
-                                  onTap: () async {
-                                    // Check if there are already selected files for this question
-                                    if (_answers[question.id]?.files != null &&
-                                        _answers[question.id]!
-                                            .files
-                                            .isNotEmpty) {
-                                      final shouldOverwrite = await showDialog<
-                                        bool
-                                      >(
-                                        context: context,
-                                        builder:
-                                            (context) => AlertDialog(
-                                              title: const Text(
-                                                "Overwrite Files?",
-                                              ),
-                                              content: const Text(
-                                                "You have already selected files. Selecting new files will overwrite the existing ones. Do you want to continue?",
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed:
-                                                      () => Navigator.of(
-                                                        context,
-                                                      ).pop(false),
-                                                  child: const Text("Cancel"),
-                                                ),
-                                                TextButton(
-                                                  onPressed:
-                                                      () => Navigator.of(
-                                                        context,
-                                                      ).pop(true),
-                                                  child: const Text(
-                                                    "Overwrite",
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                      );
-
-                                      // If user cancels, just return without opening file picker
-                                      if (shouldOverwrite != true) return;
-                                    }
-
-                                    // Open file picker
-                                    FilePickerResult? result = await FilePicker
-                                        .platform
-                                        .pickFiles(
-                                          type: FileType.custom,
-                                          allowedExtensions: [
-                                            'pdf',
-                                            'jpg',
-                                            'jpeg',
-                                            'png',
-                                          ],
-                                          allowMultiple: true,
-                                        );
-
-                                    if (result != null) {
-                                      final files =
-                                          result.paths
-                                              .where((path) => path != null)
-                                              .map((path) => File(path!))
-                                              .toList();
-
-                                      if (files.isNotEmpty) {
-                                        setState(() {
-                                          _answers[question.id] = AnswerState(
-                                            text: '',
-                                            files: files,
-                                          );
-                                          _controller.clear();
-                                        });
-
-                                        // Add files to bloc
-                                        context.read<DailyDescTestBloc>().add(
-                                          AddFilesAnswer(
-                                            questionId: question.id,
-                                            files: files,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
                                 ),
-                                10.hGap,
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                          );
+
+                          // If user cancels, just return without opening file picker
+                          if (shouldOverwrite != true) return;
+                        }
+
+                        // Open file picker
+                        FilePickerResult? result = await FilePicker.platform
+                            .pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                              allowMultiple: true,
+                            );
+
+                        if (result != null) {
+                          final files =
+                              result.paths
+                                  .where((path) => path != null)
+                                  .map((path) => File(path!))
+                                  .toList();
+
+                          if (files.isNotEmpty) {
+                            setState(() {
+                              _answers[question.id] = AnswerState(
+                                text: '',
+                                files: files,
+                              );
+                              _controller.clear();
+                            });
+
+                            // Add files to bloc
+                            context.read<DailyDescTestBloc>().add(
+                              AddFilesAnswer(
+                                questionId: question.id,
+                                files: files,
+                              ),
+                            );
+                          }
+                        }
+                      },
                     ),
                     20.hGap,
                     Row(
