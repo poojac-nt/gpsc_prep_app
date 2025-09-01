@@ -300,29 +300,17 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
 
   bool isAnswerUnlocked(String createdAtString) {
     try {
-      // Parse created_at from Supabase (UTC string)
       final createdAtUtc = DateTime.parse(createdAtString);
-
-      // Convert UTC -> IST
-      final createdAtIst = createdAtUtc.add(
-        const Duration(hours: 5, minutes: 30),
+      final unlockTimeUtc = DateTime.utc(
+        createdAtUtc.year,
+        createdAtUtc.month,
+        createdAtUtc.day,
+        11,
+        30,
       );
 
-      // Build unlock time = 8 PM IST of created date
-      final unlockTimeIst = DateTime(
-        createdAtIst.year,
-        createdAtIst.month,
-        createdAtIst.day,
-        20, // 8 PM
-      );
-
-      // Current time in IST
-      final nowIst = DateTime.now().toUtc().add(
-        const Duration(hours: 5, minutes: 30),
-      );
-
-      // Return true if current IST is after unlock time
-      return nowIst.isAfter(unlockTimeIst);
+      final nowUtc = DateTime.now().toUtc();
+      return nowUtc.isAfter(unlockTimeUtc);
     } catch (e) {
       getIt<LogHelper>().e("Error parsing createdAt: $e");
       getIt<SnackBarHelper>().showError("Error parsing createdAt: $e");
