@@ -137,23 +137,28 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                                 );
                               }
                             },
-
                             widgets: [
                               if (isAnswerUnlocked(descTests[index].createdAt))
-                                IconButton(
-                                  onPressed: () {
-                                    context.push(
-                                      AppRoutes.descAnswerScreen,
-                                      extra: descTests[index],
-                                    );
-                                  },
-                                  icon: Icon(
-                                    AppIcons.desc_ans_icon,
-                                    size: 25.sp,
-                                    color: AppColors.primary,
-                                  ),
-                                  tooltip: "Answer Module",
+                                Column(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        context.push(
+                                          AppRoutes.descAnswerScreen,
+                                          extra: descTests[index],
+                                        );
+                                      },
+                                      icon: Icon(
+                                        AppIcons.desc_ans_icon,
+                                        size: 25.sp,
+                                        color: AppColors.primary,
+                                      ),
+                                      tooltip: "Answer Module",
+                                    ),
+                                    Text("Answer Module"),
+                                  ],
                                 ),
+                              10.wGap,
                             ],
                           ),
                         ],
