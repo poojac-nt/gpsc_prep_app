@@ -187,33 +187,48 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                     20.hGap,
                     Text("Your Answer", style: AppTexts.labelTextStyle),
                     20.hGap,
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: AppBorders.borderRadius,
-                      ),
-                      child: TextField(
-                        maxLines: 5,
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: "Type your answer here...",
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.all(10.w),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            // Clear PDF when typing
-                            _answers[question.id] = AnswerState(
-                              text: value,
-                              files: [],
-                            );
-                          });
+                    Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: AppBorders.borderRadius,
+                          ),
+                          child: TextField(
+                            maxLines: _controller.text.isEmpty ? 5 : 10,
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              hintText: "Type your answer here...",
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.all(10.w),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                // Clear PDF when typing
+                                _answers[question.id] = AnswerState(
+                                  text: value,
+                                  files: [],
+                                );
+                              });
 
-                          context.read<DailyDescTestBloc>().add(
-                            AddTextAnswer(questionId: question.id, text: value),
-                          );
-                        },
-                      ),
+                              context.read<DailyDescTestBloc>().add(
+                                AddTextAnswer(
+                                  questionId: question.id,
+                                  text: value,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 8.h,
+                          right: 12.w,
+                          child: Text(
+                            '${_controller.text.trim().isEmpty ? 0 : _controller.text.trim().split(RegExp(r"\s+")).length} words',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ),
+                      ],
                     ),
                     20.hGap,
                     Text(
