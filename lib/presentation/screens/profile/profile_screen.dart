@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/profile/widgets/quick_stats.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
@@ -207,17 +209,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
 
                   10.hGap,
-                  TestModule(
-                    title: 'Quick Stats',
-                    cards: [
-                      QuickStats(text: "Test Taken", num: "64"),
-                      10.hGap,
-                      QuickStats(text: "Average Score", num: "83"),
-                      10.hGap,
-                      QuickStats(text: "Study Strike", num: "12 days"),
-                      10.hGap,
-                      QuickStats(text: "Rank", num: "#264"),
-                    ],
+                  BlocBuilder<DashboardBloc, DashboardBlocState>(
+                    builder: (context, state) {
+                      if (state is FetchingAttemptedTests) {
+                        return _buildWhenLoading(context);
+                      }
+                      if (state is AttemptedTestsFetchedFailed) {
+                        return Text(state.failure.message);
+                      }
+                      if (state is AttemptedTestsFetched) {
+                        return TestModule(
+                          title: 'Quick Stats',
+                          cards: [
+                            QuickStats(
+                              text: "Test Taken",
+                              num: state.totalTests.toString(),
+                            ),
+                            10.hGap,
+                            QuickStats(
+                              text: "Average Score",
+                              num: state.avgScore.toString(),
+                            ),
+                            // 10.hGap,
+                            // QuickStats(text: "Study Strike", num: "12 days"),
+                            // 10.hGap,
+                            // QuickStats(text: "Rank", num: "#264"),
+                          ],
+                        );
+                      }
+                      return SizedBox.shrink();
+                    },
                   ),
                   10.hGap,
                   Form(
