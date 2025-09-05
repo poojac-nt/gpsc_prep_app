@@ -137,6 +137,11 @@ class SelectionDrawer extends StatelessWidget {
                 iconColor: Colors.red,
                 'Logout',
               ),
+              Spacer(),
+              Text(
+                "Version: ${getIt<CacheManager>().getAppVersion()}",
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500),
+              ),
             ],
           ),
         ),

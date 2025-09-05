@@ -11,6 +11,7 @@ class CacheManager {
 
   UserModel? _user;
   String userLanguage = 'en';
+  String _appVersion = '';
   final Map<String, String> _cache = {};
 
   UserRole? getUserRole() => _user?.role ?? UserRole.student;
@@ -48,5 +49,16 @@ class CacheManager {
   void clearUser() {
     _user = null;
     _prefs.clear();
+  }
+
+  String get appVersion => _appVersion;
+
+  void setAppVersion(String appVersion) {
+    _appVersion = appVersion;
+    _prefs.appVersion(appVersion);
+  }
+
+  String getAppVersion() {
+    return _appVersion;
   }
 }
