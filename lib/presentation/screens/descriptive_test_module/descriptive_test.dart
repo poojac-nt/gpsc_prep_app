@@ -592,7 +592,6 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                           child: ActionButton(
                             text: "Submit Test",
                             onTap: () {
-                              Navigator.of(context).pop(true);
                               Navigator.of(
                                 context,
                               ).pop(false); // don’t pop screen
