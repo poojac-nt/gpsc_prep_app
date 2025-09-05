@@ -25,8 +25,13 @@ import '../dashboard/widgets/custom_progress_bar.dart';
 
 class DescriptiveTestScreen extends StatefulWidget {
   final DescTestModel descTestModel;
+  final int initialIndex;
 
-  const DescriptiveTestScreen({super.key, required this.descTestModel});
+  const DescriptiveTestScreen({
+    super.key,
+    required this.descTestModel,
+    required this.initialIndex,
+  });
 
   @override
   State<DescriptiveTestScreen> createState() => _DescriptiveTestScreenState();
@@ -42,7 +47,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   void initState() {
     _answers.clear();
     _controller.clear();
-    currentIndex = 0;
+    currentIndex = widget.initialIndex;
     context.read<QuestionBloc>().add(
       LoadDescQuestion(widget.descTestModel.id, "en"),
     );
@@ -86,7 +91,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
             getIt<SnackBarHelper>().showError(state.failure.message);
           } else if (state is PdfDownloadSuccess) {
             getIt<SnackBarHelper>().showSuccess(
-              "Pdf is Save at :${state.filePath}",
+              "Pdf is Saved at :${state.filePath}",
             );
           }
         },
@@ -157,7 +162,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                 onPressed: () {
                                   context.read<DailyDescTestBloc>().add(
                                     DownloadDescTestPdf(
-                                      questionId: question,
+                                      question: question,
                                       index: (currentIndex + 1),
                                       testName: widget.descTestModel.name,
                                     ),
@@ -171,16 +176,22 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                             question.questionEn.questionTxt,
                             style: AppTexts.labelTextStyle,
                           ),
-                          15.hGap,
-                          Text(
-                            question.questionHi?.questionTxt ?? "",
-                            style: AppTexts.labelTextStyle,
-                          ),
-                          15.hGap,
-                          Text(
-                            question.questionGj?.questionTxt ?? "",
-                            style: AppTexts.labelTextStyle,
-                          ),
+                          if (question.questionHi?.questionTxt.isNotEmpty ??
+                              false) ...[
+                            10.hGap,
+                            Text(
+                              question.questionHi!.questionTxt,
+                              style: AppTexts.labelTextStyle,
+                            ),
+                          ],
+                          if (question.questionGj?.questionTxt.isNotEmpty ??
+                              false) ...[
+                            10.hGap,
+                            Text(
+                              question.questionGj!.questionTxt,
+                              style: AppTexts.labelTextStyle,
+                            ),
+                          ],
                         ],
                       ),
                     ),

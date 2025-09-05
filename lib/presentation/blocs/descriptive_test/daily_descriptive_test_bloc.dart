@@ -250,13 +250,13 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       }
 
       final result = await generateDescTestPdf(
-        event.questionId,
+        event.question,
         event.index,
         event.testName,
       );
 
       if (result.isEmpty) {
-        _log.e("Failed to generate PDF for question ${event.questionId.id}");
+        _log.e("Failed to generate PDF for question ${event.question.id}");
         emit(PdfDownloadFailure(Failure("Failed to generate PDF")));
         return;
       }

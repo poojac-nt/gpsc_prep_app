@@ -41,12 +41,12 @@ class SubmitDescTest extends DailyDescTestEvent {
 }
 
 class DownloadDescTestPdf extends DailyDescTestEvent {
-  final DescQuestionModel questionId;
+  final DescQuestionModel question;
   final int index;
   final String testName;
 
   DownloadDescTestPdf({
-    required this.questionId,
+    required this.question,
     required this.index,
     required this.testName,
   });

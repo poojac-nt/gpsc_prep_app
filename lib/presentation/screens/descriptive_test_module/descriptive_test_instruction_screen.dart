@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../utils/app_constants.dart';
-import '../../widgets/action_button.dart';
-import '../../widgets/bordered_container.dart';
-import '../../widgets/elevated_container.dart';
 
 class DescriptiveTestInstructionScreen extends StatefulWidget {
   final DescTestModel descTestModel;
@@ -26,140 +25,134 @@ class DescriptiveTestInstructionScreen extends StatefulWidget {
 class _DescriptiveTestInstructionScreenState
     extends State<DescriptiveTestInstructionScreen> {
   @override
+  void initState() {
+    super.initState();
+    context.read<QuestionBloc>().add(
+      LoadDescQuestion(widget.descTestModel.id, "en"),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.descTestModel.name, style: AppTexts.titleTextStyle),
       ),
-      body: SingleChildScrollView(
-        child: ElevatedContainer(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-          child: Center(
-            child: Column(
-              children: [
-                Text(
-                  "Test Instructions",
-                  style: TextStyle(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                20.hGap,
-                BorderedContainer(
-                  padding: EdgeInsets.all(AppPaddings.defaultPadding),
-                  radius: BorderRadius.zero,
-                  child: Center(
-                    child: Column(
+      body: BlocBuilder<QuestionBloc, QuestionState>(
+        builder: (context, state) {
+          if (state is QuestionLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is DescQuestionLoaded) {
+            return ListView.separated(
+              itemBuilder: (context, index) {
+                final q = state.questionsModels[index].questionEn;
+                return InkWell(
+                  onTap: () {
+                    context.push(
+                      AppRoutes.descriptiveTestScreen,
+                      extra: DescTestScreenArgs(
+                        dailyTestModel: widget.descTestModel,
+                        initialInex: index,
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(16.r),
+                  splashColor: AppColors.primary.withOpacity(0.1),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 18.h,
+                      horizontal: 16.w,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.2),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          widget.descTestModel.noQuestions.toString(),
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
+                        Hero(
+                          tag: 'questionNumber$index',
+                          child: CircleAvatar(
+                            radius: 22.r,
+                            backgroundColor: AppColors.primary.withOpacity(
+                              0.15,
+                            ),
+                            child: Text(
+                              "${index + 1}",
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
                           ),
                         ),
-                        Text(
-                          "Questions",
-                          style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
+                        10.wGap,
+                        Expanded(
+                          child: Text(
+                            q.questionTxt,
+                            style: AppTexts.subTitle.copyWith(
+                              fontSize: 17.sp,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                              height: 1.3,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+
+                        /// Animated Arrow
+                        TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0, end: 1),
+                          duration: const Duration(milliseconds: 500),
+                          builder:
+                              (context, value, child) => Transform.translate(
+                                offset: Offset(4 * value, 0),
+                                child: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 20,
+                                  color: AppColors.primary,
+                                  shadows: [
+                                    Shadow(
+                                      color: AppColors.primary.withOpacity(
+                                        0.15,
+                                      ),
+                                      blurRadius: 3,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                              ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                20.hGap,
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 15.w,
-                    vertical: 15.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: AppBorders.borderRadius,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Important Instructions:",
-                        style: AppTexts.labelTextStyle,
-                      ),
-                      9.hGap,
-                      _buildInstructionTile(
-                        "Read each question carefully and plan your answer before writing",
-                      ),
-                      5.hGap,
-                      _buildInstructionTile(
-                        "You can type your answer directly or upload a PDF file",
-                      ),
-                    ],
-                  ),
-                ),
-                // 20.hGap,
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //   children: [
-                //     _languageButton(context, "English", "en"),
-                //     _languageButton(context, "Gujarati", "en"),
-                //     _languageButton(context, "Hindi", "en"),
-                //   ],
-                // ),
-                20.hGap,
-                ActionButton(
-                  backgroundColor: AppColors.primary,
-                  text: "Start Test",
-                  onTap: () {
-                    context.go(
-                      AppRoutes.descriptiveTestScreen,
-                      extra: DescTestScreenArgs(
-                        dailyTestModel: widget.descTestModel,
-                      ),
-                    );
-                  },
-                  fontColor: Colors.white,
-                ),
-              ],
-            ),
-          ),
-        ).padAll(15),
+                ).padAll(AppPaddings.appPaddingInt);
+              },
+              separatorBuilder: (context, index) => 2.hGap, // ✅ Fixed
+              itemCount: state.questionsModels.length,
+            );
+          } else if (state is QuestionLoadFailed) {
+            return Center(
+              child: Text('Failed to load questions: ${state.failure.message}'),
+            );
+          }
+          return const Center(child: Text('No Questions Available'));
+        },
       ),
     );
   }
-}
-
-Widget _buildInstructionTile(String text) {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: EdgeInsets.only(top: 6.h),
-        child: Icon(Icons.circle, size: 6.sp),
-      ),
-      10.wGap,
-      Expanded(
-        child: Text(
-          maxLines: 3,
-          overflow: TextOverflow.visible,
-          text,
-          style: AppTexts.subTitle.copyWith(color: Colors.black),
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _languageButton(BuildContext context, String label, String code) {
-  final bool isSelected = false;
-  return OutlinedButton(
-    style: OutlinedButton.styleFrom(
-      backgroundColor: isSelected ? Colors.blue.shade100 : null,
-      side: BorderSide(color: isSelected ? Colors.blue : Colors.grey, width: 2),
-    ),
-    onPressed: () {},
-    child: Text(
-      label,
-      style: TextStyle(
-        color: isSelected ? Colors.blue : Colors.black,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-    ),
-  );
 }
