@@ -27,6 +27,7 @@ class TestTile extends StatelessWidget {
       padding: EdgeInsets.all(10),
       radius: BorderRadius.circular(10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
@@ -42,13 +43,18 @@ class TestTile extends StatelessWidget {
           ),
           if (widgets.isNotEmpty) 5.wGap,
           ...widgets,
-          IconButton(
-            onPressed: onTap,
-            tooltip: hasResult ? 'View Result' : 'Start Test',
-            icon:
-                hasResult
-                    ? Icon(AppIcons.result_icon, color: AppColors.primary)
-                    : Icon(AppIcons.start_test, color: AppColors.primary),
+          Column(
+            children: [
+              IconButton(
+                onPressed: onTap,
+                tooltip: hasResult ? 'View Result' : 'Start Test',
+                icon:
+                    hasResult
+                        ? Icon(AppIcons.result_icon, color: AppColors.primary)
+                        : Icon(AppIcons.start_test, color: AppColors.primary),
+              ),
+              Text(hasResult ? 'View Result' : 'Start Test'),
+            ],
           ),
         ],
       ),

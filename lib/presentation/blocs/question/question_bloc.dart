@@ -146,7 +146,6 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
         );
         return;
       }
-      getIt<SharedPrefHelper>().saveUserLanguage(event.language!);
 
       emit(
         DescQuestionLoaded(

@@ -379,6 +379,7 @@ class SupabaseHelper {
       // Get current app version string (e.g., "1.0.0")
       final info = await PackageInfo.fromPlatform();
       final currentVersionStr = info.version;
+      _cache.setAppVersion(currentVersionStr);
       final currentVersion = Version.parse(currentVersionStr);
       _log.i('Current app version: $currentVersion');
 

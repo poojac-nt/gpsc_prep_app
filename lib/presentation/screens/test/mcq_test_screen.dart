@@ -170,20 +170,26 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                       widgets:
                           hasResult && isEligibleForRetest
                               ? [
-                                IconButton(
-                                  icon: Icon(
-                                    AppIcons.retest_icon,
-                                    color: AppColors.primary,
-                                  ),
-                                  onPressed: () {
-                                    context.pushReplacement(
-                                      AppRoutes.testInstructionScreen,
-                                      extra: TestInstructionScreenArgs(
-                                        dailyTestModel: test,
+                                Column(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        AppIcons.retest_icon,
+                                        color: AppColors.primary,
                                       ),
-                                    );
-                                  },
+                                      onPressed: () {
+                                        context.pushReplacement(
+                                          AppRoutes.testInstructionScreen,
+                                          extra: TestInstructionScreenArgs(
+                                            dailyTestModel: test,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    Text("Retest"),
+                                  ],
                                 ),
+                                10.wGap,
                               ]
                               : [],
                     ).padSymmetric(vertical: 6.h),

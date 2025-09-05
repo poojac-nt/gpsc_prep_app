@@ -184,7 +184,10 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       final args = state.extra as DescTestScreenArgs;
       return _slideTransition(
-        DescriptiveTestScreen(descTestModel: args.dailyTestModel),
+        DescriptiveTestScreen(
+          descTestModel: args.dailyTestModel,
+          initialIndex: args.initialInex,
+        ),
         state,
       );
     },

@@ -8,6 +8,7 @@ import 'routes.dart';
 
 class AppRouter {
   static late final GoRouter _router;
+
   static void init(bool isLoggedIn) {
     _router = GoRouter(
       debugLogDiagnostics: true,
@@ -16,10 +17,19 @@ class AppRouter {
       redirect: (context, state) async {
         final cache = getIt<CacheManager>();
         final UserModel? user = await cache.getInitUser();
+        final loggingIn = state.matchedLocation == AppRoutes.login;
+        final registering =
+            state.matchedLocation == AppRoutes.registrationScreen;
         if (user == null) {
-          return AppRoutes.login;
+          if (!loggingIn && !registering) {
+            return AppRoutes.login;
+          }
         }
-        return null;
+        if (user != null && (loggingIn || registering)) {
+          return AppRoutes.splashScreen;
+        }
+
+        return null; // no redirect
       },
       routes: appRoutes,
     );

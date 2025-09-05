@@ -13,12 +13,34 @@ Future<String> generateDescTestPdf(
   int index,
   String testName,
 ) async {
-  final pdf = pw.Document();
+  final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
+  final baseFont = pw.Font.ttf(base);
+
+  final pdf = pw.Document(
+    pageMode: PdfPageMode.fullscreen,
+    theme: pw.ThemeData.withFont(
+      base: baseFont,
+      fontFallback: [baseFont, pw.Font.symbol()],
+    ),
+  );
 
   // Load logo
   final logoData = await rootBundle.load('assets/images/logo_without_bg.png');
   final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
 
+  final telegramLogo = pw.MemoryImage(
+    (await rootBundle.load(
+      'assets/images/telegram_logo.png',
+    )).buffer.asUint8List(),
+  );
+  final gmailLogo = pw.MemoryImage(
+    (await rootBundle.load(
+      'assets/images/gmail_logo.png',
+    )).buffer.asUint8List(),
+  );
+  final xLogo = pw.MemoryImage(
+    (await rootBundle.load('assets/images/x_logo.png')).buffer.asUint8List(),
+  );
   // --- Helper to wrap content with border ---
   pw.Widget borderedPage(pw.Widget child) {
     return pw.Container(
@@ -73,6 +95,81 @@ Future<String> generateDescTestPdf(
                   ],
                 ],
               ),
+              // Footer
+              pw.Positioned(
+                bottom: 20, // distance from bottom
+                left: 0,
+                right: 0,
+                child: pw.Container(
+                  alignment: pw.Alignment.center,
+                  margin: const pw.EdgeInsets.only(top: 10),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                    children: [
+                      pw.Text(
+                        'Click here to Join us:',
+                        style: pw.TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.Row(
+                        children: [
+                          pw.Image(telegramLogo, width: 10, height: 10),
+                          pw.SizedBox(width: 4),
+                          pw.UrlLink(
+                            destination: 'https://t.me/starics_prep',
+                            child: pw.Text(
+                              '@starics_prep',
+                              style: pw.TextStyle(
+                                color: PdfColors.blue,
+                                decoration: pw.TextDecoration.underline,
+                                fontSize: 9.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                      pw.Row(
+                        children: [
+                          pw.Image(gmailLogo, width: 10, height: 10),
+                          pw.SizedBox(width: 4),
+                          pw.UrlLink(
+                            destination: 'mailto:star.ics89@gmail.com',
+                            child: pw.Text(
+                              'star.ics89@gmail.com',
+                              style: pw.TextStyle(
+                                color: PdfColors.blue,
+                                decoration: pw.TextDecoration.underline,
+                                fontSize: 9.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                      pw.Row(
+                        children: [
+                          pw.Image(xLogo, width: 10, height: 10),
+                          pw.SizedBox(width: 4),
+                          pw.UrlLink(
+                            destination: 'https://x.com/star_ics89',
+                            child: pw.Text(
+                              '@star_ics89',
+                              style: pw.TextStyle(
+                                color: PdfColors.blue,
+                                decoration: pw.TextDecoration.underline,
+                                fontSize: 9.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -87,11 +184,90 @@ Future<String> generateDescTestPdf(
         pageFormat: PdfPageFormat.a4,
         build: (context) {
           return borderedPage(
-            pw.Center(
-              child: pw.Opacity(
-                opacity: 0.1,
-                child: pw.Image(logoImage, fit: pw.BoxFit.contain),
-              ),
+            pw.Stack(
+              children: [
+                pw.Center(
+                  child: pw.Opacity(
+                    opacity: 0.1,
+                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                  ),
+                ),
+                // Footer
+                pw.Positioned(
+                  bottom: 20, // distance from bottom
+                  left: 0,
+                  right: 0,
+                  child: pw.Container(
+                    alignment: pw.Alignment.center,
+                    margin: const pw.EdgeInsets.only(top: 10),
+                    child: pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                      children: [
+                        pw.Text(
+                          'Click here to Join us:',
+                          style: pw.TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.Row(
+                          children: [
+                            pw.Image(telegramLogo, width: 10, height: 10),
+                            pw.SizedBox(width: 4),
+                            pw.UrlLink(
+                              destination: 'https://t.me/starics_prep',
+                              child: pw.Text(
+                                '@starics_prep',
+                                style: pw.TextStyle(
+                                  color: PdfColors.blue,
+                                  decoration: pw.TextDecoration.underline,
+                                  fontSize: 9.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                        pw.Row(
+                          children: [
+                            pw.Image(gmailLogo, width: 10, height: 10),
+                            pw.SizedBox(width: 4),
+                            pw.UrlLink(
+                              destination: 'mailto:star.ics89@gmail.com',
+                              child: pw.Text(
+                                'star.ics89@gmail.com',
+                                style: pw.TextStyle(
+                                  color: PdfColors.blue,
+                                  decoration: pw.TextDecoration.underline,
+                                  fontSize: 9.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                        pw.Row(
+                          children: [
+                            pw.Image(xLogo, width: 10, height: 10),
+                            pw.SizedBox(width: 4),
+                            pw.UrlLink(
+                              destination: 'https://x.com/star_ics89',
+                              child: pw.Text(
+                                '@star_ics89',
+                                style: pw.TextStyle(
+                                  color: PdfColors.blue,
+                                  decoration: pw.TextDecoration.underline,
+                                  fontSize: 9.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },

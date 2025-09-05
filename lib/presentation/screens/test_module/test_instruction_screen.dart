@@ -67,35 +67,51 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DailyTestBloc, DailyTestState>(
-      builder: (context, state) {
-        if (_noTestDetected) {
-          return _buildNoTestScreen(context);
-        }
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<DailyTestBloc, DailyTestState>(
+          listenWhen: (previous, current) => current is SingleTestFetched,
+          listener: (context, state) {
+            if (state is SingleTestFetched) {
+              setState(() {
+                _fetchedTestModel = state.dailyTestModel;
+              });
+            }
+          },
+        ),
+        BlocListener<DailyTestBloc, DailyTestState>(
+          listenWhen:
+              (previous, current) => current is SingleTestFetchingFailed,
+          listener: (context, state) {
+            setState(() {
+              _noTestDetected = true;
+            });
+          },
+        ),
+      ],
+      child: BlocBuilder<DailyTestBloc, DailyTestState>(
+        builder: (context, state) {
+          if (_noTestDetected) {
+            return _buildNoTestScreen(context);
+          }
 
-        if (state is DailyTestInitial || state is SingleTestFetching) {
-          return Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
+          if (state is DailyTestInitial || state is SingleTestFetching) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-        if (state is SingleTestFetchingFailed ||
-            (state is SingleTestFetched &&
-                (widget.dailyTestModel ?? _fetchedTestModel) == null)) {
-          _noTestDetected = true;
-          return _buildNoTestScreen(context);
-        }
+          final testModel = widget.dailyTestModel ?? _fetchedTestModel;
 
-        if (state is SingleTestFetched) {
-          _fetchedTestModel = state.dailyTestModel;
-        }
+          if (testModel != null) {
+            return buildScaffoldWithModel(context, testModel);
+          }
 
-        final testModel = widget.dailyTestModel ?? _fetchedTestModel;
-
-        if (testModel != null) {
-          return buildScaffoldWithModel(context, testModel);
-        }
-
-        return Scaffold(body: Center(child: CircularProgressIndicator()));
-      },
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        },
+      ),
     );
   }
 

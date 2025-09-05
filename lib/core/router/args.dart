@@ -49,6 +49,7 @@ class DescTestInstructionScreenArgs {
 
 class DescTestScreenArgs {
   final DescTestModel dailyTestModel;
+  final int initialInex;
 
-  DescTestScreenArgs({required this.dailyTestModel});
+  DescTestScreenArgs({required this.dailyTestModel, required this.initialInex});
 }

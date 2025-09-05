@@ -82,7 +82,29 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
                         ),
                         15.hGap,
                         MarkdownWidget(
+                          data: question.questionHi?.questionTxt ?? "",
+                          shrinkWrap: true,
+                        ),
+                        15.hGap,
+                        MarkdownWidget(
+                          data: question.questionGj?.questionTxt ?? "",
+                          shrinkWrap: true,
+                        ),
+                        15.hGap,
+                        Text("Answer", style: AppTexts.labelTextStyle),
+                        15.hGap,
+                        MarkdownWidget(
                           data: question.questionEn.answerTxt,
+                          shrinkWrap: true,
+                        ),
+                        15.hGap,
+                        MarkdownWidget(
+                          data: question.questionHi?.answerTxt ?? "",
+                          shrinkWrap: true,
+                        ),
+                        15.hGap,
+                        MarkdownWidget(
+                          data: question.questionGj?.answerTxt ?? "",
                           shrinkWrap: true,
                         ),
                       ],

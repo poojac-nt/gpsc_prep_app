@@ -26,6 +26,10 @@ class SharedPrefHelper {
     return UserModel.fromJson(jsonMap);
   }
 
+  Future<void> appVersion(String appVersion) async {
+    await _prefs.setString('appVersion', appVersion);
+  }
+
   void saveUserLanguage(String lang) {
     _prefs.setString('userLanguage', lang);
   }

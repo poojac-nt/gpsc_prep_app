@@ -42,20 +42,6 @@ class QuestionPreviewBloc
       }
     }
 
-    final questions =
-        event.questions.map((q) {
-          final langData = getLangData(q);
-          return QuestionLanguageData(
-            correctAnswer: langData.correctAnswer,
-            questionTxt: langData.questionTxt,
-            optA: langData.optA,
-            optB: langData.optB,
-            optC: langData.optC,
-            optD: langData.optD,
-            explanation: langData.explanation,
-          );
-        }).toList();
-
     emit(QuestionPreviewLoaded(event.questions));
   }
 
