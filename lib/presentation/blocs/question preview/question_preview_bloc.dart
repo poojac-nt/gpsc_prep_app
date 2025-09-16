@@ -16,7 +16,7 @@ part 'question_preview_state.dart';
 
 class QuestionPreviewBloc
     extends Bloc<QuestionPreviewEvent, QuestionPreviewState> {
-  final log = getIt.get<LogHelper>();
+  final _log = getIt<LogHelper>();
 
   QuestionPreviewBloc() : super(QuestionPreviewInitial()) {
     on<LoadQuestionsEvent>(_onLoadQuestions);
@@ -61,20 +61,25 @@ class QuestionPreviewBloc
             await getApplicationDocumentsDirectory();
       }
 
-      final path = await PdfExportService().exportQuestionsToPdf(
+      final result = await PdfExportService().exportQuestionsToPdf(
         event.questions,
         event.testName,
       );
-
+      if (result.isEmpty) {
+        _log.e("Failed to generate PDF");
+        emit(QuestionPreviewError("Failed to generate PDF"));
+        return;
+      }
+      _log.i("PDF generated successfully: $result");
       emit(
         QuestionExported(
           questions: event.questions,
-          filePath: path,
+          filePath: result,
           testName: event.testName,
         ),
       );
     } catch (e) {
-      log.e('Error exporting questions to PDF: $e');
+      _log.e('Error exporting questions to PDF: $e');
       emit(QuestionPreviewError('Failed to export PDF'));
     }
   }

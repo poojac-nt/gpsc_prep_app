@@ -1,12 +1,16 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:permission_handler/permission_handler.dart';
 
 Future<String> generateDescTestPdf(
   DescQuestionModel question,
@@ -70,7 +74,7 @@ Future<String> generateDescTestPdf(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    "Question ${index + 1}",
+                    "Question $index",
                     style: pw.TextStyle(
                       fontSize: 12.sp,
                       fontWeight: pw.FontWeight.bold,
@@ -97,7 +101,7 @@ Future<String> generateDescTestPdf(
               ),
               // Footer
               pw.Positioned(
-                bottom: 20, // distance from bottom
+                bottom: 20,
                 left: 0,
                 right: 0,
                 child: pw.Container(
@@ -274,24 +278,60 @@ Future<String> generateDescTestPdf(
       ),
     );
   }
-
-  // ✅ Save in Downloads (Android), sandbox (iOS)
+  final bytes = await pdf.save();
   String filePath;
+
   if (Platform.isAndroid) {
-    final downloadsDir = Directory("/storage/emulated/0/Download");
-    if (!await downloadsDir.exists()) {
-      await downloadsDir.create(recursive: true);
+    final deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+
+    if (sdkInt <= 28) {
+      // Legacy storage (needs WRITE permission)
+      if (await Permission.storage.request().isGranted) {
+        final downloadsDir = Directory("/storage/emulated/0/Download");
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+        filePath = "${downloadsDir.path}/${testName}_Question$index.pdf";
+        final file = File(filePath);
+        await file.writeAsBytes(bytes);
+      } else {
+        throw Exception("Storage permission not granted");
+      }
+    } else {
+      // ✅ Scoped Storage (Android Q+ and above)
+      final mediaStore = MediaStore();
+      MediaStore.appFolder = "StarICS";
+      final filename = "${testName}_Question$index.pdf";
+      final folderName = "StarICS";
+      final tempDir = await getDownloadsDirectory();
+      final tempPath = "${tempDir?.path}/$filename";
+      final tempFile = File(tempPath);
+      await tempFile.writeAsBytes(bytes);
+
+      final saveInfo = await mediaStore.saveFile(
+        tempFilePath: tempPath,
+        dirType: DirType.download,
+        dirName: DirName.download,
+        relativePath: "$folderName/",
+      );
+
+      if (saveInfo == null) {
+        throw Exception("Failed to save PDF to MediaStore");
+      }
+
+      // On API 29+, you usually get a content:// URI here
+      filePath = saveInfo.uri.toString();
     }
-    filePath = "${downloadsDir.path}/${testName}_Question$index.pdf";
   } else {
     final dir = await getApplicationDocumentsDirectory();
     filePath = "${dir.path}/${testName}_Question$index.pdf";
+    final file = File(filePath);
+    await file.writeAsBytes(bytes);
   }
-
-  final file = File(filePath);
-  await file.writeAsBytes(await pdf.save());
-
-  return file.path;
+  await OpenFile.open(filePath);
+  return filePath;
 }
 
 /// Robust Markdown parser to PDF widgets (supports: paragraph, bold, italic, heading, list, line breaks)

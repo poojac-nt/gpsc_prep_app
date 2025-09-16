@@ -262,7 +262,9 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       }
       _log.i("PDF generated successfully: $result");
       emit(PdfDownloadSuccess(result));
-      _snackBar.showSuccess("PDF downloaded successfully: $result");
+      _snackBar.showSuccess(
+        "PDF downloaded successfully into Downloads under StarICS folder",
+      );
     } catch (e) {
       _log.e("Error downloading PDF: $e");
       emit(PdfDownloadFailure(Failure(e.toString())));

@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -129,7 +131,6 @@ class PdfExportService {
                 ],
               ),
             ),
-
         build:
             (context) => [
               pw.Container(
@@ -270,11 +271,45 @@ class PdfExportService {
       ),
     );
 
+    // Generate PDF bytes
+    final pdfBytes = await pdf.save();
+
+    final filename = "${testName.toSafeFileName()}.pdf";
+
+    if (Platform.isAndroid) {
+      final androidVersion =
+          (await DeviceInfoPlugin().androidInfo).version.sdkInt;
+
+      if (androidVersion >= 29) {
+        // ✅ Scoped Storage (Android 10+)
+        final tempDir = await getDownloadsDirectory();
+        final tempPath = "${tempDir?.path}/$filename";
+        final tempFile = File(tempPath);
+        await tempFile.writeAsBytes(pdfBytes);
+
+        final mediaStore = MediaStore();
+        MediaStore.appFolder = "StarICS";
+        final saveInfo = await mediaStore.saveFile(
+          tempFilePath: tempPath,
+          dirType: DirType.download,
+          dirName: DirName.download,
+          relativePath: "StarICS/", // ✅ all PDFs go here
+        );
+
+        if (saveInfo == null) {
+          throw Exception("Failed to save PDF to MediaStore");
+        }
+
+        return saveInfo.uri.toString(); // content:// URI
+      }
+    }
+
+    // ✅ Fallback for iOS or Android < 29
     final outputDir =
         await getDownloadsDirectory() ?? await getTemporaryDirectory();
-    final filePath = "${outputDir.path}/${testName.toSafeFileName()}.pdf";
+    final filePath = "${outputDir.path}/$filename";
     final file = File(filePath);
-    await file.writeAsBytes(await pdf.save());
+    await file.writeAsBytes(pdfBytes);
     await OpenFile.open(filePath);
     return filePath;
   }

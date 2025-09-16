@@ -24,6 +24,7 @@ import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_quest
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'firebase_options.dart';
@@ -44,7 +45,7 @@ Future<void> main() async {
     url: AppSecrets.apiUrl,
     anonKey: AppSecrets.serviceKey,
   );
-
+  await MediaStore.ensureInitialized();
   await setupInitializer();
 
   await getIt<SharedPrefHelper>().init();

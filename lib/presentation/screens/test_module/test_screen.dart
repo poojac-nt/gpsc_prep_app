@@ -188,7 +188,6 @@ class _TestScreenState extends State<TestScreen> {
                   questionCubitState.isQuitTest) {
                 context.go(AppRoutes.studentDashboard);
               } else {
-                AdService().showInterstitialAd();
                 context.pushReplacement(
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(

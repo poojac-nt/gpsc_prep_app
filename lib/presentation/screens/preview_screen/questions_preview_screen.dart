@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
@@ -18,13 +20,11 @@ class QuestionPreviewScreen extends StatelessWidget {
       body: BlocConsumer<QuestionPreviewBloc, QuestionPreviewState>(
         listener: (context, state) {
           if (state is QuestionExported) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('PDF saved to: ${state.filePath}')),
+            getIt<SnackBarHelper>().showSuccess(
+              "PDF downloaded successfully into Downloads under StarICS folder",
             );
           } else if (state is QuestionPreviewError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            getIt<SnackBarHelper>().showError(state.message);
           }
         },
         builder: (context, state) {
