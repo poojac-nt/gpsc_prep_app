@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
 
 import '../../../../../domain/entities/question_language_model.dart';
@@ -12,11 +13,15 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   }
 
   /// Call this after Bloc loads questions
-  void initialize(List<QuestionLanguageData> questions) {
+  void initialize(
+    List<QuestionLanguageData> questions,
+    List<QuestionModel> questionModel,
+  ) {
     if (state is McqQuestionCubitLoaded) return;
 
     emit(
       McqQuestionCubitLoaded(
+        questionModel: questionModel,
         questions: questions,
         currentIndex: 0,
         selectedOption: List.generate(questions.length, (_) => null),

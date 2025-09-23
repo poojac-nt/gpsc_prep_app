@@ -10,6 +10,8 @@ abstract class SupabaseKeys {
   static final String getDescTestQuestionsByTestId = 'get_desc_test_questions';
   static final String getAttemptedTestStats = 'fetch_attempted_test_stats';
   static final String insertDescWithTest = 'insert_desc_questions_with_tests';
+  static final String getQuestionCorrectnessCounts =
+      'get_test_question_correctness_counts';
 
   ///table
   static final String usersTable = 'users';

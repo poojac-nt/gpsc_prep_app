@@ -28,7 +28,10 @@ import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../domain/entities/daily_test_model.dart';
+import '../../blocs/pie_chart/pie_chart_bloc.dart';
+import '../../blocs/pie_chart/pie_chart_state.dart';
 import '../../blocs/timer/timer_bloc.dart';
+import '../../widgets/pie_chart.dart';
 import 'cubit/test/test_cubit_state.dart';
 
 class TestScreen extends StatefulWidget {
@@ -203,11 +206,14 @@ class _TestScreenState extends State<TestScreen> {
                   _initialized = true;
 
                   if (widget.isFromResult) {
-                    context.read<QuestionCubit>().initialize(state.questions);
+                    context.read<QuestionCubit>().initialize(
+                      state.questions,
+                      state.questionsModels,
+                    );
                   } else {
                     context.read<QuestionCubit>()
                       ..reset()
-                      ..initialize(state.questions);
+                      ..initialize(state.questions, state.questionsModels);
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
@@ -587,6 +593,37 @@ class _TestScreenState extends State<TestScreen> {
                                 )
                                 : SizedBox.shrink(),
                             20.hGap,
+                            if (state.isReview) ...[
+                              BlocBuilder<PieChartBloc, PieChartState>(
+                                builder: (context, correctState) {
+                                  if (correctState
+                                          is CorrectnessCountsSuccess &&
+                                      state.currentIndex >= 0 &&
+                                      state.currentIndex <
+                                          state.questions.length) {
+                                    final questionId =
+                                        state.questions[state.currentIndex];
+                                    final stats = correctState.questionStats
+                                        .firstWhere(
+                                          (entry) =>
+                                              entry['question_id'] ==
+                                              questionId,
+                                        );
+                                    final correct = stats['correct_count'] ?? 0;
+                                    final incorrect =
+                                        stats['incorrect_count'] ?? 0;
+
+                                    return QuestionPieChart(
+                                      correct: correct,
+                                      incorrect: incorrect,
+                                      height: 200,
+                                    );
+                                  }
+                                  return SizedBox.shrink();
+                                },
+                              ),
+                            ],
+                            SizedBox.shrink(),
                             TestModule(
                               title: "Question Navigator",
                               cards: [

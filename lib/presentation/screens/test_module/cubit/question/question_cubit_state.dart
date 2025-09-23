@@ -1,4 +1,5 @@
 import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 import '../../../../../domain/entities/question_language_model.dart';
 
@@ -8,6 +9,7 @@ final class QuestionCubitInitial extends QuestionCubitState {}
 
 final class McqQuestionCubitLoaded extends QuestionCubitState {
   final List<QuestionLanguageData> questions;
+  final List<QuestionModel> questionModel;
   final int currentIndex;
   final bool isReview;
   final List<String?> selectedOption;
@@ -16,6 +18,7 @@ final class McqQuestionCubitLoaded extends QuestionCubitState {
   final bool isQuitTest;
 
   McqQuestionCubitLoaded({
+    required this.questionModel,
     required this.questions,
     required this.currentIndex,
     this.isReview = false,
@@ -49,6 +52,7 @@ final class McqQuestionCubitLoaded extends QuestionCubitState {
       selectedOption: selectedOption ?? this.selectedOption,
       isCorrect: isCorrect ?? this.isCorrect,
       isQuitTest: isQuitTest ?? this.isQuitTest,
+      questionModel: questionModel,
     );
   }
 }
