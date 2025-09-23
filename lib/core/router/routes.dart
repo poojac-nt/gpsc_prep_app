@@ -29,39 +29,29 @@ final List<GoRoute> appRoutes = [
   // Handle /openTest?type=mcq&id=123 or /openTest?type=desc&id=123 links
   GoRoute(
     path: '/openTest',
-    pageBuilder: (context, state) {
+    builder: (context, state) {
       final type = state.uri.queryParameters['type'];
-      final idString = state.uri.queryParameters['id'];
-      final testId = int.tryParse(idString ?? '');
+      final id = int.tryParse(state.uri.queryParameters['id'] ?? '');
 
-      if (type == null || testId == null) {
-        return _slideTransition(
-          const ErrorScreen(message: 'Invalid test link'),
-          state,
-        );
-      }
-      Future.microtask(() {
-        if (type == 'mcq') {
-          context.go(
-            '/studentDashboard/mcqTestScreen/testInstructionScreen/$testId',
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (type == null || id == null) {
+          context.pushReplacement('/error?message=Invalid+test+link');
+        } else if (type == 'mcq') {
+          context.pushReplacement(
+            '/studentDashboard/mcqTestScreen/testInstructionScreen/$id',
           );
         } else if (type == 'desc') {
-          context.go(
-            '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$testId',
+          context.pushReplacement(
+            '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$id',
           );
         } else {
-          context.go('/error', extra: 'Unknown test type');
+          context.pushReplacement('/error?message=Unknown+test+type');
         }
       });
 
-      // Show loading while redirecting
-      return _slideTransition(
-        const Scaffold(body: Center(child: CircularProgressIndicator())),
-        state,
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     },
   ),
-
   GoRoute(
     path: AppRoutes.splashScreen,
     pageBuilder: (context, state) => _slideTransition(SplashScreen(), state),

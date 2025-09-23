@@ -39,6 +39,12 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go(AppRoutes.studentDashboard);
+          },
+        ),
         title: Text('Writing Practice', style: AppTexts.titleTextStyle),
         actions: [
           IconButton(

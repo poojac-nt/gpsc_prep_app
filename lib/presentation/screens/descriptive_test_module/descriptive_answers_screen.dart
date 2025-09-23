@@ -5,8 +5,6 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:markdown_widget/markdown_widget.dart';
@@ -171,33 +169,58 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomProgressBar(
-              titleText: "Question 1 of 10",
-              value: 0.1,
-              labelText: "0 Answered",
+            // Skeleton for progress bar
+            Container(
+              height: 20.h,
+              width: double.infinity,
+              color: Colors.grey.shade300,
             ),
             20.hGap,
-            TestModule(
-              title: "Question 1",
-              cards: [
-                Text("This is a sample question text."),
-                10.hGap,
-                Column(
-                  children: List.generate(4, (index) {
-                    return BorderedContainer(
-                      padding: EdgeInsets.zero,
-                      radius: BorderRadius.circular(10),
-                      borderColor: AppColors.accentColor,
-                      child: RadioListTile<String>(
-                        value: 'Option $index',
-                        groupValue: null,
-                        onChanged: null,
-                        title: Text("Option $index"),
-                      ),
-                    ).padAll(5);
-                  }),
-                ),
-              ],
+            // Skeleton for question module
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Skeleton for question title
+                  Container(
+                    height: 24.h,
+                    width: 150.w,
+                    color: Colors.grey.shade300,
+                  ),
+                  10.hGap,
+                  // Skeleton for question text
+                  Container(
+                    height: 16.h,
+                    width: double.infinity,
+                    color: Colors.grey.shade300,
+                  ),
+                  10.hGap,
+
+                  // Skeleton for options
+                  Column(
+                    children: List.generate(4, (index) {
+                      return Container(
+                        padding: EdgeInsets.all(12.w),
+                        margin: EdgeInsets.only(bottom: 10.h),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Container(
+                          height: 16.h,
+                          width: double.infinity,
+                          color: Colors.grey.shade400,
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
