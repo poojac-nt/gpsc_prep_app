@@ -65,6 +65,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                   10.hGap,
                   ListView.builder(
                     shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
                     itemCount: descTests.length,
                     itemBuilder: (context, index) {
                       final test = descTests[index];
@@ -73,6 +74,9 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                         title: "Daily Practice",
                         subtitle: "Subject based Daily test",
                         prefixIcon: Icons.calendar_today_outlined,
+                        isDesc: true,
+                        descTestModel: descTests[index],
+                        showShareButton: true,
                         cards: [
                           TestTile(
                             title: descTests[index].name,

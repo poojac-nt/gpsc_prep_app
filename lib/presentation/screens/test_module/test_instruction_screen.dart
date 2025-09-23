@@ -22,22 +22,36 @@ import 'package:intl/intl.dart';
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
 
-class TestInstructionScreen extends StatefulWidget {
-  const TestInstructionScreen({super.key, this.dailyTestModel, this.testId});
+class MCQTestInstructionScreen extends StatefulWidget {
+  const MCQTestInstructionScreen({super.key, this.dailyTestModel, this.testId});
 
   final DailyTestModel? dailyTestModel;
   final int? testId;
 
   @override
-  State<TestInstructionScreen> createState() => _TestInstructionScreenState();
+  State<MCQTestInstructionScreen> createState() =>
+      _MCQTestInstructionScreenState();
 }
 
-class _TestInstructionScreenState extends State<TestInstructionScreen> {
+class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
   String selectedLanguage = 'en';
   late Set<String> availableLanguagesButton = {'en'};
   DailyTestModel? _fetchedTestModel;
   late bool isFromId;
   bool _noTestDetected = false;
+
+  final Map<String, String> _languageLabels = {
+    'en': 'English',
+    'hi': 'Hindi',
+    'gj': 'Gujarati',
+  };
+
+  final List<String> _instructions = [
+    "This test contains {questions} multiple choice questions",
+    "There is a penalty of 0.33 marks for each incorrect response",
+    "You can navigate between questions using next/previous buttons",
+    "Click to Submit to finish test",
+  ];
 
   @override
   void initState() {
@@ -67,53 +81,33 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<DailyTestBloc, DailyTestState>(
-          listenWhen: (previous, current) => current is SingleTestFetched,
-          listener: (context, state) {
-            if (state is SingleTestFetched) {
-              setState(() {
-                _fetchedTestModel = state.dailyTestModel;
-              });
-            }
-          },
-        ),
-        BlocListener<DailyTestBloc, DailyTestState>(
-          listenWhen:
-              (previous, current) => current is SingleTestFetchingFailed,
-          listener: (context, state) {
-            setState(() {
-              _noTestDetected = true;
-            });
-          },
-        ),
-      ],
+    return BlocListener<DailyTestBloc, DailyTestState>(
+      listener: (context, state) {
+        if (state is SingleTestFetched) {
+          setState(() => _fetchedTestModel = state.dailyTestModel);
+        } else if (state is SingleTestFetchingFailed) {
+          setState(() => _noTestDetected = true);
+        }
+      },
       child: BlocBuilder<DailyTestBloc, DailyTestState>(
         builder: (context, state) {
-          if (_noTestDetected) {
-            return _buildNoTestScreen(context);
-          }
-
+          if (_noTestDetected) return _buildNoTestScreen(context);
           if (state is DailyTestInitial || state is SingleTestFetching) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return _loadingScreen();
           }
 
           final testModel = widget.dailyTestModel ?? _fetchedTestModel;
-
-          if (testModel != null) {
+          if (testModel != null)
             return buildScaffoldWithModel(context, testModel);
-          }
 
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return _loadingScreen();
         },
       ),
     );
   }
+
+  Widget _loadingScreen() =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
 
   Widget _buildNoTestScreen(BuildContext context) {
     return Scaffold(
@@ -121,11 +115,14 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('This test does not exist.', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 16),
+            const Text(
+              'This test does not exist.',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => context.go(AppRoutes.studentDashboard),
-              child: Text('Go back to Dashboard'),
+              child: const Text('Go back to Dashboard'),
             ),
           ],
         ),
@@ -140,13 +137,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {
-            if (widget.testId == null) {
-              context.pop();
-            } else {
-              context.pushReplacement(AppRoutes.studentDashboard);
-            }
-          },
+          onPressed: _handleBackNavigation,
           icon: const Icon(Icons.arrow_back),
         ),
         title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
@@ -156,124 +147,41 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
           title: "Test Instructions",
           prefixIcon: Icons.menu_book_outlined,
           cards: [
-            BorderedContainer(
-              padding: EdgeInsets.all(AppPaddings.defaultPadding),
-              radius: BorderRadius.zero,
-              child: Center(
-                child: Column(
-                  children: [
-                    Text(
-                      dailyTestModel.noQuestions.toString(),
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Questions",
-                      style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
-                    ),
-                  ],
-                ),
-              ),
+            InfoTile(
+              value: dailyTestModel.noQuestions.toString(),
+              label: "Questions",
             ),
             10.hGap,
-            BorderedContainer(
-              padding: EdgeInsets.all(AppPaddings.defaultPadding),
-              radius: BorderRadius.zero,
-              child: Center(
-                child: Column(
-                  children: [
-                    Text(
-                      dailyTestModel.duration.toString(),
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Minutes",
-                      style: AppTexts.subTitle.copyWith(fontSize: 14.sp),
-                    ),
-                  ],
-                ),
-              ),
+            InfoTile(
+              value: dailyTestModel.duration.toString(),
+              label: "Minutes",
             ),
-            // 10.hGap,
-            // BorderedContainer(
-            //   padding: EdgeInsets.all(AppPaddings.defaultPadding),
-            //   radius: BorderRadius.zero,
-            //   child: Center(
-            //     child: Column(
-            //       children: [
-            //         Text(
-            //           "1",
-            //           style: TextStyle(
-            //             fontSize: 20.sp,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //         Text("Mark Each", style: AppTexts.subTitle),
-            //       ],
-            //     ),
-            //   ),
-            // ),
             10.hGap,
             Text("Instructions: ", style: AppTexts.labelTextStyle),
             10.hGap,
-            _buildInstructionTile(
-              "This test contains ${dailyTestModel.noQuestions} multiple choice questions",
+            ..._instructions.map(
+              (text) => _buildInstructionTile(
+                text.replaceAll(
+                  "{questions}",
+                  dailyTestModel.noQuestions.toString(),
+                ),
+              ),
             ),
-            3.hGap,
-            _buildInstructionTile(
-              "There is a penalty of 0.33 marks for each incorrect response",
-            ),
-            3.hGap,
-            _buildInstructionTile(
-              "You can navigate between questions using next/previous buttons",
-            ),
-            3.hGap,
-            _buildInstructionTile("Click to Submit to finish test"),
             15.hGap,
-            10.hGap,
             Text("Choose Language", style: AppTexts.labelTextStyle),
             10.hGap,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                if (availableLanguagesButton.contains('en'))
-                  _languageButton(context, 'English', 'en'),
-                if (availableLanguagesButton.contains('hi'))
-                  _languageButton(context, 'Hindi', 'hi'),
-                if (availableLanguagesButton.contains('gj'))
-                  _languageButton(context, 'Gujarati', 'gj'),
-              ],
+            Wrap(
+              spacing: 8,
+              children:
+                  availableLanguagesButton
+                      .where((code) => _languageLabels.containsKey(code))
+                      .map((code) => _languageButton(code))
+                      .toList(),
             ),
             15.hGap,
             ActionButton(
               text: "Start Test",
-              onTap: () async {
-                final supabaseHelper = getIt<SupabaseHelper>();
-                try {
-                  final testResult = await supabaseHelper
-                      .fetchResultForSingleMcqTest(testId: dailyTestModel.id);
-                  final result = testResult.right;
-                  if (result == null) {
-                    _startTest(context, dailyTestModel);
-                    return;
-                  }
-                  final isEligibleForRetest = _checkRetestEligibility(
-                    result.createdAt,
-                  );
-                  if (isEligibleForRetest) {
-                    _startTest(context, dailyTestModel);
-                  } else {
-                    showAlreadyGivenTestDialog(context, result);
-                  }
-                } catch (error) {
-                  getIt<LogHelper>().e("Error fetching test result: $error");
-                }
-              },
+              onTap: () => _handleTestStart(context, dailyTestModel),
             ),
           ],
         ).padAll(AppPaddings.defaultPadding),
@@ -281,28 +189,39 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
     );
   }
 
+  void _handleBackNavigation() {
+    if (widget.testId == null) {
+      context.pop();
+    } else {
+      context.pushReplacement(AppRoutes.studentDashboard);
+    }
+  }
+
   Widget _buildInstructionTile(String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(top: 6.h),
-          child: Icon(Icons.circle, size: 6.sp),
-        ),
-        10.wGap,
-        Expanded(
-          child: Text(
-            maxLines: 3,
-            overflow: TextOverflow.visible,
-            text,
-            style: AppTexts.subTitle.copyWith(color: Colors.black),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 3.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 6.h),
+            child: Icon(Icons.circle, size: 6.sp),
           ),
-        ),
-      ],
+          10.wGap,
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 3,
+              overflow: TextOverflow.visible,
+              style: AppTexts.subTitle.copyWith(color: Colors.black),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _languageButton(BuildContext context, String label, String code) {
+  Widget _languageButton(String code) {
     final bool isSelected = selectedLanguage == code;
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
@@ -312,13 +231,9 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
           width: 2,
         ),
       ),
-      onPressed: () {
-        setState(() {
-          selectedLanguage = code;
-        });
-      },
+      onPressed: () => setState(() => selectedLanguage = code),
       child: Text(
-        label,
+        _languageLabels[code]!,
         style: TextStyle(
           color: isSelected ? Colors.blue : Colors.black,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -327,18 +242,40 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
     );
   }
 
+  Future<void> _handleTestStart(
+    BuildContext context,
+    DailyTestModel dailyTestModel,
+  ) async {
+    final supabaseHelper = getIt<SupabaseHelper>();
+    try {
+      final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
+        testId: dailyTestModel.id,
+      );
+      final result = testResult.right;
+      if (result == null) {
+        _startTest(context, dailyTestModel);
+        return;
+      }
+      final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
+      if (isEligibleForRetest) {
+        _startTest(context, dailyTestModel);
+      } else {
+        showAlreadyGivenTestDialog(context, result);
+      }
+    } catch (error) {
+      getIt<LogHelper>().e("Error fetching test result: $error");
+    }
+  }
+
   void showAlreadyGivenTestDialog(
     BuildContext context,
     TestResultModel testResult,
   ) {
     String createdAtStr = testResult.createdAt!;
-
-    // Format date
     String formattedDate = DateFormat(
       'dd MMM yyyy, hh:mm a',
     ).format(createdAtStr.toLocalDateTime());
 
-    // Use extension methods
     int hoursPassed = createdAtStr.hoursPassedSince();
     int hoursRemaining = createdAtStr.hoursRemaining(12);
 
@@ -347,7 +284,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Test Status"),
+          title: const Text("Test Status"),
           content: Text(
             "You have already given the test.\n\n"
             "Last attempt: $formattedDate\n"
@@ -357,7 +294,7 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -384,5 +321,31 @@ class _TestInstructionScreenState extends State<TestInstructionScreen> {
     } catch (_) {
       return true;
     }
+  }
+}
+
+class InfoTile extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const InfoTile({super.key, required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return BorderedContainer(
+      padding: EdgeInsets.all(AppPaddings.defaultPadding),
+      radius: BorderRadius.zero,
+      child: Center(
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+            ),
+            Text(label, style: AppTexts.subTitle.copyWith(fontSize: 14.sp)),
+          ],
+        ),
+      ),
+    );
   }
 }

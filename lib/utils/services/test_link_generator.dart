@@ -1,4 +1,17 @@
-import 'package:share_plus/share_plus.dart';
+
+
+enum TestType { mcq, desc }
+
+extension TestTypeExtension on TestType {
+  String get name {
+    switch (this) {
+      case TestType.mcq:
+        return 'mcq';
+      case TestType.desc:
+        return 'desc';
+    }
+  }
+}
 
 class DeepLinkGenerator {
   static const String _baseUrl = 'https://starics.netlify.app';
@@ -6,42 +19,11 @@ class DeepLinkGenerator {
   static const String _playStoreUrl =
       'https://play.google.com/store/apps/details?id=$_packageName';
 
-  /// Generate a shareable URL with just the test ID
-  static String generateShareableUrl({required int testId}) {
-    return '$_baseUrl/openTest?id=$testId';
-  }
-
-  /// Generate all variants of links for the test
-  static Map<String, String> generateTestLinks({required int testId}) {
-    final path =
-        '/studentDashboard/mcqTestScreen/testInstructionScreen/$testId';
-
-    final deepLink = '$_baseUrl$path';
-    final intentLink =
-        'intent://${Uri.parse(_baseUrl).host}$path#Intent;'
-        'scheme=https;'
-        'package=$_packageName;'
-        'S.browser_fallback_url=${Uri.encodeComponent(_playStoreUrl)};'
-        'end';
-
-    return {
-      'deepLink': deepLink,
-      'intentLink': intentLink,
-      'playStoreUrl': _playStoreUrl,
-      'shareableUrl': generateShareableUrl(testId: testId),
-    };
-  }
-
-  /// Share link using SharePlus
-  static Future<void> shareTestLink({required int testId}) async {
-    final shareableUrl = generateShareableUrl(testId: testId);
-    final uri = Uri.parse(shareableUrl);
-    await SharePlus.instance.share(
-      ShareParams(
-        uri: uri,
-        text: 'Check out this test!',
-        subject: 'GPSC Prep Test Share',
-      ),
-    );
+  /// Generate a shareable URL with the test type and ID
+  static String generateShareableUrl({
+    required int testId,
+    required TestType testType,
+  }) {
+    return '$_baseUrl/openTest?type=${testType.name}&id=$testId';
   }
 }

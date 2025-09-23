@@ -50,6 +50,10 @@ class TestRepository {
     int testId,
   ) async => await _supabase.fetchSingleTestFromId(testId);
 
+  Future<Either<Failure, DescTestModel>> fetchSingleDescTestFromId(
+    int testId,
+  ) async => await _supabase.fetchSingleDescTestFromId(testId);
+
   Future<Either<Failure, void>> submitDescriptiveTest(
     int testId,
     Map<int, dynamic> answers,

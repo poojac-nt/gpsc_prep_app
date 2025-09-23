@@ -12,6 +12,7 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
   DailyTestBloc(this._testRepository) : super(DailyTestInitial()) {
     on<FetchTests>(_fetchTestsAndResults);
     on<FetchSingleTestFromId>(_fetchSingleTestFromId);
+    on<FetchSingleDescTestFromId>(_fetchSingleDescTestFromId);
   }
 
   Future<void> _fetchTestsAndResults(
@@ -64,6 +65,24 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
         final availableLanguages = await getLanguages(test.id);
         languageAvailability[test.id] = availableLanguages;
         emit(SingleTestFetched(test, languageAvailability));
+      },
+    );
+  }
+
+  Future<void> _fetchSingleDescTestFromId(
+    FetchSingleDescTestFromId event,
+    Emitter<DailyTestState> emit,
+  ) async {
+    emit(SingleTestFetching());
+    final testResult = await _testRepository.fetchSingleDescTestFromId(
+      event.testId,
+    );
+    await testResult.fold(
+      (failure) {
+        emit(SingleTestFetchingFailed(failure));
+      },
+      (test) async {
+        emit(SingleDescTestFetched(test));
       },
     );
   }

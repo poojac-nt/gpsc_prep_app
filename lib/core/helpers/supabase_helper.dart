@@ -505,6 +505,26 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, DescTestModel>> fetchSingleDescTestFromId(
+    int testId,
+  ) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.descTests)
+              .select()
+              .eq('id', testId)
+              .single();
+
+      var result = DescTestModel.fromJson(response);
+      return Right(result);
+    } catch (e, s) {
+      _snackBar.showError('Error fetching desc tests: ${e.toString()}');
+      _log.e('Error in fetching test: $e', s: s);
+      return Left(Failure("Error fetching desc test : ${e.toString()}"));
+    }
+  }
+
   Future<Either<Failure, String>> submitDescriptiveTest(
     int testId,
     Map<int, dynamic> answers,

@@ -36,6 +36,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Only the relevant intent-filter section is shown. Place this inside your <activity> tag (usually MainActivity) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -44,7 +45,7 @@
 
                 <data
                     android:host="starics.netlify.app"
-                    android:pathPrefix="/studentDashboard/mcqTestScreen/testInstructionScreen"
+                    android:path="/openTest"
                     android:scheme="https" />
             </intent-filter>
 

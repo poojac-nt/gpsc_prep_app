@@ -26,6 +26,42 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 
 final List<GoRoute> appRoutes = [
+  // Handle /openTest?type=mcq&id=123 or /openTest?type=desc&id=123 links
+  GoRoute(
+    path: '/openTest',
+    pageBuilder: (context, state) {
+      final type = state.uri.queryParameters['type'];
+      final idString = state.uri.queryParameters['id'];
+      final testId = int.tryParse(idString ?? '');
+
+      if (type == null || testId == null) {
+        return _slideTransition(
+          const ErrorScreen(message: 'Invalid test link'),
+          state,
+        );
+      }
+      Future.microtask(() {
+        if (type == 'mcq') {
+          context.go(
+            '/studentDashboard/mcqTestScreen/testInstructionScreen/$testId',
+          );
+        } else if (type == 'desc') {
+          context.go(
+            '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$testId',
+          );
+        } else {
+          context.go('/error', extra: 'Unknown test type');
+        }
+      });
+
+      // Show loading while redirecting
+      return _slideTransition(
+        const Scaffold(body: Center(child: CircularProgressIndicator())),
+        state,
+      );
+    },
+  ),
+
   GoRoute(
     path: AppRoutes.splashScreen,
     pageBuilder: (context, state) => _slideTransition(SplashScreen(), state),
@@ -36,11 +72,12 @@ final List<GoRoute> appRoutes = [
         (context, state) => _slideTransition(RegistrationScreen(), state),
   ),
   GoRoute(
-    // Assuming AppRoutes.studentDashboard is '/studentDashboard'
+    // AppRoutes.studentDashboard is '/studentDashboard'
     path: AppRoutes.studentDashboard,
     pageBuilder:
         (context, state) => _slideTransition(StudentDashboardScreen(), state),
     routes: [
+      // MCQ Test Instruction Route
       GoRoute(
         path: 'mcqTestScreen',
         pageBuilder:
@@ -59,7 +96,6 @@ final List<GoRoute> appRoutes = [
 
               // Add null check and fallback
               if (finalTestId == null) {
-                // Handle invalid testId case
                 return _slideTransition(
                   const ErrorScreen(message: 'Invalid Test ID'),
                   state,
@@ -67,7 +103,33 @@ final List<GoRoute> appRoutes = [
               }
 
               return _slideTransition(
-                TestInstructionScreen(testId: finalTestId),
+                MCQTestInstructionScreen(testId: finalTestId),
+                state,
+              );
+            },
+          ),
+        ],
+      ),
+      // DESC Test Instruction Route
+      GoRoute(
+        path: 'descriptiveTestScreen',
+        pageBuilder: (context, state) => _slideTransition(Container(), state),
+        // Placeholder if needed
+        routes: [
+          GoRoute(
+            path: 'descriptiveTestInstructionScreen/:testId',
+            pageBuilder: (context, state) {
+              final testIdParam = state.pathParameters['testId'];
+              final testId = int.tryParse(testIdParam ?? '');
+              // If you pass extra args, handle them here
+              if (testId == null) {
+                return _slideTransition(
+                  const ErrorScreen(message: 'Invalid Test ID'),
+                  state,
+                );
+              }
+              return _slideTransition(
+                DescriptiveTestInstructionScreen(testId: testId),
                 state,
               );
             },
@@ -98,21 +160,16 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.mcqTestScreen,
     pageBuilder: (context, state) => _slideTransition(MCQTestScreen(), state),
   ),
-
   GoRoute(
     path: '/mcqTestScreen',
     pageBuilder: (context, state) => _slideTransition(MCQTestScreen(), state),
   ),
-
   GoRoute(
     path: '/testInstructionScreen',
-    name: AppRoutes.testInstructionScreen,
+    name: AppRoutes.mcqTestInstructionScreen,
     builder: (context, state) {
       final args = state.extra as TestInstructionScreenArgs?;
-      return TestInstructionScreen(
-        // testId: args?.testId,
-        dailyTestModel: args?.dailyTestModel,
-      );
+      return MCQTestInstructionScreen(dailyTestModel: args?.dailyTestModel);
     },
   ),
 
@@ -186,7 +243,7 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         DescriptiveTestScreen(
           descTestModel: args.dailyTestModel,
-          initialIndex: args.initialInex,
+          initialIndex: args.initialIndex,
         ),
         state,
       );

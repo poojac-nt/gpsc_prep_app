@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 
 import '../../../core/error/failure.dart';
 import '../../../domain/entities/daily_test_model.dart';
@@ -51,4 +52,10 @@ class SingleTestFetchingFailed extends DailyTestState {
   final Failure failure;
 
   SingleTestFetchingFailed(this.failure);
+}
+
+class SingleDescTestFetched extends DailyTestState {
+  final DescTestModel descModel;
+
+  SingleDescTestFetched(this.descModel);
 }
