@@ -56,3 +56,9 @@ class DescTestScreenArgs {
     required this.initialIndex,
   });
 }
+
+class DescTestResultScreenArgs {
+  final String testName;
+
+  DescTestResultScreenArgs({required this.testName});
+}

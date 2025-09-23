@@ -28,7 +28,6 @@ class AppRouter {
         if (user != null && (loggingIn || registering)) {
           return AppRoutes.splashScreen;
         }
-
         return null; // no redirect
       },
       routes: appRoutes,

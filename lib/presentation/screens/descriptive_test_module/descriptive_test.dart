@@ -89,7 +89,10 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
               });
               // Reset the bloc state to initial
               getIt<SnackBarHelper>().showSuccess(state.message);
-              context.pushReplacement(AppRoutes.descriptiveTestResultScreen);
+              context.pushReplacement(
+                AppRoutes.descriptiveTestResultScreen,
+                extra: widget.descTestModel.name,
+              );
               context.read<DailyDescTestBloc>().add(ResetDescTestState());
               context.read<QuestionBloc>().add(ResetQuestionState());
             } else if (state is DescTestSubmitFailed) {

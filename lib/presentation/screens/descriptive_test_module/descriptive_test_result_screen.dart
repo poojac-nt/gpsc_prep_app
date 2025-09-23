@@ -8,61 +8,76 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import '../../widgets/action_button.dart';
 
 class DescriptiveTestResultScreen extends StatelessWidget {
-  const DescriptiveTestResultScreen({super.key});
-
+  const DescriptiveTestResultScreen({super.key, required this.testName});
+  final String testName;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Padding(
-          padding: EdgeInsets.only(left: 10.w),
-          child: Text("Test Name", style: AppTexts.titleTextStyle),
-        ),
-      ),
-      body: IntrinsicHeight(
-        child: ElevatedContainer(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                size: 38.sp,
-                color: Colors.green,
-              ),
-              10.hGap,
-              Text(
-                "Test Submitted Successfully!",
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-              ),
-              20.hGap,
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: AppBorders.borderRadius,
-                ),
-                child: Column(
-                  children: [
-                    Text("What happens next?", style: AppTexts.labelTextStyle),
-                    3.hGap,
-                    _buildInstructionTile(
-                      "Please Compare your answers with the model answers provided after 8 pm.",
-                    ),
-                  ],
-                ),
-              ),
-              20.hGap,
-              ActionButton(
-                backgroundColor: AppColors.primary,
-                text: "Back to Dashboard",
-                onTap: () {
-                  context.go(AppRoutes.studentDashboard);
-                },
-                fontColor: Colors.white,
-              ),
-            ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        context.go(AppRoutes.studentDashboard);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Padding(
+            padding: EdgeInsets.only(left: 10.w),
+            child: Text(testName, style: AppTexts.titleTextStyle),
           ),
-        ).padAll(AppPaddings.defaultPadding),
+        ),
+        body: IntrinsicHeight(
+          child: ElevatedContainer(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 38.sp,
+                  color: Colors.green,
+                ),
+                10.hGap,
+                Text(
+                  "Test Submitted Successfully!",
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                20.hGap,
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 15.w,
+                    vertical: 15.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: AppBorders.borderRadius,
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "What happens next?",
+                        style: AppTexts.labelTextStyle,
+                      ),
+                      3.hGap,
+                      _buildInstructionTile(
+                        "Please Compare your answers with the model answers provided after 8 pm.",
+                      ),
+                    ],
+                  ),
+                ),
+                20.hGap,
+                ActionButton(
+                  backgroundColor: AppColors.primary,
+                  text: "Back to Dashboard",
+                  onTap: () {
+                    context.go(AppRoutes.studentDashboard);
+                  },
+                  fontColor: Colors.white,
+                ),
+              ],
+            ),
+          ).padAll(AppPaddings.defaultPadding),
+        ),
       ),
     );
   }

@@ -109,8 +109,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                                                 child: ActionButton(
                                                   text: "Cancel",
                                                   onTap: () {
-                                                    context
-                                                        .pop(); // close dialog
+                                                    context.pop(); // close dialog
                                                   },
                                                 ),
                                               ),

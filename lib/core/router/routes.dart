@@ -241,9 +241,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.descriptiveTestResultScreen,
-    pageBuilder:
-        (context, state) =>
-            _slideTransition(DescriptiveTestResultScreen(), state),
+    pageBuilder: (context, state) {
+      final testName = state.extra as String;
+      return _slideTransition(
+        DescriptiveTestResultScreen(testName: testName),
+        state,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.descAnswerScreen,
