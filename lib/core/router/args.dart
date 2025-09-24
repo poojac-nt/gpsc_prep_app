@@ -1,5 +1,6 @@
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
@@ -61,4 +62,11 @@ class DescTestResultScreenArgs {
   final String testName;
 
   DescTestResultScreenArgs({required this.testName});
+}
+
+class QuestionPreviewScreenArgs {
+  final String testName;
+  final List<QuestionModel> questions;
+
+  QuestionPreviewScreenArgs({required this.questions, required this.testName});
 }

@@ -9,71 +9,57 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 class QuestionPreviewScreen extends StatelessWidget {
-  const QuestionPreviewScreen({super.key, required this.testName});
+  const QuestionPreviewScreen({
+    super.key,
+    required this.questions,
+    required this.testName,
+  });
 
+  final List<QuestionModel> questions;
   final String testName;
 
   @override
   Widget build(BuildContext context) {
+    if (questions.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Preview Questions', style: AppTexts.titleTextStyle),
+        ),
+        body: const Center(child: Text('No questions available.')),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Preview Questions')),
-      body: BlocConsumer<QuestionPreviewBloc, QuestionPreviewState>(
+      appBar: AppBar(
+        title: Text('Preview Questions', style: AppTexts.titleTextStyle),
+      ),
+      body: BlocListener<QuestionPreviewBloc, QuestionPreviewState>(
         listener: (context, state) {
           if (state is QuestionExported) {
-            getIt<SnackBarHelper>().showSuccess(
-              "PDF downloaded successfully into Downloads under StarICS folder",
-            );
-          } else if (state is QuestionPreviewError) {
-            getIt<SnackBarHelper>().showError(state.message);
+            getIt<SnackBarHelper>().showSuccess("PDF Downloaded Successfully");
+          }
+          if (state is QuestionExportError) {
+            getIt<SnackBarHelper>().showError(state.failure.message);
           }
         },
-        builder: (context, state) {
-          List<QuestionModel> localizedQuestions = [];
-          if (state is QuestionPreviewLoaded) {
-            localizedQuestions = state.questions;
-          } else if (state is QuestionExported) {
-            localizedQuestions = state.questions;
-          }
-          if (state is QuestionExporting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (localizedQuestions.isEmpty) {
-            return const Center(child: Text('No questions available.'));
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: localizedQuestions.length,
-            itemBuilder: (context, index) {
-              final q = localizedQuestions[index];
-              return _buildQuestionCard(q.questionEn, index);
-            },
-          );
-        },
+        child: ListView.builder(
+          padding: const EdgeInsets.all(12),
+          itemCount: questions.length,
+          itemBuilder: (context, index) {
+            final q = questions[index].questionEn;
+            return _buildQuestionCard(q, index);
+          },
+        ),
       ),
-      floatingActionButton: Builder(
-        builder: (context) {
-          List<QuestionModel> currentQuestions = [];
-          final state = context.watch<QuestionPreviewBloc>().state;
-          if (state is QuestionPreviewLoaded) {
-            currentQuestions = state.questions;
-          } else if (state is QuestionExported) {
-            currentQuestions = state.questions;
-          }
-
-          return FloatingActionButton.extended(
-            icon: const Icon(Icons.picture_as_pdf),
-            label: const Text('Export PDF'),
-            onPressed:
-                currentQuestions.isNotEmpty
-                    ? () {
-                      context.read<QuestionPreviewBloc>().add(
-                        ExportQuestionsToPdfEvent(currentQuestions, testName),
-                      );
-                    }
-                    : null,
-          );
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.picture_as_pdf),
+        label: const Text('Export PDF'),
+        onPressed: () {
+          questions.isNotEmpty
+              ? context.read<QuestionPreviewBloc>().add(
+                ExportQuestionsToPdfEvent(questions, testName),
+              )
+              : null;
         },
       ),
     );

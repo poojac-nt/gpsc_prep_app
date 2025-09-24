@@ -7,7 +7,6 @@ import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
@@ -175,14 +174,12 @@ class _ResultScreenState extends State<ResultScreen> {
                                         context.read<QuestionBloc>().state;
                                     context.push(
                                       AppRoutes.questionPreviewScreen,
-                                      extra: widget.dailyTestModel.name,
-                                    );
-                                    context.read<QuestionPreviewBloc>().add(
-                                      LoadQuestionsEvent(
-                                        blocState is McqQuestionLoaded
-                                            ? blocState.questionsModels
-                                            : [],
-                                        widget.dailyTestModel.name,
+                                      extra: QuestionPreviewScreenArgs(
+                                        questions:
+                                            blocState is McqQuestionLoaded
+                                                ? blocState.questionsModels
+                                                : [],
+                                        testName: widget.dailyTestModel.name,
                                       ),
                                     );
                                   },

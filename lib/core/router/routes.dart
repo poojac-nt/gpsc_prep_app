@@ -222,8 +222,14 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.questionPreviewScreen,
     pageBuilder: (context, state) {
-      final extra = state.extra as String;
-      return _slideTransition(QuestionPreviewScreen(testName: extra), state);
+      final extra = state.extra as QuestionPreviewScreenArgs;
+      return _slideTransition(
+        QuestionPreviewScreen(
+          questions: extra.questions,
+          testName: extra.testName,
+        ),
+        state,
+      );
     },
   ),
   GoRoute(
