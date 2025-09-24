@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
+import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:open_file/open_file.dart';
@@ -301,15 +302,26 @@ Future<String> generateDescTestPdf(
       }
     } else {
       // ✅ Scoped Storage (Android Q+ and above)
+      // Scoped Storage (Android 10+)
       final mediaStore = MediaStore();
       MediaStore.appFolder = "StarICS";
-      final filename = "${testName}_Question$index.pdf";
+
+      final safeFileName = "${testName.toSafeFileName()}_Question$index.pdf";
       final folderName = "StarICS";
+
       final tempDir = await getDownloadsDirectory();
-      final tempPath = "${tempDir?.path}/$filename";
+      final tempPath = "${tempDir?.path}/$safeFileName";
       final tempFile = File(tempPath);
+
+      // Ensure folder exists
+      if (!await tempFile.parent.exists()) {
+        await tempFile.parent.create(recursive: true);
+      }
+
+      // Write PDF bytes to temp file
       await tempFile.writeAsBytes(bytes);
 
+      // Save to MediaStore
       final saveInfo = await mediaStore.saveFile(
         tempFilePath: tempPath,
         dirType: DirType.download,
@@ -321,7 +333,7 @@ Future<String> generateDescTestPdf(
         throw Exception("Failed to save PDF to MediaStore");
       }
 
-      // On API 29+, you usually get a content:// URI here
+      // Get content URI
       filePath = saveInfo.uri.toString();
     }
   } else {
@@ -330,7 +342,7 @@ Future<String> generateDescTestPdf(
     final file = File(filePath);
     await file.writeAsBytes(bytes);
   }
-  await OpenFile.open(filePath);
+  // await OpenFile.open(filePath);
   return filePath;
 }
 
