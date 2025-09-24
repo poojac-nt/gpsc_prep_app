@@ -46,6 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
+          if (state is AuthFailure) {
+            getIt<SnackBarHelper>().showError(state.message);
+          }
           if (state is AuthSuccess) {
             context.pushReplacement(AppRoutes.splashScreen);
           }

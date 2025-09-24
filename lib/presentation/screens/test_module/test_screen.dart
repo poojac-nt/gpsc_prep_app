@@ -20,6 +20,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
+import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -28,7 +29,10 @@ import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../domain/entities/daily_test_model.dart';
+import '../../blocs/pie_chart/pie_chart_bloc.dart';
+import '../../blocs/pie_chart/pie_chart_state.dart';
 import '../../blocs/timer/timer_bloc.dart';
+import '../../widgets/pie_chart.dart';
 import 'cubit/test/test_cubit_state.dart';
 
 class TestScreen extends StatefulWidget {
@@ -87,7 +91,10 @@ class _TestScreenState extends State<TestScreen> {
           if (questionBlocState is! McqQuestionLoaded) return;
 
           context.read<TestCubit>().calculateAndEmitTestResult(
+            questionsModel: questionCubitState.questionModel,
             questions: questionCubitState.questions,
+            languageCode: widget.language!,
+            testId: widget.dailyTestModel.id,
             selectedOption: questionCubitState.selectedOption,
             answeredStatus: questionCubitState.answeredStatus,
             marks: questionBlocState.marks,
@@ -203,11 +210,14 @@ class _TestScreenState extends State<TestScreen> {
                   _initialized = true;
 
                   if (widget.isFromResult) {
-                    context.read<QuestionCubit>().initialize(state.questions);
+                    context.read<QuestionCubit>().initialize(
+                      state.questions,
+                      state.questionsModels,
+                    );
                   } else {
                     context.read<QuestionCubit>()
                       ..reset()
-                      ..initialize(state.questions);
+                      ..initialize(state.questions, state.questionsModels);
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
@@ -586,6 +596,61 @@ class _TestScreenState extends State<TestScreen> {
                                   ],
                                 )
                                 : SizedBox.shrink(),
+                            20.hGap,
+                            if (state.isReview) ...[
+                              BlocBuilder<PieChartBloc, PieChartState>(
+                                builder: (context, correctState) {
+                                  if (correctState
+                                          is CorrectnessCountsSuccess &&
+                                      state.currentIndex >= 0 &&
+                                      state.currentIndex <
+                                          state.questions.length) {
+                                    final questionId =
+                                        state
+                                            .questionModel[state.currentIndex]
+                                            .questionId;
+
+                                    // ✅ Safe lookup with fallback
+                                    final stats = correctState.questionStats
+                                        .firstWhere(
+                                          (entry) =>
+                                              entry['question_id'] ==
+                                              questionId,
+                                          orElse:
+                                              () => {
+                                                'question_id': questionId,
+                                                'correct_count': 0,
+                                                'incorrect_count': 0,
+                                              },
+                                        );
+
+                                    final correct = stats['correct_count'] ?? 0;
+                                    final incorrect =
+                                        stats['incorrect_count'] ?? 0;
+
+                                    // ✅ If not attempted → only show message
+                                    if (correct == 0 && incorrect == 0) {
+                                      return ElevatedContainer(
+                                        child: Text(
+                                          'Question is not attempted ny anyone yet',
+                                          style: AppTexts.heading.copyWith(
+                                            fontSize: 15.sp,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    // ✅ Otherwise → show pie chart
+                                    return QuestionPieChart(
+                                      correct: correct,
+                                      incorrect: incorrect,
+                                      height: 200,
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                            ],
                             20.hGap,
                             TestModule(
                               title: "Question Navigator",

@@ -6,6 +6,8 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
@@ -52,6 +54,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ConnectivityDialogHelper.showOfflineDialog(context);
           } else if (state is ConnectivityOnline) {
             syncLatestIfExists();
+            syncOfflineQuestionResults();
             ConnectivityDialogHelper.dismissDialog(context);
           }
         },
@@ -544,6 +547,52 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     } else {
       log.e('No Internet');
       return;
+    }
+  }
+
+  Future<void> syncOfflineQuestionResults() async {
+    final box = Hive.box<DetailedTestResult>('detailed_test_results');
+    final log = getIt<LogHelper>();
+    final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+
+    if (!isOnline) {
+      log.e('❌ Cannot sync question results — No Internet');
+      return;
+    }
+
+    if (box.isEmpty) {
+      log.i('ℹ️ No offline question results to sync');
+      return;
+    }
+
+    final repository = getIt<TestRepository>();
+    final keysToDelete = <dynamic>[];
+
+    for (var key in box.keys) {
+      final result = box.get(key);
+      if (result == null) continue;
+
+      final response = await repository.insertTestResultDetail(
+        detailedTestResult: result,
+      );
+
+      response.fold(
+        (failure) => log.e(
+          '❌ Failed to sync questionId ${result.questionId}: ${failure.message}',
+        ),
+        (_) {
+          log.i('✅ Synced questionId ${result.questionId}');
+          keysToDelete.add(key);
+        },
+      );
+    }
+
+    // Delete only successfully synced entries
+    if (keysToDelete.isNotEmpty) {
+      await box.deleteAll(keysToDelete);
+      log.i(
+        '🧹 Deleted ${keysToDelete.length} synced offline results from Hive',
+      );
     }
   }
 }
