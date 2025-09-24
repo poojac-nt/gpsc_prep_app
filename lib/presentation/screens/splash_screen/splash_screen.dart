@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +15,7 @@ import 'package:gpsc_prep_app/presentation/widgets/connectivity_handler_dialog.d
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -49,6 +53,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
     await _setupFirebaseMessaging();
     _navigateBasedOnUserRole();
+    await ensureStoragePermission();
+  }
+
+  Future<void> ensureStoragePermission() async {
+    if (Platform.isAndroid) {
+      final androidVersion =
+          (await DeviceInfoPlugin().androidInfo).version.sdkInt;
+
+      if (androidVersion <= 29) {
+        final status = await Permission.storage.status;
+        if (status.isDenied) {
+          await Permission.storage.request();
+        }
+      }
+    }
   }
 
   Future<bool> _checkAppVersion() async {
