@@ -20,6 +20,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
+import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -608,23 +609,45 @@ class _TestScreenState extends State<TestScreen> {
                                         state
                                             .questionModel[state.currentIndex]
                                             .questionId;
+
+                                    // ✅ Safe lookup with fallback
                                     final stats = correctState.questionStats
                                         .firstWhere(
                                           (entry) =>
                                               entry['question_id'] ==
                                               questionId,
+                                          orElse:
+                                              () => {
+                                                'question_id': questionId,
+                                                'correct_count': 0,
+                                                'incorrect_count': 0,
+                                              },
                                         );
+
                                     final correct = stats['correct_count'] ?? 0;
                                     final incorrect =
                                         stats['incorrect_count'] ?? 0;
 
+                                    // ✅ If not attempted → only show message
+                                    if (correct == 0 && incorrect == 0) {
+                                      return ElevatedContainer(
+                                        child: Text(
+                                          'Question is not attempted ny anyone yet',
+                                          style: AppTexts.heading.copyWith(
+                                            fontSize: 15.sp,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    // ✅ Otherwise → show pie chart
                                     return QuestionPieChart(
                                       correct: correct,
                                       incorrect: incorrect,
                                       height: 200,
                                     );
                                   }
-                                  return SizedBox.shrink();
+                                  return const SizedBox.shrink();
                                 },
                               ),
                             ],
