@@ -251,7 +251,6 @@ class SelectionDrawer extends StatelessWidget {
                           onPressed: () {
                             Navigator.of(context).pop();
                             context.read<AuthBloc>().add(LogOutRequested());
-                            context.pushReplacement(AppRoutes.login);
                           },
                           child: const Text("Logout"),
                         ),

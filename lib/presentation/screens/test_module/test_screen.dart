@@ -632,7 +632,7 @@ class _TestScreenState extends State<TestScreen> {
                                     if (correct == 0 && incorrect == 0) {
                                       return ElevatedContainer(
                                         child: Text(
-                                          'Question is not attempted ny anyone yet',
+                                          'Question is not attempted by anyone yet',
                                           style: AppTexts.heading.copyWith(
                                             fontSize: 15.sp,
                                           ),
