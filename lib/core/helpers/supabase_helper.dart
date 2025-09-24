@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
@@ -633,6 +634,27 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error fetching question correctness for test ID $testId: $e');
       return Left(Failure("Failed to fetch data for test ID $testId"));
+    }
+  }
+
+  Future<Either<Failure, void>> insertTestDetailedResult({
+    required DetailedTestResult detailedTestResult,
+  }) async {
+    try {
+      final result = await supabase
+          .from(SupabaseKeys.testDetailedResults)
+          .upsert({
+            'user_id': detailedTestResult.userId,
+            'test_id': detailedTestResult.testId,
+            'question_id': detailedTestResult.questionId,
+            'is_correct': detailedTestResult.isCorrect,
+          });
+
+      _log.i('Inserted test detailed result: $result');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error inserting test detailed result: $e');
+      return Left(Failure("Error inserting test detailed result"));
     }
   }
 }

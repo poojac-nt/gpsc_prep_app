@@ -26,11 +26,7 @@ class PieChartBloc extends Bloc<PieChartEvent, PieChartState> {
     result.fold((failure) => emit(PieChartResultFailure(failure)), (
       List<Map<String, dynamic>> countsList,
     ) {
-      emit(
-        CorrectnessCountsSuccess(
-          countsList, // 🆕 pass the full per-question data here
-        ),
-      );
+      emit(CorrectnessCountsSuccess(countsList));
     });
   }
 }

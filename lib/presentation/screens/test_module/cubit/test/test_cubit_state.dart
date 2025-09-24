@@ -1,3 +1,5 @@
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+
 import '../../../../../domain/entities/question_language_model.dart';
 
 class TestCubitSubmitted {
@@ -7,6 +9,7 @@ class TestCubitSubmitted {
   final int? correctAnswers;
   final int? inCorrectAnswers;
   final bool isReview;
+  final List<QuestionModel> questionsModel;
   final List<QuestionLanguageData> questions;
   final List<String?> selectedOption;
   final List<bool?> isAnswerCorrect;
@@ -22,6 +25,7 @@ class TestCubitSubmitted {
     this.notAttemptedQuestions,
     this.correctAnswers,
     this.inCorrectAnswers,
+    this.questionsModel = const [],
     this.questions = const [],
     this.selectedOption = const [],
     this.answeredStatus = const [],
@@ -38,6 +42,7 @@ class TestCubitSubmitted {
     int? correctAnswers,
     int? inCorrectAnswers,
     bool? isReview,
+    List<QuestionModel>? questionsModel,
     List<QuestionLanguageData>? questions,
     List<String?>? selectedOption,
     List<bool?>? isAnswerCorrect,
@@ -53,6 +58,7 @@ class TestCubitSubmitted {
       correctAnswers: correctAnswers ?? this.correctAnswers,
       inCorrectAnswers: inCorrectAnswers ?? this.inCorrectAnswers,
       isReview: isReview ?? this.isReview,
+      questionsModel: questionsModel ?? this.questionsModel,
       questions: questions ?? this.questions,
       selectedOption: selectedOption ?? this.selectedOption,
       isAnswerCorrect: isAnswerCorrect ?? this.isAnswerCorrect,

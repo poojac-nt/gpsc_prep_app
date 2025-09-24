@@ -1,21 +1,35 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
-
-import '../../../../../domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/utils/extensions/question_model_extension.dart';
+import 'package:hive/hive.dart';
 
 class TestCubit extends Cubit<TestCubitSubmitted> {
   TestCubit() : super(TestCubitSubmitted.initial());
+  final _log = getIt<LogHelper>();
+  final cache = getIt<CacheManager>();
+  final _repository = getIt<TestRepository>();
 
-  void calculateAndEmitTestResult({
+  Future<void> calculateAndEmitTestResult({
+    required int testId,
+    required List<QuestionModel> questionsModel,
     required List<QuestionLanguageData> questions,
     required List<String?> selectedOption,
     required List<bool> answeredStatus,
     required List<int> marks,
     required int minSpent,
     required int secSpent,
-  }) {
+    required String languageCode,
+  }) async {
     final attempted = answeredStatus.where((status) => status).length;
-    final notAttempted = questions.length - attempted;
+    final notAttempted = questionsModel.length - attempted;
     final timeSpent = (minSpent * 60) + secSpent;
 
     int correctAnswers = 0;
@@ -23,32 +37,66 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     List<bool?> isCorrect = [];
     double totalScore = 0.0;
 
-    for (int i = 0; i < questions.length; i++) {
+    for (int i = 0; i < questionsModel.length; i++) {
       final userAnswer = selectedOption[i];
-      final correctAnswer = questions[i].correctAnswer;
+      final correctAnswer =
+          questionsModel[i].getLanguageData(languageCode).correctAnswer;
+      final questionId = questionsModel[i].questionId;
 
+      bool? isAnswerCorrect;
       if (userAnswer != null) {
         if (userAnswer.trim() == correctAnswer.trim()) {
           correctAnswers++;
-          isCorrect.add(true);
           totalScore += marks[i];
+          isAnswerCorrect = true;
         } else {
           incorrectAnswers++;
-          isCorrect.add(false);
           totalScore -= 0.33 * marks[i];
+          isAnswerCorrect = false;
         }
       } else {
-        isCorrect.add(null);
-        totalScore += 0 * marks[i];
+        isAnswerCorrect = null;
+      }
+
+      isCorrect.add(isAnswerCorrect);
+
+      if (isAnswerCorrect != null) {
+        final detailedTestResult = DetailedTestResult(
+          userId: cache.getUserId(),
+          testId: testId,
+          questionId: questionId,
+          isCorrect: isAnswerCorrect,
+        );
+        final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+        if (!isOnline) {
+          final box = Hive.box<DetailedTestResult>('detailed_test_results');
+          box.add(detailedTestResult);
+          _log.e(
+            "❌ No internet connection, skipping insert for question $questionId",
+          );
+        } else {
+          final result = await _repository.insertTestResultDetail(
+            detailedTestResult: detailedTestResult,
+          );
+
+          result.fold(
+            (failure) => _log.e(
+              'Insert failed for question $questionId: ${failure.message}',
+            ),
+            (_) => _log.i('Insert successful for question $questionId'),
+          );
+        }
       }
     }
+
     emit(
       TestCubitSubmitted(
+        questionsModel: questionsModel,
         questions: questions,
         selectedOption: selectedOption,
         answeredStatus: answeredStatus,
         isAnswerCorrect: isCorrect,
-        totalQuestions: questions.length,
+        totalQuestions: questionsModel.length,
         attemptedQuestions: attempted,
         notAttemptedQuestions: notAttempted,
         correctAnswers: correctAnswers,

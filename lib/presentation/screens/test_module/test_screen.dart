@@ -90,7 +90,10 @@ class _TestScreenState extends State<TestScreen> {
           if (questionBlocState is! McqQuestionLoaded) return;
 
           context.read<TestCubit>().calculateAndEmitTestResult(
+            questionsModel: questionCubitState.questionModel,
             questions: questionCubitState.questions,
+            languageCode: widget.language!,
+            testId: widget.dailyTestModel.id,
             selectedOption: questionCubitState.selectedOption,
             answeredStatus: questionCubitState.answeredStatus,
             marks: questionBlocState.marks,
@@ -602,7 +605,9 @@ class _TestScreenState extends State<TestScreen> {
                                       state.currentIndex <
                                           state.questions.length) {
                                     final questionId =
-                                        state.questions[state.currentIndex];
+                                        state
+                                            .questionModel[state.currentIndex]
+                                            .questionId;
                                     final stats = correctState.questionStats
                                         .firstWhere(
                                           (entry) =>
@@ -623,7 +628,7 @@ class _TestScreenState extends State<TestScreen> {
                                 },
                               ),
                             ],
-                            SizedBox.shrink(),
+                            20.hGap,
                             TestModule(
                               title: "Question Navigator",
                               cards: [

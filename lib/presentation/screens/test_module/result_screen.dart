@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
@@ -23,7 +25,6 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../domain/entities/daily_test_model.dart';
-import '../../../utils/services/ad_service.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 
@@ -198,6 +199,11 @@ class _ResultScreenState extends State<ResultScreen> {
                                           testCubitState.answeredStatus,
                                       selectedOption:
                                           testCubitState.selectedOption,
+                                    );
+                                    context.read<PieChartBloc>().add(
+                                      FetchCorrectnessCountsEvent(
+                                        testId: widget.dailyTestModel.id,
+                                      ),
                                     );
                                     context.push(
                                       AppRoutes.testScreen,

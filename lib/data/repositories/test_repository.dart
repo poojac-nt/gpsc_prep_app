@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 
 import '../../core/error/failure.dart';
@@ -72,5 +73,13 @@ class TestRepository {
   Future<Either<Failure, List<Map<String, dynamic>>>>
   fetchQuestionCorrectnessCounts(int testId) async {
     return await _supabase.fetchTestQuestionCorrectness(testId);
+  }
+
+  Future<Either<Failure, void>> insertTestResultDetail({
+    required DetailedTestResult detailedTestResult,
+  }) {
+    return _supabase.insertTestDetailedResult(
+      detailedTestResult: detailedTestResult,
+    );
   }
 }
