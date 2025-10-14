@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
@@ -46,7 +47,22 @@ class QuestionPreviewScreen extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           itemCount: questions.length,
           itemBuilder: (context, index) {
-            final q = questions[index].questionEn;
+            final ln =
+                getIt<CacheManager>()
+                    .userSelectedLanguage(); // e.g., "en", "hi", "gj"
+            QuestionLanguageData getLangData(QuestionModel q) {
+              switch (ln) {
+                case 'hi':
+                  return q.questionHi ?? q.questionEn;
+                case 'gj':
+                  return q.questionGj ?? q.questionEn;
+                case 'en':
+                default:
+                  return q.questionEn;
+              }
+            }
+
+            final q = getLangData(questions[index]);
             return _buildQuestionCard(q, index);
           },
         ),

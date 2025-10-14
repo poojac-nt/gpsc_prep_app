@@ -8,6 +8,7 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:meta/meta.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 
 part 'question_preview_event.dart';
@@ -47,6 +48,7 @@ class QuestionPreviewBloc
         return;
       }
       _log.i("PDF generated successfully: $result");
+      await OpenFilex.open(result);
       emit(QuestionExported(filePath: result));
     } catch (e) {
       _log.e('Error exporting questions to PDF: $e');

@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -279,6 +281,8 @@ Future<String> generateDescTestPdf(
       ),
     );
   }
+  // ✅ Only changed the part after saving (same logic as in PdfExportService)
+  // ✅ Only changed the part after saving (final open logic)
   final bytes = await pdf.save();
   String filePath;
 
@@ -297,12 +301,12 @@ Future<String> generateDescTestPdf(
         filePath = "${downloadsDir.path}/${testName}_Question$index.pdf";
         final file = File(filePath);
         await file.writeAsBytes(bytes);
+        await OpenFilex.open(filePath); // ✅ Opens file directly
       } else {
         throw Exception("Storage permission not granted");
       }
     } else {
-      // ✅ Scoped Storage (Android Q+ and above)
-      // Scoped Storage (Android 10+)
+      // ✅ Scoped Storage (Android 10+)
       final mediaStore = MediaStore();
       MediaStore.appFolder = "StarICS";
 
@@ -313,15 +317,12 @@ Future<String> generateDescTestPdf(
       final tempPath = "${tempDir?.path}/$safeFileName";
       final tempFile = File(tempPath);
 
-      // Ensure folder exists
       if (!await tempFile.parent.exists()) {
         await tempFile.parent.create(recursive: true);
       }
 
-      // Write PDF bytes to temp file
       await tempFile.writeAsBytes(bytes);
 
-      // Save to MediaStore
       final saveInfo = await mediaStore.saveFile(
         tempFilePath: tempPath,
         dirType: DirType.download,
@@ -333,16 +334,33 @@ Future<String> generateDescTestPdf(
         throw Exception("Failed to save PDF to MediaStore");
       }
 
-      // Get content URI
-      filePath = saveInfo.uri.toString();
+      // ✅ FIX: Resolve file path or open using content URI
+      String? realPath;
+      try {
+        realPath = await mediaStore.getFilePathFromUri(
+          uriString: saveInfo.uri.toString(),
+        );
+      } catch (e) {
+        getIt<LogHelper>().e("Could not resolve file path: $e");
+      }
+
+      if (realPath != null && await File(realPath).exists()) {
+        filePath = realPath;
+        await OpenFilex.open(realPath);
+      } else {
+        filePath = saveInfo.uri.toString();
+        await OpenFilex.open(filePath); // ✅ Correct call — supports URI
+      }
     }
   } else {
+    // iOS or other platforms
     final dir = await getApplicationDocumentsDirectory();
     filePath = "${dir.path}/${testName}_Question$index.pdf";
     final file = File(filePath);
     await file.writeAsBytes(bytes);
+    await OpenFilex.open(filePath); // ✅ Opens file
   }
-  // await OpenFile.open(filePath);
+
   return filePath;
 }
 

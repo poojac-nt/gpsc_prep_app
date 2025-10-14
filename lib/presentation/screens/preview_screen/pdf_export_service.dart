@@ -2,19 +2,26 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:permission_handler/permission_handler.dart';
+
+import '../../../domain/entities/question_language_model.dart';
 
 class PdfExportService {
   Future<String> exportQuestionsToPdf(
     List<QuestionModel> questions,
     String testName,
   ) async {
+    final _log = getIt<LogHelper>();
     final mcqPdfHeader = pw.MemoryImage(
       (await rootBundle.load(
         'assets/images/mcq_pdf_header.jpeg',
@@ -178,8 +185,24 @@ class PdfExportService {
               ),
               ...questions.asMap().entries.map((entry) {
                 final index = entry.key + 1;
+                final ln =
+                    getIt<CacheManager>()
+                        .userSelectedLanguage(); // e.g., "en", "hi", "gj"
+                QuestionLanguageData getLangData(QuestionModel q) {
+                  switch (ln) {
+                    case 'hi':
+                      return q.questionHi ?? q.questionEn;
+                    case 'gj':
+                      return q.questionGj ?? q.questionEn;
+                    case 'en':
+                    default:
+                      return q.questionEn;
+                  }
+                }
+
                 final q = entry.value;
-                final qLang = q.questionEn;
+
+                final qLang = getLangData(q);
 
                 return pw.Padding(
                   padding: pw.EdgeInsets.symmetric(
@@ -275,41 +298,80 @@ class PdfExportService {
     final pdfBytes = await pdf.save();
     final filename = "${testName.toSafeFileName()}.pdf";
 
-    if (Platform.isAndroid) {
-      final androidVersion =
-          (await DeviceInfoPlugin().androidInfo).version.sdkInt;
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        final sdkInt = androidInfo.version.sdkInt;
 
-      if (androidVersion >= 29) {
-        // 1️⃣ Create temp file in app cache
-        final tempDir = await getTemporaryDirectory();
-        final tempPath = "${tempDir.path}/$filename";
-        final tempFile = File(tempPath);
-        await tempFile.writeAsBytes(pdfBytes);
+        // ✅ Scoped Storage path (API 29+)
+        if (sdkInt >= 29) {
+          final permission = await Permission.storage.request();
+          if (!permission.isGranted) {
+            throw Exception("Storage permission not granted");
+          }
 
-        // 2️⃣ Use MediaStore to put it in Downloads
-        final mediaStore = MediaStore();
-        MediaStore.appFolder = "StarICS";
-        final saveInfo = await mediaStore.saveFile(
-          tempFilePath: tempPath,
-          dirType: DirType.download,
-          dirName: DirName.download,
-          relativePath: "StarICS/", // This appears under Downloads/StarICS
-        );
+          final tempDir = await getTemporaryDirectory();
+          final tempPath = "${tempDir.path}/$filename";
+          final tempFile = File(tempPath);
+          await tempFile.writeAsBytes(pdfBytes);
 
-        if (saveInfo == null) {
-          throw Exception("Failed to save PDF to MediaStore");
+          final mediaStore = MediaStore();
+          MediaStore.appFolder = "StarICS";
+
+          final saveInfo = await mediaStore.saveFile(
+            tempFilePath: tempPath,
+            dirType: DirType.download,
+            dirName: DirName.download,
+            relativePath: "StarICS/",
+          );
+
+          if (saveInfo == null) {
+            throw Exception("Failed to save PDF to MediaStore");
+          }
+
+          final uri = saveInfo.uri.toString(); // content://...
+          _log.i("Saved file URI: $uri");
+
+          String? realPath;
+          try {
+            realPath = await MediaStore().getFilePathFromUri(uriString: uri);
+            _log.i("Resolved real path: $realPath");
+          } catch (e) {
+            _log.e("Could not resolve path from URI: $e");
+          }
+
+          if (realPath != null) {
+            final openResult = await OpenFilex.open(realPath);
+            _log.i("OpenFilex: ${openResult.message}");
+            return realPath;
+          } else {
+            // If path resolution fails, try opening via URI (if some plugin supports it),
+            // or fallback to tempFile.
+            final openResult = await OpenFilex.open(uri);
+            _log.i("Tried opening via URI: ${openResult.message}");
+            return uri;
+          }
         }
-
-        return saveInfo.uri.toString(); // content:// URI
       }
-    }
 
-    // ✅ Fallback for iOS or Android < 29
-    final outputDir = await getTemporaryDirectory();
-    final filePath = "${outputDir.path}/$filename";
-    final file = File(filePath);
-    await file.writeAsBytes(pdfBytes);
-    return filePath;
+      // ✅ iOS or Android < 10 fallback
+      final dir = await getApplicationDocumentsDirectory();
+      final filePath = "${dir.path}/$filename";
+      final file = File(filePath);
+      await file.writeAsBytes(pdfBytes);
+
+      _log.i("PDF saved locally: $filePath");
+      await OpenFilex.open(filePath);
+      return filePath;
+    } catch (e) {
+      _log.e("Error exporting PDF: $e");
+
+      // Safe fallback – still return a readable path
+      final fallbackDir = await getTemporaryDirectory();
+      final fallbackPath = "${fallbackDir.path}/$filename";
+      await File(fallbackPath).writeAsBytes(pdfBytes);
+      return fallbackPath;
+    }
   }
 
   /// Platform-specific download directory
