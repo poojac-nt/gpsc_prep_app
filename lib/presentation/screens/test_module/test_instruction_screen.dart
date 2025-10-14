@@ -97,8 +97,9 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
           }
 
           final testModel = widget.dailyTestModel ?? _fetchedTestModel;
-          if (testModel != null)
+          if (testModel != null) {
             return buildScaffoldWithModel(context, testModel);
+          }
 
           return _loadingScreen();
         },

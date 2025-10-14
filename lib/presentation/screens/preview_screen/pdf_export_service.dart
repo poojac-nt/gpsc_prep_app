@@ -21,7 +21,7 @@ class PdfExportService {
     List<QuestionModel> questions,
     String testName,
   ) async {
-    final _log = getIt<LogHelper>();
+    final log = getIt<LogHelper>();
     final mcqPdfHeader = pw.MemoryImage(
       (await rootBundle.load(
         'assets/images/mcq_pdf_header.jpeg',
@@ -330,25 +330,25 @@ class PdfExportService {
           }
 
           final uri = saveInfo.uri.toString(); // content://...
-          _log.i("Saved file URI: $uri");
+          log.i("Saved file URI: $uri");
 
           String? realPath;
           try {
             realPath = await MediaStore().getFilePathFromUri(uriString: uri);
-            _log.i("Resolved real path: $realPath");
+            log.i("Resolved real path: $realPath");
           } catch (e) {
-            _log.e("Could not resolve path from URI: $e");
+            log.e("Could not resolve path from URI: $e");
           }
 
           if (realPath != null) {
             final openResult = await OpenFilex.open(realPath);
-            _log.i("OpenFilex: ${openResult.message}");
+            log.i("OpenFilex: ${openResult.message}");
             return realPath;
           } else {
             // If path resolution fails, try opening via URI (if some plugin supports it),
             // or fallback to tempFile.
             final openResult = await OpenFilex.open(uri);
-            _log.i("Tried opening via URI: ${openResult.message}");
+            log.i("Tried opening via URI: ${openResult.message}");
             return uri;
           }
         }
@@ -360,11 +360,11 @@ class PdfExportService {
       final file = File(filePath);
       await file.writeAsBytes(pdfBytes);
 
-      _log.i("PDF saved locally: $filePath");
+      log.i("PDF saved locally: $filePath");
       await OpenFilex.open(filePath);
       return filePath;
     } catch (e) {
-      _log.e("Error exporting PDF: $e");
+      log.e("Error exporting PDF: $e");
 
       // Safe fallback – still return a readable path
       final fallbackDir = await getTemporaryDirectory();
