@@ -13,7 +13,6 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:permission_handler/permission_handler.dart';
 
 Future<String> generateDescTestPdf(
   DescQuestionModel question,
@@ -102,7 +101,7 @@ Future<String> generateDescTestPdf(
                   ],
                 ],
               ),
-              // Footer
+              // --- Footer ---
               pw.Positioned(
                 bottom: 20,
                 left: 0,
@@ -199,9 +198,9 @@ Future<String> generateDescTestPdf(
                     child: pw.Image(logoImage, fit: pw.BoxFit.contain),
                   ),
                 ),
-                // Footer
+                // Footer reused
                 pw.Positioned(
-                  bottom: 20, // distance from bottom
+                  bottom: 20,
                   left: 0,
                   right: 0,
                   child: pw.Container(
@@ -281,87 +280,87 @@ Future<String> generateDescTestPdf(
       ),
     );
   }
-  // ✅ Only changed the part after saving (same logic as in PdfExportService)
-  // ✅ Only changed the part after saving (final open logic)
+
+  // --- Save PDF ---
   final bytes = await pdf.save();
   String filePath;
 
-  if (Platform.isAndroid) {
-    final deviceInfo = DeviceInfoPlugin();
-    final androidInfo = await deviceInfo.androidInfo;
-    final sdkInt = androidInfo.version.sdkInt;
+  try {
+    if (Platform.isAndroid) {
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
 
-    if (sdkInt <= 28) {
-      // Legacy storage (needs WRITE permission)
-      if (await Permission.storage.request().isGranted) {
-        final downloadsDir = Directory("/storage/emulated/0/Download");
+      if (sdkInt <= 28) {
+        final downloadsDir = Directory("/storage/emulated/0/Download/StarICS");
         if (!await downloadsDir.exists()) {
           await downloadsDir.create(recursive: true);
         }
-        filePath = "${downloadsDir.path}/${testName}_Question$index.pdf";
+
+        filePath =
+            "${downloadsDir.path}/${testName.toSafeFileName()}_Question$index.pdf";
         final file = File(filePath);
         await file.writeAsBytes(bytes);
-        await OpenFilex.open(filePath); // ✅ Opens file directly
+        await OpenFilex.open(filePath);
+        return filePath;
       } else {
-        throw Exception("Storage permission not granted");
+        final mediaStore = MediaStore();
+        MediaStore.appFolder = "StarICS";
+
+        final safeFileName = "${testName.toSafeFileName()}_Question$index.pdf";
+        final folderName = "StarICS";
+
+        final tempDir = await getTemporaryDirectory();
+        final tempPath = "${tempDir.path}/$safeFileName";
+        final tempFile = File(tempPath);
+        await tempFile.writeAsBytes(bytes);
+
+        final saveInfo = await mediaStore.saveFile(
+          tempFilePath: tempPath,
+          dirType: DirType.download,
+          dirName: DirName.download,
+          relativePath: "$folderName/",
+        );
+
+        if (saveInfo == null) {
+          throw Exception("Failed to save PDF to MediaStore");
+        }
+
+        String? realPath;
+        try {
+          realPath = await mediaStore.getFilePathFromUri(
+            uriString: saveInfo.uri.toString(),
+          );
+        } catch (e) {
+          getIt<LogHelper>().e("Could not resolve file path: $e");
+        }
+
+        if (realPath != null && await File(realPath).exists()) {
+          filePath = realPath;
+          await OpenFilex.open(realPath);
+        } else {
+          filePath = saveInfo.uri.toString();
+          await OpenFilex.open(filePath);
+        }
+        return filePath;
       }
     } else {
-      // ✅ Scoped Storage (Android 10+)
-      final mediaStore = MediaStore();
-      MediaStore.appFolder = "StarICS";
-
-      final safeFileName = "${testName.toSafeFileName()}_Question$index.pdf";
-      final folderName = "StarICS";
-
-      final tempDir = await getDownloadsDirectory();
-      final tempPath = "${tempDir?.path}/$safeFileName";
-      final tempFile = File(tempPath);
-
-      if (!await tempFile.parent.exists()) {
-        await tempFile.parent.create(recursive: true);
-      }
-
-      await tempFile.writeAsBytes(bytes);
-
-      final saveInfo = await mediaStore.saveFile(
-        tempFilePath: tempPath,
-        dirType: DirType.download,
-        dirName: DirName.download,
-        relativePath: "$folderName/",
-      );
-
-      if (saveInfo == null) {
-        throw Exception("Failed to save PDF to MediaStore");
-      }
-
-      // ✅ FIX: Resolve file path or open using content URI
-      String? realPath;
-      try {
-        realPath = await mediaStore.getFilePathFromUri(
-          uriString: saveInfo.uri.toString(),
-        );
-      } catch (e) {
-        getIt<LogHelper>().e("Could not resolve file path: $e");
-      }
-
-      if (realPath != null && await File(realPath).exists()) {
-        filePath = realPath;
-        await OpenFilex.open(realPath);
-      } else {
-        filePath = saveInfo.uri.toString();
-        await OpenFilex.open(filePath); // ✅ Correct call — supports URI
-      }
+      // ✅ iOS or other platforms
+      final dir = await getApplicationDocumentsDirectory();
+      filePath = "${dir.path}/${testName.toSafeFileName()}_Question$index.pdf";
+      final file = File(filePath);
+      await file.writeAsBytes(bytes);
+      await OpenFilex.open(filePath);
+      return filePath;
     }
-  } else {
-    // iOS or other platforms
-    final dir = await getApplicationDocumentsDirectory();
-    filePath = "${dir.path}/${testName}_Question$index.pdf";
-    final file = File(filePath);
-    await file.writeAsBytes(bytes);
-    await OpenFilex.open(filePath); // ✅ Opens file
+  } catch (e) {
+    getIt<LogHelper>().e("Error generating Desc PDF: $e");
+    final fallbackDir = await getTemporaryDirectory();
+    filePath =
+        "${fallbackDir.path}/${testName.toSafeFileName()}_Question$index.pdf";
+    await File(filePath).writeAsBytes(bytes);
+    return filePath;
   }
-
-  return filePath;
 }
 
 /// Robust Markdown parser to PDF widgets (supports: paragraph, bold, italic, heading, list, line breaks)

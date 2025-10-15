@@ -12,7 +12,6 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../../domain/entities/question_language_model.dart';
 
@@ -305,11 +304,6 @@ class PdfExportService {
 
         // ✅ Scoped Storage path (API 29+)
         if (sdkInt >= 29) {
-          final permission = await Permission.storage.request();
-          if (!permission.isGranted) {
-            throw Exception("Storage permission not granted");
-          }
-
           final tempDir = await getTemporaryDirectory();
           final tempPath = "${tempDir.path}/$filename";
           final tempFile = File(tempPath);
