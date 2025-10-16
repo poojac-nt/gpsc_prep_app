@@ -21,3 +21,7 @@ class AddStudyMaterial extends StudyMaterialEvent {
 class FetchTestWithoutMaterial extends StudyMaterialEvent {
   FetchTestWithoutMaterial();
 }
+
+class FetchStudyMaterial extends StudyMaterialEvent {
+  FetchStudyMaterial();
+}

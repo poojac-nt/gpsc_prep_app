@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/study_material_model.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/helper_methods/pdf_download_from_link.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../../../blocs/study_material/study_material_bloc.dart';
+import '../../../blocs/study_material/study_material_state.dart';
 
 class StudyMaterialListScreen extends StatelessWidget {
   final String selectedLanguage;
@@ -14,111 +19,66 @@ class StudyMaterialListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> materials = [
-      {
-        'title': 'Indian History Notes',
-        'link': 'https://example.com/history.pdf',
-        'date': DateTime(2025, 10, 10),
-        'subject': 'History',
-        'pages': 45,
-      },
-      {
-        'title': 'Geography Study Material',
-        'link': 'https://example.com/geography.pdf',
-        'date': DateTime(2025, 9, 25),
-        'subject': 'Geography',
-        'pages': 38,
-      },
-      {
-        'title': 'General Science',
-        'link': 'https://example.com/science.pdf',
-        'date': DateTime(2025, 9, 15),
-        'subject': 'Science',
-        'pages': 52,
-      },
-      {
-        'title': 'Indian History Notes',
-        'link': 'https://example.com/history.pdf',
-        'date': DateTime(2025, 10, 10),
-        'subject': 'History',
-        'pages': 45,
-      },
-      {
-        'title': 'Geography Study Material',
-        'link': 'https://example.com/geography.pdf',
-        'date': DateTime(2025, 9, 25),
-        'subject': 'Geography',
-        'pages': 38,
-      },
-      {
-        'title': 'General Science',
-        'link': 'https://example.com/science.pdf',
-        'date': DateTime(2025, 9, 15),
-        'subject': 'Science',
-        'pages': 52,
-      },
-      {
-        'title': 'Indian History Notes',
-        'link': 'https://example.com/history.pdf',
-        'date': DateTime(2025, 10, 10),
-        'subject': 'History',
-        'pages': 45,
-      },
-      {
-        'title': 'Geography Study Material',
-        'link': 'https://example.com/geography.pdf',
-        'date': DateTime(2025, 9, 25),
-        'subject': 'Geography',
-        'pages': 38,
-      },
-      {
-        'title': 'General Science',
-        'link': 'https://example.com/science.pdf',
-        'date': DateTime(2025, 9, 15),
-        'subject': 'Science',
-        'pages': 52,
-      },
-    ];
+    debugPrint(selectedLanguage);
+    List<StudyMaterialModel> materials = [];
 
-    materials.sort((a, b) => b['date'].compareTo(a['date'])); // latest first
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Text(
-          "$selectedLanguage Study Materials",
-          style: TextStyle(
-            color: const Color(0xFF1E293B),
-            fontWeight: FontWeight.w700,
-            fontSize: 20.sp,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Materials List
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(20.sp),
-              itemCount: materials.length,
-              itemBuilder: (context, index) {
-                final item = materials[index];
-                return _MaterialCard(item: item, index: index);
-              },
+    return BlocBuilder<StudyMaterialBloc, StudyMaterialState>(
+      builder: (context, state) {
+        if (state is StudyMaterialLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is StudyMaterialLoaded) {
+          if (state.materials.isEmpty) {
+            return const Center(child: Text('No Materials Found'));
+          }
+          materials =
+              state.materials
+                  .where((element) => element.language == selectedLanguage)
+                  .toList();
+          return Scaffold(
+            backgroundColor: const Color(0xFFF8FAFC),
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.white,
+              title: Text(
+                "Study Materials",
+                style: TextStyle(
+                  color: const Color(0xFF1E293B),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20.sp,
+                ),
+              ),
+              iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
             ),
-          ),
-        ],
-      ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Materials List
+                Expanded(
+                  child: ListView.builder(
+                    padding: EdgeInsets.all(20.sp),
+                    itemCount: materials.length,
+                    itemBuilder: (context, index) {
+                      final item = materials[index];
+                      return _MaterialCard(item: item, index: index);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        if (state is StudyMaterialError) {
+          return const Center(child: Text('Something went wrong'));
+        }
+        return SizedBox.shrink();
+      },
     );
   }
 }
 
 class _MaterialCard extends StatelessWidget {
-  final Map<String, dynamic> item;
+  final StudyMaterialModel item;
   final int index;
 
   const _MaterialCard({required this.item, required this.index});
@@ -194,54 +154,17 @@ class _MaterialCard extends StatelessWidget {
                       16.wGap,
                       // Title and Subject
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'],
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1E293B),
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          item.title,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E293B),
+                            height: 1.3,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-
-                  16.hGap,
-
-                  // Metadata R
-                  _InfoChip(
-                    icon: Icons.calendar_today_outlined,
-                    label: _formatDate(item['date']),
-                    color: const Color(0xFF64748B),
-                  ),
-                  16.hGap,
-                  // Action Buttons
-                  Row(
-                    children: [
-                      // Start Test Button (Primary)
-                      Expanded(
-                        flex: 2,
-                        child: _ActionButton(
-                          icon: Icons.play_circle_fill,
-                          label: 'Start Test',
-                          isPrimary: true,
-                          color: color,
-                          onPressed: () {
-                            context.push(
-                              AppRoutes.mcqTestInstructionScreen,
-                              extra: TestInstructionScreenArgs(testId: 147),
-                            );
-                          },
-                        ),
-                      ),
-                      12.wGap,
-                      // Secondary Actions
+                      10.wGap,
                       _IconActionButton(
                         icon: Icons.download_rounded,
                         color: color,
@@ -252,7 +175,7 @@ class _MaterialCard extends StatelessWidget {
                           await downloader.downloadDocument(
                             url:
                                 'https://docs.google.com/document/d/188iDSc_oNWvgcissp2Q3l1oDqaafufweXRSqCLh6_sM/edit?usp=sharing',
-                            fileName: item['title'],
+                            fileName: item.title,
                             onProgress: (progress) {
                               debugPrint(
                                 'Progress: ${(progress * 100).toStringAsFixed(0)}%',
@@ -261,7 +184,7 @@ class _MaterialCard extends StatelessWidget {
                           );
                         },
                       ),
-                      8.wGap,
+                      12.wGap,
                       _IconActionButton(
                         icon: Icons.share_rounded,
                         color: color,
@@ -269,14 +192,33 @@ class _MaterialCard extends StatelessWidget {
                           SharePlus.instance.share(
                             ShareParams(
                               text:
-                                  'Check out this study material: ${item['link']}',
-                              subject: item['title'],
+                                  'Check out this study material: ${item.link}',
+                              subject: item.title,
                             ),
                           );
                         },
                       ),
                     ],
                   ),
+                  if (item.testId != null) ...[
+                    16.hGap,
+                    _ActionButton(
+                      icon: Icons.play_circle_fill,
+                      label: 'Start Test',
+                      isPrimary: true,
+                      color: item.testId == null ? Colors.grey : color,
+                      onPressed:
+                          item.testId == null
+                              ? () {}
+                              : () {
+                                context.push(
+                                  AppRoutes.mcqTestInstructionScreen,
+                                  extra: TestInstructionScreenArgs(testId: 147),
+                                );
+                              },
+                    ),
+                    12.wGap,
+                  ],
                 ],
               ),
             ),
@@ -286,22 +228,30 @@ class _MaterialCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  String formatDateFromString(String dateString) {
+    try {
+      // Convert string to DateTime (automatically handles +00 timezone)
+      final date = DateTime.parse(dateString);
+
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (e) {
+      return ""; // prevent crash if invalid format
+    }
   }
 }
 

@@ -300,9 +300,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.studyMaterial,
     builder: (context, state) {
       final lang = state.extra as Map<String, String>?;
-      return StudyMaterialListScreen(
-        selectedLanguage: lang?['name'] ?? 'English',
-      );
+      return StudyMaterialListScreen(selectedLanguage: lang?['code'] ?? 'en');
     },
   ),
 ];

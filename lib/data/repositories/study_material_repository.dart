@@ -3,6 +3,7 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 
 import '../../core/error/failure.dart';
+import '../../domain/entities/study_material_model.dart';
 
 class StudyMaterialRepository {
   final SupabaseHelper _supabase;
@@ -24,4 +25,6 @@ class StudyMaterialRepository {
     language: language,
     testId: testId,
   );
+  Future<Either<Failure, List<StudyMaterialModel>>>
+  fetchAllStudyMaterials() async => await _supabase.fetchAllStudyMaterials();
 }

@@ -21,6 +21,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../domain/entities/study_material_model.dart';
 import 'log_helper.dart';
 
 class SupabaseHelper {
@@ -714,6 +715,20 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error inserting study material: $e');
       return Left(Failure("Error inserting study material"));
+    }
+  }
+
+  Future<Either<Failure, List<StudyMaterialModel>>>
+  fetchAllStudyMaterials() async {
+    try {
+      final result = await supabase.from(SupabaseKeys.studyMaterial).select();
+      final materials =
+          result.map((e) => StudyMaterialModel.fromJson(e)).toList();
+      _log.i("Materials length:${materials.length}");
+      return Right(materials);
+    } catch (e) {
+      _log.e("Error fetching study material");
+      return Left(Failure("Error fetching study materials"));
     }
   }
 }
