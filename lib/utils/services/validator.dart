@@ -59,4 +59,18 @@ class Validator {
 
     return null;
   }
+
+  static String? validateTitle(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Material Title is required';
+    }
+    return null;
+  }
+
+  static String? validateLink(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Link is required';
+    }
+    return null;
+  }
 }

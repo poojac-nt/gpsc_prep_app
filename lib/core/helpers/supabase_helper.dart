@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
@@ -655,6 +656,64 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error inserting test detailed result: $e');
       return Left(Failure("Error inserting test detailed result"));
+    }
+  }
+
+  Future<Either<Failure, List<TestWithoutMaterial>>>
+  fetchTestsWithoutStudyMaterial() async {
+    try {
+      // Call the Supabase RPC function
+      final response = await supabase.rpc(
+        SupabaseKeys.getTestWithoutStudyMaterial,
+      );
+
+      if (response is List && response.isNotEmpty) {
+        // Convert each item (Map) into a TestWithoutMaterial model
+        final tests =
+            response
+                .map(
+                  (item) => TestWithoutMaterial.fromJson(
+                    Map<String, dynamic>.from(item),
+                  ),
+                )
+                .toList();
+
+        _log.i('Fetched ${tests.length} tests without study materials.');
+
+        return Right(tests);
+      } else {
+        _log.w('No unlinked tests found.');
+        return Left(Failure("No unlinked tests found"));
+      }
+    } catch (e) {
+      _log.e('Error fetching unlinked tests: $e');
+      return Left(Failure("Failed to fetch unlinked tests"));
+    }
+  }
+
+  Future<Either<Failure, void>> insertStudyMaterial({
+    required String title,
+    required String link,
+    required String language,
+    int? testId,
+  }) async {
+    try {
+      final result = await supabase
+          .from(
+            SupabaseKeys.studyMaterial,
+          ) // <-- make sure this matches your table name
+          .upsert({
+            'title': title,
+            'link': link,
+            'test_id': testId,
+            'language': language,
+          });
+
+      _log.i('Inserted study material: $result');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error inserting study material: $e');
+      return Left(Failure("Error inserting study material"));
     }
   }
 }

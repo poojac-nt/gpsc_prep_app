@@ -19,6 +19,7 @@ import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_blo
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
@@ -76,6 +77,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<DailyDescTestBloc>()),
           BlocProvider(create: (_) => getIt<DashboardBloc>()),
           BlocProvider(create: (_) => getIt<PieChartBloc>()),
+          BlocProvider(create: (_) => getIt<StudyMaterialBloc>()),
         ],
         child: const MyApp(),
       ),

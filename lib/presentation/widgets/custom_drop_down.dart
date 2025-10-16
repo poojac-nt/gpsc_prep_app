@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class CustomTestDropdown extends StatefulWidget {
-  final List<TestItem> items;
-  final String? selectedValue;
+  final List<TestWithoutMaterial> items;
+  final int? selectedValue;
   final String hint;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<int?> onChanged;
 
   const CustomTestDropdown({
     super.key,
@@ -230,11 +231,4 @@ class _CustomTestDropdownState extends State<CustomTestDropdown>
       ),
     );
   }
-}
-
-class TestItem {
-  final String id;
-  final String name;
-
-  TestItem({required this.id, required this.name});
 }

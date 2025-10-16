@@ -12,6 +12,8 @@ abstract class SupabaseKeys {
   static final String insertDescWithTest = 'insert_desc_questions_with_tests';
   static final String getQuestionCorrectnessCounts =
       'get_test_question_correctness_counts';
+  static final String getTestWithoutStudyMaterial =
+      'get_tests_without_study_material';
 
   ///table
   static final String usersTable = 'users';
@@ -23,11 +25,16 @@ abstract class SupabaseKeys {
   static final String descTests = 'desc_tests';
   static final String descTestResult = 'desc_test_detailed_results';
   static final String testDetailedResults = 'test_detailed_results';
+  static final String studyMaterial = 'study_material';
 
   ///columns
   static final String email = 'user_email';
   static final String authId = 'auth_id';
   static final String fcmToken = 'fcm_token';
+  static final String studyTitle = 'title';
+  static final String studyLanguage = 'language';
+  static final String studyLink = 'link';
+  static final String studTestId = 'test_id';
 
   ///Buckets
   static final String answers = 'answers';

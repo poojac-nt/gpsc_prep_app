@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/study_material_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
@@ -17,6 +18,7 @@ import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_blo
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
@@ -65,6 +67,9 @@ void setupRepositories() {
   getIt.registerLazySingleton<TestRepository>(
     () => TestRepository(getIt<SupabaseHelper>()),
   );
+  getIt.registerLazySingleton<StudyMaterialRepository>(
+    () => StudyMaterialRepository(getIt<SupabaseHelper>()),
+  );
 }
 
 void setupBlocs() {
@@ -102,6 +107,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<DashboardBloc>(
     () => DashboardBloc(getIt<TestRepository>()),
+  );
+  getIt.registerLazySingleton<StudyMaterialBloc>(
+    () => StudyMaterialBloc(getIt<StudyMaterialRepository>()),
   );
 }
 
