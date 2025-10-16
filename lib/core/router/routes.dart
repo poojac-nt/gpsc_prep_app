@@ -11,6 +11,9 @@ import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dar
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/study_material/admin/upload_study_maerial_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/study_material/student/language_selection_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/study_material/student/student_study_material_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
@@ -159,7 +162,10 @@ final List<GoRoute> appRoutes = [
     name: AppRoutes.mcqTestInstructionScreen,
     builder: (context, state) {
       final args = state.extra as TestInstructionScreenArgs?;
-      return MCQTestInstructionScreen(dailyTestModel: args?.dailyTestModel);
+      return MCQTestInstructionScreen(
+        dailyTestModel: args?.dailyTestModel,
+        testId: args?.testId,
+      );
     },
   ),
 
@@ -274,6 +280,28 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         DescriptiveTestInstructionScreen(descTestModel: args.dailyTestModel),
         state,
+      );
+    },
+  ),
+
+  GoRoute(
+    path: AppRoutes.uploadStudyMaterial,
+    pageBuilder: (context, state) {
+      return _slideTransition(UploadStudyMaterialScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.languageSelection,
+    pageBuilder: (context, state) {
+      return _slideTransition(LanguageSelectionScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.studyMaterial,
+    builder: (context, state) {
+      final lang = state.extra as Map<String, String>?;
+      return StudyMaterialListScreen(
+        selectedLanguage: lang?['name'] ?? 'English',
       );
     },
   ),

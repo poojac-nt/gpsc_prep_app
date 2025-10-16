@@ -131,6 +131,26 @@ class SelectionDrawer extends StatelessWidget {
                     Icons.file_upload_outlined,
                     'Upload Test',
                   ),
+              isStudent
+                  ? SizedBox.shrink()
+                  : commonWidget(
+                    () {
+                      context.pop();
+                      context.push(AppRoutes.uploadStudyMaterial);
+                    },
+                    Icons.file_upload_outlined,
+                    'Upload Study Material',
+                  ),
+              isStudent
+                  ? commonWidget(
+                    () {
+                      context.pop();
+                      context.push(AppRoutes.languageSelection);
+                    },
+                    Icons.file_download_outlined,
+                    'Study Material',
+                  )
+                  : SizedBox.shrink(),
               commonWidget(
                 () => showLogoutDialog(context),
                 Icons.logout,
