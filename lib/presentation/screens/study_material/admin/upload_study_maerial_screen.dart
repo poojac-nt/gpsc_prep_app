@@ -19,6 +19,8 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
   final _linkController = TextEditingController();
   final _testController = TextEditingController();
   String? _selectedTest;
+  String _selectedLanguage = 'en'; // Default language code
+
   final List<TestItem> dummyTests = [
     TestItem(id: '1', name: 'Unit Test'),
     TestItem(id: '2', name: 'Integration Test'),
@@ -154,9 +156,45 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                         });
                       },
                     ),
+                    20.hGap,
+                    // Language selector with label
+                    _buildFieldLabel("Select Language", Icons.language_rounded),
+                    12.hGap,
+                    Container(
+                      padding: EdgeInsets.all(12.sp),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildRadioOption(
+                            'English',
+                            'en',
+                            _selectedLanguage == 'en',
+                          ),
+                          8.hGap,
+                          _buildRadioOption(
+                            'Gujarati',
+                            'gj',
+                            _selectedLanguage == 'gj',
+                          ),
+                        ],
+                      ),
+                    ),
                     30.hGap,
                     // Upload button
-                    ActionButton(text: "Upload Material", onTap: () {}),
+                    ActionButton(
+                      text: "Upload Material",
+                      onTap: () {
+                        // You can access the selected language code here
+                        print('Selected language code: $_selectedLanguage');
+                      },
+                    ),
                     20.hGap,
                     // Divider with text
                     Row(
@@ -252,6 +290,53 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRadioOption(String label, String value, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedLanguage = value;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
+        decoration: BoxDecoration(
+          color:
+              isSelected
+                  ? AppColors.primary.withOpacity(0.1)
+                  : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Radio<String>(
+              value: value,
+              groupValue: _selectedLanguage,
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedLanguage = newValue!;
+                });
+              },
+              activeColor: AppColors.primary,
+            ),
+            8.wGap,
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color:
+                    isSelected
+                        ? AppColors.primary
+                        : AppColors.primary.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
