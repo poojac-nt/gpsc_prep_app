@@ -47,7 +47,7 @@ Future<String> generateDescTestPdf(
   final xLogo = pw.MemoryImage(
     (await rootBundle.load('assets/images/x_logo.png')).buffer.asUint8List(),
   );
-  // --- Helper to wrap content with border ---
+
   pw.Widget borderedPage(pw.Widget child) {
     return pw.Container(
       decoration: pw.BoxDecoration(
@@ -283,6 +283,7 @@ Future<String> generateDescTestPdf(
 
   // --- Save PDF ---
   final bytes = await pdf.save();
+  final safeFileName = "${testName.toSafeFileName()}_Question$index.pdf";
   String filePath;
 
   try {
@@ -291,35 +292,21 @@ Future<String> generateDescTestPdf(
       final androidInfo = await deviceInfo.androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
 
-      if (sdkInt <= 28) {
-        final downloadsDir = Directory("/storage/emulated/0/Download/StarICS");
-        if (!await downloadsDir.exists()) {
-          await downloadsDir.create(recursive: true);
-        }
-
-        filePath =
-            "${downloadsDir.path}/${testName.toSafeFileName()}_Question$index.pdf";
-        final file = File(filePath);
-        await file.writeAsBytes(bytes);
-        await OpenFilex.open(filePath);
-        return filePath;
-      } else {
-        final mediaStore = MediaStore();
-        MediaStore.appFolder = "StarICS";
-
-        final safeFileName = "${testName.toSafeFileName()}_Question$index.pdf";
-        final folderName = "StarICS";
-
+      // ✅ Android 10+ (Scoped Storage)
+      if (sdkInt >= 29) {
         final tempDir = await getTemporaryDirectory();
         final tempPath = "${tempDir.path}/$safeFileName";
         final tempFile = File(tempPath);
         await tempFile.writeAsBytes(bytes);
 
+        final mediaStore = MediaStore();
+        MediaStore.appFolder = "StarICS";
+
         final saveInfo = await mediaStore.saveFile(
           tempFilePath: tempPath,
           dirType: DirType.download,
           dirName: DirName.download,
-          relativePath: "$folderName/",
+          relativePath: "StarICS/",
         );
 
         if (saveInfo == null) {
@@ -343,11 +330,22 @@ Future<String> generateDescTestPdf(
           await OpenFilex.open(filePath);
         }
         return filePath;
+      } else {
+        // ✅ Android 9 and below – direct /Download/StarICS
+        final downloadsDir = Directory("/storage/emulated/0/Download/StarICS");
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+        filePath = "${downloadsDir.path}/$safeFileName";
+        final file = File(filePath);
+        await file.writeAsBytes(bytes);
+        await OpenFilex.open(filePath);
+        return filePath;
       }
     } else {
       // ✅ iOS or other platforms
       final dir = await getApplicationDocumentsDirectory();
-      filePath = "${dir.path}/${testName.toSafeFileName()}_Question$index.pdf";
+      filePath = "${dir.path}/$safeFileName";
       final file = File(filePath);
       await file.writeAsBytes(bytes);
       await OpenFilex.open(filePath);
@@ -356,17 +354,15 @@ Future<String> generateDescTestPdf(
   } catch (e) {
     getIt<LogHelper>().e("Error generating Desc PDF: $e");
     final fallbackDir = await getTemporaryDirectory();
-    filePath =
-        "${fallbackDir.path}/${testName.toSafeFileName()}_Question$index.pdf";
+    filePath = "${fallbackDir.path}/$safeFileName";
     await File(filePath).writeAsBytes(bytes);
     return filePath;
   }
 }
 
-/// Robust Markdown parser to PDF widgets (supports: paragraph, bold, italic, heading, list, line breaks)
+/// --- Markdown Parsing Helpers (unchanged) ---
 List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
   final lines = markdownText.split('\n');
-
   List<pw.Widget> widgets = [];
   int i = 0;
 
@@ -375,12 +371,10 @@ List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
         i + 2 < lines.length &&
         lines[i + 1].contains('---')) {
       List<String> tableLines = [];
-
       while (i < lines.length && lines[i].trim().startsWith('|')) {
         tableLines.add(lines[i]);
         i++;
       }
-
       widgets.add(_buildPdfTableFromMarkdown(tableLines));
       widgets.add(pw.SizedBox(height: 8));
     } else {
@@ -417,8 +411,7 @@ pw.Widget _buildPdfTableFromMarkdown(List<String> tableLines) {
           )
           .toList();
 
-  if (rows.length < 2) return pw.SizedBox(); // Not a valid table
-
+  if (rows.length < 2) return pw.SizedBox();
   final header = rows[0];
   final dataRows = rows.sublist(2);
 
@@ -510,7 +503,6 @@ List<pw.Widget> _markdownNodeToPdfWidget(md.Node node) {
   return [];
 }
 
-/// Inline markdown to pw.Text (handles **bold**, *italic* etc. within a paragraph)
 pw.Widget _spanFromMarkdownInline(List<md.Node> nodes) {
   return pw.RichText(
     text: pw.TextSpan(
@@ -532,7 +524,6 @@ pw.Widget _spanFromMarkdownInline(List<md.Node> nodes) {
                   style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
                 );
               }
-
               return pw.TextSpan(
                 children:
                     node.children?.map((e) {

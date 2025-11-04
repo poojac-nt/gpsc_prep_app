@@ -52,7 +52,7 @@ class PdfExportService {
     final imageHeight = imageProvider.height.toDouble();
     final imageWidth = imageProvider.width.toDouble();
 
-    final pageWidth = PdfPageFormat.a4.width - 48; // minus 24 margin each side
+    final pageWidth = PdfPageFormat.a4.width - 48;
     final scaledHeight = (imageHeight / imageWidth) * pageWidth;
 
     final pdf = pw.Document(
@@ -184,9 +184,7 @@ class PdfExportService {
               ),
               ...questions.asMap().entries.map((entry) {
                 final index = entry.key + 1;
-                final ln =
-                    getIt<CacheManager>()
-                        .userSelectedLanguage(); // e.g., "en", "hi", "gj"
+                final ln = getIt<CacheManager>().userSelectedLanguage();
                 QuestionLanguageData getLangData(QuestionModel q) {
                   switch (ln) {
                     case 'hi':
@@ -200,7 +198,6 @@ class PdfExportService {
                 }
 
                 final q = entry.value;
-
                 final qLang = getLangData(q);
 
                 return pw.Padding(
@@ -293,7 +290,6 @@ class PdfExportService {
       ),
     );
 
-    // Generate PDF bytes
     final pdfBytes = await pdf.save();
     final filename = "${testName.toSafeFileName()}.pdf";
 
@@ -302,7 +298,7 @@ class PdfExportService {
         final androidInfo = await DeviceInfoPlugin().androidInfo;
         final sdkInt = androidInfo.version.sdkInt;
 
-        // ✅ Scoped Storage path (API 29+)
+        // ✅ UPDATED — Scoped Storage compliant, Play Store safe
         if (sdkInt >= 29) {
           final tempDir = await getTemporaryDirectory();
           final tempPath = "${tempDir.path}/$filename";
@@ -314,8 +310,8 @@ class PdfExportService {
 
           final saveInfo = await mediaStore.saveFile(
             tempFilePath: tempPath,
-            dirType: DirType.download,
             dirName: DirName.download,
+            dirType: DirType.download,
             relativePath: "StarICS/",
           );
 
@@ -323,28 +319,22 @@ class PdfExportService {
             throw Exception("Failed to save PDF to MediaStore");
           }
 
-          final uri = saveInfo.uri.toString(); // content://...
+          final uri = saveInfo.uri.toString();
           log.i("Saved file URI: $uri");
 
           String? realPath;
           try {
-            realPath = await MediaStore().getFilePathFromUri(uriString: uri);
+            realPath = await mediaStore.getFilePathFromUri(uriString: uri);
             log.i("Resolved real path: $realPath");
           } catch (e) {
             log.e("Could not resolve path from URI: $e");
           }
 
-          if (realPath != null) {
-            final openResult = await OpenFilex.open(realPath);
-            log.i("OpenFilex: ${openResult.message}");
-            return realPath;
-          } else {
-            // If path resolution fails, try opening via URI (if some plugin supports it),
-            // or fallback to tempFile.
-            final openResult = await OpenFilex.open(uri);
-            log.i("Tried opening via URI: ${openResult.message}");
-            return uri;
-          }
+          // ✅ Clean up temp file
+          if (await tempFile.exists()) await tempFile.delete();
+          final pathToOpen = realPath ?? uri;
+          await OpenFilex.open(pathToOpen);
+          return pathToOpen;
         }
       }
 
@@ -353,14 +343,11 @@ class PdfExportService {
       final filePath = "${dir.path}/$filename";
       final file = File(filePath);
       await file.writeAsBytes(pdfBytes);
-
       log.i("PDF saved locally: $filePath");
       await OpenFilex.open(filePath);
       return filePath;
     } catch (e) {
       log.e("Error exporting PDF: $e");
-
-      // Safe fallback – still return a readable path
       final fallbackDir = await getTemporaryDirectory();
       final fallbackPath = "${fallbackDir.path}/$filename";
       await File(fallbackPath).writeAsBytes(pdfBytes);
@@ -368,16 +355,13 @@ class PdfExportService {
     }
   }
 
-  /// Platform-specific download directory
   Future<Directory?> getDownloadsDirectory() async {
     if (Platform.isAndroid) return Directory('/storage/emulated/0/Download');
     return await getApplicationDocumentsDirectory();
   }
 
-  /// Robust Markdown parser to PDF widgets (supports: paragraph, bold, italic, heading, list, line breaks)
   List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
     final lines = markdownText.split('\n');
-
     List<pw.Widget> widgets = [];
     int i = 0;
 
@@ -386,12 +370,10 @@ class PdfExportService {
           i + 2 < lines.length &&
           lines[i + 1].contains('---')) {
         List<String> tableLines = [];
-
         while (i < lines.length && lines[i].trim().startsWith('|')) {
           tableLines.add(lines[i]);
           i++;
         }
-
         widgets.add(_buildPdfTableFromMarkdown(tableLines));
         widgets.add(pw.SizedBox(height: 8));
       } else {
@@ -428,7 +410,7 @@ class PdfExportService {
             )
             .toList();
 
-    if (rows.length < 2) return pw.SizedBox(); // Not a valid table
+    if (rows.length < 2) return pw.SizedBox();
 
     final header = rows[0];
     final dataRows = rows.sublist(2);
@@ -485,7 +467,7 @@ class PdfExportService {
                         (li) => pw.Row(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text('$i. '),
+                            pw.Text('${i++}. '),
                             pw.Expanded(
                               child: pw.Column(
                                 crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -521,7 +503,6 @@ class PdfExportService {
     return [];
   }
 
-  /// Inline markdown to pw.Text (handles **bold**, *italic* etc. within a paragraph)
   pw.Widget _spanFromMarkdownInline(List<md.Node> nodes) {
     return pw.RichText(
       text: pw.TextSpan(
@@ -543,7 +524,6 @@ class PdfExportService {
                     style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
                   );
                 }
-
                 return pw.TextSpan(
                   children:
                       node.children?.map((e) {
