@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -14,7 +15,6 @@ import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
-import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -176,8 +176,8 @@ class SupabaseHelper {
     try {
       // Delete from auth.users
       final supabaseAdmin = SupabaseClient(
-        AppSecrets.apiUrl,
-        AppSecrets.serviceKey,
+        Environment.supabaseAnonKey,
+        Environment.serviceKey,
       );
       await supabaseAdmin.auth.admin.deleteUser(userId);
 
@@ -715,6 +715,31 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error inserting study material: $e');
       return Left(Failure("Error inserting study material"));
+    }
+  }
+
+  Future<Either<Failure, void>> insertStudyMaterialWithTest({
+    required String title,
+    required String link,
+    required String language,
+    required List<Map<String, dynamic>> payload,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.insertTestWithStudyMaterial,
+        params: {
+          'payload': payload,
+          'study_title': title,
+          'study_link': link,
+          'study_language': language,
+        },
+      );
+
+      _log.i('Inserted study material with test: $result');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error inserting study material with test: $e');
+      return Left(Failure("Error inserting study material with test"));
     }
   }
 

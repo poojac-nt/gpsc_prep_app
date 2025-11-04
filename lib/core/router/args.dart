@@ -30,10 +30,20 @@ class TestInstructionScreenArgs {
 
 class ReviewQuestionScreenArgs {
   final bool isTestUpload;
-
   List<Map<String, dynamic>> payload;
+  final bool isFromStudyMaterial;
+  final String? title;
+  final String? url;
+  final String? language;
 
-  ReviewQuestionScreenArgs({required this.isTestUpload, required this.payload});
+  ReviewQuestionScreenArgs({
+    required this.isTestUpload,
+    required this.payload,
+    required this.isFromStudyMaterial,
+    this.title,
+    this.url,
+    this.language,
+  });
 }
 
 class DescReviewQuestionScreenArgs {

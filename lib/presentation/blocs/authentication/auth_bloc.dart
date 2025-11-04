@@ -47,7 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthSuccess(user));
       });
     } catch (e) {
-      emit(AuthFailure("An unexpected error occurred."));
+      emit(AuthFailure("An unexpected error occurred. $e"));
     }
   }
 

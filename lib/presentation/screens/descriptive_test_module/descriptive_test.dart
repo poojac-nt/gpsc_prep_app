@@ -544,7 +544,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                 // 🔔 Top Icon
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.orange.withOpacity(0.15),
+                  backgroundColor: Colors.orange.withValues(alpha: 0.15),
                   child: Icon(
                     Icons.warning_amber_rounded,
                     size: 40,

@@ -126,15 +126,15 @@ class _LanguageCardState extends State<_LanguageCard> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: color.withOpacity(0.2), width: 2.w),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 2.w),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10.r,
               offset: Offset(0, 2.h),
             ),
             BoxShadow(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               blurRadius: 20.r,
               offset: Offset(0, 4.h),
             ),

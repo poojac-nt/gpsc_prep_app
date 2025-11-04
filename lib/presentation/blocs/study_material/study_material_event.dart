@@ -4,17 +4,31 @@ abstract class StudyMaterialEvent {}
 
 class LoadStudyMaterials extends StudyMaterialEvent {}
 
-class AddStudyMaterial extends StudyMaterialEvent {
+class UploadStudyMaterial extends StudyMaterialEvent {
   final String title;
   final String url;
   final String language;
   final int? testId;
 
-  AddStudyMaterial({
+  UploadStudyMaterial({
     required this.title,
     required this.url,
     required this.language,
     this.testId,
+  });
+}
+
+class UploadStudyMaterialWithTest extends StudyMaterialEvent {
+  final String title;
+  final String url;
+  final String language;
+  final List<Map<String, dynamic>> payload;
+
+  UploadStudyMaterialWithTest({
+    required this.title,
+    required this.url,
+    required this.language,
+    required this.payload,
   });
 }
 

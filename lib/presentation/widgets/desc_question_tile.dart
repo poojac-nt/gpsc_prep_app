@@ -20,7 +20,7 @@ class QuestionTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
-      splashColor: AppColors.primary.withOpacity(0.1),
+      splashColor: AppColors.primary.withValues(alpha: 0.1),
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 16.w),
         decoration: BoxDecoration(
@@ -34,7 +34,7 @@ class QuestionTile extends StatelessWidget {
             ),
           ],
           border: Border.all(
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             width: 1.2,
           ),
         ),
@@ -45,7 +45,7 @@ class QuestionTile extends StatelessWidget {
               tag: 'questionNumber$index',
               child: CircleAvatar(
                 radius: 22.r,
-                backgroundColor: AppColors.primary.withOpacity(0.15),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                 child: Text(
                   "${index + 1}",
                   style: TextStyle(
@@ -91,7 +91,7 @@ class QuestionTile extends StatelessWidget {
               color: AppColors.primary,
               shadows: [
                 Shadow(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   blurRadius: 3,
                   offset: const Offset(0, 2),
                 ),

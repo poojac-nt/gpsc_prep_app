@@ -46,6 +46,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
               extra: ReviewQuestionScreenArgs(
                 isTestUpload: state.isTestUpload,
                 payload: state.parsedPayload,
+                isFromStudyMaterial: false,
               ),
             );
           }

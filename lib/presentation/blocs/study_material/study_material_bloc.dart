@@ -1,13 +1,11 @@
 // study_material_bloc.dart
 
-import 'package:either_dart/either.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/repositories/study_material_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_event.dart';
 
-import 'study_material_event.dart';
 import 'study_material_state.dart';
 
 class StudyMaterialBloc extends Bloc<StudyMaterialEvent, StudyMaterialState> {
@@ -16,7 +14,8 @@ class StudyMaterialBloc extends Bloc<StudyMaterialEvent, StudyMaterialState> {
   StudyMaterialBloc(this._studyMaterialRepository)
     : super(StudyMaterialInitial()) {
     on<FetchTestWithoutMaterial>(_fetchTestWithoutMaterials);
-    on<AddStudyMaterial>(_addStudyMaterial);
+    on<UploadStudyMaterial>(_uploadStudyMaterial);
+    on<UploadStudyMaterialWithTest>(_uploadStudyMaterialWithTest);
     on<FetchStudyMaterial>(_fetchStudyMaterial);
   }
 
@@ -39,8 +38,8 @@ class StudyMaterialBloc extends Bloc<StudyMaterialEvent, StudyMaterialState> {
     }
   }
 
-  Future<void> _addStudyMaterial(
-    AddStudyMaterial event,
+  Future<void> _uploadStudyMaterial(
+    UploadStudyMaterial event,
     Emitter<StudyMaterialState> emit,
   ) async {
     emit(StudyMaterialLoading());
@@ -56,6 +55,27 @@ class StudyMaterialBloc extends Bloc<StudyMaterialEvent, StudyMaterialState> {
         (failure) => emit(StudyMaterialError(failure)),
         (_) => emit(StudyMaterialAdded()),
       );
+    } catch (e) {
+      emit(StudyMaterialError(Failure(e.toString())));
+    }
+  }
+
+  Future<void> _uploadStudyMaterialWithTest(
+    UploadStudyMaterialWithTest event,
+    Emitter<StudyMaterialState> emit,
+  ) async {
+    emit(StudyMaterialLoading());
+    try {
+      final result = await _studyMaterialRepository.insertStudyMaterialWithTest(
+        event.title,
+        event.url,
+        event.language,
+        event.payload,
+      );
+
+      result.fold((failure) => emit(StudyMaterialError(failure)), (_) {
+        emit(StudyMaterialAdded());
+      });
     } catch (e) {
       emit(StudyMaterialError(Failure(e.toString())));
     }

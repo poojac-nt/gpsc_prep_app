@@ -25,6 +25,19 @@ class StudyMaterialRepository {
     language: language,
     testId: testId,
   );
+
+  Future<Either<Failure, void>> insertStudyMaterialWithTest(
+    String title,
+    String link,
+    String language,
+    final List<Map<String, dynamic>> payload,
+  ) async => await _supabase.insertStudyMaterialWithTest(
+    title: title,
+    link: link,
+    language: language,
+    payload: payload,
+  );
+
   Future<Either<Failure, List<StudyMaterialModel>>>
   fetchAllStudyMaterials() async => await _supabase.fetchAllStudyMaterials();
 }

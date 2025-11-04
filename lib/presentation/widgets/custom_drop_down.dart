@@ -123,7 +123,9 @@ class _CustomTestDropdownState extends State<CustomTestDropdown>
                                     decoration: BoxDecoration(
                                       color:
                                           isSelected
-                                              ? Colors.black.withOpacity(0.05)
+                                              ? Colors.black.withValues(
+                                                alpha: 0.05,
+                                              )
                                               : null,
                                     ),
                                     child: Row(
@@ -192,7 +194,7 @@ class _CustomTestDropdownState extends State<CustomTestDropdown>
             boxShadow: [
               if (isExpanded)
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8.r,
                   offset: Offset(0, 2.h),
                 ),

@@ -22,57 +22,54 @@ class StudyMaterialListScreen extends StatelessWidget {
     debugPrint(selectedLanguage);
     List<StudyMaterialModel> materials = [];
 
-    return BlocBuilder<StudyMaterialBloc, StudyMaterialState>(
-      builder: (context, state) {
-        if (state is StudyMaterialLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is StudyMaterialLoaded) {
-          if (state.materials.isEmpty) {
-            return const Center(child: Text('No Materials Found'));
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text(
+          "Study Materials",
+          style: TextStyle(
+            color: const Color(0xFF1E293B),
+            fontWeight: FontWeight.w700,
+            fontSize: 20.sp,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+      ),
+      body: BlocBuilder<StudyMaterialBloc, StudyMaterialState>(
+        builder: (context, state) {
+          if (state is StudyMaterialLoading) {
+            return const Center(child: CircularProgressIndicator());
           }
-          materials =
-              state.materials
-                  .where((element) => element.language == selectedLanguage)
-                  .toList();
-          return Scaffold(
-            backgroundColor: const Color(0xFFF8FAFC),
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.white,
-              title: Text(
-                "Study Materials",
-                style: TextStyle(
-                  color: const Color(0xFF1E293B),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 20.sp,
+          if (state is StudyMaterialLoaded) {
+            materials =
+                state.materials
+                    .where((element) => element.language == selectedLanguage)
+                    .toList();
+            if (materials.isEmpty || materials == []) {
+              return Center(
+                child: Text(
+                  'No Materials Found for ${selectedLanguage == "gj" ? "Gujarati" : "English"} language.',
                 ),
-              ),
-              iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
-            ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Materials List
-                Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(20.sp),
-                    itemCount: materials.length,
-                    itemBuilder: (context, index) {
-                      final item = materials[index];
-                      return _MaterialCard(item: item, index: index);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        if (state is StudyMaterialError) {
-          return const Center(child: Text('Something went wrong'));
-        }
-        return SizedBox.shrink();
-      },
+              );
+            }
+
+            return ListView.builder(
+              padding: EdgeInsets.all(20.sp),
+              itemCount: materials.length,
+              itemBuilder: (context, index) {
+                final item = materials[index];
+                return _MaterialCard(item: item, index: index);
+              },
+            );
+          }
+          if (state is StudyMaterialError) {
+            return const Center(child: Text('Something went wrong'));
+          }
+          return SizedBox.shrink();
+        },
+      ),
     );
   }
 }
@@ -94,7 +91,7 @@ class _MaterialCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -104,17 +101,19 @@ class _MaterialCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // Decorative gradient background
             Positioned(
-              top: -50,
-              right: -50,
+              top: -50.sp,
+              right: -50.sp,
               child: Container(
-                width: 150,
-                height: 150,
+                width: 150.w,
+                height: 150.h,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
-                    colors: [color.withOpacity(0.08), color.withOpacity(0.0)],
+                    colors: [
+                      color.withValues(alpha: 0.08),
+                      color.withValues(alpha: 0.0),
+                    ],
                   ),
                 ),
               ),
@@ -132,15 +131,15 @@ class _MaterialCard extends StatelessWidget {
                         padding: EdgeInsets.all(12.sp),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [color, color.withOpacity(0.8)],
+                            colors: [color, color.withValues(alpha: 0.8)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color: color.withOpacity(0.3),
-                              blurRadius: 8,
+                              color: color.withValues(alpha: 0.3),
+                              blurRadius: 8.r,
                               offset: const Offset(0, 4),
                             ),
                           ],
@@ -213,7 +212,9 @@ class _MaterialCard extends StatelessWidget {
                               : () {
                                 context.push(
                                   AppRoutes.mcqTestInstructionScreen,
-                                  extra: TestInstructionScreenArgs(testId: 147),
+                                  extra: TestInstructionScreenArgs(
+                                    testId: item.testId,
+                                  ),
                                 );
                               },
                     ),
@@ -255,37 +256,6 @@ class _MaterialCard extends StatelessWidget {
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14.sp, color: color),
-        4.wGap,
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: color,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -304,7 +274,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: isPrimary ? color : color.withOpacity(0.1),
+      color: isPrimary ? color : color.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onPressed,
@@ -346,7 +316,7 @@ class _IconActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onPressed,

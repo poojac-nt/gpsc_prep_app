@@ -210,6 +210,10 @@ final List<GoRoute> appRoutes = [
         ReviewQuestionUploadScreen(
           payload: args.payload,
           isTestUpload: args.isTestUpload,
+          isFromStudyMaterial: args.isFromStudyMaterial,
+          title: args.title,
+          url: args.url,
+          language: args.language,
         ),
         state,
       );

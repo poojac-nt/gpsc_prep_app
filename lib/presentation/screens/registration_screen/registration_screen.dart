@@ -263,7 +263,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                               name: name.text.trim(),
                                               email: email.text.trim(),
                                               password: password.text.trim(),
-                                              role: "Student",
+                                              role: "student",
                                               number: int.parse(
                                                 number.text.trim(),
                                               ),

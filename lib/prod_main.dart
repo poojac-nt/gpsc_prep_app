@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/firebase_options.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
@@ -25,15 +26,15 @@ import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
-import 'package:gpsc_prep_app/utils/constants/secrets.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'firebase_options.dart';
+import 'config/environment.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  Environment.setFlavor(Flavor.production);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -44,8 +45,8 @@ Future<void> main() async {
   await ScreenUtil.ensureScreenSize();
 
   await Supabase.initialize(
-    url: AppSecrets.apiUrl,
-    anonKey: AppSecrets.serviceKey,
+    url: Environment.supabaseUrl,
+    anonKey: Environment.supabaseAnonKey,
   );
   await MediaStore.ensureInitialized();
   await setupInitializer();

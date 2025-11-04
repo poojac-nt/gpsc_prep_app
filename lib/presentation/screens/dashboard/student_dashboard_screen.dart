@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
@@ -46,7 +47,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Scaffold(
       drawer: SelectionDrawer(),
       drawerEdgeDragWidth: 150,
-      appBar: AppBar(title: Text('Dashboard', style: AppTexts.titleTextStyle)),
+      appBar: AppBar(
+        title: Text(
+          'Dashboard ${Environment.isDevelopment ? '(Dev)' : ''}',
+          style: AppTexts.titleTextStyle,
+        ),
+      ),
       body: MultiBlocListener(
         listeners: [
           /// ✅ Handle connectivity changes

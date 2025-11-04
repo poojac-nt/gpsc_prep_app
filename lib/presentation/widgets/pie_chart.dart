@@ -43,7 +43,7 @@ class QuestionPieChart extends StatelessWidget {
                   color: Colors.green,
                   radius: sectionRadius.sp,
                   borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
@@ -54,7 +54,7 @@ class QuestionPieChart extends StatelessWidget {
                   color: Colors.red,
                   radius: sectionRadius.sp,
                   borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),

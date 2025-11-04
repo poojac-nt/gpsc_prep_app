@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_state.dart';
@@ -70,9 +72,17 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
         ),
         BlocListener<UploadQuestionsBloc, UploadQuestionsState>(
           listener: (context, state) {
-            if (state is UploadFileSuccess) {
-              getIt<SnackBarHelper>().showSuccess(
-                "Material uploaded successfully",
+            if (state is McqParseFileSuccess) {
+              context.push(
+                AppRoutes.reviewQuestion,
+                extra: ReviewQuestionScreenArgs(
+                  isTestUpload: state.isTestUpload,
+                  payload: state.parsedPayload,
+                  isFromStudyMaterial: true,
+                  title: _titleController.text,
+                  url: _linkController.text,
+                  language: _selectedLanguage,
+                ),
               );
               context.read<StudyMaterialBloc>().add(FetchTestWithoutMaterial());
               _titleController.clear();
@@ -103,15 +113,15 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.1),
-                        AppColors.primary.withOpacity(0.05),
+                        AppColors.primary.withValues(alpha: 0.1),
+                        AppColors.primary.withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -120,7 +130,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                       Container(
                         padding: EdgeInsets.all(12.sp),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -163,7 +173,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -218,7 +228,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                 },
                               );
                             } else if (state is StudyMaterialError) {
-                              return Text("Failed to load tests");
+                              return Text(state.failure.message);
                             } else {
                               return const SizedBox.shrink();
                             }
@@ -234,10 +244,10 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                         Container(
                           padding: EdgeInsets.all(12.sp),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.05),
+                            color: AppColors.primary.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -268,7 +278,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                               );
                               print('Selected Tets: $_selectedTest');
                               context.read<StudyMaterialBloc>().add(
-                                AddStudyMaterial(
+                                UploadStudyMaterial(
                                   title: _titleController.text,
                                   url: _linkController.text,
                                   language: _selectedLanguage,
@@ -284,7 +294,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                           children: [
                             Expanded(
                               child: Divider(
-                                color: AppColors.primary.withOpacity(0.2),
+                                color: AppColors.primary.withValues(alpha: 0.2),
                                 thickness: 1,
                               ),
                             ),
@@ -300,7 +310,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                             ),
                             Expanded(
                               child: Divider(
-                                color: AppColors.primary.withOpacity(0.2),
+                                color: AppColors.primary.withValues(alpha: 0.2),
                                 thickness: 1,
                               ),
                             ),
@@ -312,10 +322,10 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                         Container(
                           padding: EdgeInsets.all(16.sp),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.05),
+                            color: AppColors.primary.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -344,12 +354,12 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                               ActionButton(
                                 text: "Upload with New Test",
                                 onTap: () {
-                                  // if (_formKey.currentState?.validate() ??
-                                  //     false) {
-                                  //   context.read<UploadQuestionsBloc>().add(
-                                  //     DescParseUploadFile(),
-                                  //   );
-                                  // }
+                                  if (_formKey.currentState?.validate() ??
+                                      false) {
+                                    context.read<UploadQuestionsBloc>().add(
+                                      McqParseUploadFile(isTestUpload: true),
+                                    );
+                                  }
                                 },
                               ),
                             ],
@@ -378,7 +388,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
-            color: AppColors.primary.withOpacity(0.8),
+            color: AppColors.primary.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -398,7 +408,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
         decoration: BoxDecoration(
           color:
               isSelected
-                  ? AppColors.primary.withOpacity(0.1)
+                  ? AppColors.primary.withValues(alpha: 0.1)
                   : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
@@ -423,7 +433,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                 color:
                     isSelected
                         ? AppColors.primary
-                        : AppColors.primary.withOpacity(0.7),
+                        : AppColors.primary.withValues(alpha: 0.7),
               ),
             ),
           ],
