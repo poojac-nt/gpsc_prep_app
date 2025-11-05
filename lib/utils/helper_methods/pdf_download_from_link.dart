@@ -66,7 +66,7 @@ Future<String> _handleScopedStorageAndroid(
 
   if (saveInfo == null) throw Exception('Failed to save PDF to MediaStore');
 
-  final uri = saveInfo.uri.path;
+  final uri = saveInfo.uri.toString();
   log.i('Saved file URI: $uri');
 
   String? realPath;
