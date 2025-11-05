@@ -34,10 +34,10 @@ class ActionButton extends StatelessWidget {
             padding: padding,
             shape: RoundedRectangleBorder(
               borderRadius: AppBorders.borderRadius,
-              side: BorderSide(
-                color: isLoading ? Colors.grey : backgroundColor,
-                width: 1,
-              ),
+              // side: BorderSide(
+              //   color: isLoading ? Colors.grey : backgroundColor,
+              //   width: 1,
+              // ),
             ),
           ),
           child: Text(

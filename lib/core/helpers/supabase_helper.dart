@@ -113,7 +113,7 @@ class SupabaseHelper {
                 'full_name': data.name,
                 'address': data.address,
                 'number': data.number,
-                'role': 'Student',
+                'role': 'student',
                 'user_email': data.email,
                 'auth_id': userId,
                 'profile_picture': data.profilePicture,
@@ -176,7 +176,7 @@ class SupabaseHelper {
     try {
       // Delete from auth.users
       final supabaseAdmin = SupabaseClient(
-        Environment.supabaseAnonKey,
+        Environment.supabaseUrl,
         Environment.serviceKey,
       );
       await supabaseAdmin.auth.admin.deleteUser(userId);
@@ -366,8 +366,7 @@ class SupabaseHelper {
                 .from(SupabaseKeys.usersTable)
                 .update({SupabaseKeys.fcmToken: fcmToken})
                 .eq(SupabaseKeys.authId, userId)
-                .select()
-                .single();
+                .select();
         _log.i('FCM token upsert response: $response');
       } else {
         _log.e('No authenticated user found.');

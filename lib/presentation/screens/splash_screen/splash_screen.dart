@@ -114,6 +114,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _navigateBasedOnUserRole() {
+    if (!mounted) return;
     final role = getIt<CacheManager>().getUserRole();
     switch (role) {
       case UserRole.student:

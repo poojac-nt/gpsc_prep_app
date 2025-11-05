@@ -26,7 +26,7 @@ class UserPayload {
     required this.name,
     required this.email,
     this.password,
-    this.role = 'Student',
+    this.role = 'student',
     this.address,
     this.number,
     this.profilePicture,

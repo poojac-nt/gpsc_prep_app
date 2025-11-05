@@ -603,10 +603,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           onPressed: () {
-                            Navigator.of(context).pop();
+                            context.pop();
                             context.read<AuthBloc>().add(
                               DeleteUserRequested(userId),
                             );
+                            context.read<AuthBloc>().add(LogOutRequested());
                             context.pushReplacement(AppRoutes.login);
                           },
                           child: const Text("Delete"),
