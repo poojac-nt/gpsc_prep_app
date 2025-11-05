@@ -355,11 +355,6 @@ class PdfExportService {
     }
   }
 
-  Future<Directory?> getDownloadsDirectory() async {
-    if (Platform.isAndroid) return Directory('/storage/emulated/0/Download');
-    return await getApplicationDocumentsDirectory();
-  }
-
   List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
     final lines = markdownText.split('\n');
     List<pw.Widget> widgets = [];

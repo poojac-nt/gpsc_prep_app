@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/study_material_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/utils/helper_methods/pdf_download_from_link.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../blocs/study_material/study_material_bloc.dart';
@@ -168,18 +168,11 @@ class _MaterialCard extends StatelessWidget {
                         icon: Icons.download_rounded,
                         color: color,
                         onPressed: () async {
-                          DocumentDownloader downloader = DocumentDownloader();
-
-                          // With progress tracking
-                          await downloader.downloadDocument(
-                            url:
-                                'https://docs.google.com/document/d/188iDSc_oNWvgcissp2Q3l1oDqaafufweXRSqCLh6_sM/edit?usp=sharing',
-                            fileName: item.title,
-                            onProgress: (progress) {
-                              debugPrint(
-                                'Progress: ${(progress * 100).toStringAsFixed(0)}%',
-                              );
-                            },
+                          context.read<DownLoadPdfBloc>().add(
+                            DownloadStudyMaterial(
+                              url: item.link,
+                              filename: "${item.title}.pdf",
+                            ),
                           );
                         },
                       ),

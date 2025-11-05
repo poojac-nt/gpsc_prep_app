@@ -51,15 +51,12 @@ dependencies:
   excel: ^4.0.6
   skeletonizer: ^2.1.0+1
   connectivity_plus: ^6.1.4
-  internet_connection_checker: ^3.0.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
-  http: ^1.4.0
   firebase_core: ^3.15.1
   firebase_messaging: ^15.2.9
   cached_network_image: ^3.4.1
-  rename: ^3.1.0
   pdf: ^3.11.3
   markdown: ^7.3.0
   open_filex: ^4.7.0
@@ -68,14 +65,12 @@ dependencies:
   device_info_plus: ^11.5.0
   package_info_plus: ^8.3.0
   url_launcher: ^6.3.2
-  pub_semver: ^2.2.0
   google_mobile_ads: ^6.0.0
   intl: ^0.20.2
   share_plus: ^11.0.0
   external_path: ^2.2.0
   media_store_plus: ^0.1.3
   fl_chart: ^1.1.1
-  dio: ^5.9.0
 
 
 dev_dependencies:

@@ -5,7 +5,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/question%20preview/question_preview_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
@@ -34,12 +34,12 @@ class QuestionPreviewScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Preview Questions', style: AppTexts.titleTextStyle),
       ),
-      body: BlocListener<QuestionPreviewBloc, QuestionPreviewState>(
+      body: BlocListener<DownLoadPdfBloc, DownLoadPdfState>(
         listener: (context, state) {
-          if (state is QuestionExported) {
+          if (state is PdfDownloadSuccess) {
             getIt<SnackBarHelper>().showSuccess("PDF Downloaded Successfully");
           }
-          if (state is QuestionExportError) {
+          if (state is PdfDownloadFailure) {
             getIt<SnackBarHelper>().showError(state.failure.message);
           }
         },
@@ -72,7 +72,7 @@ class QuestionPreviewScreen extends StatelessWidget {
         label: const Text('Export PDF'),
         onPressed: () {
           questions.isNotEmpty
-              ? context.read<QuestionPreviewBloc>().add(
+              ? context.read<DownLoadPdfBloc>().add(
                 ExportQuestionsToPdfEvent(questions, testName),
               )
               : null;

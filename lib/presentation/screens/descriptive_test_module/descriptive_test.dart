@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
@@ -79,34 +80,43 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
             child: Text('Descriptive Test', style: AppTexts.titleTextStyle),
           ),
         ),
-        body: BlocListener<DailyDescTestBloc, DailyDescTestState>(
-          listener: (context, state) {
-            if (state is DescTestSubmitSuccess) {
-              setState(() {
-                _answers.clear();
-                _controller.clear();
-                currentIndex = 0;
-              });
-              // Reset the bloc state to initial
-              getIt<SnackBarHelper>().showSuccess(state.message);
-              context.pushReplacement(
-                AppRoutes.descriptiveTestResultScreen,
-                extra: widget.descTestModel.name,
-              );
-              context.read<DailyDescTestBloc>().add(ResetDescTestState());
-              context.read<QuestionBloc>().add(ResetQuestionState());
-            } else if (state is DescTestSubmitFailed) {
-              getIt<SnackBarHelper>().showError(state.failure.message);
-            } else if (state is DailyDescTestMessage) {
-              getIt<SnackBarHelper>().showError(state.message);
-            } else if (state is PdfDownloadFailure) {
-              getIt<SnackBarHelper>().showError(state.failure.message);
-            } else if (state is PdfDownloadSuccess) {
-              getIt<SnackBarHelper>().showSuccess(
-                "Pdf is Saved at :${state.filePath}",
-              );
-            }
-          },
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<DailyDescTestBloc, DailyDescTestState>(
+              listener: (context, state) {
+                if (state is DescTestSubmitSuccess) {
+                  setState(() {
+                    _answers.clear();
+                    _controller.clear();
+                    currentIndex = 0;
+                  });
+                  // Reset the bloc state to initial
+                  getIt<SnackBarHelper>().showSuccess(state.message);
+                  context.pushReplacement(
+                    AppRoutes.descriptiveTestResultScreen,
+                    extra: widget.descTestModel.name,
+                  );
+                  context.read<DailyDescTestBloc>().add(ResetDescTestState());
+                  context.read<QuestionBloc>().add(ResetQuestionState());
+                } else if (state is DescTestSubmitFailed) {
+                  getIt<SnackBarHelper>().showError(state.failure.message);
+                } else if (state is DailyDescTestMessage) {
+                  getIt<SnackBarHelper>().showError(state.message);
+                }
+              },
+            ),
+            BlocListener<DownLoadPdfBloc, DownLoadPdfState>(
+              listener: (context, state) {
+                if (state is PdfDownloadFailure) {
+                  getIt<SnackBarHelper>().showError(state.failure.message);
+                } else if (state is PdfDownloadSuccess) {
+                  getIt<SnackBarHelper>().showSuccess(
+                    "Pdf is Saved at :${state.filePath}",
+                  );
+                }
+              },
+            ),
+          ],
           child: BlocBuilder<QuestionBloc, QuestionState>(
             builder: (context, state) {
               if (state is QuestionLoading) {
@@ -172,7 +182,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                     weight: 50.sp,
                                   ),
                                   onPressed: () {
-                                    context.read<DailyDescTestBloc>().add(
+                                    context.read<DownLoadPdfBloc>().add(
                                       DownloadDescTestPdf(
                                         question: question,
                                         index: (currentIndex + 1),

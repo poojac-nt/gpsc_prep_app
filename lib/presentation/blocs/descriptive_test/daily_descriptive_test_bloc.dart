@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
@@ -9,8 +8,6 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
-import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'daily_descriptive_test_event.dart';
 import 'daily_descriptive_test_state.dart';
@@ -30,7 +27,6 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     on<AddFilesAnswer>(_addFilesAnswer);
     on<RemoveAnswer>(_removeAnswer);
     on<SubmitDescTest>(_submitDescTest);
-    on<DownloadDescTestPdf>(_downloadDescTestPdf);
     on<ResetDescTestState>((event, emit) {
       _answers.clear();
       _fileCache.clear();
@@ -229,45 +225,6 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     } catch (e) {
       _log.e("Error submitting descriptive test: $e");
       emit(DescTestSubmitFailed(Failure(e.toString())));
-    }
-  }
-
-  Future<void> _downloadDescTestPdf(
-    DownloadDescTestPdf event,
-    Emitter<DailyDescTestState> emit,
-  ) async {
-    emit(PdfDownloadInit());
-
-    try {
-      final Directory? outputDir;
-      if (Platform.isAndroid &&
-          (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 30) {
-        outputDir = await getExternalStorageDirectory();
-      } else {
-        outputDir =
-            await getDownloadsDirectory() ??
-            await getApplicationDocumentsDirectory();
-      }
-
-      final result = await generateDescTestPdf(
-        event.question,
-        event.index,
-        event.testName,
-      );
-
-      if (result.isEmpty) {
-        _log.e("Failed to generate PDF for question ${event.question.id}");
-        emit(PdfDownloadFailure(Failure("Failed to generate PDF")));
-        return;
-      }
-      _log.i("PDF generated successfully: $result");
-      emit(PdfDownloadSuccess(result));
-      _snackBar.showSuccess(
-        "PDF downloaded successfully into Downloads under StarICS folder",
-      );
-    } catch (e) {
-      _log.e("Error downloading PDF: $e");
-      emit(PdfDownloadFailure(Failure(e.toString())));
     }
   }
 }
