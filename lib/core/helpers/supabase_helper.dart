@@ -16,6 +16,7 @@ import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
+import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -660,12 +661,12 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, List<TestWithoutMaterial>>>
-  fetchTestsWithoutStudyMaterial({required String language}) async {
+  fetchTestsWithoutStudyMaterial({required LanguageEnum language}) async {
     try {
       // Call the Supabase RPC function
       final response = await supabase.rpc(
         SupabaseKeys.getTestWithoutStudyMaterialForLanguage,
-        params: {'lang': language},
+        params: {'lang': language.name}, // Use .name to get 'en', 'hi', or 'gj'
       );
 
       if (response is List && response.isNotEmpty) {
@@ -680,18 +681,24 @@ class SupabaseHelper {
                 .toList();
 
         _log.i(
-          'Fetched ${tests.length} tests without study materials for language $language.',
+          'Fetched ${tests.length} tests without study materials for language ${language.language}.', // Use .language to get full name
         );
 
         return Right(tests);
       } else {
         _log.w('No unlinked tests found.');
-        return Left(Failure("No unlinked tests found for language $language"));
+        return Left(
+          Failure("No unlinked tests found for language ${language.language}"),
+        );
       }
     } catch (e) {
-      _log.e('Error fetching unlinked tests for language $language: $e');
+      _log.e(
+        'Error fetching unlinked tests for language ${language.language}: $e',
+      );
       return Left(
-        Failure("Failed to fetch unlinked tests for language $language"),
+        Failure(
+          "Failed to fetch unlinked tests for language ${language.language}",
+        ),
       );
     }
   }

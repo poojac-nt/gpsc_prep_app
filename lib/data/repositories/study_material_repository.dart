@@ -1,6 +1,7 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
+import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
 
 import '../../core/error/failure.dart';
 import '../../domain/entities/study_material_model.dart';
@@ -11,7 +12,7 @@ class StudyMaterialRepository {
   StudyMaterialRepository(this._supabase);
 
   Future<Either<Failure, List<TestWithoutMaterial>>>
-  fetchTestsWithoutStudyMaterial({required String language}) async =>
+  fetchTestsWithoutStudyMaterial({required LanguageEnum language}) async =>
       await _supabase.fetchTestsWithoutStudyMaterial(language: language);
 
   Future<Either<Failure, void>> insertStudyMaterial(

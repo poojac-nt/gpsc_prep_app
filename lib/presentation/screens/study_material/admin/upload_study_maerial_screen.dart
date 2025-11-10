@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_drop_down.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_text_field.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/validator.dart';
 
@@ -29,7 +30,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
   final _linkController = TextEditingController();
   final _testController = TextEditingController();
   int? _selectedTest;
-  String? _selectedLanguage; // No default language now
+  LanguageEnum? _selectedLanguage; // No default language now
   final _formKey = GlobalKey<FormState>();
 
   bool _isFetchingTests = false; // loader controller
@@ -61,6 +62,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
               setState(() {
                 _selectedTest = null;
                 _selectedLanguage = null;
+                _isFetchingTests = false;
               });
             } else if (state is StudyMaterialLoading) {
               setState(() {
@@ -85,7 +87,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                   isFromStudyMaterial: true,
                   title: _titleController.text,
                   url: _linkController.text,
-                  language: _selectedLanguage ?? '',
+                  language: _selectedLanguage!.name,
                 ),
               );
               _titleController.clear();
@@ -232,7 +234,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                   width: 1,
                                 ),
                               ),
-                              child: RadioGroup<String>(
+                              child: RadioGroup<LanguageEnum>(
                                 groupValue: _selectedLanguage,
                                 onChanged: (value) {
                                   if (value != null) {
@@ -243,13 +245,13 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                   children: [
                                     _buildRadioOption(
                                       'English',
-                                      'en',
-                                      _selectedLanguage == 'en',
+                                      LanguageEnum.en,
+                                      _selectedLanguage == LanguageEnum.en,
                                     ),
                                     _buildRadioOption(
                                       'Gujarati',
-                                      'gj',
-                                      _selectedLanguage == 'gj',
+                                      LanguageEnum.gj,
+                                      _selectedLanguage == LanguageEnum.gj,
                                     ),
                                   ],
                                 ),
@@ -303,7 +305,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                     UploadStudyMaterial(
                                       title: _titleController.text,
                                       url: _linkController.text,
-                                      language: _selectedLanguage!,
+                                      language: _selectedLanguage!.name,
                                       testId: _selectedTest,
                                     ),
                                   );
@@ -445,9 +447,13 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
     );
   }
 
-  Widget _buildRadioOption(String label, String value, bool isSelected) {
+  Widget _buildRadioOption(
+    String label,
+    LanguageEnum languageEnum,
+    bool isSelected,
+  ) {
     return InkWell(
-      onTap: () => _handleLanguageChange(value),
+      onTap: () => _handleLanguageChange(languageEnum),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
@@ -460,8 +466,8 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
         ),
         child: Row(
           children: [
-            Radio<String>.adaptive(
-              value: value,
+            Radio<LanguageEnum>.adaptive(
+              value: languageEnum,
               activeColor: AppColors.primary,
             ),
             8.wGap,
@@ -483,7 +489,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
   }
 
   // Extract the common logic
-  void _handleLanguageChange(String value) {
+  void _handleLanguageChange(LanguageEnum value) {
     setState(() {
       _selectedLanguage = value;
       _selectedTest = null;

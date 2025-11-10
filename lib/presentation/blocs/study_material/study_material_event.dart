@@ -1,5 +1,7 @@
 // study_material_event.dart
 
+import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
+
 abstract class StudyMaterialEvent {}
 
 class LoadStudyMaterials extends StudyMaterialEvent {}
@@ -33,7 +35,8 @@ class UploadStudyMaterialWithTest extends StudyMaterialEvent {
 }
 
 class FetchTestWithoutMaterial extends StudyMaterialEvent {
-  final String language;
+  final LanguageEnum language;
+
   FetchTestWithoutMaterial({required this.language});
 }
 
