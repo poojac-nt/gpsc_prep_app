@@ -395,6 +395,12 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                   ActionButton(
                                     text: "Upload with New Test",
                                     onTap: () {
+                                      if (_selectedTest != null) {
+                                        getIt<SnackBarHelper>().showError(
+                                          "Please clear the selected test to create a new one.",
+                                        );
+                                        return;
+                                      }
                                       if (_formKey.currentState?.validate() ??
                                           false) {
                                         if (_selectedLanguage == null) {
