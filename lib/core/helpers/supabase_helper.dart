@@ -660,11 +660,12 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, List<TestWithoutMaterial>>>
-  fetchTestsWithoutStudyMaterial() async {
+  fetchTestsWithoutStudyMaterial({required String language}) async {
     try {
       // Call the Supabase RPC function
       final response = await supabase.rpc(
-        SupabaseKeys.getTestWithoutStudyMaterial,
+        SupabaseKeys.getTestWithoutStudyMaterialForLanguage,
+        params: {'lang': language},
       );
 
       if (response is List && response.isNotEmpty) {
@@ -678,16 +679,20 @@ class SupabaseHelper {
                 )
                 .toList();
 
-        _log.i('Fetched ${tests.length} tests without study materials.');
+        _log.i(
+          'Fetched ${tests.length} tests without study materials for language $language.',
+        );
 
         return Right(tests);
       } else {
         _log.w('No unlinked tests found.');
-        return Left(Failure("No unlinked tests found"));
+        return Left(Failure("No unlinked tests found for language $language"));
       }
     } catch (e) {
-      _log.e('Error fetching unlinked tests: $e');
-      return Left(Failure("Failed to fetch unlinked tests"));
+      _log.e('Error fetching unlinked tests for language $language: $e');
+      return Left(
+        Failure("Failed to fetch unlinked tests for language $language"),
+      );
     }
   }
 

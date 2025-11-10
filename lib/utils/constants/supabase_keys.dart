@@ -10,8 +10,8 @@ abstract class SupabaseKeys {
   static final String insertDescWithTest = 'insert_desc_questions_with_tests';
   static final String getQuestionCorrectnessCounts =
       'get_test_question_correctness_counts';
-  static final String getTestWithoutStudyMaterial =
-      'get_tests_without_study_material';
+  static final String getTestWithoutStudyMaterialForLanguage =
+      'get_tests_without_material_for_language';
   static final String insertTestWithStudyMaterial =
       'insert_test_with_study_material';
 

@@ -11,8 +11,8 @@ class StudyMaterialRepository {
   StudyMaterialRepository(this._supabase);
 
   Future<Either<Failure, List<TestWithoutMaterial>>>
-  fetchTestsWithoutStudyMaterial() async =>
-      await _supabase.fetchTestsWithoutStudyMaterial();
+  fetchTestsWithoutStudyMaterial({required String language}) async =>
+      await _supabase.fetchTestsWithoutStudyMaterial(language: language);
 
   Future<Either<Failure, void>> insertStudyMaterial(
     String title,

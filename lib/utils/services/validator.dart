@@ -71,6 +71,18 @@ class Validator {
     if (value == null || value.isEmpty) {
       return 'Link is required';
     }
+
+    // Check if it's a valid URL
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
+      return 'Please enter a valid link';
+    }
+
+    // Optionally, check for http/https schemes only
+    if (uri.scheme != 'http' && uri.scheme != 'https') {
+      return 'Link must start with http:// or https://';
+    }
+
     return null;
   }
 }

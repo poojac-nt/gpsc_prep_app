@@ -72,7 +72,7 @@ Future<String> _handleScopedStorageAndroid(
   String? realPath;
   try {
     realPath = await mediaStore.getFilePathFromUri(uriString: uri);
-    if (realPath != null) log.i('Resolved real path: $realPath');
+    log.i('Resolved real path: $realPath');
   } catch (e) {
     log.e('Could not resolve path from URI: $e');
   }

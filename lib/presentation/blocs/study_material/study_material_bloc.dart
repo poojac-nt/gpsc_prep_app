@@ -25,8 +25,8 @@ class StudyMaterialBloc extends Bloc<StudyMaterialEvent, StudyMaterialState> {
   ) async {
     emit(StudyMaterialLoading());
     try {
-      final result =
-          await _studyMaterialRepository.fetchTestsWithoutStudyMaterial();
+      final result = await _studyMaterialRepository
+          .fetchTestsWithoutStudyMaterial(language: event.language);
 
       result.fold((failure) => emit(StudyMaterialError(failure)), (
         List<TestWithoutMaterial> list,

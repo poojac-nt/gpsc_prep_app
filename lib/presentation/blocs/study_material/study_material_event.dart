@@ -33,7 +33,8 @@ class UploadStudyMaterialWithTest extends StudyMaterialEvent {
 }
 
 class FetchTestWithoutMaterial extends StudyMaterialEvent {
-  FetchTestWithoutMaterial();
+  final String language;
+  FetchTestWithoutMaterial({required this.language});
 }
 
 class FetchStudyMaterial extends StudyMaterialEvent {
