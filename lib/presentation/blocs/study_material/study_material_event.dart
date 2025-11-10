@@ -43,3 +43,5 @@ class FetchTestWithoutMaterial extends StudyMaterialEvent {
 class FetchStudyMaterial extends StudyMaterialEvent {
   FetchStudyMaterial();
 }
+
+class ClearTestWithoutMaterial extends StudyMaterialEvent {}

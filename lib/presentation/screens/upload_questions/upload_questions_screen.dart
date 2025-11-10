@@ -20,9 +20,17 @@ class UploadQuestions extends StatefulWidget {
 }
 
 class _UploadQuestionsState extends State<UploadQuestions> {
+  late UploadQuestionsBloc uploadQuestionsBloc;
+
+  @override
+  void initState() {
+    uploadQuestionsBloc = context.read<UploadQuestionsBloc>();
+    super.initState();
+  }
+
   @override
   void dispose() {
-    context.read<UploadQuestionsBloc>().add(ResetUploadState());
+    uploadQuestionsBloc.add(ResetUploadState());
     super.dispose();
   }
 

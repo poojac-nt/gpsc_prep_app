@@ -30,16 +30,23 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
   final _linkController = TextEditingController();
   final _testController = TextEditingController();
   int? _selectedTest;
-  LanguageEnum? _selectedLanguage; // No default language now
+  LanguageEnum? _selectedLanguage;
   final _formKey = GlobalKey<FormState>();
+  bool _isFetchingTests = false;
+  late StudyMaterialBloc _studyMaterialBloc;
 
-  bool _isFetchingTests = false; // loader controller
+  @override
+  void initState() {
+    super.initState();
+    _studyMaterialBloc = context.read<StudyMaterialBloc>();
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _linkController.dispose();
     _testController.dispose();
+    _studyMaterialBloc.add(ClearTestWithoutMaterial());
     super.dispose();
   }
 
@@ -301,7 +308,7 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                     );
                                     return;
                                   }
-                                  context.read<StudyMaterialBloc>().add(
+                                  _studyMaterialBloc.add(
                                     UploadStudyMaterial(
                                       title: _titleController.text,
                                       url: _linkController.text,
@@ -494,8 +501,6 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
       _selectedLanguage = value;
       _selectedTest = null;
     });
-    context.read<StudyMaterialBloc>().add(
-      FetchTestWithoutMaterial(language: value),
-    );
+    _studyMaterialBloc.add(FetchTestWithoutMaterial(language: value));
   }
 }

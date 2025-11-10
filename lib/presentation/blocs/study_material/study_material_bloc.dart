@@ -17,6 +17,9 @@ class StudyMaterialBloc extends Bloc<StudyMaterialEvent, StudyMaterialState> {
     on<UploadStudyMaterial>(_uploadStudyMaterial);
     on<UploadStudyMaterialWithTest>(_uploadStudyMaterialWithTest);
     on<FetchStudyMaterial>(_fetchStudyMaterial);
+    on<ClearTestWithoutMaterial>((event, emit) {
+      emit(StudyMaterialInitial());
+    });
   }
 
   Future<void> _fetchTestWithoutMaterials(

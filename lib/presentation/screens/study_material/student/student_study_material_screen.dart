@@ -171,7 +171,7 @@ class _MaterialCard extends StatelessWidget {
                           context.read<DownLoadPdfBloc>().add(
                             DownloadStudyMaterial(
                               url: item.link,
-                              filename: "${item.title}.pdf",
+                              filename: "${item.title.trim()}.pdf",
                             ),
                           );
                         },

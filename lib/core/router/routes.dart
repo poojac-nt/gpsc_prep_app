@@ -11,7 +11,7 @@ import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dar
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/study_material/admin/upload_study_maerial_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/study_material/admin/upload_study_material_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/study_material/student/language_selection_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/study_material/student/student_study_material_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
