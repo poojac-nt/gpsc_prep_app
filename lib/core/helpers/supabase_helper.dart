@@ -757,13 +757,18 @@ class SupabaseHelper {
   Future<Either<Failure, List<StudyMaterialModel>>>
   fetchAllStudyMaterials() async {
     try {
-      final result = await supabase.from(SupabaseKeys.studyMaterial).select();
+      final result = await supabase
+          .from(SupabaseKeys.studyMaterial)
+          .select()
+          .order('created_at', ascending: false);
+
       final materials =
           result.map((e) => StudyMaterialModel.fromJson(e)).toList();
+
       _log.i("Materials length:${materials.length}");
       return Right(materials);
     } catch (e) {
-      _log.e("Error fetching study material");
+      _log.e("Error fetching study material: $e");
       return Left(Failure("Error fetching study materials"));
     }
   }

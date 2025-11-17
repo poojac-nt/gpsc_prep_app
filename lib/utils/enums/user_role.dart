@@ -6,11 +6,11 @@ enum UserRole {
   String get role {
     switch (this) {
       case UserRole.student:
-        return 'student';
+        return 'Student';
       case UserRole.mentor:
-        return 'mentor';
+        return 'Mentor';
       case UserRole.admin:
-        return 'admin';
+        return 'Admin';
     }
   }
 
@@ -20,11 +20,11 @@ enum UserRole {
   // Convert string to UserRole (case-sensitive for now)
   static UserRole fromString(String role) {
     switch (role) {
-      case 'student':
+      case 'Student':
         return UserRole.student;
-      case 'mentor':
+      case 'Mentor':
         return UserRole.mentor;
-      case 'admin':
+      case 'Admin':
         return UserRole.admin;
       default:
         throw ArgumentError('Invalid user role: $role');

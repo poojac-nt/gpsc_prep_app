@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_state.dart';
@@ -274,14 +275,27 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                             BlocBuilder<StudyMaterialBloc, StudyMaterialState>(
                               builder: (context, state) {
                                 if (state is TestWithoutMaterialLoaded) {
+                                  // Get tests from backend
                                   final tests = state.tests;
+
+                                  // Add "None" as a virtual first item
+                                  final updatedTests = [
+                                    const TestWithoutMaterial(
+                                      id: -1,
+                                      name: 'None',
+                                    ),
+                                    ...tests,
+                                  ];
+
                                   return CustomTestDropdown(
-                                    items: tests,
+                                    items: updatedTests,
                                     selectedValue: _selectedTest,
                                     hint: "Select Test",
                                     onChanged: (value) {
                                       setState(() {
-                                        _selectedTest = value;
+                                        // If user selects “None”, store null in _selectedTest
+                                        _selectedTest =
+                                            (value == -1) ? null : value;
                                       });
                                     },
                                   );
@@ -295,7 +309,6 @@ class _UploadStudyMaterialScreenState extends State<UploadStudyMaterialScreen> {
                                 }
                               },
                             ),
-
                             30.hGap,
                             ActionButton(
                               text: "Upload Material",
