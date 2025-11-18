@@ -82,7 +82,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => getIt<PieChartBloc>()),
           BlocProvider(create: (_) => getIt<StudyMaterialBloc>()),
         ],
-        child: const MyApp(),
+        child: SafeArea(top: false, bottom: true, child: const MyApp()),
       ),
     ),
   );

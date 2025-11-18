@@ -1,26 +1,158 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/domain/entities/study_material_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_event.dart';
+import 'package:gpsc_prep_app/presentation/widgets/study_material_widgets.dart';
 
 import '../../../blocs/study_material/study_material_bloc.dart';
 import '../../../blocs/study_material/study_material_state.dart';
 
-class StudyMaterialListScreen extends StatelessWidget {
+class StudyMaterialListScreen extends StatefulWidget {
   final String selectedLanguage;
+  final String? highlightedMaterialId;
 
-  const StudyMaterialListScreen({super.key, required this.selectedLanguage});
+  const StudyMaterialListScreen({
+    super.key,
+    required this.selectedLanguage,
+    this.highlightedMaterialId,
+  });
+
+  @override
+  State<StudyMaterialListScreen> createState() =>
+      _StudyMaterialListScreenState();
+}
+
+class _StudyMaterialListScreenState extends State<StudyMaterialListScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _itemKeys = {}; // index -> key
+
+  String? _highlightedId;
+  Timer? _removeHighlightTimer;
+  bool _hasScrolledToTarget = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _highlightedId = widget.highlightedMaterialId;
+    final bloc = context.read<StudyMaterialBloc>();
+
+    if (bloc.state is! StudyMaterialLoaded) {
+      bloc.add(FetchStudyMaterial());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant StudyMaterialListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.highlightedMaterialId != widget.highlightedMaterialId) {
+      _highlightedId = widget.highlightedMaterialId;
+      _hasScrolledToTarget = false;
+    }
+
+    if (oldWidget.selectedLanguage != widget.selectedLanguage) {
+      _hasScrolledToTarget = false;
+    }
+  }
+
+  void _scrollToTarget(int targetIndex) {
+    if (_hasScrolledToTarget) {
+      return;
+    }
+
+    // Wait for ListView to build all items up to target
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
+
+      // Wait one more frame for items to be laid out
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+
+        final key = _itemKeys[targetIndex];
+        if (key?.currentContext == null) {
+          _scrollByEstimate(targetIndex);
+          return;
+        }
+
+        try {
+          _hasScrolledToTarget = true;
+
+          final RenderObject? renderObject =
+              key!.currentContext!.findRenderObject();
+          if (renderObject is RenderBox) {
+            final position = renderObject.localToGlobal(Offset.zero);
+            debugPrint("📍 Item position: $position");
+          }
+
+          await Scrollable.ensureVisible(
+            key.currentContext!,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOutCubic,
+            alignment: 0.15,
+            alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+          );
+
+          debugPrint("🎉 Successfully scrolled to index $targetIndex");
+
+          _removeHighlightTimer?.cancel();
+          _removeHighlightTimer = Timer(const Duration(seconds: 5), () {
+            if (mounted) {
+              debugPrint("⏰ Removing highlight after 2 seconds");
+              setState(() => _highlightedId = null);
+            }
+          });
+        } catch (e) {
+          debugPrint("❌ Scroll error: $e");
+          _scrollByEstimate(targetIndex);
+        }
+      });
+    });
+  }
+
+  void _scrollByEstimate(int targetIndex) {
+    if (_hasScrolledToTarget) return;
+
+    debugPrint("📏 Using estimated scroll for index $targetIndex");
+    _hasScrolledToTarget = true;
+
+    const double estimatedItemHeight =
+        150.0; // Adjust based on your MaterialCard
+    final double targetPosition = targetIndex * estimatedItemHeight;
+
+    _scrollController
+        .animateTo(
+          targetPosition,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOutCubic,
+        )
+        .then((_) {
+          _removeHighlightTimer?.cancel();
+          _removeHighlightTimer = Timer(const Duration(seconds: 2), () {
+            if (mounted) {
+              setState(() => _highlightedId = null);
+            }
+          });
+        });
+  }
+
+  @override
+  void dispose() {
+    debugPrint("🧹 Disposing StudyMaterialListScreen");
+    _scrollController.dispose();
+    _removeHighlightTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(selectedLanguage);
-    List<StudyMaterialModel> materials = [];
+    debugPrint(
+      "🔄 Building StudyMaterialListScreen - highlighted: $_highlightedId",
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -42,282 +174,75 @@ class StudyMaterialListScreen extends StatelessWidget {
           if (state is StudyMaterialLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (state is StudyMaterialLoaded) {
-            materials =
+            final materials =
                 state.materials
-                    .where((element) => element.language == selectedLanguage)
+                    .where((e) => e.language == widget.selectedLanguage)
                     .toList();
-            if (materials.isEmpty || materials == []) {
+
+            if (materials.isEmpty) {
               return Center(
                 child: Text(
-                  'No Materials Found for ${selectedLanguage == "gj" ? "Gujarati" : "English"} language.',
+                  'No Materials Found for ${widget.selectedLanguage == "gj" ? "Gujarati" : "English"} language.',
                 ),
               );
             }
 
+            // Find index of highlighted item
+            int? targetIndex;
+            if (_highlightedId != null) {
+              targetIndex = materials.indexWhere(
+                (m) => m.id.toString() == _highlightedId,
+              );
+              if (targetIndex != -1) {
+                // Create keys for items
+                for (int i = 0; i < materials.length; i++) {
+                  _itemKeys.putIfAbsent(i, () => GlobalKey());
+                }
+
+                // Schedule scroll
+                if (!_hasScrolledToTarget) {
+                  _scrollToTarget(targetIndex);
+                }
+              } else {
+                debugPrint(
+                  "⚠️ Highlighted ID $_highlightedId not found in materials",
+                );
+                targetIndex = null;
+              }
+            }
+
             return ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(20.sp),
               itemCount: materials.length,
               itemBuilder: (context, index) {
                 final item = materials[index];
-                return _MaterialCard(item: item, index: index);
+                final isHighlighted = item.id.toString() == _highlightedId;
+
+                if (isHighlighted) {
+                  debugPrint(
+                    "🌟 Rendering highlighted item at index $index: ${item.id}",
+                  );
+                }
+
+                return MaterialCard(
+                  item: item,
+                  index: index,
+                  isHighlighted: isHighlighted,
+                  key: _itemKeys[index],
+                );
               },
             );
           }
+
           if (state is StudyMaterialError) {
             return const Center(child: Text('Something went wrong'));
           }
-          return SizedBox.shrink();
+
+          return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-}
-
-class _MaterialCard extends StatelessWidget {
-  final StudyMaterialModel item;
-  final int index;
-
-  const _MaterialCard({required this.item, required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = AppColors.primary;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.sp),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -50.sp,
-              right: -50.sp,
-              child: Container(
-                width: 150.w,
-                height: 150.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      color.withValues(alpha: 0.08),
-                      color.withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: EdgeInsets.all(20.sp),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      // Subject Color Indicator
-                      Container(
-                        padding: EdgeInsets.all(12.sp),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [color, color.withValues(alpha: 0.8)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: color.withValues(alpha: 0.3),
-                              blurRadius: 8.r,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.description_outlined,
-                          color: Colors.white,
-                          size: 24.sp,
-                        ),
-                      ),
-                      16.wGap,
-                      // Title and Subject
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1E293B),
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                      10.wGap,
-                      _IconActionButton(
-                        icon: Icons.download_rounded,
-                        color: color,
-                        onPressed: () async {
-                          context.read<DownLoadPdfBloc>().add(
-                            DownloadStudyMaterial(
-                              url: item.link,
-                              filename: "${item.title.trim()}.pdf",
-                            ),
-                          );
-                        },
-                      ),
-                      12.wGap,
-                      _IconActionButton(
-                        icon: Icons.share_rounded,
-                        color: color,
-                        onPressed: () {
-                          SharePlus.instance.share(
-                            ShareParams(
-                              text:
-                                  'Check out this study material: ${item.link}',
-                              subject: item.title,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  if (item.testId != null) ...[
-                    16.hGap,
-                    _ActionButton(
-                      icon: Icons.play_circle_fill,
-                      label: 'Start Test',
-                      isPrimary: true,
-                      color: item.testId == null ? Colors.grey : color,
-                      onPressed:
-                          item.testId == null
-                              ? () {}
-                              : () {
-                                context.push(
-                                  AppRoutes.mcqTestInstructionScreen,
-                                  extra: TestInstructionScreenArgs(
-                                    testId: item.testId,
-                                  ),
-                                );
-                              },
-                    ),
-                    12.wGap,
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String formatDateFromString(String dateString) {
-    try {
-      // Convert string to DateTime (automatically handles +00 timezone)
-      final date = DateTime.parse(dateString);
-
-      final months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-
-      return '${date.day} ${months[date.month - 1]} ${date.year}';
-    } catch (e) {
-      return ""; // prevent crash if invalid format
-    }
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isPrimary;
-  final Color color;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.isPrimary,
-    required this.color,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: isPrimary ? color : color.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.sp),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18.sp, color: isPrimary ? Colors.white : color),
-              8.wGap,
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: isPrimary ? Colors.white : color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _IconActionButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback onPressed;
-
-  const _IconActionButton({
-    required this.icon,
-    required this.color,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: color.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: EdgeInsets.all(12.sp),
-          child: Icon(icon, size: 20.sp, color: color),
-        ),
       ),
     );
   }

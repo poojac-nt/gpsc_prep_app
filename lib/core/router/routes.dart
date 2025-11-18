@@ -29,6 +29,41 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 
 final List<GoRoute> appRoutes = [
+  // Handle /openMaterial?id=21&language=en links
+  GoRoute(
+    path: '/openMaterial',
+    builder: (context, state) {
+      final id = int.tryParse(state.uri.queryParameters['id'] ?? '');
+      final language = state.uri.queryParameters['language'] ?? 'en';
+
+      debugPrint('🔗 Deep link received: id=$id, language=$language');
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (id == null) {
+          context.pushReplacement('/error?message=Invalid+material+id');
+          return;
+        }
+
+        // Step 1: Go to dashboard first (ensures proper back button behavior)
+        context.go('/studentDashboard');
+
+        // Step 2: Wait 300ms so dashboard builds (important!)
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // Step 3: Push studyMaterial on top of dashboard
+        debugPrint(
+          '🚀 Navigating to studyMaterial with id=$id, language=$language',
+        );
+        context.push(
+          AppRoutes.studyMaterial,
+          extra: {'code': language, 'highlightedMaterialId': id.toString()},
+        );
+      });
+
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    },
+  ),
+
   // Handle /openTest?type=mcq&id=123 or /openTest?type=desc&id=123 links
   GoRoute(
     path: '/openTest',
@@ -303,8 +338,13 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.studyMaterial,
     builder: (context, state) {
-      final lang = state.extra as Map<String, String>?;
-      return StudyMaterialListScreen(selectedLanguage: lang?['code'] ?? 'en');
+      final params = state.extra as Map<String, String>?;
+      final language = params?['code'] ?? 'en';
+      final highlightedId = params?['highlightedMaterialId'];
+      return StudyMaterialListScreen(
+        selectedLanguage: language,
+        highlightedMaterialId: highlightedId, // ✅ Now passing the ID!
+      );
     },
   ),
 ];

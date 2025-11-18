@@ -1,5 +1,3 @@
-
-
 enum TestType { mcq, desc }
 
 extension TestTypeExtension on TestType {
@@ -25,5 +23,12 @@ class DeepLinkGenerator {
     required TestType testType,
   }) {
     return '$_baseUrl/openTest?type=${testType.name}&id=$testId';
+  }
+
+  static String generateStudyMaterialLink({
+    required int studyMaterialId,
+    required String languageCode,
+  }) {
+    return '$_baseUrl/openMaterial?id=$studyMaterialId&language=$languageCode';
   }
 }
