@@ -12,7 +12,7 @@ import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:gpsc_prep_app/utils/helper_methods/pdf_download_from_link.dart';
 import 'package:meta/meta.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 part 'download_pdf_event.dart';
@@ -54,7 +54,12 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
         return;
       }
       _log.i("PDF generated successfully: $result");
-      await OpenFilex.open(result);
+      await openFileManager(
+        androidConfig: AndroidConfig(
+          folderPath: result,
+          folderType: AndroidFolderType.download,
+        ),
+      );
       emit(PdfDownloadSuccess(result));
     } catch (e) {
       _log.e('Error exporting questions to PDF: $e');

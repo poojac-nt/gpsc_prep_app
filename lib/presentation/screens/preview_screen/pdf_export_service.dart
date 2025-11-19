@@ -8,7 +8,7 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -333,7 +333,12 @@ class PdfExportService {
           // ✅ Clean up temp file
           if (await tempFile.exists()) await tempFile.delete();
           final pathToOpen = realPath ?? uri;
-          await OpenFilex.open(pathToOpen);
+          await openFileManager(
+            androidConfig: AndroidConfig(
+              folderPath: pathToOpen,
+              folderType: AndroidFolderType.download,
+            ),
+          );
           return pathToOpen;
         }
       }
@@ -344,7 +349,12 @@ class PdfExportService {
       final file = File(filePath);
       await file.writeAsBytes(pdfBytes);
       log.i("PDF saved locally: $filePath");
-      await OpenFilex.open(filePath);
+      await openFileManager(
+        androidConfig: AndroidConfig(
+          folderPath: filePath,
+          folderType: AndroidFolderType.download,
+        ),
+      );
       return filePath;
     } catch (e) {
       log.e("Error exporting PDF: $e");

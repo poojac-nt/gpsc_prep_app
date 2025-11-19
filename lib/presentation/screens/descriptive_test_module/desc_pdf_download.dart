@@ -9,7 +9,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -324,10 +324,20 @@ Future<String> generateDescTestPdf(
 
         if (realPath != null && await File(realPath).exists()) {
           filePath = realPath;
-          await OpenFilex.open(realPath);
+          await openFileManager(
+            androidConfig: AndroidConfig(
+              folderPath: realPath,
+              folderType: AndroidFolderType.download,
+            ),
+          );
         } else {
           filePath = saveInfo.uri.toString();
-          await OpenFilex.open(filePath);
+          await openFileManager(
+            androidConfig: AndroidConfig(
+              folderPath: filePath,
+              folderType: AndroidFolderType.download,
+            ),
+          );
         }
         return filePath;
       } else {
@@ -339,7 +349,12 @@ Future<String> generateDescTestPdf(
         filePath = "${downloadsDir.path}/$safeFileName";
         final file = File(filePath);
         await file.writeAsBytes(bytes);
-        await OpenFilex.open(filePath);
+        await openFileManager(
+          androidConfig: AndroidConfig(
+            folderPath: filePath,
+            folderType: AndroidFolderType.download,
+          ),
+        );
         return filePath;
       }
     } else {
@@ -348,7 +363,12 @@ Future<String> generateDescTestPdf(
       filePath = "${dir.path}/$safeFileName";
       final file = File(filePath);
       await file.writeAsBytes(bytes);
-      await OpenFilex.open(filePath);
+      await openFileManager(
+        androidConfig: AndroidConfig(
+          folderPath: filePath,
+          folderType: AndroidFolderType.download,
+        ),
+      );
       return filePath;
     }
   } catch (e) {

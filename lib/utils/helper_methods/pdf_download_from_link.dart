@@ -8,7 +8,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<Either<Failure, String>> downloadAndOpenPdf({
@@ -80,11 +80,12 @@ Future<String> _handleScopedStorageAndroid(
   if (await tempFile.exists()) await tempFile.delete();
 
   final openPath = realPath ?? uri;
-  final openResult = await OpenFilex.open(openPath);
-  if (openResult.type != ResultType.done) {
-    log.e('Failed to open PDF: ${openResult.message}');
-    return 'Failed to open PDF: ${openResult.message}';
-  }
+  await openFileManager(
+    androidConfig: AndroidConfig(
+      folderPath: openPath,
+      folderType: AndroidFolderType.download,
+    ),
+  );
 
   return openPath;
 }
@@ -101,11 +102,12 @@ Future<String> _handleLegacyStorage(
 
   log.i('PDF saved locally: $filePath');
 
-  final openResult = await OpenFilex.open(filePath);
-  if (openResult.type != ResultType.done) {
-    log.e('Failed to open PDF: ${openResult.message}');
-    return 'Failed to open PDF: ${openResult.message}';
-  }
+  await openFileManager(
+    androidConfig: AndroidConfig(
+      folderPath: filePath,
+      folderType: AndroidFolderType.download,
+    ),
+  );
 
   return filePath;
 }
