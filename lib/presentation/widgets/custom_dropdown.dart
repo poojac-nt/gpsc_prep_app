@@ -4,9 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../utils/app_constants.dart';
 
 class CustomDropdown extends StatelessWidget {
-  CustomDropdown({super.key, required this.items, required this.hintText});
+  const CustomDropdown({
+    super.key,
+    required this.items,
+    required this.hintText,
+  });
 
-  List<String> items = [];
+  final List<String> items;
+
   final String hintText;
 
   @override

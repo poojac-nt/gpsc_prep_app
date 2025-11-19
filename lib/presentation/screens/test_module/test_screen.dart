@@ -402,34 +402,35 @@ class _TestScreenState extends State<TestScreen> {
                                               : AppColors.accentColor;
                                       textColor = Colors.black;
                                     }
-                                    return BorderedContainer(
-                                      borderColor: tileColor,
-                                      padding: EdgeInsets.zero,
-                                      radius: BorderRadius.circular(10),
-                                      child: RadioListTile<String>(
-                                        value: option,
-                                        toggleable: true,
-                                        activeColor: AppColors.primary,
-                                        groupValue: selectedAnswer,
-                                        onChanged:
-                                            state.isReview
-                                                ? null
-                                                : (value) {
-                                                  context
-                                                      .read<QuestionCubit>()
-                                                      .answerQuestion(value);
-                                                },
-                                        title: Text(
-                                          option,
-                                          style: TextStyle(
-                                            color:
-                                                state.isReview
-                                                    ? textColor
-                                                    : Colors.black,
+                                    return RadioGroup<String>(
+                                      groupValue: selectedAnswer,
+                                      onChanged: (value) {
+                                        state.isReview
+                                            ? null
+                                            : context
+                                                .read<QuestionCubit>()
+                                                .answerQuestion(value);
+                                      },
+                                      child: BorderedContainer(
+                                        borderColor: tileColor,
+                                        padding: EdgeInsets.zero,
+                                        radius: BorderRadius.circular(10),
+                                        child: RadioListTile<String>(
+                                          value: option,
+                                          toggleable: true,
+                                          activeColor: AppColors.primary,
+                                          title: Text(
+                                            option,
+                                            style: TextStyle(
+                                              color:
+                                                  state.isReview
+                                                      ? textColor
+                                                      : Colors.black,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ).padAll(5);
+                                      ).padAll(5),
+                                    );
                                   },
                                 ),
                                 10.hGap,
@@ -773,20 +774,22 @@ class _TestScreenState extends State<TestScreen> {
                 Text("This is a sample question text."),
                 10.hGap,
                 // Fake options
-                Column(
-                  children: List.generate(4, (index) {
-                    return BorderedContainer(
-                      padding: EdgeInsets.zero,
-                      radius: BorderRadius.circular(10),
-                      borderColor: AppColors.accentColor,
-                      child: RadioListTile<String>(
-                        value: 'Option $index',
-                        groupValue: null,
-                        onChanged: null,
-                        title: Text("Option $index"),
-                      ),
-                    ).padAll(5);
-                  }),
+                RadioGroup<String>(
+                  groupValue: "",
+                  onChanged: (value) {},
+                  child: Column(
+                    children: List.generate(4, (index) {
+                      return BorderedContainer(
+                        padding: EdgeInsets.zero,
+                        radius: BorderRadius.circular(10),
+                        borderColor: AppColors.accentColor,
+                        child: RadioListTile<String>(
+                          value: 'Option $index',
+                          title: Text("Option $index"),
+                        ),
+                      ).padAll(5);
+                    }),
+                  ),
                 ),
               ],
             ),

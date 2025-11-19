@@ -210,11 +210,7 @@ class SupabaseHelper {
 
       _log.i(response.toString());
 
-      final questions =
-          response
-              .where((e) => e != null)
-              .map((e) => QuestionModel.fromJson(e))
-              .toList();
+      final questions = response.map((e) => QuestionModel.fromJson(e)).toList();
 
       _log.i(questions.toString());
 
@@ -241,10 +237,7 @@ class SupabaseHelper {
       _log.i(response.toString());
 
       final questions =
-          response
-              .where((e) => e != null)
-              .map((e) => DescQuestionModel.fromJson(e))
-              .toList();
+          response.map((e) => DescQuestionModel.fromJson(e)).toList();
 
       _log.i(questions.toString());
 
@@ -383,8 +376,7 @@ class SupabaseHelper {
       final info = await PackageInfo.fromPlatform();
       final currentVersionStr = info.version;
       _cache.setAppVersion(currentVersionStr);
-      final currentVersion = Version.parse(currentVersionStr);
-      _log.i('Current app version: $currentVersion');
+      _log.i('Current app version: $currentVersionStr');
 
       // Determine platform-specific key
       final platformKey =
@@ -415,8 +407,8 @@ class SupabaseHelper {
         return AppVersionStatus.upToDate; // Fail open
       }
 
-      final value = response["value"] as String?;
-      if (value == null || value.isEmpty) {
+      final requiredVersionStr = response["value"] as String?;
+      if (requiredVersionStr == null || requiredVersionStr.isEmpty) {
         _snackBar.showError(
           '⚠️ Empty or missing version string for "$platformKey"',
         );
@@ -424,24 +416,21 @@ class SupabaseHelper {
         return AppVersionStatus.upToDate;
       }
 
-      Version requiredVersion;
-      try {
-        requiredVersion = Version.parse(value);
-      } catch (e) {
-        _snackBar.showError('⚠️ Invalid version format in config: "$value"');
-        _log.e('⚠️ Invalid version format in config: "$value"');
-        return AppVersionStatus.upToDate;
-      }
+      _log.i('Required version: $requiredVersionStr');
 
-      // Compare versions
+      // Compare versions using semantic versioning
+      final currentVersion = Version.parse(currentVersionStr);
+      final requiredVersion = Version.parse(requiredVersionStr);
+
       if (currentVersion < requiredVersion) {
+        _log.w('App needs update: $currentVersionStr < $requiredVersionStr');
         return AppVersionStatus.needsUpdate;
       }
 
       return AppVersionStatus.upToDate;
     } catch (e) {
       _log.e('❌ Error in appVersionCheck: $e');
-      return AppVersionStatus.needsUpdate;
+      return AppVersionStatus.upToDate; // Changed to fail open for better UX
     }
   }
 

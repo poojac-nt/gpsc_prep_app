@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../utils/app_constants.dart';
 
 class CustomCheckbox extends StatelessWidget {
-  CustomCheckbox({
+  const CustomCheckbox({
     super.key,
     required this.value,
     this.isRounded = false,
@@ -12,7 +12,7 @@ class CustomCheckbox extends StatelessWidget {
     required this.onTap,
   });
 
-  bool value;
+  final bool value;
   final String title;
   final bool isRounded;
   final ValueChanged<bool?> onTap;

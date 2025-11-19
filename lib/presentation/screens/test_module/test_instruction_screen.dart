@@ -182,7 +182,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
             15.hGap,
             ActionButton(
               text: "Start Test",
-              onTap: () => _handleTestStart(context, dailyTestModel),
+              onTap: () => _handleTestStart(dailyTestModel),
             ),
           ],
         ).padAll(AppPaddings.defaultPadding),
@@ -243,10 +243,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     );
   }
 
-  Future<void> _handleTestStart(
-    BuildContext context,
-    DailyTestModel dailyTestModel,
-  ) async {
+  Future<void> _handleTestStart(DailyTestModel dailyTestModel) async {
     final supabaseHelper = getIt<SupabaseHelper>();
     try {
       final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
@@ -254,24 +251,21 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       );
       final result = testResult.right;
       if (result == null) {
-        _startTest(context, dailyTestModel);
+        _startTest(dailyTestModel);
         return;
       }
       final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
       if (isEligibleForRetest) {
-        _startTest(context, dailyTestModel);
+        _startTest(dailyTestModel);
       } else {
-        showAlreadyGivenTestDialog(context, result);
+        showAlreadyGivenTestDialog(result);
       }
     } catch (error) {
       getIt<LogHelper>().e("Error fetching test result: $error");
     }
   }
 
-  void showAlreadyGivenTestDialog(
-    BuildContext context,
-    TestResultModel testResult,
-  ) {
+  void showAlreadyGivenTestDialog(TestResultModel testResult) {
     String createdAtStr = testResult.createdAt!;
     String formattedDate = DateFormat(
       'dd MMM yyyy, hh:mm a',
@@ -303,7 +297,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     );
   }
 
-  void _startTest(BuildContext context, DailyTestModel dailyTestModel) {
+  void _startTest(DailyTestModel dailyTestModel) {
     context.pushReplacement(
       AppRoutes.testScreen,
       extra: TestScreenArgs(

@@ -28,8 +28,8 @@ class ConnectivityDialogHelper {
         context: context,
         barrierDismissible: false,
         builder:
-            (_) => WillPopScope(
-              onWillPop: () async => false,
+            (_) => PopScope(
+              onPopInvokedWithResult: (didPop, result) async => false,
               child: const AlertDialog(
                 title: Text("No Internet Connection"),
                 content: Column(

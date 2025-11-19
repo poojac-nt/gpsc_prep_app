@@ -10,18 +10,24 @@ DescQuestionModel _$DescQuestionModelFromJson(Map<String, dynamic> json) =>
     DescQuestionModel(
       id: (json['id'] as num).toInt(),
       questionType: json['question_type'] as String,
-      difficultyLevel: const DifficultyLevelConverter()
-          .fromJson(json['difficulty_level'] as String),
+      difficultyLevel: const DifficultyLevelConverter().fromJson(
+        json['difficulty_level'] as String,
+      ),
       questionEn: DescQuestionLanguageData.fromJson(
-          json['question_en'] as Map<String, dynamic>),
-      questionHi: json['question_hi'] == null
-          ? null
-          : DescQuestionLanguageData.fromJson(
-              json['question_hi'] as Map<String, dynamic>),
-      questionGj: json['question_gj'] == null
-          ? null
-          : DescQuestionLanguageData.fromJson(
-              json['question_gj'] as Map<String, dynamic>),
+        json['question_en'] as Map<String, dynamic>,
+      ),
+      questionHi:
+          json['question_hi'] == null
+              ? null
+              : DescQuestionLanguageData.fromJson(
+                json['question_hi'] as Map<String, dynamic>,
+              ),
+      questionGj:
+          json['question_gj'] == null
+              ? null
+              : DescQuestionLanguageData.fromJson(
+                json['question_gj'] as Map<String, dynamic>,
+              ),
       createdAt: json['created_at'] as String,
       marks: (json['marks'] as num).toInt(),
       questionHash: json['question_hash'] as String,
@@ -29,20 +35,3 @@ DescQuestionModel _$DescQuestionModelFromJson(Map<String, dynamic> json) =>
       topicName: json['topic_name'] as String,
       pages: (json['pages'] as num?)?.toInt(),
     );
-
-Map<String, dynamic> _$DescQuestionModelToJson(DescQuestionModel instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'question_type': instance.questionType,
-      'difficulty_level':
-          const DifficultyLevelConverter().toJson(instance.difficultyLevel),
-      'question_en': instance.questionEn,
-      'question_hi': instance.questionHi,
-      'question_gj': instance.questionGj,
-      'created_at': instance.createdAt,
-      'marks': instance.marks,
-      'question_hash': instance.questionHash,
-      'subject_name': instance.subjectName,
-      'topic_name': instance.topicName,
-      'pages': instance.pages,
-    };

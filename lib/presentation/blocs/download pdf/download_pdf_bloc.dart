@@ -34,13 +34,11 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
   ) async {
     try {
       emit(DownLoadPdfStarted());
-      final Directory? outputDir;
       if (Platform.isAndroid &&
           (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 30) {
-        outputDir = await getExternalStorageDirectory();
+        await getExternalStorageDirectory();
       } else {
-        outputDir =
-            await getDownloadsDirectory() ??
+        await getDownloadsDirectory() ??
             await getApplicationDocumentsDirectory();
       }
 
@@ -74,13 +72,11 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
     emit(DownLoadPdfStarted());
 
     try {
-      final Directory? outputDir;
       if (Platform.isAndroid &&
           (await DeviceInfoPlugin().androidInfo).version.sdkInt >= 30) {
-        outputDir = await getExternalStorageDirectory();
+        await getExternalStorageDirectory();
       } else {
-        outputDir =
-            await getDownloadsDirectory() ??
+        await getDownloadsDirectory() ??
             await getApplicationDocumentsDirectory();
       }
 

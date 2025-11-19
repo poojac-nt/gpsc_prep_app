@@ -70,7 +70,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
         if (didPop) return;
         final shouldLeave = await _showExitDialog(context);
         if (shouldLeave == true) {
-          Navigator.of(context).pop();
+          context.pop();
         }
       },
       child: Scaffold(
@@ -177,7 +177,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                 ),
                                 IconButton(
                                   icon: Icon(
-                                    AppIcons.desc_pdf_download,
+                                    AppIcons.descPdfDownload,
                                     color: AppColors.primary,
                                     weight: 50.sp,
                                   ),
@@ -517,8 +517,6 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       borderColor: AppColors.accentColor,
                       child: RadioListTile<String>(
                         value: 'Option $index',
-                        groupValue: null,
-                        onChanged: null,
                         title: Text("Option $index"),
                       ),
                     ).padAll(5);
@@ -534,9 +532,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
 
   Future<bool?> _showExitDialog(BuildContext context) {
     final hasAnswers = _answers.values.any(
-      (answer) =>
-          (answer.text?.trim().isNotEmpty ?? false) ||
-          (answer.files?.isNotEmpty ?? false),
+      (answer) => (answer.text.trim().isNotEmpty) || (answer.files.isNotEmpty),
     );
 
     return showDialog<bool>(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
@@ -62,7 +64,7 @@ class TestModule extends StatelessWidget {
               showShareButton
                   ? IconButton(
                     tooltip: "Share Test",
-                    icon: const Icon(AppIcons.share_test),
+                    icon: const Icon(AppIcons.shareTest),
                     onPressed: () {
                       _handleShare(context, isDesc);
                     },
@@ -94,9 +96,7 @@ class TestModule extends StatelessWidget {
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing test: ${e.toString()}')),
-      );
+      getIt<SnackBarHelper>().showError('Error sharing test: ${e.toString()}');
     }
   }
 }

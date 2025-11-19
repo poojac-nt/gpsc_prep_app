@@ -1,5 +1,5 @@
-
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
@@ -9,9 +9,11 @@ import '../../../core/di/di.dart';
 
 class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
   final TestRepository _testRepository;
+
   DashboardBloc(this._testRepository) : super(FetchingAttemptedTests()) {
     on<FetchAttemptedTests>(_fetchAttemptedTests);
   }
+
   Future<void> _fetchAttemptedTests(
     DashboardBlocEvent event,
     Emitter<DashboardBlocState> emit,
@@ -39,7 +41,7 @@ class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
         },
       );
     } catch (e) {
-      print("error while fetching attempted tests $e");
+      debugPrint("error while fetching attempted tests $e");
     }
   }
 }

@@ -25,10 +25,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: (ad) => print('Banner Ad Loaded..'),
+        onAdLoaded: (ad) => debugPrint('Banner Ad Loaded..'),
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          print('Banner Ad Failed to Load: $error');
+          debugPrint('Banner Ad Failed to Load: $error');
         },
       ),
     )..load();

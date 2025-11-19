@@ -109,7 +109,8 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                                                 child: ActionButton(
                                                   text: "Cancel",
                                                   onTap: () {
-                                                    context.pop(); // close dialog
+                                                    context
+                                                        .pop(); // close dialog
                                                   },
                                                 ),
                                               ),
@@ -158,7 +159,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                                         );
                                       },
                                       icon: Icon(
-                                        AppIcons.desc_ans_icon,
+                                        AppIcons.descAnsIcon,
                                         size: 25.sp,
                                         color: AppColors.primary,
                                       ),

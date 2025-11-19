@@ -50,8 +50,8 @@ class TestTile extends StatelessWidget {
                 tooltip: hasResult ? 'View Result' : 'Start Test',
                 icon:
                     hasResult
-                        ? Icon(AppIcons.result_icon, color: AppColors.primary)
-                        : Icon(AppIcons.start_test, color: AppColors.primary),
+                        ? Icon(AppIcons.resultIcon, color: AppColors.primary)
+                        : Icon(AppIcons.startTest, color: AppColors.primary),
               ),
               Text(hasResult ? 'View Result' : 'Start Test'),
             ],

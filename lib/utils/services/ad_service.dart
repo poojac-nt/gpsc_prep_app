@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class AdService {
   static final AdService _instance = AdService._internal();
+
   factory AdService() => _instance;
+
   AdService._internal();
 
   InterstitialAd? _interstitialAd;
@@ -24,10 +27,10 @@ class AdService {
           _interstitialAd = ad;
           _isInterstitialLoaded = true;
           _interstitialAd?.setImmersiveMode(true);
-          print("Interstitial Loaded");
+          debugPrint("Interstitial Loaded");
         },
         onAdFailedToLoad: (error) {
-          print("Failed to load interstitial: $error");
+          debugPrint("Failed to load interstitial: $error");
           _isInterstitialLoaded = false;
         },
       ),
@@ -52,7 +55,7 @@ class AdService {
       );
       _interstitialAd!.show();
     } else {
-      print("Interstitial not ready");
+      debugPrint("Interstitial not ready");
       if (onAdDismissed != null) onAdDismissed();
     }
   }

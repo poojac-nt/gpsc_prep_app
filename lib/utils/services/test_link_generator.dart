@@ -13,9 +13,6 @@ extension TestTypeExtension on TestType {
 
 class DeepLinkGenerator {
   static const String _baseUrl = 'https://starics.netlify.app';
-  static const String _packageName = 'app.starics';
-  static const String _playStoreUrl =
-      'https://play.google.com/store/apps/details?id=$_packageName';
 
   /// Generate a shareable URL with the test type and ID
   static String generateShareableUrl({

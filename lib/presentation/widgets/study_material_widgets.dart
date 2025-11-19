@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/study_material_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
@@ -151,7 +153,7 @@ class MaterialCard extends StatelessWidget {
                         icon: Icons.share_rounded,
                         color: color,
                         onPressed: () {
-                          _handleShare(context, item);
+                          _handleShare(item);
                         },
                       ),
                     ],
@@ -282,10 +284,7 @@ class IconActionButton extends StatelessWidget {
   }
 }
 
-Future<void> _handleShare(
-  BuildContext context,
-  StudyMaterialModel model,
-) async {
+Future<void> _handleShare(StudyMaterialModel model) async {
   try {
     final shareableUrl = DeepLinkGenerator.generateStudyMaterialLink(
       languageCode: model.language,
@@ -300,8 +299,6 @@ Future<void> _handleShare(
       ),
     );
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error sharing test: ${e.toString()}')),
-    );
+    getIt<SnackBarHelper>().showError('Error sharing test: ${e.toString()}');
   }
 }

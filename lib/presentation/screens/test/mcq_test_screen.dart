@@ -174,7 +174,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                   children: [
                                     IconButton(
                                       icon: Icon(
-                                        AppIcons.retest_icon,
+                                        AppIcons.retestIcon,
                                         color: AppColors.primary,
                                       ),
                                       onPressed: () {

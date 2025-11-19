@@ -122,7 +122,7 @@ class _LanguageCardState extends State<_LanguageCard> {
       onTapCancel: () => setState(() => isPressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        transform: Matrix4.identity()..scale(isPressed ? 0.97 : 1.0),
+        transform: Matrix4.identity()..scaleAdjoint(isPressed ? 0.97 : 1.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20.r),
