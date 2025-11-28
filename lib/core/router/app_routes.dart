@@ -22,15 +22,19 @@ class AppRouter {
             state.matchedLocation == AppRoutes.registrationScreen;
         final requestResetPassword =
             state.matchedLocation == AppRoutes.requestResetPassword;
+        final resetPassword = state.matchedLocation == AppRoutes.resetPassword;
         if (user == null) {
-          if (!loggingIn && !registering && !requestResetPassword) {
+          if (!loggingIn &&
+              !registering &&
+              !requestResetPassword &&
+              !resetPassword) {
             return AppRoutes.login;
           }
         }
         if (user != null && (loggingIn || registering)) {
           return AppRoutes.splashScreen;
         }
-        return null; // no redirect
+        return null;
       },
       routes: appRoutes,
     );
