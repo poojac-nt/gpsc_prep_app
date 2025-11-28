@@ -29,6 +29,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CreateUserRequested>(_createUser);
     on<DeleteUserRequested>(_onDeleteUserRequested);
     on<PickImage>(_onPickAndUploadImage);
+    on<ResetPasswordRequested>(_onResetPassword);
+    on<RequestResetPasswordEvent>(_onRequestResetPassword);
   }
 
   Future<void> _login(LoginRequested event, Emitter<AuthState> emit) async {
@@ -137,6 +139,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(DeleteUserSuccess());
     } catch (e) {
       emit(DeleteUserFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onResetPassword(
+    ResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(ResetPasswordLoading());
+    try {
+      await _authRepository.resetPassword(event.newPassword);
+      emit(ResetPasswordSuccess());
+    } catch (e) {
+      emit(ResetPasswordFailure('Failed to reset password: $e'));
+    }
+  }
+
+  Future<void> _onRequestResetPassword(
+    RequestResetPasswordEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(RequestResetPasswordLoading());
+    try {
+      bool emailExists = await _authRepository.doesUserExist(event.email);
+      if (emailExists) {
+        await _authRepository.requestResetPassword(event.email);
+        emit(RequestResetPasswordSuccess());
+      } else {
+        emit(RequestResetPasswordFailure('This Email is not registered'));
+      }
+    } catch (e) {
+      emit(RequestResetPasswordFailure('Failed to send reset link: $e'));
     }
   }
 }

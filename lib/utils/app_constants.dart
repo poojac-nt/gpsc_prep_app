@@ -95,6 +95,8 @@ abstract class AppRoutes {
   static const String uploadStudyMaterial = '/uploadStudyMaterial';
   static const String languageSelection = '/languageSelection';
   static const String studyMaterial = '/studyMaterial';
+  static const String requestResetPassword = '/requestResetPassword';
+  static const String resetPassword = '/resetPassword';
 }
 
 class AdUnitIds {

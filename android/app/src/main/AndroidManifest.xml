@@ -9,7 +9,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="Star ICS"
         android:requestLegacyExternalStorage="true"
-        android:resizeableActivity="false">
+        android:resizeableActivity="true">
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-4018950905393948~3067997872" />
@@ -70,7 +70,16 @@
                     android:path="/openMaterial"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="password-reset"
+                    android:scheme="starics" />
+            </intent-filter>
 
         </activity>
         <!-- Don't delete the meta-data below.

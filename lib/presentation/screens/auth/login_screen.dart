@@ -194,6 +194,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           20.hGap,
+                          Align(
+                            alignment: AlignmentGeometry.center,
+                            child: GestureDetector(
+                              onTap:
+                                  () => context.push(
+                                    AppRoutes.requestResetPassword,
+                                  ),
+                              child: Text(
+                                "Reset Password",
+                                style: AppTexts.subTitle.copyWith(
+                                  color: AppColors.primary,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          20.hGap,
                           Center(
                             child: BlocLoadingWrapper<AuthBloc, AuthState>(
                               isLoadingSelector:

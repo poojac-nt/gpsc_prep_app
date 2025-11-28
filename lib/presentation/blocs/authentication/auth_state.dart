@@ -70,3 +70,25 @@ class DeleteUserFailure extends AuthState {
 
   DeleteUserFailure(this.error);
 }
+
+/// Reset Password States
+class ResetPasswordLoading extends AuthState {}
+
+class ResetPasswordSuccess extends AuthState {}
+
+class ResetPasswordFailure extends AuthState {
+  final String message;
+
+  ResetPasswordFailure(this.message);
+}
+
+/// Request Reset Password States
+class RequestResetPasswordLoading extends AuthState {}
+
+class RequestResetPasswordSuccess extends AuthState {}
+
+class RequestResetPasswordFailure extends AuthState {
+  final String message;
+
+  RequestResetPasswordFailure(this.message);
+}

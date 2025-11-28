@@ -27,3 +27,15 @@ class DeleteUserRequested extends AuthEvent {
 
   DeleteUserRequested(this.userId);
 }
+
+class ResetPasswordRequested extends AuthEvent {
+  final String newPassword;
+
+  ResetPasswordRequested(this.newPassword);
+}
+
+class RequestResetPasswordEvent extends AuthEvent {
+  final String email;
+
+  RequestResetPasswordEvent(this.email);
+}

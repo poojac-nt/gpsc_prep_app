@@ -761,4 +761,23 @@ class SupabaseHelper {
       return Left(Failure("Error fetching study materials"));
     }
   }
+
+  Future<void> requestResetPassword(String email) async {
+    await supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: "starics://password-reset",
+    );
+  }
+
+  Future<bool> checkUserExist(String email) async {
+    final response = await supabase.rpc(
+      SupabaseKeys.checkUserExist,
+      params: {"user_email": email},
+    );
+    return response;
+  }
+
+  Future<void> resetPassword(String password) async {
+    supabase.auth.updateUser(UserAttributes(password: password));
+  }
 }

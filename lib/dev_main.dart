@@ -8,6 +8,7 @@ import 'package:gpsc_prep_app/app/app.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
@@ -26,6 +27,7 @@ import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -42,6 +44,15 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // For Android
+      systemNavigationBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   await MobileAds.instance.initialize();
 
   await ScreenUtil.ensureScreenSize();
@@ -59,6 +70,16 @@ Future<void> main() async {
   final UserModel? user = await cacheManager.getInitUser();
   AppRouter.init(user != null);
 
+  final supabase = getIt<SupabaseHelper>().supabase;
+  supabase.auth.onAuthStateChange.listen((data) {
+    final event = data.event;
+    final currentLocation =
+        AppRouter.router.routerDelegate.currentConfiguration.uri.toString();
+    if (event == AuthChangeEvent.passwordRecovery &&
+        currentLocation != AppRoutes.resetPassword) {
+      AppRouter.router.go(AppRoutes.resetPassword);
+    }
+  });
   runApp(
     ScreenUtilInit(
       designSize: const Size(375, 812),

@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
@@ -345,6 +347,18 @@ final List<GoRoute> appRoutes = [
         selectedLanguage: language,
         highlightedMaterialId: highlightedId, // ✅ Now passing the ID!
       );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.requestResetPassword,
+    pageBuilder: (context, state) {
+      return _slideTransition(RequestResetPasswordScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.resetPassword,
+    pageBuilder: (context, state) {
+      return _slideTransition(ResetPasswordScreen(), state);
     },
   ),
 ];

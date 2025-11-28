@@ -29,4 +29,10 @@ class AuthRepository {
 
   Future<void> updateOrInsertFcmToken(String fcmToken) async =>
       await _supabase.updateOrInsertFcmToken(fcmToken);
+
+  Future<void> requestResetPassword(String email) async =>
+      await _supabase.requestResetPassword(email);
+
+  Future<void> resetPassword(String password) async =>
+      await _supabase.resetPassword(password);
 }

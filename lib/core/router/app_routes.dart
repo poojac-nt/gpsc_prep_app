@@ -20,8 +20,10 @@ class AppRouter {
         final loggingIn = state.matchedLocation == AppRoutes.login;
         final registering =
             state.matchedLocation == AppRoutes.registrationScreen;
+        final requestResetPassword =
+            state.matchedLocation == AppRoutes.requestResetPassword;
         if (user == null) {
-          if (!loggingIn && !registering) {
+          if (!loggingIn && !registering && !requestResetPassword) {
             return AppRoutes.login;
           }
         }

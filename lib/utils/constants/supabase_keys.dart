@@ -14,6 +14,7 @@ abstract class SupabaseKeys {
       'get_tests_without_material_for_language';
   static final String insertTestWithStudyMaterial =
       'insert_test_with_study_material';
+  static final String checkUserExist = 'check_user_exists';
 
   ///table
   static final String usersTable = 'users';
