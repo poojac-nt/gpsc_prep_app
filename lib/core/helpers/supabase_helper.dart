@@ -114,7 +114,7 @@ class SupabaseHelper {
                 'full_name': data.name,
                 'address': data.address,
                 'number': data.number,
-                'role': 'student',
+                'role': 'Student',
                 'user_email': data.email,
                 'auth_id': userId,
                 'profile_picture': data.profilePicture,
