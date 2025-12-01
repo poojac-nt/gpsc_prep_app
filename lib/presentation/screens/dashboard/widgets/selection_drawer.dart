@@ -80,16 +80,16 @@ class SelectionDrawer extends StatelessWidget {
                 endIndent: 0,
                 color: Colors.grey,
               ),
-              isStudent
-                  ? commonWidget(
-                    () {
-                      context.pop();
-                      context.go(AppRoutes.studentDashboard);
-                    },
-                    Icons.dashboard,
-                    'Dashboard',
-                  )
-                  : SizedBox.shrink(),
+              // isStudent
+              //     ? commonWidget(
+              //       () {
+              //         context.pop();
+              //         context.go(AppRoutes.studentDashboard);
+              //       },
+              //       Icons.dashboard,
+              //       'Dashboard',
+              //     )
+              //     : SizedBox.shrink(),
               isStudent
                   ? commonWidget(
                     () {

@@ -11,7 +11,7 @@ DescAnswerModel _$DescAnswerModelFromJson(Map<String, dynamic> json) =>
       userId: (json['user_id'] as num).toInt(),
       testId: (json['test_id'] as num).toInt(),
       questionId: (json['question_id'] as num).toInt(),
-      answer: json['answer'] as String,
+      answer: json['answer'],
     );
 
 Map<String, dynamic> _$DescAnswerModelToJson(DescAnswerModel instance) =>

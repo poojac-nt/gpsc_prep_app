@@ -46,12 +46,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
           },
         ),
         title: Text('Writing Practice', style: AppTexts.titleTextStyle),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.notifications_outlined),
-          ),
-        ],
       ),
       body: BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
         builder: (context, state) {

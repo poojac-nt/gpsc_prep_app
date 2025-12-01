@@ -15,7 +15,7 @@ class DescAnswerModel {
 
   /// The answer stored as string (could be typed text or a link)
   @JsonKey(name: "answer")
-  final String answer;
+  final dynamic answer;
 
   DescAnswerModel({
     required this.userId,
