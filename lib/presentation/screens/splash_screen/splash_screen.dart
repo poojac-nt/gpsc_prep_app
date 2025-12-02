@@ -11,6 +11,12 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/connectivity_handler_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
@@ -118,6 +124,9 @@ class _SplashScreenState extends State<SplashScreen> {
     final role = getIt<CacheManager>().getUserRole();
     switch (role) {
       case UserRole.student:
+        context.read<DashboardBloc>().add(FetchAttemptedTests());
+        context.read<DailyTestBloc>().add(FetchTests());
+        context.read<DailyDescTestBloc>().add(FetchAllTests());
         context.go(AppRoutes.studentDashboard);
         break;
       case UserRole.mentor:

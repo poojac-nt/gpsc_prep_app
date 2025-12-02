@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
@@ -58,15 +57,11 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
           );
           return;
         }
-
-        // 2. Fetch answers for each test
         final answersMap = <int, List<DescAnswerModel>>{};
-        final userId = getIt<CacheManager>().getUserId();
 
         for (final test in tests) {
           final answersResult = await _testRepository.fetchAnswersForTest(
             test.id,
-            userId,
           );
 
           answersResult.fold((_) {}, (ansList) {

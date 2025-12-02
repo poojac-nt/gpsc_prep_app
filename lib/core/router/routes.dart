@@ -39,7 +39,7 @@ final List<GoRoute> appRoutes = [
       final language = state.uri.queryParameters['language'] ?? 'en';
 
       debugPrint('🔗 Deep link received: id=$id, language=$language');
-
+      final router = GoRouter.of(context);
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (id == null) {
           context.pushReplacement('/error?message=Invalid+material+id');
@@ -47,7 +47,7 @@ final List<GoRoute> appRoutes = [
         }
 
         // Step 1: Go to dashboard first (ensures proper back button behavior)
-        context.go('/studentDashboard');
+        router.go('/studentDashboard');
 
         // Step 2: Wait 300ms so dashboard builds (important!)
         await Future.delayed(const Duration(milliseconds: 300));
@@ -56,7 +56,7 @@ final List<GoRoute> appRoutes = [
         debugPrint(
           '🚀 Navigating to studyMaterial with id=$id, language=$language',
         );
-        context.push(
+        router.push(
           AppRoutes.studyMaterial,
           extra: {'code': language, 'highlightedMaterialId': id.toString()},
         );

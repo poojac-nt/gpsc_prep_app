@@ -36,13 +36,15 @@ class TestRepository {
     int testId,
   ) async => await _supabase.fetchResultForSingleMcqTest(testId: testId);
 
+  Future<Either<Failure, List<TestResultModel>>> fetchAllTestResults() async =>
+      await _supabase.fetchAllTestResults();
+
   Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest() async =>
       await _supabase.fetchDescriptiveTests();
 
   Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
     int testId,
-    int userId,
-  ) async => await _supabase.fetchAnswersForTest(testId, userId);
+  ) async => await _supabase.fetchAnswersForTest(testId);
 
   Future<Either<Failure, Map<String, dynamic>>>
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();

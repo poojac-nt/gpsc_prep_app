@@ -350,6 +350,22 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<TestResultModel>>> fetchAllTestResults() async {
+    try {
+      final response = await supabase
+          .from('test_results')
+          .select()
+          .eq('user_id', _cache.user!.id!);
+
+      final results =
+          (response as List).map((e) => TestResultModel.fromJson(e)).toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
   Future<void> updateOrInsertFcmToken(String fcmToken) async {
     try {
       final userId = supabase.auth.currentSession?.user.id;
@@ -577,14 +593,13 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
     int testId,
-    int userId,
   ) async {
     try {
       final response = await supabase
           .from('desc_test_detailed_results')
           .select()
           .eq('test_id', testId)
-          .eq('user_id', userId);
+          .eq('user_id', _cache.user!.id!);
 
       final answers =
           (response as List<dynamic>)

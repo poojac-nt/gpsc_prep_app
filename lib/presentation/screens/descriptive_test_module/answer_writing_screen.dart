@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -29,13 +28,6 @@ class AnswerWritingScreen extends StatefulWidget {
 
 class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
   @override
-  void initState() {
-    super.initState();
-    final userId = getIt<CacheManager>().getUserId();
-    context.read<DailyDescTestBloc>().add(FetchAllTests(userId));
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -57,142 +49,149 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
           }
           if (state is DailyDescTestFetched) {
             final descTests = state.dailyTestModel;
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Writing Practice', style: AppTexts.heading),
-                  10.hGap,
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: descTests.length,
-                    itemBuilder: (context, index) {
-                      final test = descTests[index];
-                      final hasAnswer = state.answersMap.containsKey(test.id);
-                      return TestModule(
-                        title: "Daily Practice",
-                        subtitle: "Subject based Daily test",
-                        prefixIcon: Icons.calendar_today_outlined,
-                        isDesc: true,
-                        descTestModel: descTests[index],
-                        showShareButton: true,
-                        cards: [
-                          TestTile(
-                            title: descTests[index].name,
-                            onTap: () {
-                              if (hasAnswer) {
-                                showDialog(
-                                  context: context,
-                                  builder:
-                                      (context) => AlertDialog(
-                                        title: Text(
-                                          "Answer Already Submitted",
-                                          style: AppTexts.titleTextStyle,
-                                        ),
-                                        content: Text(
-                                          "If you submit again, your previous answer will be overwritten.",
-                                          style: AppTexts.subTitle,
-                                        ),
-                                        actions: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              IntrinsicWidth(
-                                                child: ActionButton(
-                                                  text: "Cancel",
-                                                  onTap: () {
-                                                    context
-                                                        .pop(); // close dialog
-                                                  },
-                                                ),
-                                              ),
-                                              10.wGap,
-                                              IntrinsicWidth(
-                                                child: ActionButton(
-                                                  text: "Submit Again",
-                                                  onTap: () {
-                                                    context
-                                                        .pop(); // close dialog first
-                                                    context.push(
-                                                      AppRoutes
-                                                          .descriptiveTestInstructionScreen,
-                                                      extra:
-                                                          DescTestInstructionScreenArgs(
-                                                            dailyTestModel:
-                                                                descTests[index],
-                                                          ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ],
+            return RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: () async {
+                return context.read<DailyDescTestBloc>().add(FetchAllTests());
+              },
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Writing Practice', style: AppTexts.heading),
+                    10.hGap,
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: descTests.length,
+                      itemBuilder: (context, index) {
+                        final test = descTests[index];
+                        final hasAnswer = state.answersMap.containsKey(test.id);
+                        return TestModule(
+                          title: "Daily Practice",
+                          subtitle: "Subject based Daily test",
+                          prefixIcon: Icons.calendar_today_outlined,
+                          isDesc: true,
+                          descTestModel: descTests[index],
+                          showShareButton: true,
+                          cards: [
+                            TestTile(
+                              title: descTests[index].name,
+                              onTap: () {
+                                if (hasAnswer) {
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (context) => AlertDialog(
+                                          title: Text(
+                                            "Answer Already Submitted",
+                                            style: AppTexts.titleTextStyle,
                                           ),
-                                        ],
-                                      ),
-                                );
-                              } else {
-                                context.push(
-                                  AppRoutes.descriptiveTestInstructionScreen,
-                                  extra: DescTestInstructionScreenArgs(
-                                    dailyTestModel: descTests[index],
-                                  ),
-                                );
-                              }
-                            },
-                            widgets: [
-                              if (isAnswerUnlocked(descTests[index].createdAt))
-                                Column(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        context.push(
-                                          AppRoutes.descAnswerScreen,
-                                          extra: descTests[index],
-                                        );
-                                      },
-                                      icon: Icon(
-                                        AppIcons.descAnsIcon,
-                                        size: 25.sp,
-                                        color: AppColors.primary,
-                                      ),
-                                      tooltip: "Answer Module",
+                                          content: Text(
+                                            "If you submit again, your previous answer will be overwritten.",
+                                            style: AppTexts.subTitle,
+                                          ),
+                                          actions: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                IntrinsicWidth(
+                                                  child: ActionButton(
+                                                    text: "Cancel",
+                                                    onTap: () {
+                                                      context
+                                                          .pop(); // close dialog
+                                                    },
+                                                  ),
+                                                ),
+                                                10.wGap,
+                                                IntrinsicWidth(
+                                                  child: ActionButton(
+                                                    text: "Submit Again",
+                                                    onTap: () {
+                                                      context
+                                                          .pop(); // close dialog first
+                                                      context.push(
+                                                        AppRoutes
+                                                            .descriptiveTestInstructionScreen,
+                                                        extra: DescTestInstructionScreenArgs(
+                                                          dailyTestModel:
+                                                              descTests[index],
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                  );
+                                } else {
+                                  context.push(
+                                    AppRoutes.descriptiveTestInstructionScreen,
+                                    extra: DescTestInstructionScreenArgs(
+                                      dailyTestModel: descTests[index],
                                     ),
-                                    Text("Answer Module"),
-                                  ],
-                                ),
-                              10.wGap,
-                            ],
-                          ),
-                        ],
-                      ).padSymmetric(vertical: 6.h);
-                    },
-                  ),
-                  // 10.hGap,
-                  // TestModule(
-                  //   title: 'My Submissions',
-                  //   subtitle: 'Track your Submitted Answers',
-                  //   prefixIcon: Icons.file_upload_outlined,
-                  //   cards: [
-                  //     ActionButton(text: 'View All Submissions', onTap: () {}),
-                  //     5.hGap,
-                  //     Row(
-                  //       mainAxisAlignment: MainAxisAlignment.center,
-                  //       children: [
-                  //         Column(
-                  //           children: [
-                  //             Text('5 Pending Reviews'),
-                  //             Text('12 Reviewed'),
-                  //           ],
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ],
-                  // ),
-                ],
-              ),
-            ).padAll(AppPaddings.appPaddingInt);
+                                  );
+                                }
+                              },
+                              widgets: [
+                                if (isAnswerUnlocked(
+                                  descTests[index].createdAt,
+                                ))
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          context.push(
+                                            AppRoutes.descAnswerScreen,
+                                            extra: descTests[index],
+                                          );
+                                        },
+                                        icon: Icon(
+                                          AppIcons.descAnsIcon,
+                                          size: 25.sp,
+                                          color: AppColors.primary,
+                                        ),
+                                        tooltip: "Answer Module",
+                                      ),
+                                      Text("Answer Module"),
+                                    ],
+                                  ),
+                                10.wGap,
+                              ],
+                            ),
+                          ],
+                        ).padSymmetric(vertical: 6.h);
+                      },
+                    ),
+                    // 10.hGap,
+                    // TestModule(
+                    //   title: 'My Submissions',
+                    //   subtitle: 'Track your Submitted Answers',
+                    //   prefixIcon: Icons.file_upload_outlined,
+                    //   cards: [
+                    //     ActionButton(text: 'View All Submissions', onTap: () {}),
+                    //     5.hGap,
+                    //     Row(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         Column(
+                    //           children: [
+                    //             Text('5 Pending Reviews'),
+                    //             Text('12 Reviewed'),
+                    //           ],
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ],
+                    // ),
+                  ],
+                ),
+              ).padAll(AppPaddings.appPaddingInt),
+            );
           }
           return Container();
         },

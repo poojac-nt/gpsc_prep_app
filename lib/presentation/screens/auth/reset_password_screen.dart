@@ -64,12 +64,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is ResetPasswordSuccess) {
-            Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) {
-                context.go(AppRoutes.login);
-              }
+            Future.delayed(const Duration(seconds: 2)).then((_) {
+              if (!context.mounted) return;
+              context.go(AppRoutes.login);
             });
           } else if (state is ResetPasswordFailure) {
+            if (!context.mounted) return;
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));

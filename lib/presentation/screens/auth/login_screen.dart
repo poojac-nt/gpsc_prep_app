@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool isObscure = true;
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -171,6 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 isLoading: isLoading,
                                 text: "Sign In",
                                 onTap: () {
+                                  focusNode.unfocus();
                                   final isOnline =
                                       context.read<ConnectivityBloc>().state
                                           is ConnectivityOnline;

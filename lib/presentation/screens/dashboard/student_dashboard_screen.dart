@@ -35,11 +35,6 @@ class StudentDashboardScreen extends StatefulWidget {
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   @override
-  void initState() {
-    super.initState();
-    context.read<DashboardBloc>().add(FetchAttemptedTests());
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = getIt<CacheManager>().user;
@@ -62,7 +57,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               if (state is ConnectivityOffline) {
                 ConnectivityDialogHelper.showOfflineDialog(context);
               } else if (state is ConnectivityOnline) {
-                syncLatestIfExists();
+                syncLatestIfExists(context);
                 syncOfflineQuestionResults();
                 ConnectivityDialogHelper.dismissDialog(context);
               }
@@ -101,117 +96,123 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     AttemptedTestsFetched state,
     String username,
   ) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: AppBorders.borderRadius,
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(20.sp),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, $username',
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  5.hGap,
-                  Text(
-                    'Ready to ace your GPSC exam? Let\'s continue your preparation.',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.grey.shade300,
-                    ),
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async {
+        return context.read<DashboardBloc>().add(FetchAttemptedTests());
+      },
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: AppBorders.borderRadius,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
-            ),
-          ),
-          15.hGap,
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 15.h,
-                  ),
-                  child: StatsWidget(
-                    text: 'Test taken',
-                    num: state.totalTests.toString(),
-                    icon: Icons.radar,
-                    iconColor: Colors.green,
-                  ),
+              child: Padding(
+                padding: EdgeInsets.all(20.sp),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, $username',
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    5.hGap,
+                    Text(
+                      'Ready to ace your GPSC exam? Let\'s continue your preparation.',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              10.wGap,
-              Expanded(
-                child: ElevatedContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 15.h,
-                  ),
-                  child: StatsWidget(
-                    text: 'Avg Score',
-                    num: "${state.avgScore.toStringAsFixed(2)} %",
-                    icon: Icons.score_outlined,
-                    iconColor: Colors.blue,
+            ),
+            15.hGap,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedContainer(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 15.h,
+                    ),
+                    child: StatsWidget(
+                      text: 'Test taken',
+                      num: state.totalTests.toString(),
+                      icon: Icons.radar,
+                      iconColor: Colors.green,
+                    ),
                   ),
                 ),
+                10.wGap,
+                Expanded(
+                  child: ElevatedContainer(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 15.h,
+                    ),
+                    child: StatsWidget(
+                      text: 'Avg Score',
+                      num: "${state.avgScore.toStringAsFixed(2)} %",
+                      icon: Icons.score_outlined,
+                      iconColor: Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            10.hGap,
+            Text(
+              'Daily MCQ Tests',
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+            ),
+            10.hGap,
+            ElevatedContainer(
+              child: TestContainer(
+                title: "Daily Test",
+                description: "Take today's practice test",
+                iconColor: Colors.blue,
+                icon: Icons.menu_book,
+                buttonTitle: 'Start Test',
+                onTap: () => context.push(AppRoutes.mcqTestScreen),
               ),
-            ],
-          ),
-          10.hGap,
-          Text(
-            'Daily MCQ Tests',
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-          ),
-          10.hGap,
-          ElevatedContainer(
-            child: TestContainer(
-              title: "Daily Test",
-              description: "Take today's practice test",
-              iconColor: Colors.blue,
-              icon: Icons.menu_book,
-              buttonTitle: 'Start Test',
-              onTap: () => context.push(AppRoutes.mcqTestScreen),
             ),
-          ),
-          10.hGap,
-          Text(
-            'Answer Writing Practice',
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-          ),
-          10.hGap,
-          ElevatedContainer(
-            child: TestContainer(
-              title: "Daily Writing Practice",
-              description:
-                  "Practice descriptive answers and improve overall performance",
-              iconColor: Colors.purple,
-              icon: Icons.menu_book,
-              buttonTitle: 'Start Writing',
-              onTap: () => context.push(AppRoutes.answerWriting),
+            10.hGap,
+            Text(
+              'Answer Writing Practice',
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
-      ).padAll(AppPaddings.defaultPadding),
+            10.hGap,
+            ElevatedContainer(
+              child: TestContainer(
+                title: "Daily Writing Practice",
+                description:
+                    "Practice descriptive answers and improve overall performance",
+                iconColor: Colors.purple,
+                icon: Icons.menu_book,
+                buttonTitle: 'Start Writing',
+                onTap: () => context.push(AppRoutes.answerWriting),
+              ),
+            ),
+          ],
+        ).padAll(AppPaddings.defaultPadding),
+      ),
     );
   }
 
@@ -270,7 +271,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   /// ✅ Sync offline results if internet is available
-  Future<void> syncLatestIfExists() async {
+  Future<void> syncLatestIfExists(BuildContext context) async {
     final testResultBox = getIt<Box<TestResultModel>>();
     final latest = testResultBox.get('latest');
     if (latest == null) return;
@@ -283,6 +284,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       try {
         await getIt<SupabaseHelper>().insertDailyMcqTestsResults(latest);
         await testResultBox.delete('latest');
+        if (!context.mounted) return;
         context.read<DashboardBloc>().add(FetchAttemptedTests());
         log.i('✅ Synced test result to Supabase and removed from Hive');
       } catch (e) {

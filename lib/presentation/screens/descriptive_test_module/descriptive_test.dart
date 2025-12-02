@@ -42,6 +42,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
   final ScrollController _scrollController = ScrollController();
   final Map<int, AnswerState> _answers = {};
   int currentIndex = 0;
+  final FocusNode focusNode = FocusNode();
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -70,6 +71,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
         if (didPop) return;
         final shouldLeave = await _showExitDialog(context);
         if (shouldLeave == true) {
+          if (!context.mounted) return;
           context.pop();
         }
       },
@@ -228,6 +230,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                               borderRadius: AppBorders.borderRadius,
                             ),
                             child: TextField(
+                              focusNode: focusNode,
                               maxLines: _controller.text.isEmpty ? 5 : 10,
                               controller: _controller,
                               decoration: InputDecoration(
@@ -368,6 +371,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                               });
 
                               // Add files to bloc
+                              if (!context.mounted) return;
                               context.read<DailyDescTestBloc>().add(
                                 AddFilesAnswer(
                                   questionId: question.id,
@@ -391,6 +395,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                   currentIndex == 0
                                       ? () {}
                                       : () {
+                                        focusNode.unfocus();
                                         setState(() {
                                           currentIndex--;
                                           _restoreAnswerForCurrentQuestion(
@@ -411,6 +416,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                               text: "Next",
                               backgroundColor: AppColors.primary,
                               onTap: () {
+                                focusNode.unfocus();
                                 if (currentIndex < questions.length - 1) {
                                   setState(() {
                                     currentIndex++;

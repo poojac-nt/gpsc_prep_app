@@ -14,12 +14,3 @@ DescTestModel _$DescTestModelFromJson(Map<String, dynamic> json) =>
       noQuestions: (json['no_questions'] as num).toInt(),
       createdAt: json['created_at'] as String,
     );
-
-Map<String, dynamic> _$DescTestModelToJson(DescTestModel instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'no_questions': instance.noQuestions,
-      'total_marks': instance.totalMarks,
-      'created_at': instance.createdAt,
-    };

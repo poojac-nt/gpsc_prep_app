@@ -22,23 +22,21 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
     emit(DailyTestFetching());
 
     final testsResult = await _testRepository.fetchDailyTest();
+    final resultsResult = await _testRepository.fetchAllTestResults();
 
     await testsResult.fold(
       (failure) async {
         emit(DailyTestFetchFailed(failure));
       },
       (tests) async {
-        final resultMap = <int, TestResultModel>{};
+        final Map<int, TestResultModel> resultMap = {};
 
-        for (final test in tests) {
-          final result = await _testRepository.singleTestResult(test.id);
+        resultsResult.fold((_) {}, (results) {
+          for (final result in results) {
+            resultMap[result.testId] = result;
+          }
+        });
 
-          result.fold((_) {}, (testResult) {
-            if (testResult != null) {
-              resultMap[test.id] = testResult;
-            }
-          });
-        }
         emit(DailyTestFetched(tests, resultMap));
       },
     );

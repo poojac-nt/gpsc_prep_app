@@ -18,7 +18,6 @@ class LanguageSelectionScreen extends StatefulWidget {
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     context.read<StudyMaterialBloc>().add(FetchStudyMaterial());
   }

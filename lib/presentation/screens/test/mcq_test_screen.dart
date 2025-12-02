@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
@@ -12,7 +13,6 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/daily test/daily_test_bloc.dart';
-import '../../blocs/daily test/daily_test_event.dart';
 import '../../blocs/daily test/daily_test_state.dart';
 
 class MCQTestScreen extends StatefulWidget {
@@ -23,12 +23,6 @@ class MCQTestScreen extends StatefulWidget {
 }
 
 class _MCQTestScreenState extends State<MCQTestScreen> {
-  @override
-  void initState() {
-    context.read<DailyTestBloc>().add(FetchTests());
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -74,7 +68,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
               return _buildWhenLoading();
             } else if (state is DailyTestFetched) {
               final tests = state.dailyTestModel;
-
               return TabBarView(
                 children: [
                   _buildFilteredList(tests, null, state), // all subjects
@@ -111,96 +104,102 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
       );
     }
 
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          ...filtered.map((test) {
-            final testResult = state.testResults[test.id];
-            final hasResult = testResult != null;
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async {
+        return context.read<DailyTestBloc>().add(FetchTests());
+      },
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            ...filtered.map((test) {
+              final testResult = state.testResults[test.id];
+              final hasResult = testResult != null;
 
-            // Default values
-            DateTime? submittedAt;
-            bool isEligibleForRetest = false;
+              // Default values
+              DateTime? submittedAt;
+              bool isEligibleForRetest = false;
 
-            if (hasResult) {
-              final createdAtString = testResult.createdAt;
-              if (createdAtString != null && createdAtString.isNotEmpty) {
-                try {
-                  submittedAt = DateTime.parse(createdAtString);
-                  isEligibleForRetest =
-                      DateTime.now().difference(submittedAt).inHours >= 12;
-                } catch (e) {
-                  // ignore parse error
+              if (hasResult) {
+                final createdAtString = testResult.createdAt;
+                if (createdAtString != null && createdAtString.isNotEmpty) {
+                  try {
+                    submittedAt = DateTime.parse(createdAtString);
+                    isEligibleForRetest =
+                        DateTime.now().difference(submittedAt).inHours >= 12;
+                  } catch (e) {
+                    // ignore parse error
+                  }
                 }
               }
-            }
 
-            return Column(
-              children: [
-                TestModule(
-                  showShareButton: true,
-                  testModel: test,
-                  title: "Daily Tests",
-                  subtitle: "Subject-based Daily Practice",
-                  prefixIcon: Icons.calendar_today_outlined,
-                  cards: [
-                    TestTile(
-                      title: test.name,
-                      subtitle:
-                          "${test.noQuestions} Questions · ${test.duration} min",
-                      onTap: () {
-                        if (hasResult) {
-                          context.pushReplacement(
-                            AppRoutes.resultScreen,
-                            extra: ResultScreenArgs(
-                              isFromTest: false,
-                              dailyTestModel: test,
-                            ),
-                          );
-                        } else {
-                          context.pushReplacementNamed(
-                            AppRoutes.mcqTestInstructionScreen,
-                            extra: TestInstructionScreenArgs(
-                              dailyTestModel: test,
-                            ),
-                          );
-                        }
-                      },
-                      hasResult: hasResult,
-                      widgets:
-                          hasResult && isEligibleForRetest
-                              ? [
-                                Column(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        AppIcons.retestIcon,
-                                        color: AppColors.primary,
+              return Column(
+                children: [
+                  TestModule(
+                    showShareButton: true,
+                    testModel: test,
+                    title: "Daily Tests",
+                    subtitle: "Subject-based Daily Practice",
+                    prefixIcon: Icons.calendar_today_outlined,
+                    cards: [
+                      TestTile(
+                        title: test.name,
+                        subtitle:
+                            "${test.noQuestions} Questions · ${test.duration} min",
+                        onTap: () {
+                          if (hasResult) {
+                            context.pushReplacement(
+                              AppRoutes.resultScreen,
+                              extra: ResultScreenArgs(
+                                isFromTest: false,
+                                dailyTestModel: test,
+                              ),
+                            );
+                          } else {
+                            context.pushReplacementNamed(
+                              AppRoutes.mcqTestInstructionScreen,
+                              extra: TestInstructionScreenArgs(
+                                dailyTestModel: test,
+                              ),
+                            );
+                          }
+                        },
+                        hasResult: hasResult,
+                        widgets:
+                            hasResult && isEligibleForRetest
+                                ? [
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          AppIcons.retestIcon,
+                                          color: AppColors.primary,
+                                        ),
+                                        onPressed: () {
+                                          context.pushReplacement(
+                                            AppRoutes.mcqTestInstructionScreen,
+                                            extra: TestInstructionScreenArgs(
+                                              dailyTestModel: test,
+                                            ),
+                                          );
+                                        },
                                       ),
-                                      onPressed: () {
-                                        context.pushReplacement(
-                                          AppRoutes.mcqTestInstructionScreen,
-                                          extra: TestInstructionScreenArgs(
-                                            dailyTestModel: test,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    Text("Retest"),
-                                  ],
-                                ),
-                                10.wGap,
-                              ]
-                              : [],
-                    ).padSymmetric(vertical: 6.h),
-                  ],
-                ),
-                10.hGap,
-              ],
-            );
-          }),
-        ],
-      ).padAll(AppPaddings.appPaddingInt),
+                                      Text("Retest"),
+                                    ],
+                                  ),
+                                  10.wGap,
+                                ]
+                                : [],
+                      ).padSymmetric(vertical: 6.h),
+                    ],
+                  ),
+                  10.hGap,
+                ],
+              );
+            }),
+          ],
+        ).padAll(AppPaddings.appPaddingInt),
+      ),
     );
   }
 
