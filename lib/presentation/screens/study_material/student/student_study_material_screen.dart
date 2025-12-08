@@ -169,80 +169,89 @@ class _StudyMaterialListScreenState extends State<StudyMaterialListScreen> {
         ),
         iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
       ),
-      body: BlocBuilder<StudyMaterialBloc, StudyMaterialState>(
-        builder: (context, state) {
-          if (state is StudyMaterialLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is StudyMaterialLoaded) {
-            final materials =
-                state.materials
-                    .where((e) => e.language == widget.selectedLanguage)
-                    .toList();
-
-            if (materials.isEmpty) {
-              return Center(
-                child: Text(
-                  'No Materials Found for ${widget.selectedLanguage == "gj" ? "Gujarati" : "English"} language.',
-                ),
-              );
-            }
-
-            // Find index of highlighted item
-            int? targetIndex;
-            if (_highlightedId != null) {
-              targetIndex = materials.indexWhere(
-                (m) => m.id.toString() == _highlightedId,
-              );
-              if (targetIndex != -1) {
-                // Create keys for items
-                for (int i = 0; i < materials.length; i++) {
-                  _itemKeys.putIfAbsent(i, () => GlobalKey());
-                }
-
-                // Schedule scroll
-                if (!_hasScrolledToTarget) {
-                  _scrollToTarget(targetIndex);
-                }
-              } else {
-                debugPrint(
-                  "⚠️ Highlighted ID $_highlightedId not found in materials",
-                );
-                targetIndex = null;
-              }
-            }
-
-            return ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.all(20.sp),
-              itemCount: materials.length,
-              itemBuilder: (context, index) {
-                final item = materials[index];
-                final isHighlighted = item.id.toString() == _highlightedId;
-
-                if (isHighlighted) {
-                  debugPrint(
-                    "🌟 Rendering highlighted item at index $index: ${item.id}",
-                  );
-                }
-
-                return MaterialCard(
-                  item: item,
-                  index: index,
-                  isHighlighted: isHighlighted,
-                  key: _itemKeys[index],
-                );
-              },
-            );
-          }
-
-          if (state is StudyMaterialError) {
-            return const Center(child: Text('Something went wrong'));
-          }
-
-          return const SizedBox.shrink();
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<StudyMaterialBloc>().add(FetchStudyMaterial());
+          await context.read<StudyMaterialBloc>().stream.firstWhere(
+            (state) =>
+                state is StudyMaterialLoaded || state is StudyMaterialError,
+          );
         },
+        child: BlocBuilder<StudyMaterialBloc, StudyMaterialState>(
+          builder: (context, state) {
+            if (state is StudyMaterialLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is StudyMaterialLoaded) {
+              final materials =
+                  state.materials
+                      .where((e) => e.language == widget.selectedLanguage)
+                      .toList();
+
+              if (materials.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No Materials Found for ${widget.selectedLanguage == "gj" ? "Gujarati" : "English"} language.',
+                  ),
+                );
+              }
+
+              // Find index of highlighted item
+              int? targetIndex;
+              if (_highlightedId != null) {
+                targetIndex = materials.indexWhere(
+                  (m) => m.id.toString() == _highlightedId,
+                );
+                if (targetIndex != -1) {
+                  // Create keys for items
+                  for (int i = 0; i < materials.length; i++) {
+                    _itemKeys.putIfAbsent(i, () => GlobalKey());
+                  }
+
+                  // Schedule scroll
+                  if (!_hasScrolledToTarget) {
+                    _scrollToTarget(targetIndex);
+                  }
+                } else {
+                  debugPrint(
+                    "⚠️ Highlighted ID $_highlightedId not found in materials",
+                  );
+                  targetIndex = null;
+                }
+              }
+
+              return ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(20.sp),
+                itemCount: materials.length,
+                itemBuilder: (context, index) {
+                  final item = materials[index];
+                  final isHighlighted = item.id.toString() == _highlightedId;
+
+                  if (isHighlighted) {
+                    debugPrint(
+                      "🌟 Rendering highlighted item at index $index: ${item.id}",
+                    );
+                  }
+
+                  return MaterialCard(
+                    item: item,
+                    index: index,
+                    isHighlighted: isHighlighted,
+                    key: _itemKeys[index],
+                  );
+                },
+              );
+            }
+
+            if (state is StudyMaterialError) {
+              return const Center(child: Text('Something went wrong'));
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
