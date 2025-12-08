@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 
 import '../../../core/error/failure.dart';
 import '../../../domain/entities/daily_test_model.dart';
@@ -37,25 +36,4 @@ class DailyTestResultFetched extends DailyTestState {
   final List<TestResultModel> testResults;
 
   DailyTestResultFetched(this.testResults);
-}
-
-class SingleTestFetching extends DailyTestState {}
-
-class SingleTestFetched extends DailyTestState {
-  final DailyTestModel dailyTestModel;
-  final Map<int, Set<String>> languages;
-
-  SingleTestFetched(this.dailyTestModel, this.languages);
-}
-
-class SingleTestFetchingFailed extends DailyTestState {
-  final Failure failure;
-
-  SingleTestFetchingFailed(this.failure);
-}
-
-class SingleDescTestFetched extends DailyTestState {
-  final DescTestModel descModel;
-
-  SingleDescTestFetched(this.descModel);
 }

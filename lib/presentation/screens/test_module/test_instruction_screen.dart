@@ -10,9 +10,11 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
@@ -58,7 +60,9 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     super.initState();
     isFromId = widget.testId != null;
     if (isFromId) {
-      context.read<DailyTestBloc>().add(FetchSingleTestFromId(widget.testId!));
+      context.read<FetchSingleTestBloc>().add(
+        FetchSingleTestFromId(widget.testId!),
+      );
     }
     fetchAvailableLanguages();
     selectedLanguage =
@@ -81,7 +85,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<DailyTestBloc, DailyTestState>(
+    return BlocListener<FetchSingleTestBloc, FetchSingleTestState>(
       listener: (context, state) {
         if (state is SingleTestFetched) {
           setState(() => _fetchedTestModel = state.dailyTestModel);
@@ -92,7 +96,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       child: BlocBuilder<DailyTestBloc, DailyTestState>(
         builder: (context, state) {
           if (_noTestDetected) return _buildNoTestScreen(context);
-          if (state is DailyTestInitial || state is SingleTestFetching) {
+          if (state is FetchSingleTestState || state is SingleTestFetching) {
             return _loadingScreen();
           }
 
@@ -191,9 +195,11 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
   }
 
   void _handleBackNavigation() {
-    if (widget.testId == null) {
+    if (widget.testId != null) {
       context.pop();
+      debugPrint("Test Id is Null");
     } else {
+      debugPrint("Going to Dashboard");
       context.pushReplacement(AppRoutes.studentDashboard);
     }
   }

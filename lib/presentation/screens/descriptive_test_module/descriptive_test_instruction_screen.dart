@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -36,9 +36,10 @@ class _DescriptiveTestInstructionScreenState
   void initState() {
     super.initState();
     isFromId = widget.testId != null;
+    context.read<QuestionBloc>().add(ResetQuestionState());
 
     if (isFromId) {
-      context.read<DailyTestBloc>().add(
+      context.read<FetchSingleTestBloc>().add(
         FetchSingleDescTestFromId(widget.testId!),
       );
       context.read<QuestionBloc>().add(LoadDescQuestion(widget.testId!, "en"));
@@ -53,7 +54,7 @@ class _DescriptiveTestInstructionScreenState
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<DailyTestBloc, DailyTestState>(
+        BlocListener<FetchSingleTestBloc, FetchSingleTestState>(
           listenWhen: (_, state) => state is SingleDescTestFetched,
           listener: (_, state) {
             if (state is SingleDescTestFetched) {

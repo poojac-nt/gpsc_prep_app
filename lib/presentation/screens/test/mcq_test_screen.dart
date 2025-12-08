@@ -4,16 +4,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import '../../blocs/daily test/daily_test_bloc.dart';
-import '../../blocs/daily test/daily_test_state.dart';
 
 class MCQTestScreen extends StatefulWidget {
   const MCQTestScreen({super.key});

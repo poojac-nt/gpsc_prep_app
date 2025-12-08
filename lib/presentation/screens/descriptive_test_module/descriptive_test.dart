@@ -441,7 +441,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                   ),
                 );
               }
-              return Center(child: Text('No Questions Available'));
+              return SizedBox.shrink();
             },
           ),
         ),

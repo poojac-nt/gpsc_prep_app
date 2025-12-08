@@ -12,10 +12,11 @@ import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily%20test/daily_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
@@ -110,6 +111,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<StudyMaterialBloc>(
     () => StudyMaterialBloc(getIt<StudyMaterialRepository>()),
+  );
+  getIt.registerLazySingleton<FetchSingleTestBloc>(
+    () => FetchSingleTestBloc(getIt<TestRepository>()),
   );
 }
 

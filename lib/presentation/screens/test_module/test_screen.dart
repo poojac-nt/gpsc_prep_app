@@ -740,9 +740,7 @@ class _TestScreenState extends State<TestScreen> {
                     },
                   );
                 }
-                return Center(
-                  child: Text("No questions available in this test"),
-                );
+                return SizedBox.shrink();
               },
             ),
           ),

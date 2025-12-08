@@ -1,50 +1,23 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 
-import 'daily_test_event.dart';
-import 'daily_test_state.dart';
+import 'fetch_single_test_event.dart';
+import 'fetch_single_test_state.dart';
 
-class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
+class FetchSingleTestBloc
+    extends Bloc<FetchSingleTestEvent, FetchSingleTestState> {
   final TestRepository _testRepository;
 
-  DailyTestBloc(this._testRepository) : super(DailyTestInitial()) {
-    on<FetchTests>(_fetchTestsAndResults);
+  FetchSingleTestBloc(this._testRepository)
+    : super(FetchingSingleTestInitial()) {
     on<FetchSingleTestFromId>(_fetchSingleTestFromId);
     on<FetchSingleDescTestFromId>(_fetchSingleDescTestFromId);
   }
 
-  Future<void> _fetchTestsAndResults(
-    FetchTests event,
-    Emitter<DailyTestState> emit,
-  ) async {
-    emit(DailyTestFetching());
-
-    final testsResult = await _testRepository.fetchDailyTest();
-    final resultsResult = await _testRepository.fetchAllTestResults();
-
-    await testsResult.fold(
-      (failure) async {
-        emit(DailyTestFetchFailed(failure));
-      },
-      (tests) async {
-        final Map<int, TestResultModel> resultMap = {};
-
-        resultsResult.fold((_) {}, (results) {
-          for (final result in results) {
-            resultMap[result.testId] = result;
-          }
-        });
-
-        emit(DailyTestFetched(tests, resultMap));
-      },
-    );
-  }
-
   Future<void> _fetchSingleTestFromId(
     FetchSingleTestFromId event,
-    Emitter<DailyTestState> emit,
+    Emitter<FetchSingleTestState> emit,
   ) async {
     emit(SingleTestFetching());
     final testResult = await _testRepository.fetchSingleTestFromId(
@@ -69,7 +42,7 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
 
   Future<void> _fetchSingleDescTestFromId(
     FetchSingleDescTestFromId event,
-    Emitter<DailyTestState> emit,
+    Emitter<FetchSingleTestState> emit,
   ) async {
     emit(SingleTestFetching());
     final testResult = await _testRepository.fetchSingleDescTestFromId(
