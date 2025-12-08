@@ -121,12 +121,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _navigateBasedOnUserRole() {
     if (!mounted) return;
+    context.read<DashboardBloc>().add(FetchAttemptedTests());
+    context.read<DailyTestBloc>().add(FetchTests());
+    context.read<DailyDescTestBloc>().add(FetchAllTests());
+
     final role = getIt<CacheManager>().getUserRole();
     switch (role) {
       case UserRole.student:
-        context.read<DashboardBloc>().add(FetchAttemptedTests());
-        context.read<DailyTestBloc>().add(FetchTests());
-        context.read<DailyDescTestBloc>().add(FetchAllTests());
         context.go(AppRoutes.studentDashboard);
         break;
       case UserRole.mentor:

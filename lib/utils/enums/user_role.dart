@@ -6,25 +6,24 @@ enum UserRole {
   String get role {
     switch (this) {
       case UserRole.student:
-        return 'Student';
+        return 'student';
       case UserRole.mentor:
-        return 'Mentor';
+        return 'mentor';
       case UserRole.admin:
-        return 'Admin';
+        return 'admin';
     }
   }
 
   @override
   String toString() => role;
 
-  // Convert string to UserRole (case-sensitive for now)
   static UserRole fromString(String role) {
-    switch (role) {
-      case 'Student':
+    switch (role.trim().toLowerCase()) {
+      case 'student':
         return UserRole.student;
-      case 'Mentor':
+      case 'mentor':
         return UserRole.mentor;
-      case 'Admin':
+      case 'admin':
         return UserRole.admin;
       default:
         throw ArgumentError('Invalid user role: $role');
