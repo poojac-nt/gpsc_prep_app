@@ -58,8 +58,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Writing Practice', style: AppTexts.heading),
-                    10.hGap,
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
