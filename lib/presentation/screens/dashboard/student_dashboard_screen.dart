@@ -35,10 +35,17 @@ class StudentDashboardScreen extends StatefulWidget {
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   @override
+  void initState() {
+    super.initState();
+    final currentState = context.read<DashboardBloc>().state;
+    if (currentState is! AttemptedTestsFetched) {
+      context.read<DashboardBloc>().add(FetchAttemptedTests());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = getIt<CacheManager>().user;
-
     return Scaffold(
       drawer: SelectionDrawer(),
       drawerEdgeDragWidth: 150,

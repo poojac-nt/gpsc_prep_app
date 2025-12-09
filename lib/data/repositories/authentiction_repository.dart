@@ -24,8 +24,7 @@ class AuthRepository {
   Future<Either<Failure, UserModel>> updateUserInfo(UserPayload data) async =>
       await _supabase.updateUserInfo(data);
 
-  Future<void> deleteUser(String userId) async =>
-      await _supabase.deleteUser(userId);
+  Future<bool> deleteUser() async => await _supabase.deleteUser();
 
   Future<void> updateOrInsertFcmToken(String fcmToken) async =>
       await _supabase.updateOrInsertFcmToken(fcmToken);

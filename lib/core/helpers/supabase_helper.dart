@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
-import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -173,28 +172,30 @@ class SupabaseHelper {
   }
 
   ///Delete User from both public and auth tables
-  Future<bool> deleteUser(String userId) async {
+  Future<bool> deleteUser() async {
     try {
-      // Delete from auth.users
-      final supabaseAdmin = SupabaseClient(
-        Environment.supabaseUrl,
-        Environment.serviceKey,
+      final session = supabase.auth.currentSession;
+      final token = session?.accessToken;
+      final userId = session?.user.id;
+      if (session == null) {
+        throw Exception("User not logged in");
+      }
+      final response = await supabase.functions.invoke(
+        'delete_user',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
-      await supabaseAdmin.auth.admin.deleteUser(userId);
 
-      // Delete from public.users
-      await supabase
-          .from(SupabaseKeys.usersTable)
-          .delete()
-          .eq('auth_id', userId);
-
-      _log.i('User deleted successfully from both public.users and auth.users');
-      _snackBar.showSuccess('User deleted successfully');
-      supabase.auth.signOut();
-      return true;
+      if (response.status == 200) {
+        _snackBar.showSuccess("User deleted successfully");
+        return true;
+      }
+      throw Exception(response.data['error']);
     } catch (e) {
-      _snackBar.showError('Error deleting user: ${e.toString()}');
-      _log.e('Error in deleteUser: $e');
+      _log.e("Delete user error: $e");
+      _snackBar.showError("Error deleting user");
       return false;
     }
   }

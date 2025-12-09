@@ -23,6 +23,15 @@ class MCQTestScreen extends StatefulWidget {
 
 class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
+  void initState() {
+    super.initState();
+    final currentState = context.read<DailyTestBloc>().state;
+    if (currentState is! DailyTestFetched) {
+      context.read<DailyTestBloc>().add(FetchTests());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
@@ -108,96 +117,95 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
       onRefresh: () async {
         return context.read<DailyTestBloc>().add(FetchTests());
       },
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            ...filtered.map((test) {
-              final testResult = state.testResults[test.id];
-              final hasResult = testResult != null;
+      child: ListView.builder(
+        padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) {
+          final test = filtered[index];
+          final testResult = state.testResults[test.id];
+          final hasResult = testResult != null;
 
-              // Default values
-              DateTime? submittedAt;
-              bool isEligibleForRetest = false;
+          // Default values
+          DateTime? submittedAt;
+          bool isEligibleForRetest = false;
 
-              if (hasResult) {
-                final createdAtString = testResult.createdAt;
-                if (createdAtString != null && createdAtString.isNotEmpty) {
-                  try {
-                    submittedAt = DateTime.parse(createdAtString);
-                    isEligibleForRetest =
-                        DateTime.now().difference(submittedAt).inHours >= 12;
-                  } catch (e) {
-                    // ignore parse error
-                  }
-                }
+          if (hasResult) {
+            final createdAtString = testResult.createdAt;
+            if (createdAtString != null && createdAtString.isNotEmpty) {
+              try {
+                submittedAt = DateTime.parse(createdAtString);
+                isEligibleForRetest =
+                    DateTime.now().difference(submittedAt).inHours >= 12;
+              } catch (e) {
+                // ignore parse error
               }
+            }
+          }
 
-              return Column(
-                children: [
-                  TestModule(
-                    showShareButton: true,
-                    testModel: test,
-                    title: "Daily Tests",
-                    subtitle: "Subject-based Daily Practice",
-                    prefixIcon: Icons.calendar_today_outlined,
-                    cards: [
-                      TestTile(
-                        title: test.name,
-                        subtitle:
-                            "${test.noQuestions} Questions · ${test.duration} min",
-                        onTap: () {
-                          if (hasResult) {
-                            context.pushReplacement(
-                              AppRoutes.resultScreen,
-                              extra: ResultScreenArgs(
-                                isFromTest: false,
-                                dailyTestModel: test,
-                              ),
-                            );
-                          } else {
-                            context.pushReplacementNamed(
-                              AppRoutes.mcqTestInstructionScreen,
-                              extra: TestInstructionScreenArgs(
-                                dailyTestModel: test,
-                              ),
-                            );
-                          }
-                        },
-                        hasResult: hasResult,
-                        widgets:
-                            hasResult && isEligibleForRetest
-                                ? [
-                                  Column(
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          AppIcons.retestIcon,
-                                          color: AppColors.primary,
+          return Column(
+            children: [
+              TestModule(
+                showShareButton: true,
+                testModel: test,
+                title: "Daily Tests",
+                subtitle: "Subject-based Daily Practice",
+                prefixIcon: Icons.calendar_today_outlined,
+                cards: [
+                  TestTile(
+                    title: test.name,
+                    subtitle:
+                        "${test.noQuestions} Questions · ${test.duration} min",
+                    onTap: () {
+                      if (hasResult) {
+                        context.pushReplacement(
+                          AppRoutes.resultScreen,
+                          extra: ResultScreenArgs(
+                            isFromTest: false,
+                            dailyTestModel: test,
+                          ),
+                        );
+                      } else {
+                        context.pushReplacementNamed(
+                          AppRoutes.mcqTestInstructionScreen,
+                          extra: TestInstructionScreenArgs(
+                            dailyTestModel: test,
+                          ),
+                        );
+                      }
+                    },
+                    hasResult: hasResult,
+                    widgets:
+                        hasResult && isEligibleForRetest
+                            ? [
+                              Column(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      AppIcons.retestIcon,
+                                      color: AppColors.primary,
+                                    ),
+                                    onPressed: () {
+                                      context.pushReplacement(
+                                        AppRoutes.mcqTestInstructionScreen,
+                                        extra: TestInstructionScreenArgs(
+                                          dailyTestModel: test,
                                         ),
-                                        onPressed: () {
-                                          context.pushReplacement(
-                                            AppRoutes.mcqTestInstructionScreen,
-                                            extra: TestInstructionScreenArgs(
-                                              dailyTestModel: test,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      Text("Retest"),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                  10.wGap,
-                                ]
-                                : [],
-                      ).padSymmetric(vertical: 6.h),
-                    ],
-                  ),
-                  10.hGap,
+                                  Text("Retest"),
+                                ],
+                              ),
+                              10.wGap,
+                            ]
+                            : [],
+                  ).padSymmetric(vertical: 6.h),
                 ],
-              );
-            }),
-          ],
-        ).padAll(AppPaddings.appPaddingInt),
+              ),
+              10.hGap,
+            ],
+          );
+        },
       ),
     );
   }

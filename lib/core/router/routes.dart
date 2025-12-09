@@ -72,20 +72,26 @@ final List<GoRoute> appRoutes = [
     builder: (context, state) {
       final type = state.uri.queryParameters['type'];
       final id = int.tryParse(state.uri.queryParameters['id'] ?? '');
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint('🔗 Deep link received: type=$type, id=$id');
+      final router = GoRouter.of(context);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (type == null || id == null) {
           context.pushReplacement('/error?message=Invalid+test+link');
-        } else if (type == 'mcq') {
-          context.pushReplacement(
+          return;
+        }
+        router.go('/studentDashboard');
+        await Future.delayed(const Duration(milliseconds: 300));
+        debugPrint('🚀 Navigating to test instruction with type=$type, id=$id');
+        if (type == 'mcq') {
+          router.push(
             '/studentDashboard/mcqTestScreen/testInstructionScreen/$id',
           );
         } else if (type == 'desc') {
-          context.pushReplacement(
+          router.push(
             '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$id',
           );
         } else {
-          context.pushReplacement('/error?message=Unknown+test+type');
+          router.pushReplacement('/error?message=Unknown+test+type');
         }
       });
 

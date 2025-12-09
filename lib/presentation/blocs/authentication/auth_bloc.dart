@@ -9,6 +9,8 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -122,6 +124,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _supabase.auth.signOut();
       _cache.clearUser();
+      getIt<DashboardBloc>().add(DashBoardInitial());
       emit(Unauthenticated());
     } catch (e) {
       emit(AuthFailure('Logout failed: $e'));
@@ -134,9 +137,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(DeleteUserLoading());
     try {
-      await _authRepository.deleteUser(event.userId);
-      _cache.clearUser();
-      emit(DeleteUserSuccess());
+      final deleted = await _authRepository.deleteUser();
+      if (deleted == true) {
+        _cache.clearUser();
+        emit(DeleteUserSuccess());
+      }
     } catch (e) {
       emit(DeleteUserFailure(e.toString()));
     }

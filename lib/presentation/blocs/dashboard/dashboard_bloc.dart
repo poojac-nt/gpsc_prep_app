@@ -12,6 +12,9 @@ class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
 
   DashboardBloc(this._testRepository) : super(FetchingAttemptedTests()) {
     on<FetchAttemptedTests>(_fetchAttemptedTests);
+    on<DashBoardInitial>((event, emit) {
+      emit(DashBoardInitialState());
+    });
   }
 
   Future<void> _fetchAttemptedTests(

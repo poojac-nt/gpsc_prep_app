@@ -22,11 +22,7 @@ class LogOutRequested extends AuthEvent {}
 
 class PickImage extends AuthEvent {}
 
-class DeleteUserRequested extends AuthEvent {
-  final String userId;
-
-  DeleteUserRequested(this.userId);
-}
+class DeleteUserRequested extends AuthEvent {}
 
 class ResetPasswordRequested extends AuthEvent {
   final String newPassword;
