@@ -1,7 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:meta/meta.dart';
-
+import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
+import '../../../../../core/error/failure.dart';
 part 'bar_chart_event.dart';
 part 'bar_chart_state.dart';
 

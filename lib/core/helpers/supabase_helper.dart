@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
@@ -806,6 +807,25 @@ class SupabaseHelper {
     } catch (e) {
       _log.e("Error fetching study material: $e");
       return Left(Failure("Error fetching study materials"));
+    }
+  }
+
+  Future<Either<Failure, List<AttemptedQuestionStat>>>
+  fetchAttemptedQuestionStats(int testId) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getAttemptedQuestionStats,
+        params: {'p_test_id': testId},
+      );
+
+      final stats = AttemptedQuestionStat.fromRpcResponse(result);
+
+      _log.i("Attempted Question Stats length: ${stats.first.attemptedCount}");
+
+      return Right(stats);
+    } catch (e, st) {
+      _log.e("Error fetching attempted question stats", error: e, s: st);
+      return Left(Failure("Error fetching attempted question stats"));
     }
   }
 

@@ -607,7 +607,15 @@ class _TestScreenState extends State<TestScreen> {
                               BlocBuilder<PieChartBloc, PieChartState>(
                                 builder: (context, correctState) {
                                   if (correctState
-                                          is CorrectnessCountsSuccess &&
+                                      is PerformanceSummaryLoading) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  if (correctState is PieChartResultFailure) {
+                                    return Center(
+                                      child: Text(correctState.message.message),
+                                    );
+                                  }
+                                  if (correctState is PieChartResultSuccess &&
                                       state.currentIndex >= 0 &&
                                       state.currentIndex <
                                           state.questions.length) {
@@ -617,7 +625,7 @@ class _TestScreenState extends State<TestScreen> {
                                             .questionId;
 
                                     // ✅ Safe lookup with fallback
-                                    final stats = correctState.questionStats
+                                    final stats = correctState.correctnessCounts
                                         .firstWhere(
                                           (entry) =>
                                               entry['question_id'] ==
@@ -629,6 +637,17 @@ class _TestScreenState extends State<TestScreen> {
                                                 'incorrect_count': 0,
                                               },
                                         );
+                                    final attemptedStats = correctState
+                                        .attemptedCounts
+                                        .firstWhere(
+                                          (entry) =>
+                                              entry.questionId == questionId,
+                                        );
+                                    final attempted =
+                                        attemptedStats.attemptedCount;
+                                    final notAttempted =
+                                        attemptedStats.notAttemptedCount;
+                                    final users = attemptedStats.totalUsers;
 
                                     final correct = stats['correct_count'] ?? 0;
                                     final incorrect =
@@ -668,9 +687,9 @@ class _TestScreenState extends State<TestScreen> {
                                             SizedBox(width: 15.w),
                                             Expanded(
                                               child: CustomPieChart(
-                                                total: 7,
-                                                itemOne: 3,
-                                                itemTwo: 5,
+                                                total: users,
+                                                itemOne: attempted,
+                                                itemTwo: notAttempted,
                                                 colorOne: Colors.blue,
                                                 colorTwo: Colors.grey,
                                                 labelOne: 'Attempted',

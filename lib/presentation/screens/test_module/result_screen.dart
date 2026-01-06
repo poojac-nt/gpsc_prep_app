@@ -200,7 +200,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                           testCubitState.selectedOption,
                                     );
                                     context.read<PieChartBloc>().add(
-                                      FetchCorrectnessCountsEvent(
+                                      FetchPerformanceSummary(
                                         testId: widget.dailyTestModel.id,
                                       ),
                                     );

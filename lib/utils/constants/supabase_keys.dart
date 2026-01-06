@@ -16,6 +16,8 @@ abstract class SupabaseKeys {
       'insert_test_with_study_material';
   static final String checkUserExist = 'check_user_exists';
   static final String getOptionMatrixForTest = 'get_test_question_option_stats';
+  static final String getAttemptedQuestionStats =
+      'get_test_question_attempts_summary_v2';
 
   ///table
   static final String usersTable = 'users';

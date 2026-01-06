@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/study_material_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
@@ -72,6 +73,9 @@ void setupRepositories() {
   getIt.registerLazySingleton<StudyMaterialRepository>(
     () => StudyMaterialRepository(getIt<SupabaseHelper>()),
   );
+  getIt.registerLazySingleton<AnalyticsRepository>(
+    () => AnalyticsRepository(getIt<SupabaseHelper>()),
+  );
 }
 
 void setupBlocs() {
@@ -97,7 +101,7 @@ void setupBlocs() {
   getIt.registerLazySingleton<UploadQuestionsBloc>(() => UploadQuestionsBloc());
   getIt.registerLazySingleton<TimerBloc>(() => TimerBloc());
   getIt.registerLazySingleton<PieChartBloc>(
-    () => PieChartBloc(getIt<TestRepository>()),
+    () => PieChartBloc(getIt<AnalyticsRepository>()),
   );
   getIt.registerLazySingleton<DailyTestBloc>(
     () => DailyTestBloc(getIt<TestRepository>()),

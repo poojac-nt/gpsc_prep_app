@@ -73,11 +73,6 @@ class TestRepository {
     questionId: questionId,
   );
 
-  Future<Either<Failure, List<Map<String, dynamic>>>>
-  fetchQuestionCorrectnessCounts(int testId) async {
-    return await _supabase.fetchTestQuestionCorrectness(testId);
-  }
-
   Future<Either<Failure, void>> insertTestResultDetail({
     required DetailedTestResult detailedTestResult,
   }) {

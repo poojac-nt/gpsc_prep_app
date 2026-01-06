@@ -1,35 +1,29 @@
 import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/domain/entities/question_model.dart';
-
-import '../../../../../core/error/failure.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
+import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
 
 @immutable
 sealed class PieChartState {}
 
 class PieChartInitial extends PieChartState {}
 
-class TestSubmitted extends PieChartState {
-  final List<QuestionModel> questions;
-  final List<String?> selectedOption;
-  final List<bool> answeredStatus;
+// A state to indicate that the performance data is being fetched.
+class PerformanceSummaryLoading extends PieChartState {}
 
-  TestSubmitted({
-    required this.questions,
-    required this.selectedOption,
-    required this.answeredStatus,
+// A state that holds the data needed for the performance summary charts.
+class PieChartResultSuccess extends PieChartState {
+  final List<Map<String, dynamic>> correctnessCounts;
+  final List<AttemptedQuestionStat> attemptedCounts;
+
+  PieChartResultSuccess({
+    required this.correctnessCounts,
+    required this.attemptedCounts,
   });
 }
 
-class CorrectnessCountsLoading extends PieChartState {}
-
-class CorrectnessCountsSuccess extends PieChartState {
-  final List<Map<String, dynamic>> questionStats;
-
-  CorrectnessCountsSuccess(this.questionStats);
-}
-
+// A state to represent a failure in fetching the data.
 class PieChartResultFailure extends PieChartState {
-  final Failure failure;
+  final Failure message;
 
-  PieChartResultFailure(this.failure);
+  PieChartResultFailure(this.message);
 }
