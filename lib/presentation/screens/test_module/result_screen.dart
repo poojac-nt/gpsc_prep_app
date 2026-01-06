@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
@@ -202,6 +204,11 @@ class _ResultScreenState extends State<ResultScreen> {
                                         testId: widget.dailyTestModel.id,
                                       ),
                                     );
+                                    context.read<BarChartBloc>().add(
+                                      FetchOptionMatrix(
+                                        testId: widget.dailyTestModel.id,
+                                      ),
+                                    );
                                     context.push(
                                       AppRoutes.testScreen,
                                       extra: TestScreenArgs(
@@ -219,7 +226,8 @@ class _ResultScreenState extends State<ResultScreen> {
                           iconColor: Colors.green,
                         ).padAll(AppPaddings.defaultPadding),
                         20.hGap,
-                        BannerAdWidget(adUnitId: AdUnitIds.bannerUnitId),
+                        if (Environment.isProduction)
+                          BannerAdWidget(adUnitId: AdUnitIds.bannerUnitId),
                       ],
                     );
                   },

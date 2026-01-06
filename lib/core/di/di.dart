@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
@@ -114,6 +115,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<FetchSingleTestBloc>(
     () => FetchSingleTestBloc(getIt<TestRepository>()),
+  );
+  getIt.registerLazySingleton<BarChartBloc>(
+    () => BarChartBloc(getIt<TestRepository>()),
   );
 }
 

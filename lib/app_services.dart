@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
@@ -101,5 +102,6 @@ class AppServices {
     BlocProvider<FetchSingleTestBloc>(
       create: (_) => getIt<FetchSingleTestBloc>(),
     ),
+    BlocProvider<BarChartBloc>(create: (_) => getIt<BarChartBloc>()),
   ];
 }

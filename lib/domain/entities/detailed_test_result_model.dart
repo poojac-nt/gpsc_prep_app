@@ -22,11 +22,16 @@ class DetailedTestResult extends HiveObject {
   @HiveField(3)
   final bool isCorrect;
 
+  @JsonKey(name: "selected_option")
+  @HiveField(4)
+  final String? selectedOption;
+
   DetailedTestResult({
     required this.userId,
     required this.testId,
     required this.questionId,
     required this.isCorrect,
+    required this.selectedOption,
   });
 
   factory DetailedTestResult.fromJson(Map<String, dynamic> json) =>

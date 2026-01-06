@@ -66,6 +66,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
           testId: testId,
           questionId: questionId,
           isCorrect: isAnswerCorrect,
+          selectedOption: selectedOption[i],
         );
         final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
         if (!isOnline) {

@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
@@ -655,6 +656,7 @@ class SupabaseHelper {
             'test_id': detailedTestResult.testId,
             'question_id': detailedTestResult.questionId,
             'is_correct': detailedTestResult.isCorrect,
+            'selected_option': detailedTestResult.selectedOption,
           });
 
       _log.i('Inserted test detailed result: $result');
@@ -662,6 +664,35 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error inserting test detailed result: $e');
       return Left(Failure("Error inserting test detailed result"));
+    }
+  }
+
+  Future<Either<Failure, List<OptionMatrixModel>>> fetchOptionMatrixForTest({
+    required int testId,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getOptionMatrixForTest,
+        params: {'p_test_id': testId},
+      );
+
+      final List<OptionMatrixModel> optionMatrix =
+          (result as List<dynamic>)
+              .map(
+                (e) => OptionMatrixModel.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList();
+
+      _log.i(
+        'Fetched option matrix for test $testId: ${optionMatrix.length} entries',
+      );
+      return Right(optionMatrix);
+    } catch (e) {
+      _log.e('Error fetching option matrix for test $testId : $e');
+
+      return Left(Failure('Error fetching option matrix for test $testId'));
     }
   }
 

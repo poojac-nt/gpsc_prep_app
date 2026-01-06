@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 
 import '../../core/error/failure.dart';
@@ -83,5 +84,11 @@ class TestRepository {
     return _supabase.insertTestDetailedResult(
       detailedTestResult: detailedTestResult,
     );
+  }
+
+  Future<Either<Failure, List<OptionMatrixModel>>> optionMatrixForQuestion({
+    required int testId,
+  }) {
+    return _supabase.fetchOptionMatrixForTest(testId: testId);
   }
 }

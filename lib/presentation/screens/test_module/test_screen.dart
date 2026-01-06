@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
@@ -18,6 +20,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_c
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_indicator.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_navigator_btn.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/presentation/widgets/bar_chart.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
@@ -194,7 +197,9 @@ class _TestScreenState extends State<TestScreen> {
                   questionCubitState.isQuitTest) {
                 context.go(AppRoutes.studentDashboard);
               } else {
-                AdService().showInterstitialAd();
+                Environment.isDevelopment
+                    ? null
+                    : AdService().showInterstitialAd();
                 context.pushReplacement(
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
@@ -677,6 +682,39 @@ class _TestScreenState extends State<TestScreen> {
                                       ],
                                     );
                                   }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                              20.hGap,
+                              BlocBuilder<BarChartBloc, BarChartState>(
+                                builder: (context, barState) {
+                                  if (barState is OptionMatrixLoading) {
+                                    return const SizedBox.shrink(); // or skeleton
+                                  }
+
+                                  if (barState is OptionMatrixResultFailure) {
+                                    return ElevatedContainer(
+                                      child: Text(
+                                        'Unable to load option statistics',
+                                        style: AppTexts.heading.copyWith(
+                                          fontSize: 14.sp,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  if (barState is OptionMatrixSuccess) {
+                                    final questionId =
+                                        state
+                                            .questionModel[state.currentIndex]
+                                            .questionId;
+
+                                    return McqVerticalBarChart(
+                                      questionId: questionId,
+                                      optionStats: barState.questionStats,
+                                    );
+                                  }
+
                                   return const SizedBox.shrink();
                                 },
                               ),
