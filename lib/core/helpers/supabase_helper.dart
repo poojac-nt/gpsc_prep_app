@@ -361,11 +361,16 @@ class SupabaseHelper {
         params: {'p_user_id': _cache.user!.id, 'p_test_id': testId},
       );
 
-      if (response == null) {
+      // Supabase RPC always returns a List
+      if (response == null || response.isEmpty) {
         return Right(null);
       }
-      final model = TestResultWithTopScoreModel.fromJson(response);
-      _log.i("Result ${response.toString()}");
+
+      final model = TestResultWithTopScoreModel.fromJson(
+        response.first as Map<String, dynamic>,
+      );
+
+      _log.i("Result with top score: ${response.toString()}");
       return Right(model);
     } catch (e) {
       _snackBar.showError('Error fetching result with Top score: $e');

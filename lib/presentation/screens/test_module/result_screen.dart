@@ -14,8 +14,6 @@ import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
@@ -53,13 +51,6 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
       );
     }
-  }
-
-  String totalTime(BuildContext context) {
-    final timerState = context.read<TimerBloc>().state;
-    int mins = timerState is TimerStopped ? timerState.totalMins : 0;
-    int secs = timerState is TimerStopped ? timerState.totalSecs : 0;
-    return "$mins mins $secs secs";
   }
 
   @override
@@ -275,30 +266,30 @@ class _ResultScreenState extends State<ResultScreen> {
           ).padAll(AppPaddings.defaultPadding),
 
           // Action Buttons
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppPaddings.defaultPadding,
-              vertical: 10.sp,
-            ),
-            child: Column(
-              children: [
-                ActionButton(
-                  text: "Download Detailed Report",
-                  onTap: () {
-                    final blocState = context.read<QuestionBloc>().state;
-                    context.push(
-                      AppRoutes.questionPreviewScreen,
-                      extra: QuestionPreviewScreenArgs(
-                        questions:
-                            blocState is McqQuestionLoaded
-                                ? blocState.questionsModels
-                                : [],
-                        testName: widget.dailyTestModel.name,
-                      ),
-                    );
-                  },
-                ),
-                if (questions != null) ...[
+          if (questions != null) ...[
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppPaddings.defaultPadding,
+                vertical: 10.sp,
+              ),
+              child: Column(
+                children: [
+                  ActionButton(
+                    text: "Download Detailed Report",
+                    onTap: () {
+                      final blocState = context.read<QuestionBloc>().state;
+                      context.push(
+                        AppRoutes.questionPreviewScreen,
+                        extra: QuestionPreviewScreenArgs(
+                          questions:
+                              blocState is McqQuestionLoaded
+                                  ? blocState.questionsModels
+                                  : [],
+                          testName: widget.dailyTestModel.name,
+                        ),
+                      );
+                    },
+                  ),
                   10.hGap,
                   ActionButton(
                     text: "Review Answers",
@@ -329,9 +320,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     },
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
+          ],
           if (Environment.isProduction)
             BannerAdWidget(adUnitId: AdUnitIds.bannerUnitId),
         ],
