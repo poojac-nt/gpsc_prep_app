@@ -40,3 +40,9 @@ class FetchSingleTestResultEvent extends TestEvent {
 
   FetchSingleTestResultEvent({required this.testId});
 }
+
+class FetchSingleTestResultWithTopScoreEvent extends TestEvent {
+  final int testId;
+
+  FetchSingleTestResultWithTopScoreEvent({required this.testId});
+}

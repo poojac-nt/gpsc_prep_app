@@ -18,6 +18,8 @@ abstract class SupabaseKeys {
   static final String getOptionMatrixForTest = 'get_test_question_option_stats';
   static final String getAttemptedQuestionStats =
       'get_test_question_attempts_summary_v2';
+  static final String getUserTestResultWithTopScore =
+      'get_user_test_result_with_top_score';
 
   ///table
   static final String usersTable = 'users';

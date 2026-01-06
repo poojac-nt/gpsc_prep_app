@@ -14,6 +14,7 @@ class TestCubitSubmitted {
   final List<String?> selectedOption;
   final List<bool?> isAnswerCorrect;
   final double? score;
+  final double? topScore;
   final int? timeSpent;
   final List<bool> answeredStatus;
 
@@ -32,6 +33,7 @@ class TestCubitSubmitted {
     this.isReview = false,
     this.timeSpent,
     this.score,
+    this.topScore,
     this.isAnswerCorrect = const [],
   });
 

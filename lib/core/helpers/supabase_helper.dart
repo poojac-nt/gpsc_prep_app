@@ -14,6 +14,7 @@ import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
@@ -178,7 +179,6 @@ class SupabaseHelper {
     try {
       final session = supabase.auth.currentSession;
       final token = session?.accessToken;
-      final userId = session?.user.id;
       if (session == null) {
         throw Exception("User not logged in");
       }
@@ -350,6 +350,28 @@ class SupabaseHelper {
     } catch (e) {
       _snackBar.showError('Error fetching result: $e');
       return Left(Failure("Error fetching result: ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, TestResultWithTopScoreModel?>>
+  getUserTestResultWithTopScore({required int testId}) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestResultWithTopScore,
+        params: {'p_user_id': _cache.user!.id, 'p_test_id': testId},
+      );
+
+      if (response == null) {
+        return Right(null);
+      }
+      final model = TestResultWithTopScoreModel.fromJson(response);
+      _log.i("Result ${response.toString()}");
+      return Right(model);
+    } catch (e) {
+      _snackBar.showError('Error fetching result with Top score: $e');
+      return Left(
+        Failure("Error fetching result with Top Score: ${e.toString()}"),
+      );
     }
   }
 

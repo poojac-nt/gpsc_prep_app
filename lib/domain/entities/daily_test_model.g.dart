@@ -12,6 +12,7 @@ DailyTestModel _$DailyTestModelFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       duration: (json['duration'] as num).toInt(),
       noQuestions: (json['no_questions'] as num).toInt(),
+      totalMarks: (json['total_marks'] as num).toInt(),
     );
 
 Map<String, dynamic> _$DailyTestModelToJson(DailyTestModel instance) =>
@@ -20,4 +21,5 @@ Map<String, dynamic> _$DailyTestModelToJson(DailyTestModel instance) =>
       'name': instance.name,
       'duration': instance.duration,
       'no_questions': instance.noQuestions,
+      'total_marks': instance.totalMarks,
     };

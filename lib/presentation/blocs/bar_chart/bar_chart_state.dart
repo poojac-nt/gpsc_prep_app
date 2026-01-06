@@ -1,6 +1,5 @@
 part of 'bar_chart_bloc.dart';
 
-@immutable
 sealed class BarChartState {}
 
 class BarChartInitial extends BarChartState {}

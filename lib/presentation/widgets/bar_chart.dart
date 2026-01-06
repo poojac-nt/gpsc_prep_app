@@ -106,17 +106,7 @@ class _BarChartView extends StatelessWidget {
             BarChartData(
               maxY: totalAttempts.toDouble(),
               alignment: BarChartAlignment.spaceAround,
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: totalAttempts > 0 ? totalAttempts / 4 : 1,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color: colorScheme.outlineVariant.withAlpha(76),
-                    strokeWidth: 1,
-                  );
-                },
-              ),
+              gridData: FlGridData(show: false),
               borderData: FlBorderData(
                 show: true,
                 border: Border(

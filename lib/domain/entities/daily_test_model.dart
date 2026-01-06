@@ -12,12 +12,15 @@ class DailyTestModel {
   int duration;
   @JsonKey(name: "no_questions")
   int noQuestions;
+  @JsonKey(name: "total_marks")
+  int totalMarks;
 
   DailyTestModel({
     required this.id,
     required this.name,
     required this.duration,
     required this.noQuestions,
+    required this.totalMarks,
   });
 
   factory DailyTestModel.fromJson(Map<String, dynamic> json) =>
