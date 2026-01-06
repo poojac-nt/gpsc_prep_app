@@ -642,10 +642,39 @@ class _TestScreenState extends State<TestScreen> {
                                     }
 
                                     // ✅ Otherwise → show pie chart
-                                    return QuestionPieChart(
-                                      correct: correct,
-                                      incorrect: incorrect,
-                                      height: 200,
+                                    return TestModule(
+                                      title: "Performance Summary",
+                                      cards: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Expanded(
+                                              child: CustomPieChart(
+                                                total: correct + incorrect,
+                                                itemOne: correct,
+                                                itemTwo: incorrect,
+                                                colorOne: Colors.green,
+                                                colorTwo: Colors.red,
+                                                labelOne: 'Correct',
+                                                labelTwo: 'Incorrect',
+                                              ),
+                                            ),
+                                            SizedBox(width: 15.w),
+                                            Expanded(
+                                              child: CustomPieChart(
+                                                total: 7,
+                                                itemOne: 3,
+                                                itemTwo: 5,
+                                                colorOne: Colors.blue,
+                                                colorTwo: Colors.grey,
+                                                labelOne: 'Attempted',
+                                                labelTwo: 'Not Attempted',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     );
                                   }
                                   return const SizedBox.shrink();
