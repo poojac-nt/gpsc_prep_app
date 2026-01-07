@@ -6,19 +6,21 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/banner_ad.dart';
+import 'package:gpsc_prep_app/presentation/widgets/difficulty_wise_bar_chart.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -45,11 +47,7 @@ class _ResultScreenState extends State<ResultScreen> {
   void initState() {
     super.initState();
     if (!widget.isFromTestScreen) {
-      context.read<TestBloc>().add(
-        FetchSingleTestResultWithTopScoreEvent(
-          testId: widget.dailyTestModel.id,
-        ),
-      );
+      context.read<ResultBloc>().add(FetchResultData(widget.dailyTestModel.id));
     }
   }
 
@@ -99,27 +97,40 @@ class _ResultScreenState extends State<ResultScreen> {
                     testCubitState.isAnswerCorrect,
                     testCubitState.answeredStatus,
                     testCubitState.selectedOption,
+                    null,
                   );
                 },
               );
             }
-            if (testBlocState is SingleResultWithTopScoreSuccess) {
-              final result = testBlocState.result;
-              final data = _TestResultData(
-                correct: result.correctAnswers,
-                incorrect: result.inCorrectAnswers,
-                skipped: result.notAttemptedQuestions,
-                attempted: result.attemptedQuestions,
-                total: result.totalQuestions,
-                score: result.score,
-                topScore: result.topScore,
-              );
-              return _buildSummaryBody(context, data, null, null, null, null);
-            }
-            if (testBlocState is SingleResultLoading) {
-              return Center(child: CircularProgressIndicator());
-            }
-            return SizedBox.shrink();
+            return BlocBuilder<ResultBloc, ResultState>(
+              builder: (context, resultState) {
+                if (resultState is ResultDataSuccess) {
+                  final result = resultState.result;
+                  final data = _TestResultData(
+                    correct: result.correctAnswers,
+                    incorrect: result.inCorrectAnswers,
+                    skipped: result.notAttemptedQuestions,
+                    attempted: result.attemptedQuestions,
+                    total: result.totalQuestions,
+                    score: result.score,
+                    topScore: result.topScore,
+                  );
+                  return _buildSummaryBody(
+                    context,
+                    data,
+                    null,
+                    null,
+                    null,
+                    null,
+                    resultState.reviewByDifficulty,
+                  );
+                }
+                if (resultState is ResultLoading) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                return SizedBox.shrink();
+              },
+            );
           },
         ),
       ),
@@ -133,6 +144,7 @@ class _ResultScreenState extends State<ResultScreen> {
     dynamic isCorrect,
     dynamic answeredStatus,
     dynamic selectedOption,
+    List<TestReviewByDifficulty>? reviewByDifficulty,
   ) {
     return SingleChildScrollView(
       child: Column(
@@ -264,6 +276,21 @@ class _ResultScreenState extends State<ResultScreen> {
               20.hGap,
             ],
           ).padAll(AppPaddings.defaultPadding),
+
+          // Difficulty Analysis Module
+          if (reviewByDifficulty != null && reviewByDifficulty.isNotEmpty)
+            TestModule(
+              title: "Difficulty Analysis",
+              iconSize: 26.sp,
+              fontSize: 20.sp,
+              prefixIcon: Icons.analytics,
+              iconColor: Colors.deepPurpleAccent,
+              cards: [
+                20.hGap,
+                DifficultyWiseBarChart(data: reviewByDifficulty),
+                20.hGap,
+              ],
+            ).padAll(AppPaddings.defaultPadding),
 
           // Action Buttons
           if (questions != null) ...[

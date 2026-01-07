@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
@@ -389,6 +390,26 @@ class SupabaseHelper {
 
       final results =
           (response as List).map((e) => TestResultModel.fromJson(e)).toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<TestReviewByDifficulty>>> fetchUserTestReview({
+    required int testId,
+  }) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestReview,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results =
+          (response as List)
+              .map((e) => TestReviewByDifficulty.fromJson(e))
+              .toList();
 
       return Right(results);
     } catch (e) {

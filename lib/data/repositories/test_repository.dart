@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
@@ -41,6 +42,10 @@ class TestRepository {
   Future<Either<Failure, TestResultWithTopScoreModel?>>
   getUserTestResultWithTopScore(int testId) async =>
       await _supabase.getUserTestResultWithTopScore(testId: testId);
+
+  Future<Either<Failure, List<TestReviewByDifficulty>>> fetchUserTestReview(
+    int testId,
+  ) async => await _supabase.fetchUserTestReview(testId: testId);
 
   Future<Either<Failure, List<TestResultModel>>> fetchAllTestResults() async =>
       await _supabase.fetchAllTestResults();

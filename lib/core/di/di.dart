@@ -21,6 +21,7 @@ import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_blo
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
@@ -122,6 +123,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<BarChartBloc>(
     () => BarChartBloc(getIt<TestRepository>()),
+  );
+  getIt.registerLazySingleton<ResultBloc>(
+    () => ResultBloc(getIt<TestRepository>(), getIt<SnackBarHelper>()),
   );
 }
 

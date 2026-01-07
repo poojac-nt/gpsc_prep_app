@@ -16,10 +16,6 @@ class TestBloc extends Bloc<TestEvent, TestState> {
 
   TestBloc(this._testRepository) : super(TestResultInitial()) {
     on<SubmitTest>(_onSubmit);
-    on<FetchSingleTestResultEvent>(_onFetchSingleResult);
-    on<FetchSingleTestResultWithTopScoreEvent>(
-      _onFetchSingleResultWithTopScore,
-    );
   }
 
   Future<void> _onSubmit(SubmitTest event, Emitter<TestState> emit) async {
@@ -67,35 +63,5 @@ class TestBloc extends Bloc<TestEvent, TestState> {
         TestSubmissionFailed(Failure("Submission failed due to an error: $e")),
       );
     }
-  }
-
-  Future<void> _onFetchSingleResult(
-    FetchSingleTestResultEvent event,
-    Emitter<TestState> emit,
-  ) async {
-    emit(SingleResultLoading());
-
-    final result = await _testRepository.singleTestResult(event.testId);
-
-    result.fold(
-      (failure) => emit(SingleResultFailure(failure)),
-      (data) => emit(SingleResultSuccess(data!)),
-    );
-  }
-
-  Future<void> _onFetchSingleResultWithTopScore(
-    FetchSingleTestResultWithTopScoreEvent event,
-    Emitter<TestState> emit,
-  ) async {
-    emit(SingleResultLoading());
-
-    final result = await _testRepository.getUserTestResultWithTopScore(
-      event.testId,
-    );
-
-    result.fold(
-      (failure) => emit(SingleResultFailure(failure)),
-      (data) => emit(SingleResultWithTopScoreSuccess(data!)),
-    );
   }
 }

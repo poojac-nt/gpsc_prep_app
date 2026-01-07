@@ -1,6 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 
 import '../../../../../core/error/failure.dart';
 import '../../../../../domain/entities/question_language_model.dart';
@@ -11,26 +9,6 @@ sealed class TestState {}
 final class TestInitial extends TestState {}
 
 final class TestResultInitial extends TestState {}
-
-class SingleResultLoading extends TestState {}
-
-class SingleResultSuccess extends TestState {
-  final TestResultModel result;
-
-  SingleResultSuccess(this.result);
-}
-
-class SingleResultWithTopScoreSuccess extends TestState {
-  final TestResultWithTopScoreModel result;
-
-  SingleResultWithTopScoreSuccess(this.result);
-}
-
-class SingleResultFailure extends TestState {
-  final Failure failure;
-
-  SingleResultFailure(this.failure);
-}
 
 class TestSubmissionFailed extends TestState {
   final Failure failure;

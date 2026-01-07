@@ -34,15 +34,3 @@ class SubmitTest extends TestEvent {
 }
 
 class InsertTestResultEvent extends TestEvent {}
-
-class FetchSingleTestResultEvent extends TestEvent {
-  final int testId;
-
-  FetchSingleTestResultEvent({required this.testId});
-}
-
-class FetchSingleTestResultWithTopScoreEvent extends TestEvent {
-  final int testId;
-
-  FetchSingleTestResultWithTopScoreEvent({required this.testId});
-}

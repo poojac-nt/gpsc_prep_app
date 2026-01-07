@@ -20,6 +20,7 @@ abstract class SupabaseKeys {
       'get_test_question_attempts_summary_v2';
   static final String getUserTestResultWithTopScore =
       'get_user_test_result_with_top_score';
+  static final String getUserTestReview = 'get_user_test_review';
 
   ///table
   static final String usersTable = 'users';

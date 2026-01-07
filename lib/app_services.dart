@@ -25,6 +25,7 @@ import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
@@ -103,5 +104,6 @@ class AppServices {
       create: (_) => getIt<FetchSingleTestBloc>(),
     ),
     BlocProvider<BarChartBloc>(create: (_) => getIt<BarChartBloc>()),
+    BlocProvider<ResultBloc>(create: (_) => getIt<ResultBloc>()),
   ];
 }
