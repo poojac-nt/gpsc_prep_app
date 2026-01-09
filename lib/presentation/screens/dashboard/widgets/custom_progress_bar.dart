@@ -9,11 +9,13 @@ class CustomProgressBar extends StatelessWidget {
     required this.titleText,
     required this.value,
     required this.labelText,
+    this.minHeight = 6,
   });
 
   final String titleText;
   final String labelText;
   final double value;
+  final double minHeight;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -44,7 +46,7 @@ class CustomProgressBar extends StatelessWidget {
         5.hGap,
         LinearProgressIndicator(
           value: value,
-          minHeight: 6.h,
+          minHeight: minHeight.h,
           backgroundColor: Colors.grey.shade300,
           borderRadius: AppBorders.borderRadius,
         ),

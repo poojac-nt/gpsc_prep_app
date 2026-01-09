@@ -13,6 +13,10 @@ import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/goal_reminder.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/icon_container.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/last_snapshot_card.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:hive/hive.dart';
@@ -21,10 +25,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/dashboard/dashboard_bloc_state.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
-import '../../widgets/elevated_container.dart';
+import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';
-import '../dashboard/widgets/stats_widget.dart';
-import '../dashboard/widgets/test_container.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -112,113 +114,39 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: AppBorders.borderRadius,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(20.sp),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back, $username',
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    5.hGap,
-                    Text(
-                      'Ready to ace your GPSC exam? Let\'s continue your preparation.',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.grey.shade300,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            GoalReminderCard(),
             15.hGap,
+            PerformanceCard(),
+            10.hGap,
+
+            ///Daily test
             Row(
               children: [
                 Expanded(
-                  child: ElevatedContainer(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 15.h,
-                    ),
-                    child: StatsWidget(
-                      text: 'Test taken',
-                      num: state.totalTests.toString(),
-                      icon: Icons.radar,
-                      iconColor: Colors.green,
-                    ),
+                  child: StartTestCard(
+                    title: 'Daily Test',
+                    subTitle: 'MCQ Tests',
+                    color: AppColors.primary,
+                    onTap: () => context.push(AppRoutes.mcqTestScreen),
                   ),
                 ),
-                10.wGap,
+                20.wGap,
                 Expanded(
-                  child: ElevatedContainer(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 15.h,
-                    ),
-                    child: StatsWidget(
-                      text: 'Avg Score',
-                      num: "${state.avgScore.toStringAsFixed(2)} %",
-                      icon: Icons.score_outlined,
-                      iconColor: Colors.blue,
-                    ),
+                  child: StartTestCard(
+                    color: Color(0xff6366F2),
+                    title: "Daily Test",
+                    subTitle: "Written Tests",
+                    buttonTextColor: Color(0xff6366F2),
+                    buttonBgColor: Colors.white,
+                    onTap: () => context.push(AppRoutes.answerWriting),
                   ),
                 ),
               ],
             ),
             10.hGap,
-            Text(
-              'Daily MCQ Tests',
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-            ),
-            10.hGap,
-            ElevatedContainer(
-              child: TestContainer(
-                title: "Daily Test",
-                description: "Take today's practice test",
-                iconColor: Colors.blue,
-                icon: Icons.menu_book,
-                buttonTitle: 'Start Test',
-                onTap: () => context.push(AppRoutes.mcqTestScreen),
-              ),
-            ),
-            10.hGap,
-            Text(
-              'Answer Writing Practice',
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-            ),
-            10.hGap,
-            ElevatedContainer(
-              child: TestContainer(
-                title: "Daily Writing Practice",
-                description:
-                    "Practice descriptive answers and improve overall performance",
-                iconColor: Colors.purple,
-                icon: Icons.menu_book,
-                buttonTitle: 'Start Writing',
-                onTap: () => context.push(AppRoutes.answerWriting),
-              ),
-            ),
+            LastSnapshotCard(),
           ],
-        ).padAll(AppPaddings.defaultPadding),
+        ).padAll(20),
       ),
     );
   }
@@ -227,50 +155,133 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   Skeletonizer _buildWhenLoading(BuildContext context) {
     return Skeletonizer(
       enabled: true,
+      ignoreContainers: false,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Goal Reminder Card
             Container(
+              height: 180.h,
+              padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
               decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: AppBorders.borderRadius,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 2),
+                borderRadius: AppBorders.dashboardBorderRadius,
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 120.w, height: 14.h),
+                  10.hGap,
+                  SizedBox(width: 180.w, height: 22.h),
+                  10.hGap,
+                  SizedBox(width: 220.w, height: 14.h),
+                  20.hGap,
+                  Container(
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      borderRadius: AppBorders.dashboardBorderRadius,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
-              child: Padding(
-                padding: EdgeInsets.all(20.sp),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back, ...',
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+            ),
+
+            15.hGap,
+
+            // Performance Card
+            Container(
+              padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
+              decoration: BoxDecoration(
+                borderRadius: AppBorders.dashboardBorderRadius,
+                color: Colors.white,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 120.w,
+                    height: 120.w,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                  ),
+                  20.wGap,
+                  Expanded(
+                    child: Container(
+                      height: 120.h,
+                      decoration: BoxDecoration(
+                        borderRadius: AppBorders.dashboardBorderRadius,
                       ),
                     ),
-                    5.hGap,
-                    Text(
-                      'Ready to ace your GPSC exam? Let\'s continue your preparation.',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.grey.shade300,
-                      ),
+                  ),
+                ],
+              ),
+            ),
+
+            15.hGap,
+
+            // Two Test Cards Skeleton
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 170.h,
+                    decoration: BoxDecoration(
+                      borderRadius: AppBorders.dashboardBorderRadius,
+                      color: Colors.white,
                     ),
-                  ],
+                  ),
                 ),
+                10.wGap,
+                Expanded(
+                  child: Container(
+                    height: 170.h,
+                    decoration: BoxDecoration(
+                      borderRadius: AppBorders.dashboardBorderRadius,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            15.hGap,
+
+            // Last Snapshot Skeleton
+            Container(
+              padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
+              decoration: BoxDecoration(
+                borderRadius: AppBorders.dashboardBorderRadius,
+                color: Colors.white,
+              ),
+              child: Column(
+                children: [
+                  Container(height: 20.h),
+                  15.hGap,
+                  Container(height: 10.h),
+                  15.hGap,
+                  Container(height: 50.h),
+                ],
+              ),
+            ),
+
+            15.hGap,
+
+            // Test List Skeleton
+            Container(
+              height: 100.h,
+              decoration: BoxDecoration(
+                borderRadius: AppBorders.dashboardBorderRadius,
+                color: Colors.white,
               ),
             ),
             15.hGap,
-            // skeleton stats + test container
+            Container(
+              height: 100.h,
+              decoration: BoxDecoration(
+                borderRadius: AppBorders.dashboardBorderRadius,
+                color: Colors.white,
+              ),
+            ),
           ],
         ).padAll(AppPaddings.defaultPadding),
       ),
@@ -343,5 +354,95 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         '🧹 Deleted ${keysToDelete.length} synced offline results from Hive',
       );
     }
+  }
+}
+
+class StartTestCard extends StatelessWidget {
+  final Color color;
+  final String buttonText;
+  final String title;
+  final String subTitle;
+  final Color buttonTextColor;
+  final Color buttonBgColor;
+  final VoidCallback onTap;
+
+  const StartTestCard({
+    super.key,
+    required this.color,
+    this.buttonText = 'Start Test',
+    required this.title,
+    required this.subTitle,
+    this.buttonTextColor = Colors.white,
+    this.buttonBgColor = Colors.blue,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: AppBorders.dashboardBorderRadius,
+        color: Colors.white,
+      ),
+      child: ClipRRect(
+        borderRadius: AppBorders.dashboardBorderRadius,
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  8.hGap,
+                  IconContainer(
+                    borderRadius: BorderRadius.circular(100.r),
+                    icon: Icons.menu_book,
+                    color: color,
+                  ),
+                  10.hGap,
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  5.hGap,
+                  Text(
+                    subTitle,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  5.hGap,
+                  ElevatedButton(
+                    onPressed: onTap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: buttonBgColor,
+                      foregroundColor: buttonTextColor,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [Text(buttonText), Icon(Icons.navigate_next)],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: -10,
+              right: -10,
+              child: SizedBox(
+                width: 120.w,
+                height: 120.w,
+                child: CustomPaint(painter: CirclePainter(color: color)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

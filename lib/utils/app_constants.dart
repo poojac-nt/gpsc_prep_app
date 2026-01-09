@@ -39,10 +39,12 @@ abstract class AppThemeData {
 abstract class AppPaddings {
   static double defaultPadding = 12;
   static double appPaddingInt = 10;
+  static double dashboardContainerPadding = 25;
 }
 
 abstract class AppBorders {
   static BorderRadius borderRadius = BorderRadius.circular(8.r);
+  static BorderRadius dashboardBorderRadius = BorderRadius.circular(25.r);
 }
 
 abstract class AppTexts {

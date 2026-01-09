@@ -12,6 +12,9 @@ class CustomPieChart extends StatelessWidget {
   final Color colorTwo;
   final String labelOne;
   final String labelTwo;
+  final bool isLabelVisible;
+  final double centerSpaceValue;
+  final double sectionRadiusMultiplier;
 
   const CustomPieChart({
     super.key,
@@ -23,12 +26,15 @@ class CustomPieChart extends StatelessWidget {
     required this.colorTwo,
     required this.labelOne,
     required this.labelTwo,
+    this.isLabelVisible = true,
+    this.centerSpaceValue = 5,
+    this.sectionRadiusMultiplier = 0.11,
   });
 
   @override
   Widget build(BuildContext context) {
-    final centerSpace = height.h / 5;
-    final sectionRadius = height.h * 0.11;
+    final centerSpace = height.h / centerSpaceValue;
+    final sectionRadius = height.h * sectionRadiusMultiplier;
 
     if (total == 0) {
       return SizedBox(
@@ -63,16 +69,18 @@ class CustomPieChart extends StatelessWidget {
             ),
           ),
         ),
-        15.hGap,
-        _buildLegendItem(
-          color: colorOne,
-          text: '$labelOne (${(itemOne / total * 100).toStringAsFixed(0)}%)',
-        ),
-        8.hGap,
-        _buildLegendItem(
-          color: colorTwo,
-          text: '$labelTwo (${(itemTwo / total * 100).toStringAsFixed(0)}%)',
-        ),
+        if (isLabelVisible) ...[
+          15.hGap,
+          _buildLegendItem(
+            color: colorOne,
+            text: '$labelOne (${(itemOne / total * 100).toStringAsFixed(0)}%)',
+          ),
+          8.hGap,
+          _buildLegendItem(
+            color: colorTwo,
+            text: '$labelTwo (${(itemTwo / total * 100).toStringAsFixed(0)}%)',
+          ),
+        ],
       ],
     );
   }
