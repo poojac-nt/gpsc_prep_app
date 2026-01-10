@@ -1,4 +1,5 @@
 import 'package:either_dart/either.dart';
+import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 
 import '../../core/error/failure.dart';
 import '../../core/helpers/supabase_helper.dart';
@@ -7,6 +8,7 @@ import '../../domain/entities/dashboard_analytics.dart';
 
 class AnalyticsRepository {
   final SupabaseHelper _supabase;
+
   AnalyticsRepository(this._supabase);
 
   Future<Either<Failure, DashboardAnalytics>> getDashboardAnalytics() async =>
@@ -20,4 +22,7 @@ class AnalyticsRepository {
   Future<Either<Failure, List<AttemptedQuestionStat>>> fetchAttemptedCounts(
     int testId,
   ) async => await _supabase.fetchAttemptedQuestionStats(testId);
+
+  Future<Either<Failure, OverAllAnalyticsModel>>
+  fetchOverAllAnalytics() async => await _supabase.fetchOverAllAnalytics();
 }

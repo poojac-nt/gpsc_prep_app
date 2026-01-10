@@ -115,6 +115,16 @@ class SelectionDrawer extends StatelessWidget {
                   ? commonWidget(
                     () {
                       context.pop();
+                      context.push(AppRoutes.analyticsScreen);
+                    },
+                    Icons.analytics_outlined,
+                    'Analytics',
+                  )
+                  : SizedBox.shrink(),
+              isStudent
+                  ? commonWidget(
+                    () {
+                      context.pop();
                       context.push(AppRoutes.profile);
                     },
                     Icons.person,

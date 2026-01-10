@@ -24,6 +24,7 @@ class TestModule extends StatelessWidget {
     this.prefixIcon,
     this.cards = const <Widget>[],
     this.isDesc = false,
+    this.trailing,
   });
 
   final String title;
@@ -37,6 +38,7 @@ class TestModule extends StatelessWidget {
   final IconData? prefixIcon;
   final List<Widget> cards;
   final bool isDesc;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -61,15 +63,16 @@ class TestModule extends StatelessWidget {
                   ),
                 ),
               ),
-              showShareButton
-                  ? IconButton(
-                    tooltip: "Share Test",
-                    icon: const Icon(AppIcons.shareTest),
-                    onPressed: () {
-                      _handleShare(context, isDesc);
-                    },
-                  )
-                  : SizedBox.shrink(),
+              if (showShareButton)
+                IconButton(
+                  tooltip: "Share Test",
+                  icon: const Icon(AppIcons.shareTest),
+                  onPressed: () {
+                    _handleShare(context, isDesc);
+                  },
+                )
+              else if (trailing != null)
+                trailing!,
             ],
           ),
           Text(subtitle ?? '', style: AppTexts.subTitle),

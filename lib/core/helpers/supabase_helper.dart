@@ -14,6 +14,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
+import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
@@ -875,6 +876,30 @@ class SupabaseHelper {
     } catch (e, st) {
       _log.e("Error fetching attempted question stats", error: e, s: st);
       return Left(Failure("Error fetching attempted question stats"));
+    }
+  }
+
+  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics() async {
+    final userId = _cache.getUserId();
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getOverAllAnalytics,
+        params: {
+          'p_user_id': userId,
+          'p_from': null,
+          'p_to': null,
+          'p_mode': 'occurrence',
+        },
+      );
+
+      final stats = OverAllAnalyticsModel.fromJson(result);
+
+      _log.i("OverAll Analytics fetched for userId: $userId");
+
+      return Right(stats);
+    } catch (e) {
+      _log.e("Error fetching Overall analytics for user: $userId $e");
+      return Left(Failure("Error fetching Overall analytics"));
     }
   }
 

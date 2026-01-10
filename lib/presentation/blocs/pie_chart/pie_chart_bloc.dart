@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
-import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_state.dart';
 

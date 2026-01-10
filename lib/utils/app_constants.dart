@@ -99,6 +99,9 @@ abstract class AppRoutes {
   static const String studyMaterial = '/studyMaterial';
   static const String requestResetPassword = '/requestResetPassword';
   static const String resetPassword = '/resetPassword';
+  static const String analyticsScreen = '/analyticsScreen';
+  static const String allSubjectsAnalyticsScreen =
+      '/allSubjectsAnalyticsScreen';
 }
 
 class AdUnitIds {

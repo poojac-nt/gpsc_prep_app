@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_subjects_analytics_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
@@ -365,6 +368,22 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.resetPassword,
     pageBuilder: (context, state) {
       return _slideTransition(ResetPasswordScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.analyticsScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(AnalyticsScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allSubjectsAnalyticsScreen,
+    pageBuilder: (context, state) {
+      final params = state.extra as List<SubjectScore>;
+      return _slideTransition(
+        AllSubjectsAnalyticsScreen(subjectsData: params),
+        state,
+      );
     },
   ),
 ];
