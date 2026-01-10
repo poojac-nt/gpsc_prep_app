@@ -19,22 +19,6 @@ class McqVerticalBarChart extends StatelessWidget {
     final filteredStats =
         optionStats.where((e) => e.questionId == questionId).toList();
 
-    if (filteredStats.isEmpty) {
-      return SizedBox(
-        height: 280.h,
-        child: Center(
-          child: Text(
-            'No statistics available',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      );
-    }
-
     return _BarChartView(optionStats: filteredStats);
   }
 }

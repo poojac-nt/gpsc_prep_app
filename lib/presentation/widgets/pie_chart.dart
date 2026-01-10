@@ -15,6 +15,7 @@ class CustomPieChart extends StatelessWidget {
   final bool isLabelVisible;
   final double centerSpaceValue;
   final double sectionRadiusMultiplier;
+  final Widget? centerWidget;
 
   const CustomPieChart({
     super.key,
@@ -26,6 +27,7 @@ class CustomPieChart extends StatelessWidget {
     required this.colorTwo,
     this.labelOne,
     this.labelTwo,
+    this.centerWidget,
     this.isLabelVisible = true,
     this.centerSpaceValue = 5,
     this.sectionRadiusMultiplier = 0.11,
@@ -47,26 +49,35 @@ class CustomPieChart extends StatelessWidget {
       children: [
         SizedBox(
           height: height.h * 0.7,
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 2,
-              centerSpaceRadius: centerSpace,
-              borderData: FlBorderData(show: false),
-              sections: [
-                PieChartSectionData(
-                  value: itemOne.toDouble(),
-                  showTitle: false,
-                  color: colorOne,
-                  radius: sectionRadius.sp,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: centerSpace,
+                  borderData: FlBorderData(show: false),
+                  sections: [
+                    PieChartSectionData(
+                      value: itemOne.toDouble(),
+                      showTitle: false,
+                      color: colorOne,
+                      radius: sectionRadius.sp,
+                    ),
+                    PieChartSectionData(
+                      value: itemTwo.toDouble(),
+                      showTitle: false,
+                      color: colorTwo,
+                      radius: sectionRadius.sp,
+                    ),
+                  ],
                 ),
-                PieChartSectionData(
-                  value: itemTwo.toDouble(),
-                  showTitle: false,
-                  color: colorTwo,
-                  radius: sectionRadius.sp,
+              ),
+              if (centerWidget != null)
+                Center(
+                  child: FittedBox(fit: BoxFit.scaleDown, child: centerWidget!),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
         if (isLabelVisible) ...[

@@ -114,7 +114,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GoalReminderCard(),
+            GoalReminderCard(
+              activeDays: state.dashboardAnalytics.activeDaysLast7,
+            ),
             15.hGap,
             PerformanceCard(
               completedTest: state.dashboardAnalytics.testsAttempted,
@@ -148,14 +150,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ],
             ),
             10.hGap,
-            LastSnapshotCard(
-              testName:
-                  state.dashboardAnalytics.lastTest.testName ??
-                  'No test attempted',
-              totalMarks: state.dashboardAnalytics.lastTest.score?.toInt() ?? 0,
-              obtainedMarks:
-                  state.dashboardAnalytics.lastTest.gainedScore?.toInt() ?? 0,
-            ),
+            LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
           ],
         ).padAll(20),
       ),

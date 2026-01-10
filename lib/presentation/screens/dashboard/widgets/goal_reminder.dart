@@ -5,7 +5,8 @@ import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
 
 class GoalReminderCard extends StatelessWidget {
-  const GoalReminderCard({super.key});
+  final int activeDays;
+  const GoalReminderCard({super.key, required this.activeDays});
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +80,7 @@ class GoalReminderCard extends StatelessWidget {
                       margin: EdgeInsets.only(right: 5.w),
                       decoration: BoxDecoration(
                         color:
-                            index > 3
+                            activeDays <= index
                                 ? Colors.white.withAlpha(70)
                                 : Colors.white,
                         borderRadius: BorderRadius.circular(100.r),

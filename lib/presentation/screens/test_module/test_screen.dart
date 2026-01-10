@@ -80,6 +80,14 @@ class _TestScreenState extends State<TestScreen> {
     return timeSpent;
   }
 
+  bool isQuestionNotAttempted(PieChartResultSuccess state, int questionId) {
+    final attemptedStats = state.attemptedCounts.firstWhere(
+      (e) => e.questionId == questionId,
+    );
+
+    return attemptedStats.attemptedCount == 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<TimerBloc, TimerState>(
@@ -624,37 +632,52 @@ class _TestScreenState extends State<TestScreen> {
                                             .questionModel[state.currentIndex]
                                             .questionId;
 
-                                    // ✅ Safe lookup with fallback
-                                    final stats = correctState.correctnessCounts
-                                        .firstWhere(
-                                          (entry) =>
-                                              entry['question_id'] ==
-                                              questionId,
-                                          orElse:
-                                              () => {
-                                                'question_id': questionId,
-                                                'correct_count': 0,
-                                                'incorrect_count': 0,
-                                              },
+                                    final isNotAttempted =
+                                        isQuestionNotAttempted(
+                                          correctState,
+                                          questionId,
                                         );
-                                    final attemptedStats = correctState
-                                        .attemptedCounts
-                                        .firstWhere(
-                                          (entry) =>
-                                              entry.questionId == questionId,
-                                        );
-                                    final attempted =
-                                        attemptedStats.attemptedCount;
-                                    final notAttempted =
-                                        attemptedStats.notAttemptedCount;
-                                    final users = attemptedStats.totalUsers;
-
-                                    final correct = stats['correct_count'] ?? 0;
-                                    final incorrect =
-                                        stats['incorrect_count'] ?? 0;
+                                    // // ✅ Safe lookup with fallback
+                                    // final stats = correctState.correctnessCounts
+                                    //     .firstWhere(
+                                    //       (entry) =>
+                                    //           entry['question_id'] ==
+                                    //           questionId,
+                                    //       orElse:
+                                    //           () => {
+                                    //             'question_id': questionId,
+                                    //             'correct_count': 0,
+                                    //             'incorrect_count': 0,
+                                    //           },
+                                    //     );
+                                    // final attemptedStats = correctState
+                                    //     .attemptedCounts
+                                    //     .firstWhere(
+                                    //       (entry) =>
+                                    //           entry.questionId == questionId,
+                                    //     );
+                                    // final attempted =
+                                    //     attemptedStats.attemptedCount;
+                                    // final notAttempted =
+                                    //     attemptedStats.notAttemptedCount;
+                                    // final users = attemptedStats.totalUsers;
+                                    //
+                                    // final correct = stats['correct_count'] ?? 0;
+                                    // final incorrect =
+                                    //     stats['incorrect_count'] ?? 0;
 
                                     // ✅ If not attempted → only show message
-                                    if (correct == 0 && incorrect == 0) {
+                                    // if (correct == 0 && incorrect == 0) {
+                                    //   return ElevatedContainer(
+                                    //     child: Text(
+                                    //       'Question is not attempted by anyone yet',
+                                    //       style: AppTexts.heading.copyWith(
+                                    //         fontSize: 15.sp,
+                                    //       ),
+                                    //     ),
+                                    //   );
+                                    // }
+                                    if (isNotAttempted) {
                                       return ElevatedContainer(
                                         child: Text(
                                           'Question is not attempted by anyone yet',
@@ -664,76 +687,58 @@ class _TestScreenState extends State<TestScreen> {
                                         ),
                                       );
                                     }
-
                                     // ✅ Otherwise → show pie chart
-                                    return TestModule(
-                                      title: "Performance Summary",
-                                      cards: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Expanded(
-                                              child: CustomPieChart(
-                                                total: correct + incorrect,
-                                                itemOne: correct,
-                                                itemTwo: incorrect,
-                                                colorOne: Colors.green,
-                                                colorTwo: Colors.red,
-                                                labelOne: 'Correct',
-                                                labelTwo: 'Incorrect',
-                                              ),
-                                            ),
-                                            SizedBox(width: 15.w),
-                                            Expanded(
-                                              child: CustomPieChart(
-                                                total: users,
-                                                itemOne: attempted,
-                                                itemTwo: notAttempted,
-                                                colorOne: Colors.blue,
-                                                colorTwo: Colors.grey,
-                                                labelOne: 'Attempted',
-                                                labelTwo: 'Not Attempted',
-                                              ),
-                                            ),
-                                          ],
+                                    return Column(
+                                      children: [
+                                        _buildPieCharts(
+                                          correctState,
+                                          questionId,
+                                        ),
+                                        20.hGap,
+                                        BlocBuilder<
+                                          BarChartBloc,
+                                          BarChartState
+                                        >(
+                                          builder: (context, barState) {
+                                            if (barState
+                                                is OptionMatrixLoading) {
+                                              return const SizedBox.shrink(); // or skeleton
+                                            }
+
+                                            if (barState
+                                                is OptionMatrixResultFailure) {
+                                              return ElevatedContainer(
+                                                child: Text(
+                                                  'Unable to load option statistics',
+                                                  style: AppTexts.heading
+                                                      .copyWith(
+                                                        fontSize: 14.sp,
+                                                      ),
+                                                ),
+                                              );
+                                            }
+
+                                            if (barState
+                                                is OptionMatrixSuccess) {
+                                              final questionId =
+                                                  state
+                                                      .questionModel[state
+                                                          .currentIndex]
+                                                      .questionId;
+
+                                              return McqVerticalBarChart(
+                                                questionId: questionId,
+                                                optionStats:
+                                                    barState.questionStats,
+                                              );
+                                            }
+
+                                            return const SizedBox.shrink();
+                                          },
                                         ),
                                       ],
                                     );
                                   }
-                                  return const SizedBox.shrink();
-                                },
-                              ),
-                              20.hGap,
-                              BlocBuilder<BarChartBloc, BarChartState>(
-                                builder: (context, barState) {
-                                  if (barState is OptionMatrixLoading) {
-                                    return const SizedBox.shrink(); // or skeleton
-                                  }
-
-                                  if (barState is OptionMatrixResultFailure) {
-                                    return ElevatedContainer(
-                                      child: Text(
-                                        'Unable to load option statistics',
-                                        style: AppTexts.heading.copyWith(
-                                          fontSize: 14.sp,
-                                        ),
-                                      ),
-                                    );
-                                  }
-
-                                  if (barState is OptionMatrixSuccess) {
-                                    final questionId =
-                                        state
-                                            .questionModel[state.currentIndex]
-                                            .questionId;
-
-                                    return McqVerticalBarChart(
-                                      questionId: questionId,
-                                      optionStats: barState.questionStats,
-                                    );
-                                  }
-
                                   return const SizedBox.shrink();
                                 },
                               ),
@@ -965,6 +970,50 @@ class _TestScreenState extends State<TestScreen> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildPieCharts(PieChartResultSuccess state, int questionId) {
+    final stats = state.correctnessCounts.firstWhere(
+      (e) => e['question_id'] == questionId,
+      orElse: () => {'correct_count': 0, 'incorrect_count': 0},
+    );
+
+    final attemptedStats = state.attemptedCounts.firstWhere(
+      (e) => e.questionId == questionId,
+    );
+
+    return TestModule(
+      title: "Performance Summary",
+      cards: [
+        Row(
+          children: [
+            Expanded(
+              child: CustomPieChart(
+                total: stats['correct_count'] + stats['incorrect_count'],
+                itemOne: stats['correct_count'],
+                itemTwo: stats['incorrect_count'],
+                colorOne: Colors.green,
+                colorTwo: Colors.red,
+                labelOne: 'Correct',
+                labelTwo: 'Incorrect',
+              ),
+            ),
+            SizedBox(width: 15.w),
+            Expanded(
+              child: CustomPieChart(
+                total: attemptedStats.totalUsers,
+                itemOne: attemptedStats.attemptedCount,
+                itemTwo: attemptedStats.notAttemptedCount,
+                colorOne: Colors.blue,
+                colorTwo: Colors.grey,
+                labelOne: 'Attempted',
+                labelTwo: 'Not Attempted',
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -20,12 +20,18 @@ class PerformanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
+      padding: EdgeInsets.only(
+        left: AppPaddings.dashboardContainerPadding,
+        right: AppPaddings.dashboardContainerPadding,
+        top: 25.h,
+        bottom: 25.h,
+      ),
       decoration: BoxDecoration(
         borderRadius: AppBorders.dashboardBorderRadius,
         color: Colors.white,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,14 +92,14 @@ class PerformanceCard extends StatelessWidget {
             children: [
               Flexible(
                 flex: 1,
-                child: Container(
-                  padding: EdgeInsets.only(top: 4.h),
-                  height: 150.h,
-                  width: 150.h,
-                  child: Stack(
-                    children: [
-                      CustomPieChart(
-                        height: 150.h,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final size = constraints.maxHeight.clamp(150.0, 180.0);
+                    return Container(
+                      padding: EdgeInsets.only(top: 4.h),
+                      width: size,
+                      child: CustomPieChart(
+                        height: size,
                         isLabelVisible: false,
                         centerSpaceValue: 3.5,
                         sectionRadiusMultiplier: 0.05,
@@ -102,20 +108,28 @@ class PerformanceCard extends StatelessWidget {
                         itemTwo: 100,
                         colorOne: AppColors.primary,
                         colorTwo: Colors.grey.shade300,
-                      ),
-                      Center(
-                        heightFactor: 2.5.h,
-                        child: Text(
-                          "Accuracy\n$accuracy%",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15.sp,
-                          ),
+                        centerWidget: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Accuracy",
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              "${accuracy.toStringAsFixed(2)}%",
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
               20.wGap,
@@ -152,7 +166,7 @@ class TotalTestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.topLeft,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
         color: color.withAlpha(12),
         borderRadius: AppBorders.dashboardBorderRadius,
@@ -169,6 +183,8 @@ class TotalTestCard extends StatelessWidget {
           15.hGap,
           Text(
             titleOne,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
             style: TextStyle(
               fontSize: 18.sp,
               color: Colors.black,
@@ -178,6 +194,8 @@ class TotalTestCard extends StatelessWidget {
           3.hGap,
           Text(
             titleTwo,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.bold,

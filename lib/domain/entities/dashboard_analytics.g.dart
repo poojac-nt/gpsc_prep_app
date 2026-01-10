@@ -16,7 +16,9 @@ DashboardAnalytics _$DashboardAnalyticsFromJson(Map<String, dynamic> json) =>
       activeDaysLast7: (json['active_days_last_7'] as num).toInt(),
       activeDaysLast30: (json['active_days_last_30'] as num).toInt(),
       longestStreak: (json['longest_streak'] as num).toInt(),
-      lastTest: LastTest.fromJson(json['last_test'] as Map<String, dynamic>),
+      lastTest: json['last_test'] == null
+          ? null
+          : LastTest.fromJson(json['last_test'] as Map<String, dynamic>),
       userAllOverAccuracy: (json['user_accuracy_all'] as num).toDouble(),
     );
 
@@ -29,15 +31,15 @@ Map<String, dynamic> _$DashboardAnalyticsToJson(DashboardAnalytics instance) =>
       'active_days_last_7': instance.activeDaysLast7,
       'active_days_last_30': instance.activeDaysLast30,
       'longest_streak': instance.longestStreak,
-      'last_test': instance.lastTest.toJson(),
+      'last_test': instance.lastTest?.toJson(),
       'user_accuracy_all': instance.userAllOverAccuracy,
     };
 
 LastTest _$LastTestFromJson(Map<String, dynamic> json) => LastTest(
-      testId: (json['test_id'] as num?)?.toInt(),
-      testName: json['test_name'] as String?,
-      score: (json['score'] as num?)?.toDouble(),
-      gainedScore: (json['gained_score'] as num?)?.toInt(),
+      testId: (json['test_id'] as num).toInt(),
+      testName: json['test_name'] as String,
+      score: (json['score'] as num).toDouble(),
+      gainedScore: (json['gained_score'] as num).toInt(),
     );
 
 Map<String, dynamic> _$LastTestToJson(LastTest instance) => <String, dynamic>{

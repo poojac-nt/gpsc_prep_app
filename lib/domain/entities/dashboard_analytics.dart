@@ -26,7 +26,7 @@ class DashboardAnalytics {
   final int longestStreak;
 
   @JsonKey(name: 'last_test')
-  final LastTest lastTest;
+  final LastTest? lastTest;
 
   @JsonKey(name: 'user_accuracy_all')
   final double userAllOverAccuracy;
@@ -52,18 +52,23 @@ class DashboardAnalytics {
 @JsonSerializable()
 class LastTest {
   @JsonKey(name: 'test_id')
-  final int? testId;
+  final int testId;
 
   @JsonKey(name: 'test_name')
-  final String? testName;
+  final String testName;
 
   @JsonKey(name: 'score')
-  final double? score;
+  final double score;
 
   @JsonKey(name: 'gained_score')
-  final int? gainedScore;
+  final int gainedScore;
 
-  LastTest({this.testId, this.testName, this.score, this.gainedScore});
+  LastTest({
+    required this.testId,
+    required this.testName,
+    required this.score,
+    required this.gainedScore,
+  });
 
   factory LastTest.fromJson(Map<String, dynamic> json) =>
       _$LastTestFromJson(json);
