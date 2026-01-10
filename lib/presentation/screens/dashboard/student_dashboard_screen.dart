@@ -179,8 +179,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 children: [
                   SizedBox(width: 120.w, height: 14.h),
                   10.hGap,
-                  SizedBox(width: 180.w, height: 22.h),
-                  10.hGap,
                   SizedBox(width: 220.w, height: 14.h),
                   20.hGap,
                   Container(
@@ -193,9 +191,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ],
               ),
             ),
-
             15.hGap,
-
             // Performance Card
             Container(
               padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
@@ -428,11 +424,20 @@ class StartTestCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: buttonBgColor,
                       foregroundColor: buttonTextColor,
+                      padding: EdgeInsets.symmetric(
+                        vertical: 8.h,
+                        horizontal: 13.w,
+                      ),
                     ),
+
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(buttonText),
-                        Expanded(child: Icon(Icons.navigate_next)),
+                        Text(
+                          buttonText,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Icon(Icons.navigate_next),
                       ],
                     ),
                   ),
@@ -440,11 +445,11 @@ class StartTestCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: -10,
-              right: -10,
+              top: -10.h,
+              right: -10.w,
               child: SizedBox(
                 width: 120.w,
-                height: 120.w,
+                height: 120.h,
                 child: CustomPaint(painter: CirclePainter(color: color)),
               ),
             ),
