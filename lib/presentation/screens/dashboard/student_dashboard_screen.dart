@@ -40,8 +40,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   void initState() {
     super.initState();
     final currentState = context.read<DashboardBloc>().state;
-    if (currentState is! AttemptedTestsFetched) {
-      context.read<DashboardBloc>().add(FetchAttemptedTests());
+    if (currentState is! DashboardAnalyticsFetched) {
+      context.read<DashboardBloc>().add(FetchDashboardAnalytics());
     }
   }
 
@@ -83,13 +83,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         ],
         child: BlocBuilder<DashboardBloc, DashboardBlocState>(
           builder: (context, state) {
-            if (state is FetchingAttemptedTests) {
+            if (state is FetchingDashboardAnalytics) {
               return _buildWhenLoading(context);
             }
-            if (state is AttemptedTestsFetchedFailed) {
+            if (state is DashboardAnalyticsFetchedFailed) {
               return Center(child: Text(state.failure.message));
             }
-            if (state is AttemptedTestsFetched) {
+            if (state is DashboardAnalyticsFetched) {
               return _buildDashboardContent(context, state, user?.name ?? '');
             }
             return const SizedBox.shrink();
@@ -102,13 +102,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   /// ✅ Dashboard content when data is ready
   Widget _buildDashboardContent(
     BuildContext context,
-    AttemptedTestsFetched state,
+    DashboardAnalyticsFetched state,
     String username,
   ) {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () async {
-        return context.read<DashboardBloc>().add(FetchAttemptedTests());
+        return context.read<DashboardBloc>().add(FetchDashboardAnalytics());
       },
       child: SingleChildScrollView(
         child: Column(
@@ -116,7 +116,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           children: [
             GoalReminderCard(),
             15.hGap,
-            PerformanceCard(),
+            PerformanceCard(
+              completedTest: state.dashboardAnalytics.testsAttempted,
+              totalTest: state.dashboardAnalytics.totalTestsAvailable,
+              accuracy: state.dashboardAnalytics.userAllOverAccuracy,
+            ),
             10.hGap,
 
             ///Daily test
@@ -144,7 +148,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ],
             ),
             10.hGap,
-            LastSnapshotCard(),
+            LastSnapshotCard(
+              testName:
+                  state.dashboardAnalytics.lastTest.testName ??
+                  'No test attempted',
+              totalMarks: state.dashboardAnalytics.lastTest.score?.toInt() ?? 0,
+              obtainedMarks:
+                  state.dashboardAnalytics.lastTest.gainedScore?.toInt() ?? 0,
+            ),
           ],
         ).padAll(20),
       ),
@@ -303,7 +314,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         await getIt<SupabaseHelper>().insertDailyMcqTestsResults(latest);
         await testResultBox.delete('latest');
         if (!context.mounted) return;
-        context.read<DashboardBloc>().add(FetchAttemptedTests());
+        context.read<DashboardBloc>().add(FetchDashboardAnalytics());
         log.i('✅ Synced test result to Supabase and removed from Hive');
       } catch (e) {
         log.e('❌ Sync failed: $e');
@@ -424,8 +435,10 @@ class StartTestCard extends StatelessWidget {
                       foregroundColor: buttonTextColor,
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [Text(buttonText), Icon(Icons.navigate_next)],
+                      children: [
+                        Text(buttonText),
+                        Expanded(child: Icon(Icons.navigate_next)),
+                      ],
                     ),
                   ),
                 ],

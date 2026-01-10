@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
 import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
@@ -874,6 +875,23 @@ class SupabaseHelper {
     } catch (e, st) {
       _log.e("Error fetching attempted question stats", error: e, s: st);
       return Left(Failure("Error fetching attempted question stats"));
+    }
+  }
+
+  Future<Either<Failure, DashboardAnalytics>> getDashboardAnalytics() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getDashboardAnalytics,
+        params: {'p_user_id': _cache.user!.id},
+      );
+      final analytics = DashboardAnalytics.fromJson(
+        result.first as Map<String, dynamic>,
+      );
+      _log.i("Dashboard Analytics: $analytics");
+      return Right(analytics);
+    } catch (e, st) {
+      _log.e("Error fetching dashboard analytics", error: e, s: st);
+      return Left(Failure("Error fetching dashboard analytics"));
     }
   }
 

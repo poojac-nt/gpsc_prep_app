@@ -57,7 +57,7 @@ class _ResultScreenState extends State<ResultScreen> {
       onPopInvokedWithResult: (didPop, _) {
         context.read<ConnectivityBloc>().add(CheckConnectivity());
         if (widget.isFromTestScreen) {
-          context.read<DashboardBloc>().add(FetchAttemptedTests());
+          context.read<DashboardBloc>().add(FetchDashboardAnalytics());
         }
         context.go(AppRoutes.studentDashboard);
       },

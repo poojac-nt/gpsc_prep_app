@@ -221,24 +221,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     10.hGap,
                     BlocBuilder<DashboardBloc, DashboardBlocState>(
                       builder: (context, state) {
-                        if (state is FetchingAttemptedTests) {
+                        if (state is FetchingDashboardAnalytics) {
                           return _buildWhenLoading(context);
                         }
-                        if (state is AttemptedTestsFetchedFailed) {
+                        if (state is DashboardAnalyticsFetchedFailed) {
                           return Text(state.failure.message);
                         }
-                        if (state is AttemptedTestsFetched) {
+                        if (state is DashboardAnalyticsFetched) {
                           return TestModule(
                             title: 'Quick Stats',
                             cards: [
                               QuickStats(
                                 text: "Test Taken",
-                                num: state.totalTests.toString(),
+                                num:
+                                    state.dashboardAnalytics.testsAttempted
+                                        .toString(),
                               ),
                               10.hGap,
                               QuickStats(
                                 text: "Average Score",
-                                num: state.avgScore.toString(),
+                                num:
+                                    state
+                                        .dashboardAnalytics
+                                        .averageTestAccuracyPercent
+                                        .toString(),
                               ),
                               // 10.hGap,
                               // QuickStats(text: "Study Strike", num: "12 days"),

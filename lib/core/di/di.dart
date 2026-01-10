@@ -113,7 +113,7 @@ void setupBlocs() {
     () => DailyDescTestBloc(getIt<TestRepository>()),
   );
   getIt.registerLazySingleton<DashboardBloc>(
-    () => DashboardBloc(getIt<TestRepository>()),
+    () => DashboardBloc(getIt<AnalyticsRepository>()),
   );
   getIt.registerLazySingleton<StudyMaterialBloc>(
     () => StudyMaterialBloc(getIt<StudyMaterialRepository>()),

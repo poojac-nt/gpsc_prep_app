@@ -7,7 +7,15 @@ import '../../../widgets/pie_chart.dart';
 import 'icon_container.dart';
 
 class PerformanceCard extends StatelessWidget {
-  const PerformanceCard({super.key});
+  final double accuracy;
+  final int totalTest;
+  final int completedTest;
+  const PerformanceCard({
+    super.key,
+    required this.accuracy,
+    required this.totalTest,
+    required this.completedTest,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +59,22 @@ class PerformanceCard extends StatelessWidget {
                   color: Colors.blue.withAlpha(30),
                   borderRadius: AppBorders.dashboardBorderRadius,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Detailed",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.bold,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Detailed",
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Icon(Icons.navigate_next, color: Colors.blue),
-                  ],
+                      Icon(Icons.navigate_next, color: Colors.blue),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -87,17 +98,15 @@ class PerformanceCard extends StatelessWidget {
                         centerSpaceValue: 3.5,
                         sectionRadiusMultiplier: 0.05,
                         total: 100,
-                        itemOne: 30,
-                        itemTwo: 30,
+                        itemOne: accuracy.toInt(),
+                        itemTwo: 100,
                         colorOne: AppColors.primary,
                         colorTwo: Colors.grey.shade300,
-                        labelOne: "labelOne",
-                        labelTwo: "labelTwo",
                       ),
                       Center(
                         heightFactor: 2.5.h,
                         child: Text(
-                          "Accuracy\n42%",
+                          "Accuracy\n$accuracy%",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -114,7 +123,7 @@ class PerformanceCard extends StatelessWidget {
                 flex: 1,
                 child: TotalTestCard(
                   color: Colors.grey,
-                  titleOne: "20/50",
+                  titleOne: "$completedTest/$totalTest",
                   titleTwo: "Test Completed",
                 ),
               ),

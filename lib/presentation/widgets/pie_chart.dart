@@ -10,8 +10,8 @@ class CustomPieChart extends StatelessWidget {
   final int itemTwo;
   final Color colorOne;
   final Color colorTwo;
-  final String labelOne;
-  final String labelTwo;
+  final String? labelOne;
+  final String? labelTwo;
   final bool isLabelVisible;
   final double centerSpaceValue;
   final double sectionRadiusMultiplier;
@@ -24,8 +24,8 @@ class CustomPieChart extends StatelessWidget {
     required this.itemTwo,
     required this.colorOne,
     required this.colorTwo,
-    required this.labelOne,
-    required this.labelTwo,
+    this.labelOne,
+    this.labelTwo,
     this.isLabelVisible = true,
     this.centerSpaceValue = 5,
     this.sectionRadiusMultiplier = 0.11,

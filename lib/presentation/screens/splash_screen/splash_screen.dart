@@ -121,7 +121,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _navigateBasedOnUserRole() {
     if (!mounted) return;
-    context.read<DashboardBloc>().add(FetchAttemptedTests());
+    context.read<DashboardBloc>().add(FetchDashboardAnalytics());
     context.read<DailyTestBloc>().add(FetchTests());
     context.read<DailyDescTestBloc>().add(FetchAllTests());
 

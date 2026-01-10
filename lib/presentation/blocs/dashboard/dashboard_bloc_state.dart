@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 
 import '../../../core/error/failure.dart';
 
@@ -7,17 +8,16 @@ sealed class DashboardBlocState {}
 
 class DashBoardInitialState extends DashboardBlocState {}
 
-class FetchingAttemptedTests extends DashboardBlocState {}
+class FetchingDashboardAnalytics extends DashboardBlocState {}
 
-class AttemptedTestsFetched extends DashboardBlocState {
-  final int totalTests;
-  final double avgScore;
+class DashboardAnalyticsFetched extends DashboardBlocState {
+  final DashboardAnalytics dashboardAnalytics;
 
-  AttemptedTestsFetched({required this.totalTests, required this.avgScore});
+  DashboardAnalyticsFetched({required this.dashboardAnalytics});
 }
 
-class AttemptedTestsFetchedFailed extends DashboardBlocState {
+class DashboardAnalyticsFetchedFailed extends DashboardBlocState {
   final Failure failure;
 
-  AttemptedTestsFetchedFailed(this.failure);
+  DashboardAnalyticsFetchedFailed(this.failure);
 }

@@ -7,7 +7,15 @@ import 'custom_progress_bar.dart';
 import 'icon_container.dart';
 
 class LastSnapshotCard extends StatelessWidget {
-  const LastSnapshotCard({super.key});
+  final String testName;
+  final int totalMarks;
+  final int obtainedMarks;
+  const LastSnapshotCard({
+    super.key,
+    required this.testName,
+    required this.totalMarks,
+    required this.obtainedMarks,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +41,8 @@ class LastSnapshotCard extends StatelessWidget {
                   children: [
                     Text(
                       "Last Test Snapshot",
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16.sp,
@@ -40,7 +50,9 @@ class LastSnapshotCard extends StatelessWidget {
                     ),
                     3.hGap,
                     Text(
-                      "MCQ or Mains",
+                      testName,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 12.sp,
@@ -50,11 +62,12 @@ class LastSnapshotCard extends StatelessWidget {
                   ],
                 ),
               ),
+              3.wGap,
               RichText(
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: "142",
+                      text: "$obtainedMarks",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -62,7 +75,7 @@ class LastSnapshotCard extends StatelessWidget {
                       ),
                     ),
                     TextSpan(
-                      text: "/200",
+                      text: "/$totalMarks",
                       style: TextStyle(
                         color: Colors.grey,
                         fontWeight: FontWeight.bold,
@@ -76,7 +89,7 @@ class LastSnapshotCard extends StatelessWidget {
           // 15.hGap,
           CustomProgressBar(
             titleText: '',
-            value: 0.7,
+            value: (obtainedMarks / totalMarks).clamp(0.0, 1.0),
             labelText: '',
             minHeight: 10,
           ),
