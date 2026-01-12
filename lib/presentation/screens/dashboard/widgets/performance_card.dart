@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
 import '../../../widgets/pie_chart.dart';
+import 'dashboard_container.dart';
 import 'icon_container.dart';
 
 class PerformanceCard extends StatelessWidget {
@@ -21,16 +22,12 @@ class PerformanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DashboardContainer(
       padding: EdgeInsets.only(
         left: AppPaddings.dashboardContainerPadding,
         right: AppPaddings.dashboardContainerPadding,
         top: 25.h,
         bottom: 25.h,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: AppBorders.dashboardBorderRadius,
-        color: Colors.white,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -41,18 +38,11 @@ class PerformanceCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Performance",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text("Performance", style: AppTexts.dashboardContainerTitle),
                   5.hGap,
                   Text(
                     "Your learning curve",
-                    style: TextStyle(color: Colors.black54, fontSize: 14.sp),
+                    style: AppTexts.dashboardSmallTexts,
                   ),
                 ],
               ),
@@ -74,10 +64,8 @@ class PerformanceCard extends StatelessWidget {
                     children: [
                       Text(
                         "Detailed",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.bold,
+                        style: AppTexts.dashboardSmallTexts.copyWith(
+                          color: AppColors.primary,
                         ),
                       ),
                       Icon(Icons.navigate_next, color: Colors.blue),
@@ -116,8 +104,9 @@ class PerformanceCard extends StatelessWidget {
                             Text(
                               "Accuracy",
                               style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
                               ),
                             ),
                             Text(
@@ -199,11 +188,7 @@ class TotalTestCard extends StatelessWidget {
             titleTwo,
             overflow: TextOverflow.ellipsis,
             maxLines: 2,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: AppTexts.dashboardSmallTexts,
           ),
         ],
       ),

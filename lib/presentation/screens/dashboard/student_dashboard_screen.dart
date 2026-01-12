@@ -9,10 +9,12 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/dashboard_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/goal_reminder.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/icon_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/last_snapshot_card.dart';
@@ -36,6 +38,62 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
+  String leaderBoardTestTitle = 'Prelims FLT';
+
+  List<LeaderboardModel> prelimsLeaders = [
+    LeaderboardModel(
+      testType: "Prelims FTL",
+      rank: 1,
+      studentName: "Bansi",
+      totalMarks: 20,
+    ),
+    LeaderboardModel(
+      testType: "Prelims FTL",
+      rank: 2,
+      studentName: "Amisha",
+      totalMarks: 15,
+    ),
+    LeaderboardModel(
+      testType: "Prelims FTL",
+      rank: 3,
+      studentName: "Dhruvi",
+      totalMarks: 10,
+    ),
+  ];
+  List<LeaderboardModel> mainsLeaders = [
+    LeaderboardModel(
+      testType: "Mains FTL",
+      rank: 1,
+      studentName: "Vishwa",
+      totalMarks: 100,
+    ),
+    LeaderboardModel(
+      testType: "Mains FTL",
+      rank: 2,
+      studentName: "Dhrumi",
+      totalMarks: 90,
+    ),
+    LeaderboardModel(
+      testType: "Mains FTL",
+      rank: 3,
+      studentName: "Riya",
+      totalMarks: 80,
+    ),
+  ];
+  late List<LeaderboardModel> leaders = prelimsLeaders;
+  Color _getRankColor(int rank) {
+    switch (rank) {
+      case 1:
+        return const Color(0xffCB8C08); // Gold
+      case 2:
+        return const Color(0xff9E9E9E); // Silver
+      case 3:
+        return const Color(0xffCD7F32); // Bronze
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -151,8 +209,133 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
             10.hGap,
             LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
+            10.hGap,
+            // leaderboardSection(),
           ],
         ).padAll(20),
+      ),
+    );
+  }
+
+  DashboardContainer leaderboardSection() {
+    return DashboardContainer(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.emoji_events_rounded,
+                color: Colors.yellowAccent.shade700,
+                size: 25.sp,
+              ),
+              10.wGap,
+              Text("Leaderboard", style: AppTexts.dashboardContainerTitle),
+              Spacer(),
+              GestureDetector(
+                onTap: () {},
+                child: Text(
+                  "See all",
+                  style: AppTexts.dashboardSmallTexts.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          10.hGap,
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.r),
+              color: Colors.grey.shade200,
+              border: Border.all(color: Colors.black26, width: 0.2),
+            ),
+            padding: EdgeInsets.symmetric(vertical: 5.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildTabToggle("Prelims FLT", leaderBoardTestTitle, (val) {
+                  setState(() {
+                    leaderBoardTestTitle = val;
+                    leaders = prelimsLeaders;
+                  });
+                }),
+                _buildTabToggle("Mains FLT", leaderBoardTestTitle, (val) {
+                  setState(() {
+                    leaderBoardTestTitle = val;
+                    leaders = mainsLeaders;
+                  });
+                }),
+              ],
+            ),
+          ),
+          5.hGap,
+          Divider(color: Colors.grey, thickness: 0.7),
+          ListView.builder(
+            itemCount: leaders.length,
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (context, index) {
+              final profilePicture = leaders[index].profilePicture;
+              return Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  tileColor:
+                      index == 0 ? Color(0xffCB8C08).withAlpha(15) : null,
+                  shape:
+                      index == 0
+                          ? RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(60.r),
+                          )
+                          : null,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20.w),
+                  leading: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "#${leaders[index].rank}",
+                        style: TextStyle(
+                          color: _getRankColor(leaders[index].rank),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.sp,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      10.wGap,
+                      CircleAvatar(
+                        backgroundColor:
+                            profilePicture == null
+                                ? Colors.blueAccent.withAlpha(40)
+                                : Colors.transparent,
+                        backgroundImage:
+                            profilePicture != null
+                                ? NetworkImage(profilePicture)
+                                : null,
+                        child:
+                            profilePicture == null
+                                ? Icon(
+                                  Icons.person,
+                                  color: Colors.grey.shade600,
+                                  size: 20.sp,
+                                )
+                                : null,
+                      ),
+                    ],
+                  ),
+                  title: Text(
+                    leaders[index].studentName,
+                    style: AppTexts.dashboardMediumTitle.copyWith(
+                      fontSize: 15.sp,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${leaders[index].totalMarks} marks',
+                    style: AppTexts.dashboardSmallTexts,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -167,13 +350,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Goal Reminder Card
-            Container(
+            DashboardContainer(
               height: 180.h,
-              padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
-              decoration: BoxDecoration(
-                borderRadius: AppBorders.dashboardBorderRadius,
-                color: Colors.white,
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -193,12 +371,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
             15.hGap,
             // Performance Card
-            Container(
-              padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
-              decoration: BoxDecoration(
-                borderRadius: AppBorders.dashboardBorderRadius,
-                color: Colors.white,
-              ),
+            DashboardContainer(
               child: Row(
                 children: [
                   Container(
@@ -218,29 +391,21 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ],
               ),
             ),
-
             15.hGap,
-
             // Two Test Cards Skeleton
             Row(
               children: [
                 Expanded(
-                  child: Container(
+                  child: DashboardContainer(
                     height: 170.h,
-                    decoration: BoxDecoration(
-                      borderRadius: AppBorders.dashboardBorderRadius,
-                      color: Colors.white,
-                    ),
+                    child: SizedBox.shrink(),
                   ),
                 ),
                 10.wGap,
                 Expanded(
-                  child: Container(
+                  child: DashboardContainer(
                     height: 170.h,
-                    decoration: BoxDecoration(
-                      borderRadius: AppBorders.dashboardBorderRadius,
-                      color: Colors.white,
-                    ),
+                    child: SizedBox.shrink(),
                   ),
                 ),
               ],
@@ -249,12 +414,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             15.hGap,
 
             // Last Snapshot Skeleton
-            Container(
-              padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
-              decoration: BoxDecoration(
-                borderRadius: AppBorders.dashboardBorderRadius,
-                color: Colors.white,
-              ),
+            DashboardContainer(
               child: Column(
                 children: [
                   Container(height: 20.h),
@@ -359,6 +519,42 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 }
 
+Widget _buildTabToggle(
+  String label,
+  String currentValue,
+  Function(String) onTap,
+) {
+  bool isSelected = currentValue == label;
+  return GestureDetector(
+    onTap: () => onTap(label),
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 33.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: isSelected ? AppColors.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(8.r),
+        boxShadow:
+            isSelected
+                ? [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+                : [],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.bold,
+          color: isSelected ? Colors.white : Colors.grey[500],
+        ),
+      ),
+    ),
+  );
+}
+
 class StartTestCard extends StatelessWidget {
   final Color color;
   final String buttonText;
@@ -381,11 +577,8 @@ class StartTestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: AppBorders.dashboardBorderRadius,
-        color: Colors.white,
-      ),
+    return DashboardContainer(
+      padding: EdgeInsets.zero,
       child: ClipRRect(
         borderRadius: AppBorders.dashboardBorderRadius,
         child: Stack(
@@ -402,22 +595,9 @@ class StartTestCard extends StatelessWidget {
                     color: color,
                   ),
                   10.hGap,
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  Text(title, style: AppTexts.dashboardMediumTitle),
                   5.hGap,
-                  Text(
-                    subTitle,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  Text(subTitle, style: AppTexts.dashboardSmallTexts),
                   5.hGap,
                   ElevatedButton(
                     onPressed: onTap,
@@ -429,7 +609,6 @@ class StartTestCard extends StatelessWidget {
                         horizontal: 13.w,
                       ),
                     ),
-
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

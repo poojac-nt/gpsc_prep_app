@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
+import 'dashboard_container.dart';
 
 class GoalReminderCard extends StatelessWidget {
   final int activeDays;
@@ -10,15 +11,12 @@ class GoalReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DashboardContainer(
       padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
-      decoration: BoxDecoration(
-        borderRadius: AppBorders.dashboardBorderRadius,
-        gradient: LinearGradient(
-          colors: [Colors.blueAccent, Colors.blue],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+      gradient: LinearGradient(
+        colors: [Colors.blueAccent, Colors.blue],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,12 +53,9 @@ class GoalReminderCard extends StatelessWidget {
           18.hGap,
 
           ///Weekly Consistency
-          Container(
+          DashboardContainer(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 15.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(30),
-              borderRadius: AppBorders.dashboardBorderRadius,
-            ),
+            color: Colors.white.withAlpha(30),
             child: Row(
               children: [
                 Icon(Icons.calendar_month, size: 18.sp, color: Colors.white),

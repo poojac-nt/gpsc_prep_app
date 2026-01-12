@@ -5,6 +5,7 @@ import '../../../../domain/entities/dashboard_analytics.dart';
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
 import 'custom_progress_bar.dart';
+import 'dashboard_container.dart';
 import 'icon_container.dart';
 
 class LastSnapshotCard extends StatelessWidget {
@@ -16,12 +17,7 @@ class LastSnapshotCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppPaddings.dashboardContainerPadding),
-      decoration: BoxDecoration(
-        borderRadius: AppBorders.dashboardBorderRadius,
-        color: Colors.white,
-      ),
+    return DashboardContainer(
       child: Column(
         children: [
           Row(
@@ -40,21 +36,14 @@ class LastSnapshotCard extends StatelessWidget {
                       "Last Test Snapshot",
                       overflow: TextOverflow.ellipsis,
                       softWrap: true,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.sp,
-                      ),
+                      style: AppTexts.dashboardMediumTitle,
                     ),
                     3.hGap,
                     Text(
                       lastTest?.testName ?? 'No test attempted',
                       overflow: TextOverflow.ellipsis,
                       softWrap: true,
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTexts.dashboardSmallTexts,
                     ),
                   ],
                 ),

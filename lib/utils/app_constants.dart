@@ -70,6 +70,20 @@ abstract class AppTexts {
     fontSize: 20.sp,
     fontVariations: [FontVariation.weight(800)],
   );
+  static TextStyle dashboardContainerTitle = TextStyle(
+    color: Colors.black,
+    fontSize: 18.sp,
+    fontWeight: FontWeight.bold,
+  );
+  static TextStyle dashboardSmallTexts = TextStyle(
+    color: Colors.black54,
+    fontSize: 12.sp,
+    fontWeight: FontWeight.bold,
+  );
+  static TextStyle dashboardMediumTitle = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 16.sp,
+  );
 }
 
 abstract class AppRoutes {

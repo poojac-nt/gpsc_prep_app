@@ -49,6 +49,7 @@ class DifficultyWiseBarChart extends StatelessWidget {
         barRods: [
           BarChartRodData(
             toY: item.totalQuestionsInTest.toDouble(),
+            color: Colors.transparent,
             rodStackItems: [
               BarChartRodStackItem(
                 0,
