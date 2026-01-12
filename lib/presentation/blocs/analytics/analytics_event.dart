@@ -3,4 +3,18 @@ part of 'analytics_bloc.dart';
 @immutable
 sealed class AnalyticsEvent {}
 
-class FetchAnalyticsEvent extends AnalyticsEvent {}
+class FetchTrendData extends AnalyticsEvent {}
+
+class LoadSubjectMasteryEvent extends AnalyticsEvent {}
+
+class LoadDifficultyAnalyticsEvent extends AnalyticsEvent {
+  final AnalyticsRange range;
+
+  LoadDifficultyAnalyticsEvent(this.range);
+}
+
+class LoadQuestionTypeAnalyticsEvent extends AnalyticsEvent {
+  final AnalyticsRange range;
+
+  LoadQuestionTypeAnalyticsEvent(this.range);
+}

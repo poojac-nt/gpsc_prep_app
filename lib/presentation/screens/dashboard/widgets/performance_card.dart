@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
@@ -10,6 +11,7 @@ class PerformanceCard extends StatelessWidget {
   final double accuracy;
   final int totalTest;
   final int completedTest;
+
   const PerformanceCard({
     super.key,
     required this.accuracy,
@@ -66,7 +68,7 @@ class PerformanceCard extends StatelessWidget {
                   borderRadius: AppBorders.dashboardBorderRadius,
                 ),
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () => context.push(AppRoutes.analyticsScreen),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -154,6 +156,7 @@ class TotalTestCard extends StatelessWidget {
   final String titleOne;
   final String titleTwo;
   final Icon? icon;
+
   const TotalTestCard({
     super.key,
     required this.color,

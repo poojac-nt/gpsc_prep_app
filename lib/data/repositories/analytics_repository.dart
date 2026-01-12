@@ -1,5 +1,6 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 
 import '../../core/error/failure.dart';
 import '../../core/helpers/supabase_helper.dart';
@@ -23,6 +24,11 @@ class AnalyticsRepository {
     int testId,
   ) async => await _supabase.fetchAttemptedQuestionStats(testId);
 
-  Future<Either<Failure, OverAllAnalyticsModel>>
-  fetchOverAllAnalytics() async => await _supabase.fetchOverAllAnalytics();
+  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics({
+    DateTime? from,
+    DateTime? to,
+  }) async => await _supabase.fetchOverAllAnalytics(from: from, to: to);
+
+  Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async =>
+      await _supabase.fetchTrendForUser();
 }

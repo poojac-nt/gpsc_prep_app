@@ -19,6 +19,7 @@ import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
+import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
@@ -879,27 +880,55 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics() async {
+  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics({
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    final userId = _cache.getUserId();
+
+    try {
+      final params = <String, dynamic>{
+        'p_user_id': userId,
+        'p_mode': 'occurrence',
+      };
+
+      if (from != null && to != null) {
+        params['p_from'] = from.toUtc().toIso8601String();
+        params['p_to'] = to.toUtc().toIso8601String();
+      }
+
+      final result = await supabase.rpc(
+        SupabaseKeys.getOverAllAnalytics,
+        params: params,
+      );
+      _log.i(
+        "Overall Analytics fetched successfully for date range.from $from to $to",
+      );
+      return Right(OverAllAnalyticsModel.fromJson(result));
+    } catch (e) {
+      _log.e("Error fetching Overall analytics", error: e);
+      return Left(Failure('Error fetching Overall analytics'));
+    }
+  }
+
+  Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async {
     final userId = _cache.getUserId();
     try {
       final result = await supabase.rpc(
-        SupabaseKeys.getOverAllAnalytics,
-        params: {
-          'p_user_id': userId,
-          'p_from': null,
-          'p_to': null,
-          'p_mode': 'occurrence',
-        },
+        SupabaseKeys.getAccuracyTrend,
+        params: {'p_user_id': userId},
       );
 
-      final stats = OverAllAnalyticsModel.fromJson(result);
+      final stats = TrendResultModel.fromRpcResponse(result);
 
-      _log.i("OverAll Analytics fetched for userId: $userId");
+      _log.i(
+        "Weekly: ${stats.weekly.length}, Monthly: ${stats.monthly.length}",
+      );
 
       return Right(stats);
     } catch (e) {
-      _log.e("Error fetching Overall analytics for user: $userId $e");
-      return Left(Failure("Error fetching Overall analytics"));
+      _log.e("Error fetching Accuracy Trend", error: e);
+      return Left(Failure("Error fetching Accuracy Trend"));
     }
   }
 
