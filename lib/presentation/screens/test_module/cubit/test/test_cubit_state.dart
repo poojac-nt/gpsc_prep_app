@@ -17,6 +17,7 @@ class TestCubitSubmitted {
   final double? topScore;
   final int? timeSpent;
   final List<bool> answeredStatus;
+  final int? userRank;
 
   factory TestCubitSubmitted.initial() => TestCubitSubmitted();
 
@@ -34,6 +35,7 @@ class TestCubitSubmitted {
     this.timeSpent,
     this.score,
     this.topScore,
+    this.userRank,
     this.isAnswerCorrect = const [],
   });
 
@@ -51,6 +53,7 @@ class TestCubitSubmitted {
     double? score,
     int? timeSpent,
     List<bool>? answeredStatus,
+    int? userRank,
   }) {
     return TestCubitSubmitted(
       totalQuestions: totalQuestions ?? this.totalQuestions,
@@ -67,6 +70,7 @@ class TestCubitSubmitted {
       score: score ?? this.score,
       timeSpent: timeSpent ?? this.timeSpent,
       answeredStatus: answeredStatus ?? this.answeredStatus,
+      userRank: userRank ?? this.userRank,
     );
   }
 }

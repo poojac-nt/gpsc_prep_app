@@ -88,6 +88,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     attempted: testCubitState.attemptedQuestions ?? 0,
                     total: testCubitState.totalQuestions ?? 0,
                     score: testCubitState.score ?? 0.0,
+                    userRank: testCubitState.userRank ?? 0,
                     topScore: 0.0,
                   );
                   return _buildSummaryBody(
@@ -114,6 +115,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     total: result.totalQuestions,
                     score: result.score,
                     topScore: result.topScore,
+                    userRank: result.userRank,
                   );
                   return _buildSummaryBody(
                     context,
@@ -246,6 +248,12 @@ class _ResultScreenState extends State<ResultScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  _performanceItem(
+                    label: "Rank",
+                    value: data.userRank.toString(),
+                    percentage: 1.0,
+                    color: Colors.blue,
+                  ),
                   _performanceItem(
                     label: "Score",
                     value: data.score.toStringAsFixed(1),
@@ -447,6 +455,7 @@ class _TestResultData {
   final int total;
   final double score;
   final double topScore;
+  final int userRank;
 
   _TestResultData({
     required this.correct,
@@ -456,5 +465,6 @@ class _TestResultData {
     required this.total,
     required this.score,
     required this.topScore,
+    required this.userRank,
   });
 }

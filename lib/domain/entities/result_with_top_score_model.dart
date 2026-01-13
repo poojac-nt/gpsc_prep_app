@@ -38,6 +38,9 @@ class TestResultWithTopScoreModel {
   @JsonKey(name: "top_score")
   final double topScore;
 
+  @JsonKey(name: "user_rank")
+  final int userRank;
+
   const TestResultWithTopScoreModel({
     required this.userId,
     required this.testId,
@@ -49,6 +52,7 @@ class TestResultWithTopScoreModel {
     required this.score,
     required this.timeTaken,
     required this.topScore,
+    required this.userRank,
     this.createdAt,
   });
 

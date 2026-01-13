@@ -19,6 +19,7 @@ TestResultWithTopScoreModel _$TestResultWithTopScoreModelFromJson(
       score: (json['score'] as num).toDouble(),
       timeTaken: (json['time_taken'] as num).toInt(),
       topScore: (json['top_score'] as num).toDouble(),
+      userRank: (json['user_rank'] as num).toInt(),
       createdAt: json['created_at'] as String?,
     );
 
@@ -36,4 +37,5 @@ Map<String, dynamic> _$TestResultWithTopScoreModelToJson(
       'time_taken': instance.timeTaken,
       'created_at': instance.createdAt,
       'top_score': instance.topScore,
+      'user_rank': instance.userRank,
     };
