@@ -12,11 +12,7 @@ class AnalyticsDateRangeHelper {
     final nowUtc = DateTime.now().toUtc();
 
     // End = yesterday 23:59:59 UTC
-    final end = DateTime.utc(
-      nowUtc.year,
-      nowUtc.month,
-      nowUtc.day,
-    ).subtract(const Duration(seconds: 1));
+    final end = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day, 23, 59, 59);
 
     switch (range) {
       case AnalyticsRange.weekly:

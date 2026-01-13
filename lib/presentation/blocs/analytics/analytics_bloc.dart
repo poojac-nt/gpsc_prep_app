@@ -22,6 +22,9 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     on<FetchTrendData>(_fetchTrendData);
   }
 
+  Future<dynamic>? _fetchingFuture;
+  AnalyticsRange? _fetchingRange;
+
   Future<OverAllAnalyticsModel?> _getAnalytics(
     AnalyticsRange range,
     Emitter<AnalyticsState> emit,
@@ -30,13 +33,31 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
       return _cachedAnalytics;
     }
 
+    if (_fetchingFuture != null && _fetchingRange == range) {
+      final result = await _fetchingFuture;
+      return _handleResult(result, range, emit);
+    }
+
+    _fetchingRange = range;
     final dateRange = AnalyticsDateRangeHelper.calculate(range);
 
-    final result = await repository.fetchOverAllAnalytics(
+    _fetchingFuture = repository.fetchOverAllAnalytics(
       from: dateRange.from,
       to: dateRange.to,
     );
 
+    final result = await _fetchingFuture;
+    _fetchingFuture = null;
+    _fetchingRange = null;
+
+    return _handleResult(result, range, emit);
+  }
+
+  OverAllAnalyticsModel? _handleResult(
+    dynamic result,
+    AnalyticsRange range,
+    Emitter<AnalyticsState> emit,
+  ) {
     return result.fold(
       (failure) {
         emit(
