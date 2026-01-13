@@ -72,11 +72,14 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   ) async {
     emit(
       state.copyWith(
-        subjectMastery: state.subjectMastery.copyWith(isLoading: true),
+        subjectMastery: state.subjectMastery.copyWith(
+          isLoading: true,
+          range: event.range,
+        ),
       ),
     );
 
-    final analytics = await _getAnalytics(AnalyticsRange.weekly, emit);
+    final analytics = await _getAnalytics(event.range, emit);
 
     if (analytics == null) return;
 

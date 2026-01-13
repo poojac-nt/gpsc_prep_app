@@ -19,6 +19,7 @@ import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
@@ -107,5 +108,8 @@ class AppServices {
     BlocProvider<BarChartBloc>(create: (_) => getIt<BarChartBloc>()),
     BlocProvider<ResultBloc>(create: (_) => getIt<ResultBloc>()),
     BlocProvider<AnalyticsBloc>(create: (_) => getIt<AnalyticsBloc>()),
+    BlocProvider<DetailedAnalyticsBloc>(
+      create: (_) => getIt<DetailedAnalyticsBloc>(),
+    ),
   ];
 }

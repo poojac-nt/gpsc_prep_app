@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_difficulty_analytics_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_question_types_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_subjects_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
@@ -381,7 +387,48 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       final params = state.extra as List<SubjectScore>;
       return _slideTransition(
-        AllSubjectsAnalyticsScreen(subjectsData: params),
+        BlocProvider(
+          create:
+              (context) => DetailedAnalyticsBloc(
+                repository: getIt<AnalyticsRepository>(),
+                initialSubjects: params,
+              ),
+          child: AllSubjectsAnalyticsScreen(subjectsData: params),
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allDifficultyAnalyticsScreen,
+    pageBuilder: (context, state) {
+      final params = state.extra as List<Difficulty>;
+      return _slideTransition(
+        BlocProvider(
+          create:
+              (context) => DetailedAnalyticsBloc(
+                repository: getIt<AnalyticsRepository>(),
+                initialDifficulty: params,
+              ),
+          child: AllDifficultyAnalyticsScreen(difficultyData: params),
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allQuestionTypesAnalyticsScreen,
+    pageBuilder: (context, state) {
+      final params = state.extra as List<Difficulty>;
+      return _slideTransition(
+        BlocProvider(
+          create:
+              (context) => DetailedAnalyticsBloc(
+                repository: getIt<AnalyticsRepository>(),
+                initialQuestionTypes: params,
+              ),
+          child: AllQuestionTypesAnalyticsScreen(questionTypesData: params),
+        ),
         state,
       );
     },

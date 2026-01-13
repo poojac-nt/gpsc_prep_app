@@ -5,7 +5,11 @@ sealed class AnalyticsEvent {}
 
 class FetchTrendData extends AnalyticsEvent {}
 
-class LoadSubjectMasteryEvent extends AnalyticsEvent {}
+class LoadSubjectMasteryEvent extends AnalyticsEvent {
+  final AnalyticsRange range;
+
+  LoadSubjectMasteryEvent(this.range);
+}
 
 class LoadDifficultyAnalyticsEvent extends AnalyticsEvent {
   final AnalyticsRange range;

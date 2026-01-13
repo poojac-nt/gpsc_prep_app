@@ -7,20 +7,22 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:intl/intl.dart';
 
-class AllSubjectsAnalyticsScreen extends StatefulWidget {
-  final List<SubjectScore> subjectsData;
+class AllQuestionTypesAnalyticsScreen extends StatefulWidget {
+  final List<Difficulty> questionTypesData;
 
-  const AllSubjectsAnalyticsScreen({required this.subjectsData, super.key});
+  const AllQuestionTypesAnalyticsScreen({
+    required this.questionTypesData,
+    super.key,
+  });
 
   @override
-  State<AllSubjectsAnalyticsScreen> createState() =>
-      _AllSubjectsAnalyticsScreenState();
+  State<AllQuestionTypesAnalyticsScreen> createState() =>
+      _AllQuestionTypesAnalyticsScreenState();
 }
 
-class _AllSubjectsAnalyticsScreenState
-    extends State<AllSubjectsAnalyticsScreen> {
+class _AllQuestionTypesAnalyticsScreenState
+    extends State<AllQuestionTypesAnalyticsScreen> {
   DateTimeRange? _selectedDateRange;
-  String _sortBy = "Name";
 
   @override
   void initState() {
@@ -31,18 +33,6 @@ class _AllSubjectsAnalyticsScreenState
       start: now.subtract(const Duration(days: 7)),
       end: now,
     );
-  }
-
-  List<SubjectScore> _getSortedData(List<SubjectScore> data) {
-    final List<SubjectScore> sorted = List.from(data);
-    if (_sortBy == "Name") {
-      sorted.sort((a, b) => a.subjectName.compareTo(b.subjectName));
-    } else if (_sortBy == "Accuracy") {
-      sorted.sort(
-        (a, b) => b.accuracyPercentage.compareTo(a.accuracyPercentage),
-      );
-    }
-    return sorted;
   }
 
   Future<void> _selectDateRange() async {
@@ -74,7 +64,7 @@ class _AllSubjectsAnalyticsScreenState
       });
       if (mounted) {
         context.read<DetailedAnalyticsBloc>().add(
-          LoadDetailedSubjectEvent(from: picked.start, to: picked.end),
+          LoadDetailedQuestionTypeEvent(from: picked.start, to: picked.end),
         );
       }
     }
@@ -84,7 +74,7 @@ class _AllSubjectsAnalyticsScreenState
   Widget build(BuildContext context) {
     return BlocBuilder<DetailedAnalyticsBloc, DetailedAnalyticsState>(
       builder: (context, state) {
-        final data = state.subjectData;
+        final data = state.questionTypeData;
         final isLoading = state.isLoading;
 
         return Scaffold(
@@ -97,7 +87,7 @@ class _AllSubjectsAnalyticsScreenState
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              "Subject Analysis",
+              "Question Types Analysis",
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 20.sp,
@@ -114,17 +104,14 @@ class _AllSubjectsAnalyticsScreenState
                       children: [
                         16.hGap,
                         _buildDatePickerTrigger(),
-                        Padding(
-                          padding: EdgeInsets.only(top: 8.h),
-                          child: _buildSortHeader(),
-                        ),
+                        24.hGap,
                         if (data.isEmpty)
                           _buildEmptyState()
                         else ...[
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 20.w),
                             child: Text(
-                              "SUBJECT PERFORMANCE",
+                              "PERFORMANCE BREAKDOWN",
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
@@ -134,7 +121,7 @@ class _AllSubjectsAnalyticsScreenState
                             ),
                           ),
                           16.hGap,
-                          _buildSubjectsBreakdown(data),
+                          _buildPerformanceBreakdown(data),
                         ],
                         40.hGap,
                       ],
@@ -220,68 +207,30 @@ class _AllSubjectsAnalyticsScreenState
     );
   }
 
-  Widget _buildSortHeader() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text(
-            "Sort by:",
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: AppColors.gray500,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          8.wGap,
-          DropdownButton<String>(
-            value: _sortBy,
-            underline: SizedBox(),
-            icon: Icon(
-              Icons.sort_rounded,
-              size: 18.sp,
-              color: AppColors.primary,
-            ),
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-            items: const [
-              DropdownMenuItem(value: "Name", child: Text("Name")),
-              DropdownMenuItem(value: "Accuracy", child: Text("Accuracy")),
-            ],
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  _sortBy = newValue;
-                });
-              }
-            },
-          ),
-        ],
+  Widget _buildPerformanceBreakdown(List<Difficulty> data) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.gray200),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: data.length,
+        separatorBuilder:
+            (context, index) => Divider(color: AppColors.gray100, height: 1),
+        itemBuilder: (context, index) {
+          final item = data[index];
+          return _buildTypeRow(item);
+        },
       ),
     );
   }
 
-  Widget _buildSubjectsBreakdown(List<SubjectScore> data) {
-    final sortedData = _getSortedData(data);
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: sortedData.length,
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      separatorBuilder: (context, index) => 16.hGap,
-      itemBuilder: (context, index) {
-        final item = sortedData[index];
-        return _buildSubjectCard(item);
-      },
-    );
-  }
-
-  Widget _buildSubjectCard(SubjectScore data) {
-    final accuracy = data.accuracyPercentage;
+  Widget _buildTypeRow(Difficulty data) {
+    final accuracy = data.accuracyPct;
     String badgeText;
     Color badgeColor;
     Color badgeTextColor;
@@ -300,34 +249,20 @@ class _AllSubjectsAnalyticsScreenState
       badgeTextColor = AppColors.red800;
     }
 
-    return Container(
+    return Padding(
       padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.gray200),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.gray200.withAlpha(50),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  data.subjectName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.gray900,
-                  ),
+              Text(
+                data.questionType?.type ?? "Unknown",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.gray900,
                 ),
               ),
               Container(
@@ -350,7 +285,7 @@ class _AllSubjectsAnalyticsScreenState
           20.hGap,
           Row(
             children: [
-              _buildMetricItem("TESTS", "${data.attemptedTests}"),
+              _buildMetricItem("TOTAL Qs", "${data.totalQuestions}"),
               _buildMetricItem(
                 "ACCURACY",
                 "${accuracy.toInt()}%",
@@ -361,15 +296,15 @@ class _AllSubjectsAnalyticsScreenState
                             ? AppColors.red500
                             : AppColors.orange500),
               ),
-              _buildMetricItem("TOTAL Qs", "${data.totalQuestions}"),
+              _buildMetricItem("ATTEMPTED", "${data.attempted}"),
             ],
           ),
           16.hGap,
           Row(
             children: [
-              _buildMetricItem("ATTEMPTED", "${data.attemptedQuestions}"),
-              _buildMetricItem("CORRECT", "${data.correctQuestions}"),
-              const Spacer(),
+              _buildMetricItem("CORRECT", "${data.correctCount}"),
+              _buildMetricItem("INCORRECT", "${data.incorrectCount}"),
+              _buildMetricItem("NOT ATTEMPTED", "${data.notAttempted}"),
             ],
           ),
         ],
@@ -395,7 +330,7 @@ class _AllSubjectsAnalyticsScreenState
           Text(
             value,
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               color: color ?? AppColors.gray900,
             ),
@@ -425,7 +360,7 @@ class _AllSubjectsAnalyticsScreenState
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.subject_rounded,
+              Icons.query_stats_rounded,
               size: 48.sp,
               color: AppColors.gray400,
             ),

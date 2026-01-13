@@ -41,26 +41,34 @@ class AnalyticsState {
 @immutable
 class SubjectMasteryState {
   final bool isLoading;
+  final AnalyticsRange range;
   final List<SubjectScore> data;
   final Failure? error;
 
   const SubjectMasteryState({
     required this.isLoading,
+    required this.range,
     required this.data,
     this.error,
   });
 
   factory SubjectMasteryState.initial() {
-    return const SubjectMasteryState(isLoading: false, data: []);
+    return const SubjectMasteryState(
+      isLoading: false,
+      range: AnalyticsRange.weekly,
+      data: [],
+    );
   }
 
   SubjectMasteryState copyWith({
     bool? isLoading,
+    AnalyticsRange? range,
     List<SubjectScore>? data,
     Failure? error,
   }) {
     return SubjectMasteryState(
       isLoading: isLoading ?? this.isLoading,
+      range: range ?? this.range,
       data: data ?? this.data,
       error: error,
     );

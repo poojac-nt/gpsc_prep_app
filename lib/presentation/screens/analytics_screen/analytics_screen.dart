@@ -30,7 +30,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     super.initState();
     final bloc = context.read<AnalyticsBloc>();
     bloc
-      ..add(LoadSubjectMasteryEvent())
+      ..add(LoadSubjectMasteryEvent(AnalyticsRange.weekly))
       ..add(LoadDifficultyAnalyticsEvent(AnalyticsRange.weekly))
       ..add(LoadQuestionTypeAnalyticsEvent(AnalyticsRange.weekly))
       ..add(FetchTrendData());
@@ -94,27 +94,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!state.isLoading && state.data.isNotEmpty)
-            TextButton(
-              onPressed:
-                  () => context.push(
-                    AppRoutes.allSubjectsAnalyticsScreen,
-                    extra: state.data,
-                  ),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size(50.w, 30.h),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                "View All",
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.sp,
+          _buildRangeToggleGroup(
+            state.range == AnalyticsRange.weekly ? "Weekly" : "Monthly",
+            (val) {
+              context.read<AnalyticsBloc>().add(
+                LoadSubjectMasteryEvent(
+                  val == "Weekly"
+                      ? AnalyticsRange.weekly
+                      : AnalyticsRange.monthly,
                 ),
-              ),
-            ),
+              );
+            },
+          ),
+          12.wGap,
         ],
       ),
       cards: [
@@ -162,6 +154,33 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               );
             },
           ),
+
+          if (!state.isLoading && state.data.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed:
+                      () => context.push(
+                        AppRoutes.allSubjectsAnalyticsScreen,
+                        extra: state.data,
+                      ),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size(50.w, 30.h),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    "View All",
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ],
     );
@@ -255,9 +274,36 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               return _buildDifficultyBar(
                 state.data[index].difficultyLevel!.level,
                 state.data[index].accuracyPct,
+                index,
               );
             },
           ),
+          if (!state.isLoading && state.data.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed:
+                      () => context.push(
+                        AppRoutes.allDifficultyAnalyticsScreen,
+                        extra: state.data,
+                      ),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size(50.w, 30.h),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    "View All",
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ],
     );
@@ -272,7 +318,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Widget _buildDifficultyBar(String label, int value) {
+  Widget _buildDifficultyBar(String label, double value, int index) {
+    final barColors = [
+      AppColors.green500,
+      AppColors.orange500,
+      AppColors.red500,
+      AppColors.primary,
+    ];
     return Row(
       children: [
         SizedBox(
@@ -283,13 +335,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
         ),
         Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10.r),
-            child: LinearProgressIndicator(
-              value: value / 100,
-              backgroundColor: Colors.grey[100],
-              color: AppColors.primary,
-              minHeight: 10.h,
+          child: Container(
+            height: 10.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: value / 100,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: barColors[index],
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
             ),
           ),
         ),
@@ -358,11 +418,41 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               },
             ),
           ),
+        if (!state.isLoading && state.data.isNotEmpty)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed:
+                    () => context.push(
+                      AppRoutes.allQuestionTypesAnalyticsScreen,
+                      extra: state.data,
+                    ),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size(50.w, 30.h),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  "View All",
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
 
-  Widget _buildTypeCard(String label, int value, List<Color> gradientColors) {
+  Widget _buildTypeCard(
+    String label,
+    double value,
+    List<Color> gradientColors,
+  ) {
     return Container(
       width: 150.w,
       padding: EdgeInsets.all(20.w),

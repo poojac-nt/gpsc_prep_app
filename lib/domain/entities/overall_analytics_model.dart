@@ -33,7 +33,7 @@ class Difficulty {
   @JsonKey(name: "attempted")
   int attempted;
   @JsonKey(name: "accuracy_pct")
-  int accuracyPct;
+  double accuracyPct;
   @JsonKey(name: "correct_count")
   int correctCount;
   @JsonKey(name: "not_attempted")
@@ -72,14 +72,23 @@ class SubjectScore {
   String subjectName;
   @JsonKey(name: "attempted_tests")
   int attemptedTests;
+  @JsonKey(name: "total_questions")
+  int totalQuestions;
+  @JsonKey(name: "correct_questions")
+  int correctQuestions;
   @JsonKey(name: "accuracy_percentage")
   double accuracyPercentage;
+  @JsonKey(name: "attempted_questions")
+  int attemptedQuestions;
 
   SubjectScore({
     required this.totalScore,
     required this.subjectName,
     required this.attemptedTests,
+    required this.totalQuestions,
+    required this.correctQuestions,
     required this.accuracyPercentage,
+    required this.attemptedQuestions,
   });
 
   factory SubjectScore.fromJson(Map<String, dynamic> json) =>

@@ -4,23 +4,23 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/difficulty_level.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:intl/intl.dart';
 
-class AllSubjectsAnalyticsScreen extends StatefulWidget {
-  final List<SubjectScore> subjectsData;
+class AllDifficultyAnalyticsScreen extends StatefulWidget {
+  final List<Difficulty> difficultyData;
 
-  const AllSubjectsAnalyticsScreen({required this.subjectsData, super.key});
+  const AllDifficultyAnalyticsScreen({required this.difficultyData, super.key});
 
   @override
-  State<AllSubjectsAnalyticsScreen> createState() =>
-      _AllSubjectsAnalyticsScreenState();
+  State<AllDifficultyAnalyticsScreen> createState() =>
+      _AllDifficultyAnalyticsScreenState();
 }
 
-class _AllSubjectsAnalyticsScreenState
-    extends State<AllSubjectsAnalyticsScreen> {
+class _AllDifficultyAnalyticsScreenState
+    extends State<AllDifficultyAnalyticsScreen> {
   DateTimeRange? _selectedDateRange;
-  String _sortBy = "Name";
 
   @override
   void initState() {
@@ -31,18 +31,6 @@ class _AllSubjectsAnalyticsScreenState
       start: now.subtract(const Duration(days: 7)),
       end: now,
     );
-  }
-
-  List<SubjectScore> _getSortedData(List<SubjectScore> data) {
-    final List<SubjectScore> sorted = List.from(data);
-    if (_sortBy == "Name") {
-      sorted.sort((a, b) => a.subjectName.compareTo(b.subjectName));
-    } else if (_sortBy == "Accuracy") {
-      sorted.sort(
-        (a, b) => b.accuracyPercentage.compareTo(a.accuracyPercentage),
-      );
-    }
-    return sorted;
   }
 
   Future<void> _selectDateRange() async {
@@ -74,7 +62,7 @@ class _AllSubjectsAnalyticsScreenState
       });
       if (mounted) {
         context.read<DetailedAnalyticsBloc>().add(
-          LoadDetailedSubjectEvent(from: picked.start, to: picked.end),
+          LoadDetailedDifficultyEvent(from: picked.start, to: picked.end),
         );
       }
     }
@@ -84,7 +72,7 @@ class _AllSubjectsAnalyticsScreenState
   Widget build(BuildContext context) {
     return BlocBuilder<DetailedAnalyticsBloc, DetailedAnalyticsState>(
       builder: (context, state) {
-        final data = state.subjectData;
+        final data = state.difficultyData;
         final isLoading = state.isLoading;
 
         return Scaffold(
@@ -97,7 +85,7 @@ class _AllSubjectsAnalyticsScreenState
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              "Subject Analysis",
+              "Detailed Difficulty Analysis",
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 20.sp,
@@ -114,17 +102,14 @@ class _AllSubjectsAnalyticsScreenState
                       children: [
                         16.hGap,
                         _buildDatePickerTrigger(),
-                        Padding(
-                          padding: EdgeInsets.only(top: 8.h),
-                          child: _buildSortHeader(),
-                        ),
+                        24.hGap,
                         if (data.isEmpty)
                           _buildEmptyState()
                         else ...[
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 20.w),
                             child: Text(
-                              "SUBJECT PERFORMANCE",
+                              "ACCURACY OVERVIEW",
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
@@ -134,7 +119,22 @@ class _AllSubjectsAnalyticsScreenState
                             ),
                           ),
                           16.hGap,
-                          _buildSubjectsBreakdown(data),
+                          _buildAccuracyOverview(data),
+                          24.hGap,
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            child: Text(
+                              "PERFORMANCE METRICS",
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.gray500,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          16.hGap,
+                          ...data.map((d) => _buildPerformanceMetricCard(d)),
                         ],
                         40.hGap,
                       ],
@@ -220,99 +220,101 @@ class _AllSubjectsAnalyticsScreenState
     );
   }
 
-  Widget _buildSortHeader() {
+  Widget _buildAccuracyOverview(List<Difficulty> data) {
+    // Sort data based on DifficultyLevel enum order
+    final sortedData = List<Difficulty>.from(data);
+    sortedData.sort((a, b) {
+      if (a.difficultyLevel == null || b.difficultyLevel == null) return 0;
+      return a.difficultyLevel!.index.compareTo(b.difficultyLevel!.index);
+    });
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text(
-            "Sort by:",
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: AppColors.gray500,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          8.wGap,
-          DropdownButton<String>(
-            value: _sortBy,
-            underline: SizedBox(),
-            icon: Icon(
-              Icons.sort_rounded,
-              size: 18.sp,
-              color: AppColors.primary,
-            ),
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-            items: const [
-              DropdownMenuItem(value: "Name", child: Text("Name")),
-              DropdownMenuItem(value: "Accuracy", child: Text("Accuracy")),
-            ],
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  _sortBy = newValue;
-                });
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:
+            sortedData.map((d) {
+              Color color;
+              DifficultyLevel? level = d.difficultyLevel;
+              String levelName = level?.level ?? "UNKNOWN";
+
+              if (level == DifficultyLevel.easy) {
+                color = AppColors.green500;
+              } else if (level == DifficultyLevel.mod) {
+                color = AppColors.orange500;
+              } else {
+                color = AppColors.red500;
               }
-            },
-          ),
-        ],
+
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  padding: EdgeInsets.symmetric(vertical: 20.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: AppColors.gray200),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        levelName.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gray400,
+                        ),
+                      ),
+                      8.hGap,
+                      Text(
+                        "${d.accuracyPct.toInt()}%",
+                        style: TextStyle(
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
       ),
     );
   }
 
-  Widget _buildSubjectsBreakdown(List<SubjectScore> data) {
-    final sortedData = _getSortedData(data);
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: sortedData.length,
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      separatorBuilder: (context, index) => 16.hGap,
-      itemBuilder: (context, index) {
-        final item = sortedData[index];
-        return _buildSubjectCard(item);
-      },
-    );
-  }
-
-  Widget _buildSubjectCard(SubjectScore data) {
-    final accuracy = data.accuracyPercentage;
+  Widget _buildPerformanceMetricCard(Difficulty data) {
+    String levelName = data.difficultyLevel?.level ?? "Unknown";
+    double accuracy = data.accuracyPct;
+    Color levelColor;
     String badgeText;
     Color badgeColor;
     Color badgeTextColor;
 
     if (accuracy >= 85) {
+      levelColor = AppColors.green500;
       badgeText = "High Proficiency";
       badgeColor = AppColors.green100;
       badgeTextColor = AppColors.green800;
     } else if (accuracy >= 60) {
+      levelColor = AppColors.orange500;
       badgeText = "Moderate";
       badgeColor = AppColors.orange100;
       badgeTextColor = AppColors.orange800;
     } else {
+      levelColor = AppColors.red500;
       badgeText = "Requires Focus";
       badgeColor = AppColors.red100;
       badgeTextColor = AppColors.red800;
     }
 
     return Container(
+      margin: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 16.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppColors.gray200),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.gray200.withAlpha(50),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,14 +322,12 @@ class _AllSubjectsAnalyticsScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  data.subjectName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.gray900,
-                  ),
+              Text(
+                "$levelName Questions",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: levelColor,
                 ),
               ),
               Container(
@@ -350,7 +350,7 @@ class _AllSubjectsAnalyticsScreenState
           20.hGap,
           Row(
             children: [
-              _buildMetricItem("TESTS", "${data.attemptedTests}"),
+              _buildMetricItem("TOTAL Qs", "${data.totalQuestions}"),
               _buildMetricItem(
                 "ACCURACY",
                 "${accuracy.toInt()}%",
@@ -361,15 +361,15 @@ class _AllSubjectsAnalyticsScreenState
                             ? AppColors.red500
                             : AppColors.orange500),
               ),
-              _buildMetricItem("TOTAL Qs", "${data.totalQuestions}"),
+              _buildMetricItem("ATTEMPTED", "${data.attempted}"),
             ],
           ),
           16.hGap,
           Row(
             children: [
-              _buildMetricItem("ATTEMPTED", "${data.attemptedQuestions}"),
-              _buildMetricItem("CORRECT", "${data.correctQuestions}"),
-              const Spacer(),
+              _buildMetricItem("CORRECT", "${data.correctCount}"),
+              _buildMetricItem("INCORRECT", "${data.incorrectCount}"),
+              _buildMetricItem("NOT ATTEMPTED", "${data.notAttempted}"),
             ],
           ),
         ],
@@ -425,7 +425,7 @@ class _AllSubjectsAnalyticsScreenState
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.subject_rounded,
+              Icons.query_stats_rounded,
               size: 48.sp,
               color: AppColors.gray400,
             ),
