@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
+import 'package:gpsc_prep_app/presentation/widgets/analytics_date_range_picker.dart';
+import 'package:gpsc_prep_app/presentation/widgets/empty_state_ui.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:intl/intl.dart';
 
 class AllSubjectsAnalyticsScreen extends StatefulWidget {
   final List<SubjectScore> subjectsData;
@@ -45,41 +46,6 @@ class _AllSubjectsAnalyticsScreenState
     return sorted;
   }
 
-  Future<void> _selectDateRange() async {
-    final DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2023),
-      lastDate: DateTime.now(),
-      initialDateRange: _selectedDateRange,
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light(useMaterial3: true).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: AppColors.gray900,
-              secondary: AppColors.primary,
-            ),
-            dividerTheme: const DividerThemeData(thickness: 0),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _selectedDateRange) {
-      setState(() {
-        _selectedDateRange = picked;
-      });
-      if (mounted) {
-        context.read<DetailedAnalyticsBloc>().add(
-          LoadDetailedSubjectEvent(from: picked.start, to: picked.end),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DetailedAnalyticsBloc, DetailedAnalyticsState>(
@@ -113,13 +79,26 @@ class _AllSubjectsAnalyticsScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         16.hGap,
-                        _buildDatePickerTrigger(),
+                        AnalyticsDateRangePicker(
+                          selectedRange: _selectedDateRange,
+                          onRangeSelected: (picked) {
+                            setState(() {
+                              _selectedDateRange = picked;
+                            });
+                            context.read<DetailedAnalyticsBloc>().add(
+                              LoadDetailedSubjectEvent(
+                                from: picked.start,
+                                to: picked.end,
+                              ),
+                            );
+                          },
+                        ),
                         Padding(
                           padding: EdgeInsets.only(top: 8.h),
                           child: _buildSortHeader(),
                         ),
                         if (data.isEmpty)
-                          _buildEmptyState()
+                          EmptyStateUi()
                         else ...[
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -142,81 +121,6 @@ class _AllSubjectsAnalyticsScreenState
                   ),
         );
       },
-    );
-  }
-
-  Widget _buildDatePickerTrigger() {
-    final df = DateFormat('MMM dd, yyyy');
-    String rangeText = "Select Date Range";
-    if (_selectedDateRange != null) {
-      rangeText =
-          "${df.format(_selectedDateRange!.start)} - ${df.format(_selectedDateRange!.end)}";
-    }
-
-    return GestureDetector(
-      onTap: _selectDateRange,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.w),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: AppColors.gray200.withAlpha(150), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withAlpha(15),
-              blurRadius: 20,
-              offset: Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(20),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(
-                Icons.calendar_month_rounded,
-                color: AppColors.primary,
-                size: 22.sp,
-              ),
-            ),
-            16.wGap,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Analysis Period",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.gray500,
-                    ),
-                  ),
-                  2.hGap,
-                  Text(
-                    rangeText,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.gray900,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: AppColors.gray400,
-              size: 16.sp,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -398,55 +302,6 @@ class _AllSubjectsAnalyticsScreenState
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
               color: color ?? AppColors.gray900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-      padding: EdgeInsets.symmetric(vertical: 60.h, horizontal: 20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.gray200.withAlpha(150), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: AppColors.gray100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.subject_rounded,
-              size: 48.sp,
-              color: AppColors.gray400,
-            ),
-          ),
-          24.hGap,
-          Text(
-            "No Data Available",
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.gray900,
-            ),
-          ),
-          8.hGap,
-          Text(
-            "We couldn't find any analysis for the selected period. Try adjusting your date range.",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.gray500,
-              height: 1.5,
             ),
           ),
         ],
