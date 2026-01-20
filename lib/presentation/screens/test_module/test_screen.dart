@@ -127,6 +127,86 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ),
             actions: [
+              // Language selector (only show during active test, not in review mode)
+              if (!widget.isFromResult)
+                BlocBuilder<QuestionCubit, QuestionCubitState>(
+                  builder: (context, questionState) {
+                    if (questionState is! McqQuestionCubitLoaded) {
+                      return SizedBox.shrink();
+                    }
+
+                    // Determine available languages from question models
+                    final availableLanguages = <String>[];
+                    if (questionState.questionModel.isNotEmpty) {
+                      final firstQuestion = questionState.questionModel.first;
+                      availableLanguages.add(
+                        'en',
+                      ); // English is always available
+                      if (firstQuestion.questionHi != null) {
+                        availableLanguages.add('hi');
+                      }
+                      if (firstQuestion.questionGj != null) {
+                        availableLanguages.add('gj');
+                      }
+                    }
+
+                    // Only show if more than one language is available
+                    if (availableLanguages.length <= 1) {
+                      return SizedBox.shrink();
+                    }
+
+                    // Get current language character
+                    String getLanguageChar(String lang) {
+                      switch (lang) {
+                        case 'en':
+                          return 'A';
+                        case 'hi':
+                          return 'अ';
+                        case 'gj':
+                          return 'અ';
+                        default:
+                          return 'A';
+                      }
+                    }
+
+                    // Get next language in the cycle
+                    void switchToNextLanguage() {
+                      final currentIndex = availableLanguages.indexOf(
+                        questionState.currentLanguage,
+                      );
+                      final nextIndex =
+                          (currentIndex + 1) % availableLanguages.length;
+                      final nextLanguage = availableLanguages[nextIndex];
+                      context.read<QuestionCubit>().switchLanguage(
+                        nextLanguage,
+                      );
+                    }
+
+                    return IconButton(
+                      onPressed: switchToNextLanguage,
+                      icon: Text(
+                        getLanguageChar(questionState.currentLanguage),
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      tooltip:
+                          'Switch Language (${availableLanguages.map((l) {
+                            switch (l) {
+                              case 'en':
+                                return 'English';
+                              case 'hi':
+                                return 'हिंदी';
+                              case 'gj':
+                                return 'ગુજરાતી';
+                              default:
+                                return '';
+                            }
+                          }).join(', ')})',
+                    );
+                  },
+                ),
               widget.isFromResult
                   ? TextButton(
                     onPressed: () {
@@ -226,11 +306,16 @@ class _TestScreenState extends State<TestScreen> {
                     context.read<QuestionCubit>().initialize(
                       state.questions,
                       state.questionsModels,
+                      widget.language!,
                     );
                   } else {
                     context.read<QuestionCubit>()
                       ..reset()
-                      ..initialize(state.questions, state.questionsModels);
+                      ..initialize(
+                        state.questions,
+                        state.questionsModels,
+                        widget.language!,
+                      );
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
@@ -381,7 +466,28 @@ class _TestScreenState extends State<TestScreen> {
                                   physics: NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     final option = state.options[index];
-                                    final isSelected = selectedAnswer == option;
+
+                                    // Convert stored identifier to actual option text
+                                    String? selectedOptionText;
+                                    if (selectedAnswer != null) {
+                                      switch (selectedAnswer.toUpperCase()) {
+                                        case 'A':
+                                          selectedOptionText = question.optA;
+                                          break;
+                                        case 'B':
+                                          selectedOptionText = question.optB;
+                                          break;
+                                        case 'C':
+                                          selectedOptionText = question.optC;
+                                          break;
+                                        case 'D':
+                                          selectedOptionText = question.optD;
+                                          break;
+                                      }
+                                    }
+
+                                    final isSelected =
+                                        selectedOptionText == option;
                                     Color? tileColor;
                                     Color? textColor;
 
@@ -416,7 +522,7 @@ class _TestScreenState extends State<TestScreen> {
                                       textColor = Colors.black;
                                     }
                                     return RadioGroup<String>(
-                                      groupValue: selectedAnswer,
+                                      groupValue: selectedOptionText,
                                       onChanged: (value) {
                                         state.isReview
                                             ? null

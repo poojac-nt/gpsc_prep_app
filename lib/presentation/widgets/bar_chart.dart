@@ -52,10 +52,16 @@ class _BarChartView extends StatelessWidget {
   }
 
   String _extractOptionKey(String rawOption) {
+    if (rawOption.isEmpty) return '';
+    final trimmed = rawOption.trim();
+
+    // Pattern to match:
+    // 1. Bare letters: A, a
+    // 2. Letters with delimiters: A), a), (A), A., a.
     final match = RegExp(
-      r'^\(?\s*([a-eA-E])\s*\)',
+      r'^\s*[(\[]?\s*([a-eA-E])(?:[\s\)\.\)\]]|$)',
       caseSensitive: false,
-    ).firstMatch(rawOption.trim());
+    ).firstMatch(trimmed);
 
     return match?.group(1)?.toUpperCase() ?? '';
   }

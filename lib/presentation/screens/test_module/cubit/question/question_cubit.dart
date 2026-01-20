@@ -16,6 +16,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   void initialize(
     List<QuestionLanguageData> questions,
     List<QuestionModel> questionModel,
+    String language,
   ) {
     if (state is McqQuestionCubitLoaded) return;
 
@@ -27,6 +28,51 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         selectedOption: List.generate(questions.length, (_) => null),
         answeredStatus: List.generate(questions.length, (_) => false),
         isQuitTest: _isQuitTest,
+        currentLanguage: language,
+      ),
+    );
+  }
+
+  /// Switch language while preserving user progress
+  void switchLanguage(String newLanguage) {
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
+
+    // Extract questions in the new language
+    List<QuestionLanguageData> localizedQuestions;
+    switch (newLanguage) {
+      case 'hi':
+        localizedQuestions =
+            currentState.questionModel
+                .map((e) => e.questionHi)
+                .whereType<QuestionLanguageData>()
+                .toList();
+        break;
+      case 'en':
+        localizedQuestions =
+            currentState.questionModel
+                .map((e) => e.questionEn)
+                .whereType<QuestionLanguageData>()
+                .toList();
+        break;
+      case 'gj':
+        localizedQuestions =
+            currentState.questionModel
+                .map((e) => e.questionGj)
+                .whereType<QuestionLanguageData>()
+                .toList();
+        break;
+      default:
+        return;
+    }
+
+    if (localizedQuestions.isEmpty) return;
+
+    // Update state with new language questions while preserving progress
+    emit(
+      currentState.copyWith(
+        questions: localizedQuestions,
+        currentLanguage: newLanguage,
       ),
     );
   }
@@ -35,8 +81,15 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
 
+    // Convert option text to identifier (A, B, C, D)
+    String? optionIdentifier;
+    if (option != null) {
+      final currentQuestion = currentState.questions[currentState.currentIndex];
+      optionIdentifier = _getOptionIdentifier(option, currentQuestion);
+    }
+
     final updatedSelected = List<String?>.from(currentState.selectedOption)
-      ..[currentState.currentIndex] = option;
+      ..[currentState.currentIndex] = optionIdentifier;
 
     final updatedStatus = List<bool>.from(currentState.answeredStatus)
       ..[currentState.currentIndex] = option != null;
@@ -47,6 +100,50 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         answeredStatus: updatedStatus,
       ),
     );
+  }
+
+  /// Helper method to get option identifier (A, B, C, D) from option text
+  String? _getOptionIdentifier(
+    String optionText,
+    QuestionLanguageData questionData,
+  ) {
+    final trimmed = optionText.trim();
+
+    // If it's already a single letter identifier, return it as is
+    if (trimmed.length == 1) {
+      final char = trimmed.toUpperCase();
+      if (char == 'A' || char == 'B' || char == 'C' || char == 'D') {
+        return trimmed;
+      }
+    }
+
+    // Otherwise, match against the option text
+    final trimmedA = questionData.optA.trim();
+    final trimmedB = questionData.optB.trim();
+    final trimmedC = questionData.optC.trim();
+    final trimmedD = questionData.optD.trim();
+
+    if (trimmed == trimmedA) {
+      return _resolveCase(trimmedA, 'A', 'a');
+    }
+    if (trimmed == trimmedB) {
+      return _resolveCase(trimmedB, 'B', 'b');
+    }
+    if (trimmed == trimmedC) {
+      return _resolveCase(trimmedC, 'C', 'c');
+    }
+    if (trimmed == trimmedD) {
+      return _resolveCase(trimmedD, 'D', 'd');
+    }
+
+    return null;
+  }
+
+  String _resolveCase(String optionText, String upper, String lower) {
+    final trimmed = optionText.trim();
+    if (trimmed.isEmpty) return upper;
+    // Check if the original text started with a lowercase letter
+    return trimmed[0] == trimmed[0].toLowerCase() ? lower : upper;
   }
 
   void nextQuestion() {

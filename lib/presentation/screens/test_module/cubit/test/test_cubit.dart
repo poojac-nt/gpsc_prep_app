@@ -45,7 +45,18 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
 
       bool? isAnswerCorrect;
       if (userAnswer != null) {
-        if (userAnswer.trim() == correctAnswer.trim()) {
+        // Get identifiers for both user answer and correct answer for reliable comparison
+        final userId = _getOptionIdentifier(
+          userAnswer,
+          questionsModel[i].getLanguageData(languageCode),
+        );
+        final correctId = _getOptionIdentifier(
+          correctAnswer,
+          questionsModel[i].getLanguageData(languageCode),
+        );
+
+        if (userId != null &&
+            userId.toUpperCase() == correctId?.toUpperCase()) {
           correctAnswers++;
           totalScore += marks[i];
           isAnswerCorrect = true;
@@ -61,12 +72,17 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
       isCorrect.add(isAnswerCorrect);
 
       if (isAnswerCorrect != null) {
+        final optionIdentifier = _getOptionIdentifier(
+          selectedOption[i],
+          questionsModel[i].getLanguageData(languageCode),
+        );
+
         final detailedTestResult = DetailedTestResult(
           userId: cache.getUserId(),
           testId: testId,
           questionId: questionId,
           isCorrect: isAnswerCorrect,
-          selectedOption: selectedOption[i],
+          selectedOption: optionIdentifier,
         );
         final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
         if (!isOnline) {
@@ -107,5 +123,51 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
         timeSpent: timeSpent,
       ),
     );
+  }
+
+  /// Helper method to get option identifier (A, B, C, D) from selected option text
+  String? _getOptionIdentifier(
+    String? selectedOptionText,
+    QuestionLanguageData questionData,
+  ) {
+    if (selectedOptionText == null) return null;
+
+    final trimmedSelection = selectedOptionText.trim();
+
+    // If it's already a single letter identifier, return it as is
+    if (trimmedSelection.length == 1) {
+      final char = trimmedSelection.toUpperCase();
+      if (char == 'A' || char == 'B' || char == 'C' || char == 'D') {
+        return trimmedSelection;
+      }
+    }
+
+    // Otherwise, match against the option text
+    final trimmedA = questionData.optA.trim();
+    final trimmedB = questionData.optB.trim();
+    final trimmedC = questionData.optC.trim();
+    final trimmedD = questionData.optD.trim();
+
+    if (trimmedSelection == trimmedA) {
+      return _resolveCase(trimmedA, 'A', 'a');
+    }
+    if (trimmedSelection == trimmedB) {
+      return _resolveCase(trimmedB, 'B', 'b');
+    }
+    if (trimmedSelection == trimmedC) {
+      return _resolveCase(trimmedC, 'C', 'c');
+    }
+    if (trimmedSelection == trimmedD) {
+      return _resolveCase(trimmedD, 'D', 'd');
+    }
+
+    return null;
+  }
+
+  String _resolveCase(String optionText, String upper, String lower) {
+    final trimmed = optionText.trim();
+    if (trimmed.isEmpty) return upper;
+    // Check if the original text started with a lowercase letter
+    return trimmed[0] == trimmed[0].toLowerCase() ? lower : upper;
   }
 }
