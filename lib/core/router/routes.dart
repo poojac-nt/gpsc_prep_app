@@ -19,6 +19,8 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_s
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/prelims_mcq_instruction_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/omr_answer_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.dart';
@@ -38,6 +40,7 @@ import '../../presentation/screens/descriptive_test_module/descriptive_test.dart
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
+import '../../presentation/screens/prelims/prelims_mcq_test_screen.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -431,6 +434,24 @@ final List<GoRoute> appRoutes = [
         ),
         state,
       );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.omrScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(OMRScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.fullLengthMcqInstructionScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(PrelimsMcqInstructionScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.fullLengthMcqTestScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(PrelimsMcqTestScreen(), state);
     },
   ),
 ];

@@ -142,6 +142,10 @@ abstract class AppRoutes {
       '/allDifficultyAnalyticsScreen';
   static const String allQuestionTypesAnalyticsScreen =
       '/allQuestionTypesAnalyticsScreen';
+  static const String omrScreen = '/omrScreen';
+  static const String fullLengthMcqInstructionScreen =
+      '/fullLengthMcqInstructionScreen';
+  static const String fullLengthMcqTestScreen = '/fullLengthMcqTestScreen';
 }
 
 class AdUnitIds {
