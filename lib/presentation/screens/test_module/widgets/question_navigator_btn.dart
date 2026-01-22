@@ -29,7 +29,13 @@ class QuestionNavigatorButton extends StatelessWidget {
           side: BorderSide(color: borderColor, width: 1),
         ),
       ),
-      child: Text(text, style: TextStyle(color: fontColor)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: fontColor,
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+      ),
     );
   }
 }

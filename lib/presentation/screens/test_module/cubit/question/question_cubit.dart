@@ -7,6 +7,8 @@ import '../../../../../domain/entities/question_language_model.dart';
 class QuestionCubit extends Cubit<QuestionCubitState> {
   QuestionCubit() : super(QuestionCubitInitial());
   final bool _isQuitTest = false;
+  static const int navigatorPageSize = 20;
+  int _currentNavigatorPage = 0;
 
   void reset() {
     emit(QuestionCubitInitial());
@@ -19,7 +21,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     String language,
   ) {
     if (state is McqQuestionCubitLoaded) return;
-
+    _currentNavigatorPage = 0;
     emit(
       McqQuestionCubitLoaded(
         questionModel: questionModel,
@@ -149,16 +151,24 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   void nextQuestion() {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
+
     if (currentState.currentIndex < currentState.questions.length - 1) {
-      emit(currentState.copyWith(currentIndex: currentState.currentIndex + 1));
+      final newIndex = currentState.currentIndex + 1;
+      _currentNavigatorPage = newIndex ~/ navigatorPageSize;
+
+      emit(currentState.copyWith(currentIndex: newIndex));
     }
   }
 
   void prevQuestion() {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
+
     if (currentState.currentIndex > 0) {
-      emit(currentState.copyWith(currentIndex: currentState.currentIndex - 1));
+      final newIndex = currentState.currentIndex - 1;
+      _currentNavigatorPage = newIndex ~/ navigatorPageSize;
+
+      emit(currentState.copyWith(currentIndex: newIndex));
     }
   }
 
@@ -166,8 +176,24 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
     if (index >= 0 && index < currentState.questions.length) {
+      _currentNavigatorPage = index ~/ navigatorPageSize;
       emit(currentState.copyWith(currentIndex: index));
     }
+  }
+
+  int get currentNavigatorPage => _currentNavigatorPage;
+
+  int get navigatorStartIndex => _currentNavigatorPage * navigatorPageSize;
+
+  int navigatorEndIndex(int totalQuestions) {
+    final int end = navigatorStartIndex + navigatorPageSize;
+    return end > totalQuestions ? totalQuestions : end;
+  }
+
+  List<int> visibleQuestionIndexes(int totalQuestions) {
+    final start = navigatorStartIndex;
+    final end = navigatorEndIndex(totalQuestions);
+    return List.generate(end - start, (i) => start + i);
   }
 
   void reviewTest({
@@ -178,6 +204,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
   }) {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
+    _currentNavigatorPage = 0;
     emit(
       currentState.copyWith(
         questions: questions,

@@ -65,6 +65,7 @@ class _TestScreenState extends State<TestScreen> {
     if (widget.isFromResult) {
       bloc.add(TimerStop());
     } else {
+      bloc.add(TimerReset());
       context.read<QuestionBloc>().add(
         LoadMcqQuestion(widget.dailyTestModel.id, widget.language),
       );
@@ -230,31 +231,42 @@ class _TestScreenState extends State<TestScreen> {
                       borderRadius: BorderRadius.circular(20.r),
                       border: Border.all(color: Colors.black),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.timer_outlined, size: 18.sp),
-                        5.wGap,
-                        BlocBuilder<TimerBloc, TimerState>(
-                          builder: (context, state) {
-                            if (state is TimerRunning) {
-                              return SizedBox(
-                                width: 43.w,
-                                child: Text(
-                                  "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
-                                ),
-                              );
-                            }
-                            if (state is TimerStopped) {
-                              getIt<LogHelper>().w(state.totalMins.toString());
-                              getIt<LogHelper>().w(state.totalSecs.toString());
-                              return SizedBox.shrink();
-                            }
-                            return Text('00:00');
-                          },
-                        ),
-                      ],
+                    child: IntrinsicWidth(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.timer_outlined, size: 18.sp),
+                          5.wGap,
+                          BlocBuilder<TimerBloc, TimerState>(
+                            builder: (context, state) {
+                              if (state is TimerRunning) {
+                                return Text(
+                                  formatRemainingTime(
+                                    remainingMinutes: state.remainingMinutes,
+                                    remainingSeconds: state.remainingSeconds,
+                                  ),
+                                  style: TextStyle(
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures(), // FIXED WIDTH DIGITS
+                                    ],
+                                  ),
+                                );
+                              }
+                              if (state is TimerStopped) {
+                                getIt<LogHelper>().w(
+                                  state.totalMins.toString(),
+                                );
+                                getIt<LogHelper>().w(
+                                  state.totalSecs.toString(),
+                                );
+                                return SizedBox.shrink();
+                              }
+                              return Text('00:00');
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ).padSymmetric(horizontal: 10.w),
             ],
@@ -341,6 +353,9 @@ class _TestScreenState extends State<TestScreen> {
                       final question = state.questions[currentIndex];
 
                       final selectedAnswer = state.selectedOption[currentIndex];
+                      final visibleIndexes = context
+                          .read<QuestionCubit>()
+                          .visibleQuestionIndexes(state.questions.length);
                       return SingleChildScrollView(
                         controller: scrollController,
                         child: Column(
@@ -853,57 +868,107 @@ class _TestScreenState extends State<TestScreen> {
                             TestModule(
                               title: "Question Navigator",
                               cards: [
+                                // Wrap(
+                                //   children: List.generate(state.questions.length, (
+                                //     index,
+                                //   ) {
+                                //     return Padding(
+                                //       padding: EdgeInsets.only(right: 5.w),
+                                //       child: QuestionNavigatorButton(
+                                //         text: "${index + 1}",
+                                //         backgroundColor:
+                                //             state.currentIndex == index
+                                //                 ? Colors.grey
+                                //                 : state.answeredStatus[index]
+                                //                 ? state.isReview
+                                //                     ? state.isCorrect![index] ==
+                                //                             false
+                                //                         ? Colors.red
+                                //                         : Colors.green
+                                //                     : Colors.black
+                                //                 : Colors.white,
+                                //         fontColor:
+                                //             state.currentIndex == index
+                                //                 ? Colors.black
+                                //                 : state.answeredStatus[index]
+                                //                 ? Colors.white
+                                //                 : Colors.black,
+                                //         borderColor:
+                                //             state.currentIndex == index
+                                //                 ? Colors.grey
+                                //                 : state.answeredStatus[index]
+                                //                 ? state.isReview
+                                //                     ? state.isCorrect![index] ==
+                                //                             false
+                                //                         ? Colors.red
+                                //                         : Colors.green
+                                //                     : Colors.black
+                                //                 : Colors.black,
+                                //         onTap: () {
+                                //           scrollController.animateTo(
+                                //             0.0,
+                                //             duration: Duration(
+                                //               milliseconds: 500,
+                                //             ),
+                                //             curve: Curves.easeOut,
+                                //           );
+                                //           context
+                                //               .read<QuestionCubit>()
+                                //               .jumpToQuestion(index);
+                                //         },
+                                //       ),
+                                //     );
+                                //   }),
+                                // ),
                                 Wrap(
-                                  children: List.generate(state.questions.length, (
-                                    index,
-                                  ) {
-                                    return Padding(
-                                      padding: EdgeInsets.only(right: 5.w),
-                                      child: QuestionNavigatorButton(
-                                        text: "${index + 1}",
-                                        backgroundColor:
-                                            state.currentIndex == index
-                                                ? Colors.grey
-                                                : state.answeredStatus[index]
-                                                ? state.isReview
-                                                    ? state.isCorrect![index] ==
-                                                            false
-                                                        ? Colors.red
-                                                        : Colors.green
-                                                    : Colors.black
-                                                : Colors.white,
-                                        fontColor:
-                                            state.currentIndex == index
-                                                ? Colors.black
-                                                : state.answeredStatus[index]
-                                                ? Colors.white
-                                                : Colors.black,
-                                        borderColor:
-                                            state.currentIndex == index
-                                                ? Colors.grey
-                                                : state.answeredStatus[index]
-                                                ? state.isReview
-                                                    ? state.isCorrect![index] ==
-                                                            false
-                                                        ? Colors.red
-                                                        : Colors.green
-                                                    : Colors.black
-                                                : Colors.black,
-                                        onTap: () {
-                                          scrollController.animateTo(
-                                            0.0,
-                                            duration: Duration(
-                                              milliseconds: 500,
-                                            ),
-                                            curve: Curves.easeOut,
-                                          );
-                                          context
-                                              .read<QuestionCubit>()
-                                              .jumpToQuestion(index);
-                                        },
-                                      ),
-                                    );
-                                  }),
+                                  spacing: 6.w,
+                                  runSpacing: 6.h,
+                                  children:
+                                      visibleIndexes.map((index) {
+                                        return QuestionNavigatorButton(
+                                          text: '${index + 1}',
+                                          backgroundColor:
+                                              state.currentIndex == index
+                                                  ? Colors.grey
+                                                  : state.answeredStatus[index]
+                                                  ? state.isReview
+                                                      ? state.isCorrect![index] ==
+                                                              false
+                                                          ? Colors.red
+                                                          : Colors.green
+                                                      : Colors.black
+                                                  : Colors.white,
+                                          fontColor:
+                                              state.currentIndex == index
+                                                  ? Colors.black
+                                                  : state.answeredStatus[index]
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                          borderColor:
+                                              state.currentIndex == index
+                                                  ? Colors.grey
+                                                  : state.answeredStatus[index]
+                                                  ? state.isReview
+                                                      ? state.isCorrect![index] ==
+                                                              false
+                                                          ? Colors.red
+                                                          : Colors.green
+                                                      : Colors.black
+                                                  : Colors.black,
+                                          onTap: () {
+                                            scrollController.animateTo(
+                                              0.0,
+                                              duration: Duration(
+                                                milliseconds: 500,
+                                              ),
+                                              curve: Curves.easeOut,
+                                            );
+                                            context
+                                                .read<QuestionCubit>()
+                                                .jumpToQuestion(index);
+                                          },
+                                        );
+                                      }).toList(),
                                 ),
                                 10.hGap,
                                 QuestionIndicator(
@@ -944,6 +1009,26 @@ class _TestScreenState extends State<TestScreen> {
         ),
       ),
     );
+  }
+
+  String formatRemainingTime({
+    required int remainingMinutes,
+    required int remainingSeconds,
+  }) {
+    final totalSeconds = (remainingMinutes * 60) + remainingSeconds;
+
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    } else {
+      return '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    }
   }
 
   Padding _buildWhenLoading() {
