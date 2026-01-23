@@ -7,12 +7,16 @@ import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../blocs/prelims/prelims_test_bloc.dart';
 
 class PrelimsMcqTestScreen extends StatefulWidget {
   const PrelimsMcqTestScreen({super.key});
@@ -25,9 +29,9 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
   @override
   void initState() {
     super.initState();
-    final currentState = context.read<DailyTestBloc>().state;
-    if (currentState is! DailyTestFetched) {
-      context.read<DailyTestBloc>().add(FetchTests());
+    final currentState = context.read<PrelimsTestBloc>().state;
+    if (currentState is! PrelimsTestFetched) {
+      context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
     }
   }
 
@@ -37,175 +41,125 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
+          title: Text("Prelims Tests", style: AppTexts.titleTextStyle),
           centerTitle: false,
-          bottom: TabBar(
-            tabAlignment: TabAlignment.center,
-            padding: EdgeInsets.zero,
-            isScrollable: true,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: Colors.black54,
-            labelStyle: AppTexts.titleTextStyle.copyWith(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
-            ),
-            unselectedLabelStyle: AppTexts.titleTextStyle.copyWith(
-              fontWeight: FontWeight.w500,
-              fontSize: 14.sp,
-            ),
-            indicator: UnderlineTabIndicator(
-              borderSide: BorderSide(width: 3, color: AppColors.primary),
-              insets: EdgeInsets.symmetric(horizontal: 16.w),
-            ),
-            indicatorSize: TabBarIndicatorSize.label,
-            labelPadding: EdgeInsets.symmetric(
-              horizontal: 18.w,
-              vertical: 10.h,
-            ),
-            tabs: const [
-              Tab(text: "All Subjects"),
-              Tab(text: "Current Affairs"),
-              Tab(text: "Math"),
-            ],
-          ),
         ),
-        body: BlocConsumer<DailyTestBloc, DailyTestState>(
+        body: BlocConsumer<PrelimsTestBloc, PrelimsTestState>(
           listener: (context, state) {},
           builder: (context, state) {
-            if (state is DailyTestFetching) {
+            if (state is PrelimsTestFetching) {
               return _buildWhenLoading();
-            } else if (state is DailyTestFetched) {
-              final tests = state.dailyTestModel;
-              return TabBarView(
-                children: [
-                  _buildFilteredList(tests, null, state), // all subjects
-                  _buildFilteredList(tests, "Current Affairs", state),
-                  _buildFilteredList(tests, "Math", state),
-                ],
+            } else if (state is PrelimsTestFetched) {
+              final tests = state.prelimsTests;
+              if (tests.isEmpty) {
+                return Center(child: Text("No prelims test available"));
+              }
+              return RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async {
+                  return context.read<PrelimsTestBloc>().add(
+                    FetchPrelimsTest(),
+                  );
+                },
+                child: ListView.builder(
+                  padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+                  itemCount: tests.length,
+                  itemBuilder: (context, index) {
+                    final test = tests[index];
+                    final testResult = state.testResults[test.id];
+                    final hasResult = testResult != null;
+
+                    // Default values
+                    DateTime? submittedAt;
+                    bool isEligibleForRetest = false;
+
+                    if (hasResult) {
+                      final createdAtString = testResult.createdAt;
+                      if (createdAtString != null &&
+                          createdAtString.isNotEmpty) {
+                        try {
+                          submittedAt = DateTime.parse(createdAtString);
+                          isEligibleForRetest =
+                              DateTime.now().difference(submittedAt).inHours >=
+                              12;
+                        } catch (e) {
+                          // ignore parse error
+                        }
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        TestModule(
+                          showShareButton: true,
+                          testModel: test,
+                          title: "Prelims Tests",
+                          subtitle: "Prelims test practice",
+                          prefixIcon: Icons.calendar_today_outlined,
+                          cards: [
+                            TestTile(
+                              title: test.name,
+                              subtitle:
+                                  "${test.noQuestions} Questions · ${test.duration} min",
+                              onTap: () {
+                                if (hasResult) {
+                                  context.pushReplacement(
+                                    AppRoutes.resultScreen,
+                                    extra: ResultScreenArgs(
+                                      isFromTest: false,
+                                      dailyTestModel: test,
+                                    ),
+                                  );
+                                } else {
+                                  context.pushReplacementNamed(
+                                    AppRoutes.mcqTestInstructionScreen,
+                                    extra: TestInstructionScreenArgs(
+                                      dailyTestModel: test,
+                                    ),
+                                  );
+                                }
+                              },
+                              hasResult: hasResult,
+                              widgets:
+                                  hasResult && isEligibleForRetest
+                                      ? [
+                                        Column(
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                AppIcons.retestIcon,
+                                                color: AppColors.primary,
+                                              ),
+                                              onPressed: () {
+                                                context.pushReplacement(
+                                                  AppRoutes
+                                                      .mcqTestInstructionScreen,
+                                                  extra:
+                                                      TestInstructionScreenArgs(
+                                                        dailyTestModel: test,
+                                                      ),
+                                                );
+                                              },
+                                            ),
+                                            Text("Retest"),
+                                          ],
+                                        ),
+                                        10.wGap,
+                                      ]
+                                      : [],
+                            ).padSymmetric(vertical: 6.h),
+                          ],
+                        ),
+                        10.hGap,
+                      ],
+                    );
+                  },
+                ),
               );
             }
             return Container();
           },
         ),
-      ),
-    );
-  }
-
-  /// Build filtered list for each tab
-  Widget _buildFilteredList(
-    List tests,
-    String? filter,
-    DailyTestFetched state,
-  ) {
-    final filtered =
-        filter == null
-            ? tests
-            : tests
-                .where(
-                  (t) => t.name.toLowerCase().contains(filter.toLowerCase()),
-                )
-                .toList();
-
-    if (filtered.isEmpty) {
-      return Center(
-        child: Text("No tests available for ${filter ?? "All Subjects"}"),
-      );
-    }
-
-    return RefreshIndicator(
-      color: AppColors.primary,
-      onRefresh: () async {
-        return context.read<DailyTestBloc>().add(FetchTests());
-      },
-      child: ListView.builder(
-        padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-        itemCount: filtered.length,
-        itemBuilder: (context, index) {
-          final test = filtered[index];
-          final testResult = state.testResults[test.id];
-          final hasResult = testResult != null;
-
-          // Default values
-          DateTime? submittedAt;
-          bool isEligibleForRetest = false;
-
-          if (hasResult) {
-            final createdAtString = testResult.createdAt;
-            if (createdAtString != null && createdAtString.isNotEmpty) {
-              try {
-                submittedAt = DateTime.parse(createdAtString);
-                isEligibleForRetest =
-                    DateTime.now().difference(submittedAt).inHours >= 12;
-              } catch (e) {
-                // ignore parse error
-              }
-            }
-          }
-
-          return Column(
-            children: [
-              TestModule(
-                showShareButton: true,
-                testModel: test,
-                title: "Daily Tests",
-                subtitle: "Subject-based Daily Practice",
-                prefixIcon: Icons.calendar_today_outlined,
-                cards: [
-                  TestTile(
-                    title: test.name,
-                    subtitle:
-                        "${test.noQuestions} Questions · ${test.duration} min",
-                    onTap: () {
-                      if (hasResult) {
-                        context.pushReplacement(
-                          AppRoutes.resultScreen,
-                          extra: ResultScreenArgs(
-                            isFromTest: false,
-                            dailyTestModel: test,
-                          ),
-                        );
-                      } else {
-                        context.pushReplacementNamed(
-                          AppRoutes.mcqTestInstructionScreen,
-                          extra: TestInstructionScreenArgs(
-                            dailyTestModel: test,
-                          ),
-                        );
-                      }
-                    },
-                    hasResult: hasResult,
-                    widgets:
-                        hasResult && isEligibleForRetest
-                            ? [
-                              Column(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      AppIcons.retestIcon,
-                                      color: AppColors.primary,
-                                    ),
-                                    onPressed: () {
-                                      context.pushReplacement(
-                                        AppRoutes.mcqTestInstructionScreen,
-                                        extra: TestInstructionScreenArgs(
-                                          dailyTestModel: test,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  Text("Retest"),
-                                ],
-                              ),
-                              10.wGap,
-                            ]
-                            : [],
-                  ).padSymmetric(vertical: 6.h),
-                ],
-              ),
-              10.hGap,
-            ],
-          );
-        },
       ),
     );
   }
@@ -219,11 +173,6 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [Text('Available Tests', style: AppTexts.heading)],
-              ),
-              10.hGap,
               TestModule(
                 title: "Daily Tests",
                 subtitle: "Subject-based Daily Practice",

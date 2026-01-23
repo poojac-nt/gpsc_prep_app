@@ -278,6 +278,25 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<DailyTestModel>>> fetchPrelimsTests() async {
+    try {
+      final response = await supabase
+          .from(SupabaseKeys.testsTable)
+          .select()
+          .filter('test_type', 'in', '(prelims)')
+          .order('id', ascending: false);
+
+      var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+
+      _log.i('Total test : ${result.length}');
+      return Right(result);
+    } catch (e, s) {
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      _log.e('Error in fetching test: $e', s: s);
+      return Left(Failure("Error fetching test : ${e.toString()}"));
+    }
+  }
+
   Future<Either<Failure, List<TestResultModel>>> insertDailyMcqTestsResults(
     TestResultModel test,
   ) async {

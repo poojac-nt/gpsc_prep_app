@@ -19,6 +19,7 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/goal_remind
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/icon_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/last_snapshot_card.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance_card.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/test_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:hive/hive.dart';
@@ -26,6 +27,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/dashboard/dashboard_bloc_state.dart';
+import '../../widgets/action_button.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
 import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';
@@ -81,6 +83,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     ),
   ];
   late List<LeaderboardModel> leaders = prelimsLeaders;
+
   Color _getRankColor(int rank) {
     switch (rank) {
       case 1:
@@ -184,6 +187,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             10.hGap,
 
             ///Daily test
+            Text(
+              "Daily Practice".toUpperCase(),
+              style: TextStyle(
+                color: AppColors.gray500,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            10.hGap,
             Row(
               children: [
                 Expanded(
@@ -195,19 +206,87 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ),
                 ),
                 20.wGap,
-                Expanded(
-                  child: StartTestCard(
-                    color: Color(0xff6366F2),
-                    title: "Daily Test",
-                    subTitle: "Written Tests",
-                    buttonTextColor: Color(0xff6366F2),
-                    buttonBgColor: Colors.white,
-                    onTap: () => context.push(AppRoutes.answerWriting),
-                  ),
+                StartTestCard(
+                  color: Color(0xff6366F2),
+                  title: "Daily Test",
+                  subTitle: "Written Tests",
+                  buttonTextColor: Color(0xff6366F2),
+                  buttonBgColor: Colors.white,
+                  onTap: () => context.push(AppRoutes.answerWriting),
                 ),
               ],
             ),
             10.hGap,
+            Text(
+              "Prelims Tests".toUpperCase(),
+              style: TextStyle(
+                color: AppColors.gray500,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            10.hGap,
+            ClipRRect(
+              borderRadius: AppBorders.dashboardBorderRadius,
+              child: Stack(
+                children: [
+                  DashboardContainer(
+                    child: Column(
+                      children: [
+                        IconContainer(
+                          icon: Icons.edit_note,
+                          color: Color(0xff4A6CF7),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        15.wGap,
+                        Column(
+                          children: [
+                            Text("Prelims Tests", style: AppTexts.title),
+                            5.hGap,
+                            Text(
+                              "Objective practice tests",
+                              textAlign: TextAlign.center,
+                              style: AppTexts.subTitle,
+                            ),
+                          ],
+                        ),
+                        15.hGap,
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff4A6CF7),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25.r),
+                              ),
+                            ),
+                            onPressed: () {
+                              context.push(AppRoutes.prelimsMcqTestScreen);
+                            },
+                            child: Text(
+                              "Start Test",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 0.h,
+                    right: 0.w,
+                    child: SizedBox(
+                      width: 120.w,
+                      height: 120.h,
+                      child: CustomPaint(
+                        painter: CirclePainter(color: Color(0xff4A6CF7)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            20.hGap,
             LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
             10.hGap,
             // leaderboardSection(),
@@ -571,7 +650,7 @@ class StartTestCard extends StatelessWidget {
     required this.title,
     required this.subTitle,
     this.buttonTextColor = Colors.white,
-    this.buttonBgColor = Colors.blue,
+    this.buttonBgColor = const Color(0xff3b82f6),
     required this.onTap,
   });
 
@@ -598,7 +677,7 @@ class StartTestCard extends StatelessWidget {
                   Text(title, style: AppTexts.dashboardMediumTitle),
                   5.hGap,
                   Text(subTitle, style: AppTexts.dashboardSmallTexts),
-                  5.hGap,
+                  8.hGap,
                   ElevatedButton(
                     onPressed: onTap,
                     style: ElevatedButton.styleFrom(
@@ -608,18 +687,25 @@ class StartTestCard extends StatelessWidget {
                         vertical: 8.h,
                         horizontal: 13.w,
                       ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          buttonText,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Icon(Icons.navigate_next),
-                      ],
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            buttonText,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          4.wGap,
+                          Icon(Icons.navigate_next, size: 20.sp),
+                        ],
+                      ),
                     ),
                   ),
+                  5.hGap,
                 ],
               ),
             ),

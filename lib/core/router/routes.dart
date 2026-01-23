@@ -443,13 +443,13 @@ final List<GoRoute> appRoutes = [
     },
   ),
   GoRoute(
-    path: AppRoutes.fullLengthMcqInstructionScreen,
+    path: AppRoutes.prelimsMcqInstructionScreen,
     pageBuilder: (context, state) {
       return _slideTransition(PrelimsMcqInstructionScreen(), state);
     },
   ),
   GoRoute(
-    path: AppRoutes.fullLengthMcqTestScreen,
+    path: AppRoutes.prelimsMcqTestScreen,
     pageBuilder: (context, state) {
       return _slideTransition(PrelimsMcqTestScreen(), state);
     },

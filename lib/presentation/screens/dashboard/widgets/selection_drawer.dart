@@ -86,7 +86,7 @@ class SelectionDrawer extends StatelessWidget {
               //         context.pop();
               //         context.go(AppRoutes.studentDashboard);
               //       },
-              //       Icons.dashboard,
+              //       Icons.edit_note,
               //       'Dashboard',
               //     )
               //     : SizedBox.shrink(),
@@ -104,9 +104,9 @@ class SelectionDrawer extends StatelessWidget {
                   ? commonWidget(
                     () {
                       context.pop();
-                      context.push(AppRoutes.omrScreen);
+                      context.push(AppRoutes.prelimsMcqTestScreen);
                     },
-                    Icons.content_paste_outlined,
+                    Icons.assignment_outlined,
                     'Prelims',
                   )
                   : SizedBox.shrink(),

@@ -96,4 +96,7 @@ class TestRepository {
   }) {
     return _supabase.fetchOptionMatrixForTest(testId: testId);
   }
+
+  Future<Either<Failure, List<DailyTestModel>>> fetchPrelimsTests() async =>
+      await _supabase.fetchPrelimsTests();
 }
