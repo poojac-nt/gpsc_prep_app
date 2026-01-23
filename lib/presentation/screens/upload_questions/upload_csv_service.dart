@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -181,7 +182,22 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
         headers,
         row.map((e) => e.toString().trim()),
       );
-      final srNo = rowMap['sr_no'] ?? 'unknown';
+
+      // ✅ sr_no handling
+      final srNoRaw = rowMap['sr_no'];
+      if (srNoRaw == null || srNoRaw.trim().isEmpty) {
+        _snackBar.showError('Missing sr_no in row $rowIndex');
+        return null;
+      }
+      final srNoInt = int.tryParse(srNoRaw.trim());
+      if (srNoInt == null) {
+        _snackBar.showError(
+          'Invalid sr_no "$srNoRaw" in row $rowIndex. Must be numeric.',
+        );
+        return null;
+      }
+      final srNo = srNoInt.toString();
+
       final questionType = rowMap['question_type']?.toLowerCase() ?? '';
       final lang = rowMap['language_code'];
 
@@ -235,6 +251,7 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
 
       grouped.putIfAbsent(srNo, () {
         final base = {
+          "sr_no": srNoInt, // ✅ include sr_no
           "question_type": questionType,
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
@@ -258,6 +275,9 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
       return null;
     }
 
+    // ✅ Optional debug
+    _log.i('📤 Payload sample: ${grouped.values.take(3).toList()}');
+
     return grouped.values.toList();
   } catch (e, stack) {
     _log.e('❌ Parsing failed: $e\n$stack');
@@ -280,7 +300,7 @@ Future<UploadResult?> submitParsedDataToSupabase({
       rpcFunctionName,
       params: {'payload': payload},
     );
-
+    debugPrint('rpcResult: $payload');
     final response = rpcResult as Map<String, dynamic>?;
     if (response == null) return null;
 
