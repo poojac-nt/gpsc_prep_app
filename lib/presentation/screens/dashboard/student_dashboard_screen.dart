@@ -19,7 +19,6 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/goal_remind
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/icon_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/last_snapshot_card.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance_card.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/test_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:hive/hive.dart';
@@ -27,7 +26,6 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/dashboard/dashboard_bloc_state.dart';
-import '../../widgets/action_button.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
 import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';

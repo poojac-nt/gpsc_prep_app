@@ -3,6 +3,7 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
@@ -28,6 +29,10 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     required int secSpent,
     required String languageCode,
   }) async {
+    // Clear any existing prelims progress for this test
+    final userId = cache.getUserId();
+    await getIt<PrelimsProgressRepository>().deleteProgress(userId, testId);
+
     final attempted = answeredStatus.where((status) => status).length;
     final notAttempted = questionsModel.length - attempted;
     final timeSpent = (minSpent * 60) + secSpent;

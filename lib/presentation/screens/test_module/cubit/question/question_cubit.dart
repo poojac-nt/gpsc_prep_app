@@ -1,4 +1,7 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
 
@@ -195,6 +198,70 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     final end = navigatorEndIndex(totalQuestions);
     return List.generate(end - start, (i) => start + i);
   }
+
+  // ===== PRELIMS TEST PROGRESS METHODS =====
+
+  /// Save progress (Prelims tests only)
+  Future<void> savePrelimsProgress({
+    required int userId,
+    required int testId,
+    required String languageCode,
+    required int remainingTimeInSeconds,
+  }) async {
+    final currentState = state;
+    if (currentState is! McqQuestionCubitLoaded) return;
+
+    final progressRepo = getIt<PrelimsProgressRepository>();
+    final progress = PrelimsTestProgress(
+      userId: userId,
+      testId: testId,
+      languageCode: languageCode,
+      currentQuestionIndex: currentState.currentIndex,
+      selectedOptions: currentState.selectedOption,
+      answeredStatus: currentState.answeredStatus,
+      remainingTimeInSeconds: remainingTimeInSeconds,
+      savedAt: DateTime.now().toIso8601String(),
+      totalQuestions: currentState.questions.length,
+    );
+
+    await progressRepo.saveProgress(progress);
+  }
+
+  /// Load progress (Prelims tests only)
+  bool loadPrelimsProgress(int userId, int testId) {
+    final progressRepo = getIt<PrelimsProgressRepository>();
+    final progress = progressRepo.getProgress(userId, testId);
+
+    if (progress == null || progress.isExpired()) {
+      return false; // No valid progress found
+    }
+
+    final currentState = state;
+    if (currentState is! McqQuestionCubitLoaded) return false;
+
+    // Restore state from saved progress
+    emit(
+      McqQuestionCubitLoaded(
+        questionModel: currentState.questionModel,
+        questions: currentState.questions,
+        currentIndex: progress.currentQuestionIndex,
+        selectedOption: progress.selectedOptions,
+        answeredStatus: progress.answeredStatus,
+        currentLanguage: progress.languageCode,
+        isReview: false,
+      ),
+    );
+
+    return true; // Successfully loaded progress
+  }
+
+  /// Clear saved progress
+  Future<void> clearPrelimsProgress(int userId, int testId) async {
+    final progressRepo = getIt<PrelimsProgressRepository>();
+    await progressRepo.deleteProgress(userId, testId);
+  }
+
+  // ===== END PRELIMS PROGRESS METHODS =====
 
   void reviewTest({
     required List<bool> answeredStatus,

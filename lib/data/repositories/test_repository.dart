@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
@@ -11,6 +10,7 @@ import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_mo
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 import '../../core/error/failure.dart';
 import '../../domain/entities/question_model.dart';
@@ -20,7 +20,7 @@ class TestRepository {
 
   TestRepository(this._supabase);
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchDailyTest() async =>
+  Future<Either<Failure, List<TestModel>>> fetchDailyTest() async =>
       await _supabase.fetchDailyMcqTests();
 
   Future<Either<Failure, List<QuestionModel>>> fetchMcqTestQuestions(
@@ -60,9 +60,8 @@ class TestRepository {
   Future<Either<Failure, Map<String, dynamic>>>
   fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();
 
-  Future<Either<Failure, DailyTestModel>> fetchSingleTestFromId(
-    int testId,
-  ) async => await _supabase.fetchSingleTestFromId(testId);
+  Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async =>
+      await _supabase.fetchSingleTestFromId(testId);
 
   Future<Either<Failure, DescTestModel>> fetchSingleDescTestFromId(
     int testId,
@@ -97,6 +96,6 @@ class TestRepository {
     return _supabase.fetchOptionMatrixForTest(testId: testId);
   }
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchPrelimsTests() async =>
+  Future<Either<Failure, List<TestModel>>> fetchPrelimsTests() async =>
       await _supabase.fetchPrelimsTests();
 }

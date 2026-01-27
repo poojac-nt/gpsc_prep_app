@@ -1,31 +1,33 @@
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
-  final DailyTestModel dailyTestModel;
+  final TestModel testModal;
   final String? language;
+  final bool hasPrelimsProgress; // NEW: Indicates if should load saved progress
 
   TestScreenArgs({
     required this.isFromResult,
-    required this.dailyTestModel,
+    required this.testModal,
     this.language,
+    this.hasPrelimsProgress = false,
   });
 }
 
 class ResultScreenArgs {
   final bool isFromTest;
-  final DailyTestModel dailyTestModel;
+  final TestModel testModal;
 
-  ResultScreenArgs({required this.isFromTest, required this.dailyTestModel});
+  ResultScreenArgs({required this.isFromTest, required this.testModal});
 }
 
 class TestInstructionScreenArgs {
   final int? testId;
-  final DailyTestModel? dailyTestModel;
+  final TestModel? testModal;
 
-  TestInstructionScreenArgs({this.testId, this.dailyTestModel});
+  TestInstructionScreenArgs({this.testId, this.testModal});
 }
 
 class ReviewQuestionScreenArgs {

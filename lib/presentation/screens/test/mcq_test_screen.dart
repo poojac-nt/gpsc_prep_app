@@ -161,15 +161,13 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                           AppRoutes.resultScreen,
                           extra: ResultScreenArgs(
                             isFromTest: false,
-                            dailyTestModel: test,
+                            testModal: test,
                           ),
                         );
                       } else {
                         context.pushReplacementNamed(
                           AppRoutes.mcqTestInstructionScreen,
-                          extra: TestInstructionScreenArgs(
-                            dailyTestModel: test,
-                          ),
+                          extra: TestInstructionScreenArgs(testModal: test),
                         );
                       }
                     },
@@ -188,7 +186,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       context.pushReplacement(
                                         AppRoutes.mcqTestInstructionScreen,
                                         extra: TestInstructionScreenArgs(
-                                          dailyTestModel: test,
+                                          testModal: test,
                                         ),
                                       );
                                     },

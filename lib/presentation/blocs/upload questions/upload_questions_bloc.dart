@@ -60,33 +60,13 @@ class UploadQuestionsBloc
 
       // 🚨 Handle null response case
       if (result == null) {
-        // Since it's a known case for Daily Test uploads, check flags if needed
-        if (event.isTestUpload) {
-          emit(
-            UploadFileFailure(
-              'A daily test has already been uploaded today. Only one allowed per day.',
-            ),
-          );
-        } else {
-          emit(UploadFileFailure('❌ Upload failed: No response received.'));
-        }
+        emit(UploadFileFailure(result.toString()));
         return;
       }
 
       emit(UploadFileSuccess(result));
     } catch (e) {
-      final errorMessage = e.toString();
-      if (errorMessage.contains(
-        'A Daily test has already been created today',
-      )) {
-        emit(
-          UploadFileFailure(
-            'A daily test has already been uploaded today. Only one allowed per day.',
-          ),
-        );
-      } else {
-        emit(UploadFileFailure('❌ Upload failed: $errorMessage'));
-      }
+      emit(UploadFileFailure('❌ Upload failed: ${e.toString()}'));
     }
   }
 

@@ -7,7 +7,6 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../../core/di/di.dart';
 import '../../../core/helpers/log_helper.dart';
-import '../../../core/router/args.dart';
 import '../../../utils/extensions/padding.dart';
 import '../../blocs/timer/timer_bloc.dart';
 import '../../blocs/timer/timer_event.dart';
@@ -56,7 +55,8 @@ class _OMRScreenState extends State<OMRScreen> {
               children: [
                 const Text("OMR Screen"),
                 Text(
-                  "Attempted: $_attemptedCount/$_totalQuestions", // Updated counter
+                  "Attempted: $_attemptedCount/$_totalQuestions",
+                  // Updated counter
                   style: TextStyle(fontSize: 12.sp, color: Colors.black54),
                 ),
               ],
@@ -258,6 +258,7 @@ class _OMRScreenState extends State<OMRScreen> {
 
 class TopLabelRow extends StatelessWidget {
   final String text;
+
   const TopLabelRow({super.key, required this.text});
 
   @override

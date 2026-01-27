@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
@@ -26,12 +28,13 @@ import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/test_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../domain/entities/daily_test_model.dart';
+import '../../../domain/entities/test_model.dart';
 import '../../blocs/pie_chart/pie_chart_bloc.dart';
 import '../../blocs/pie_chart/pie_chart_state.dart';
 import '../../blocs/timer/timer_bloc.dart';
@@ -44,11 +47,13 @@ class TestScreen extends StatefulWidget {
     this.isFromResult = false,
     required this.language,
     required this.dailyTestModel,
+    this.hasPrelimsProgress = false,
   });
 
   final bool isFromResult;
   final String? language;
-  final DailyTestModel dailyTestModel;
+  final TestModel dailyTestModel;
+  final bool hasPrelimsProgress;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -208,6 +213,15 @@ class _TestScreenState extends State<TestScreen> {
                     );
                   },
                 ),
+
+              // Show pause button ONLY for Prelims tests
+              if (!widget.isFromResult && _isPrelimsTest())
+                IconButton(
+                  icon: const Icon(Icons.pause_circle_outline),
+                  onPressed: () => _handlePause(context),
+                  tooltip: "Pause Test",
+                ),
+
               widget.isFromResult
                   ? TextButton(
                     onPressed: () {
@@ -248,7 +262,8 @@ class _TestScreenState extends State<TestScreen> {
                                   ),
                                   style: TextStyle(
                                     fontFeatures: const [
-                                      FontFeature.tabularFigures(), // FIXED WIDTH DIGITS
+                                      FontFeature.tabularFigures(),
+                                      // FIXED WIDTH DIGITS
                                     ],
                                   ),
                                 );
@@ -304,7 +319,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    dailyTestModel: widget.dailyTestModel,
+                    testModal: widget.dailyTestModel,
                   ),
                 );
               }
@@ -328,6 +343,30 @@ class _TestScreenState extends State<TestScreen> {
                         state.questionsModels,
                         widget.language!,
                       );
+
+                    // If this a Prelims test with saved progress, load it
+                    if (widget.hasPrelimsProgress) {
+                      final userId = getIt<CacheManager>().getUserId();
+                      final testId = widget.dailyTestModel.id;
+                      final loaded = context
+                          .read<QuestionCubit>()
+                          .loadPrelimsProgress(userId, testId);
+
+                      if (loaded) {
+                        final progress = getIt<PrelimsProgressRepository>()
+                            .getProgress(userId, testId);
+                        if (progress != null) {
+                          context.read<TimerBloc>().add(
+                            TimerStartWithRemaining(
+                              progress.remainingTimeInSeconds,
+                            ),
+                          );
+                          return; // Skip normal TimerStart
+                        }
+                      }
+                    }
+
+                    // Normal start
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
@@ -758,46 +797,6 @@ class _TestScreenState extends State<TestScreen> {
                                           correctState,
                                           questionId,
                                         );
-                                    // // ✅ Safe lookup with fallback
-                                    // final stats = correctState.correctnessCounts
-                                    //     .firstWhere(
-                                    //       (entry) =>
-                                    //           entry['question_id'] ==
-                                    //           questionId,
-                                    //       orElse:
-                                    //           () => {
-                                    //             'question_id': questionId,
-                                    //             'correct_count': 0,
-                                    //             'incorrect_count': 0,
-                                    //           },
-                                    //     );
-                                    // final attemptedStats = correctState
-                                    //     .attemptedCounts
-                                    //     .firstWhere(
-                                    //       (entry) =>
-                                    //           entry.questionId == questionId,
-                                    //     );
-                                    // final attempted =
-                                    //     attemptedStats.attemptedCount;
-                                    // final notAttempted =
-                                    //     attemptedStats.notAttemptedCount;
-                                    // final users = attemptedStats.totalUsers;
-                                    //
-                                    // final correct = stats['correct_count'] ?? 0;
-                                    // final incorrect =
-                                    //     stats['incorrect_count'] ?? 0;
-
-                                    // ✅ If not attempted → only show message
-                                    // if (correct == 0 && incorrect == 0) {
-                                    //   return ElevatedContainer(
-                                    //     child: Text(
-                                    //       'Question is not attempted by anyone yet',
-                                    //       style: AppTexts.heading.copyWith(
-                                    //         fontSize: 15.sp,
-                                    //       ),
-                                    //     ),
-                                    //   );
-                                    // }
                                     if (isNotAttempted) {
                                       return ElevatedContainer(
                                         child: Text(
@@ -1153,7 +1152,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    dailyTestModel: widget.dailyTestModel,
+                    testModal: widget.dailyTestModel,
                   ),
                 );
               },
@@ -1190,7 +1189,7 @@ class _TestScreenState extends State<TestScreen> {
                 labelTwo: 'Incorrect',
               ),
             ),
-            SizedBox(width: 15.w),
+            10.wGap,
             Expanded(
               child: CustomPieChart(
                 total: attemptedStats.totalUsers,
@@ -1205,6 +1204,51 @@ class _TestScreenState extends State<TestScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  // Helper method to identify Prelims test
+  bool _isPrelimsTest() {
+    return widget.dailyTestModel.testType == TestType.prelims;
+  }
+
+  // Handle test pause
+  Future<void> _handlePause(BuildContext context) async {
+    final timerBloc = context.read<TimerBloc>();
+    final questionCubit = context.read<QuestionCubit>();
+    final userId = getIt<CacheManager>().getUserId();
+
+    final remainingTime = timerBloc.getRemainingSeconds();
+
+    await questionCubit.savePrelimsProgress(
+      userId: userId,
+      testId: widget.dailyTestModel.id,
+      languageCode: widget.language!,
+      remainingTimeInSeconds: remainingTime,
+    );
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text("Test Paused"),
+            content: const Text(
+              "Progress saved. Resume from the test list.\n\n"
+              "Note: Progress expires in 24 hours.",
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.go(AppRoutes.studentDashboard);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
     );
   }
 }

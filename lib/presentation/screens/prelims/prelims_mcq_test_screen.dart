@@ -4,9 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
@@ -16,6 +13,9 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../core/cache_manager.dart';
+import '../../../core/di/di.dart';
+import '../../../data/repositories/prelims_progress_repository.dart';
 import '../../blocs/prelims/prelims_test_bloc.dart';
 
 class PrelimsMcqTestScreen extends StatefulWidget {
@@ -88,6 +88,16 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                       }
                     }
 
+                    // Check for saved progress
+                    final progressRepo = getIt<PrelimsProgressRepository>();
+                    final userId = getIt<CacheManager>().getUserId();
+                    final savedProgress = progressRepo.getProgress(
+                      userId,
+                      test.id,
+                    );
+                    final hasProgress =
+                        savedProgress != null && !savedProgress.isExpired();
+
                     return Column(
                       children: [
                         TestModule(
@@ -107,14 +117,14 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                                     AppRoutes.resultScreen,
                                     extra: ResultScreenArgs(
                                       isFromTest: false,
-                                      dailyTestModel: test,
+                                      testModal: test,
                                     ),
                                   );
                                 } else {
                                   context.pushReplacementNamed(
                                     AppRoutes.mcqTestInstructionScreen,
                                     extra: TestInstructionScreenArgs(
-                                      dailyTestModel: test,
+                                      testModal: test,
                                     ),
                                   );
                                 }
@@ -136,13 +146,40 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                                                       .mcqTestInstructionScreen,
                                                   extra:
                                                       TestInstructionScreenArgs(
-                                                        dailyTestModel: test,
+                                                        testModal: test,
                                                       ),
                                                 );
                                               },
                                             ),
-                                            Text("Retest"),
+                                            const Text("Retest"),
                                           ],
+                                        ),
+                                        10.wGap,
+                                      ]
+                                      : !hasResult && hasProgress
+                                      ? [
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 8.w,
+                                            vertical: 4.h,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.shade100,
+                                            borderRadius: BorderRadius.circular(
+                                              4.r,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.orange,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'RESUME',
+                                            style: TextStyle(
+                                              color: Colors.orange.shade900,
+                                              fontSize: 10.sp,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
                                         10.wGap,
                                       ]

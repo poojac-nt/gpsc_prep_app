@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -29,7 +29,7 @@ class TestModule extends StatelessWidget {
 
   final String title;
   final String? subtitle;
-  final DailyTestModel? testModel;
+  final TestModel? testModel;
   final DescTestModel? descTestModel;
   final double? iconSize;
   final double? fontSize;

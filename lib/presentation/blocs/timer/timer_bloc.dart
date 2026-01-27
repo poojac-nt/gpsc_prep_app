@@ -11,6 +11,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
       emit(TimerInitial());
     });
     on<TimerStart>(_onTimerStarted);
+    on<TimerStartWithRemaining>(_onTimerStartedWithRemaining);
     on<TimerStop>(_onTimerStop);
     on<TimerReset>(_onTimerReset);
     on<TimerTicked>(_onTimerTicked);
@@ -74,5 +75,38 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
       return;
     }
     emit(TimerStopped(spentMins, spentSecs, event.isManual));
+  }
+
+  // Handler for starting timer with remaining time (for Prelims resume)
+  Future<void> _onTimerStartedWithRemaining(
+    TimerStartWithRemaining event,
+    Emitter<TimerState> emit,
+  ) async {
+    timer?.cancel();
+    tickCount = event.remainingSeconds;
+    testDuration = tickCount ~/ 60;
+
+    final mins = tickCount ~/ 60;
+    final secs = tickCount % 60;
+
+    emit(TimerRunning(secs, mins));
+    timer = Timer.periodic(Duration(seconds: 1), (_) {
+      tickCount--;
+      add(TimerTicked(tickCount % 60, tickCount ~/ 60));
+      if (tickCount <= 0) {
+        timer?.cancel();
+        add(TimerStop(isManual: false));
+      }
+    });
+  }
+
+  // Get remaining time in seconds (for saving progress)
+  int getRemainingSeconds() {
+    if (state is TimerRunning) {
+      final runningState = state as TimerRunning;
+      return (runningState.remainingMinutes * 60) +
+          runningState.remainingSeconds;
+    }
+    return 0;
   }
 }

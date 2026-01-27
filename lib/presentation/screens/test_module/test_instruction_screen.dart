@@ -7,8 +7,8 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
@@ -27,7 +27,7 @@ import '../../widgets/action_button.dart';
 class MCQTestInstructionScreen extends StatefulWidget {
   const MCQTestInstructionScreen({super.key, this.dailyTestModel, this.testId});
 
-  final DailyTestModel? dailyTestModel;
+  final TestModel? dailyTestModel;
   final int? testId;
 
   @override
@@ -38,7 +38,7 @@ class MCQTestInstructionScreen extends StatefulWidget {
 class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
   String selectedLanguage = 'en';
   late Set<String> availableLanguagesButton = {'en'};
-  DailyTestModel? _fetchedTestModel;
+  TestModel? _fetchedTestModel;
   late bool isFromId;
   bool _noTestDetected = false;
 
@@ -137,7 +137,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
 
   Widget buildScaffoldWithModel(
     BuildContext context,
-    DailyTestModel dailyTestModel,
+    TestModel dailyTestModel,
   ) {
     return Scaffold(
       appBar: AppBar(
@@ -249,7 +249,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     );
   }
 
-  Future<void> _handleTestStart(DailyTestModel dailyTestModel) async {
+  Future<void> _handleTestStart(TestModel dailyTestModel) async {
     final supabaseHelper = getIt<SupabaseHelper>();
     try {
       final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
@@ -303,13 +303,13 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     );
   }
 
-  void _startTest(DailyTestModel dailyTestModel) {
+  void _startTest(TestModel dailyTestModel) {
     context.pushReplacement(
       AppRoutes.testScreen,
       extra: TestScreenArgs(
         isFromResult: false,
         language: selectedLanguage,
-        dailyTestModel: dailyTestModel,
+        testModal: dailyTestModel,
       ),
     );
   }

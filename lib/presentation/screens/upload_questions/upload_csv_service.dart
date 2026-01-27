@@ -309,13 +309,9 @@ Future<UploadResult?> submitParsedDataToSupabase({
       failCount: response['failed'] ?? 0,
       duplicateCount: response['skipped_duplicates'] ?? 0,
     );
-  } catch (e, stack) {
-    _log.e('❌ Upload failed: $e\n$stack');
-    if (e.toString().toLowerCase().contains('daily test')) {
-      _snackBar.showError('A daily test has already been uploaded today.');
-    } else {
-      _snackBar.showError('Upload failed: ${e.toString()}');
-    }
+  } catch (e) {
+    _log.e('❌ Upload failed: $e');
+    _snackBar.showError('Upload failed: ${e.toString()}');
     return null;
   }
 }

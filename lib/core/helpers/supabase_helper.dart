@@ -6,7 +6,6 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
@@ -18,6 +17,7 @@ import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
@@ -215,12 +215,9 @@ class SupabaseHelper {
         params: {'p_test_id': testId},
       );
 
-      _log.i(response.toString());
+      _log.i("Questions Fetched for the testId $testId: ${response.length}");
 
       final questions = response.map((e) => QuestionModel.fromJson(e)).toList();
-
-      _log.i(questions.toString());
-
       return Right(questions);
     } catch (e, stackTrace) {
       _snackBar.showError('Error fetching test questions: ${e.toString()}');
@@ -259,7 +256,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchDailyMcqTests() async {
+  Future<Either<Failure, List<TestModel>>> fetchDailyMcqTests() async {
     try {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
@@ -267,7 +264,7 @@ class SupabaseHelper {
           .filter('test_type', 'in', '(dtmcq,mcq)')
           .order('id', ascending: false);
 
-      var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+      var result = response.map((e) => TestModel.fromJson(e)).toList();
 
       _log.i('Total test : ${result.length}');
       return Right(result);
@@ -278,7 +275,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchPrelimsTests() async {
+  Future<Either<Failure, List<TestModel>>> fetchPrelimsTests() async {
     try {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
@@ -286,7 +283,7 @@ class SupabaseHelper {
           .filter('test_type', 'in', '(prelims)')
           .order('id', ascending: false);
 
-      var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+      var result = response.map((e) => TestModel.fromJson(e)).toList();
 
       _log.i('Total test : ${result.length}');
       return Right(result);
@@ -564,9 +561,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, DailyTestModel>> fetchSingleTestFromId(
-    int testId,
-  ) async {
+  Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async {
     try {
       final response =
           await supabase
@@ -575,7 +570,7 @@ class SupabaseHelper {
               .eq('id', testId)
               .single();
 
-      var result = DailyTestModel.fromJson(response);
+      var result = TestModel.fromJson(response);
 
       _log.i('Link test : $result');
       return Right(result);

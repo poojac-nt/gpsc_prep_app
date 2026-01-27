@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../../core/error/failure.dart';
-import '../../../domain/entities/daily_test_model.dart';
 import '../../../domain/entities/result_model.dart';
+import '../../../domain/entities/test_model.dart';
 
 @immutable
 sealed class DailyTestState {}
@@ -12,7 +12,7 @@ final class DailyTestInitial extends DailyTestState {}
 class DailyTestFetching extends DailyTestState {}
 
 class DailyTestFetched extends DailyTestState {
-  final List<DailyTestModel> dailyTestModel;
+  final List<TestModel> dailyTestModel;
   final Map<int, TestResultModel> testResults;
 
   DailyTestFetched(this.dailyTestModel, this.testResults);

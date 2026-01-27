@@ -1,9 +1,10 @@
+import 'package:gpsc_prep_app/utils/enums/test_type_enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'daily_test_model.g.dart';
+part 'test_model.g.dart';
 
 @JsonSerializable()
-class DailyTestModel {
+class TestModel {
   @JsonKey(name: "id")
   int id;
   @JsonKey(name: "name")
@@ -12,19 +13,22 @@ class DailyTestModel {
   int duration;
   @JsonKey(name: "no_questions")
   int noQuestions;
+  @JsonKey(name: "test_type")
+  TestType testType;
   @JsonKey(name: "total_marks")
   int totalMarks;
 
-  DailyTestModel({
+  TestModel({
     required this.id,
     required this.name,
     required this.duration,
     required this.noQuestions,
+    required this.testType,
     required this.totalMarks,
   });
 
-  factory DailyTestModel.fromJson(Map<String, dynamic> json) =>
-      _$DailyTestModelFromJson(json);
+  factory TestModel.fromJson(Map<String, dynamic> json) =>
+      _$TestModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$DailyTestModelToJson(this);
+  Map<String, dynamic> toJson() => _$TestModelToJson(this);
 }

@@ -5,8 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
@@ -32,11 +32,11 @@ class ResultScreen extends StatefulWidget {
   const ResultScreen({
     super.key,
     this.isFromTestScreen = false,
-    required this.dailyTestModel,
+    required this.testModel,
   });
 
   final bool isFromTestScreen;
-  final DailyTestModel dailyTestModel;
+  final TestModel testModel;
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -47,7 +47,7 @@ class _ResultScreenState extends State<ResultScreen> {
   void initState() {
     super.initState();
     if (!widget.isFromTestScreen) {
-      context.read<ResultBloc>().add(FetchResultData(widget.dailyTestModel.id));
+      context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
     }
   }
 
@@ -71,7 +71,7 @@ class _ResultScreenState extends State<ResultScreen> {
             onPressed: () => context.pop(),
           ),
           title: Text(
-            'Result - ${widget.dailyTestModel.name}',
+            'Result - ${widget.testModel.name}',
             style: AppTexts.titleTextStyle.copyWith(color: Colors.white),
             overflow: TextOverflow.ellipsis,
           ),
@@ -258,9 +258,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     label: "Score",
                     value: data.score.toStringAsFixed(1),
                     percentage: (data.score /
-                            (widget.dailyTestModel.totalMarks == 0
+                            (widget.testModel.totalMarks == 0
                                 ? 1
-                                : widget.dailyTestModel.totalMarks))
+                                : widget.testModel.totalMarks))
                         .clamp(0.0, 1.0),
                     color: Colors.blue,
                   ),
@@ -320,7 +320,7 @@ class _ResultScreenState extends State<ResultScreen> {
                               blocState is McqQuestionLoaded
                                   ? blocState.questionsModels
                                   : [],
-                          testName: widget.dailyTestModel.name,
+                          testName: widget.testModel.name,
                         ),
                       );
                     },
@@ -337,18 +337,16 @@ class _ResultScreenState extends State<ResultScreen> {
                         selectedOption: selectedOption,
                       );
                       context.read<PieChartBloc>().add(
-                        FetchPerformanceSummary(
-                          testId: widget.dailyTestModel.id,
-                        ),
+                        FetchPerformanceSummary(testId: widget.testModel.id),
                       );
                       context.read<BarChartBloc>().add(
-                        FetchOptionMatrix(testId: widget.dailyTestModel.id),
+                        FetchOptionMatrix(testId: widget.testModel.id),
                       );
                       context.push(
                         AppRoutes.testScreen,
                         extra: TestScreenArgs(
                           isFromResult: true,
-                          dailyTestModel: widget.dailyTestModel,
+                          testModal: widget.testModel,
                           language: null,
                         ),
                       );

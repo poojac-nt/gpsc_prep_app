@@ -14,6 +14,11 @@ class TimerStop extends TimerEvent {
 
 class TimerReset extends TimerEvent {}
 
+class TimerStartWithRemaining extends TimerEvent {
+  final int remainingSeconds;
+  TimerStartWithRemaining(this.remainingSeconds);
+}
+
 class TimerTicked extends TimerEvent {
   final int remainingSeconds;
   final int remainingMinutes;
