@@ -235,7 +235,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                           color: Color(0xff4A6CF7),
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        15.wGap,
+                        7.hGap,
                         Column(
                           children: [
                             Text("Prelims Tests", style: AppTexts.title),

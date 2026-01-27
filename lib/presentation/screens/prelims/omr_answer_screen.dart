@@ -33,7 +33,6 @@ class _OMRScreenState extends State<OMRScreen> {
   void initState() {
     super.initState();
     _totalPages = (_totalQuestions / _questionsPerPage).ceil();
-    context.read<TimerBloc>().add(TimerStart(testDuration: 10));
   }
 
   int get _attemptedCount =>
@@ -61,40 +60,6 @@ class _OMRScreenState extends State<OMRScreen> {
                 ),
               ],
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 1.h),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: Colors.black),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.timer_outlined, size: 18.sp),
-                  5.wGap,
-                  BlocBuilder<TimerBloc, TimerState>(
-                    builder: (context, state) {
-                      if (state is TimerRunning) {
-                        return SizedBox(
-                          width: 43.w,
-                          child: Text(
-                            "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
-                        );
-                      }
-                      if (state is TimerStopped) {
-                        getIt<LogHelper>().w(state.totalMins.toString());
-                        getIt<LogHelper>().w(state.totalSecs.toString());
-                        return SizedBox.shrink();
-                      }
-                      return Text('00:00');
-                    },
-                  ),
-                ],
-              ),
-            ).padSymmetric(horizontal: 10.w),
           ],
         ),
       ),

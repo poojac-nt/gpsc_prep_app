@@ -82,3 +82,10 @@ class QuestionPreviewScreenArgs {
 
   QuestionPreviewScreenArgs({required this.questions, required this.testName});
 }
+
+class PrelimsInstructionScreenArgs {
+  final int? testId;
+  final TestModel? testModal;
+
+  PrelimsInstructionScreenArgs({this.testId, this.testModal});
+}

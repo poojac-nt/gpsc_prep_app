@@ -18,8 +18,6 @@ import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dar
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:intl/intl.dart';
@@ -28,13 +26,9 @@ import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
 
 class PrelimsMcqInstructionScreen extends StatefulWidget {
-  const PrelimsMcqInstructionScreen({
-    super.key,
-    this.dailyTestModel,
-    this.testId,
-  });
+  const PrelimsMcqInstructionScreen({super.key, this.testModel, this.testId});
 
-  final TestModel? dailyTestModel;
+  final TestModel? testModel;
   final int? testId;
 
   @override
@@ -55,13 +49,6 @@ class _PrelimsMcqInstructionScreenState
     'hi': 'Hindi',
     'gj': 'Gujarati',
   };
-
-  final List<String> _instructions = [
-    "This test contains {questions} multiple choice questions",
-    "There is a penalty of 0.33 marks for each incorrect response",
-    "You can navigate between questions using next/previous buttons",
-    "Click to Submit to finish test",
-  ];
 
   @override
   void initState() {
@@ -84,7 +71,7 @@ class _PrelimsMcqInstructionScreenState
       getIt<TestRepository>(),
     );
     var availableLanguages = await getLanguages(
-      widget.testId ?? widget.dailyTestModel!.id,
+      widget.testId ?? widget.testModel!.id,
     );
     setState(() {
       availableLanguagesButton = availableLanguages;
@@ -108,7 +95,7 @@ class _PrelimsMcqInstructionScreenState
             return _loadingScreen();
           }
 
-          final testModel = widget.dailyTestModel ?? _fetchedTestModel;
+          final testModel = widget.testModel ?? _fetchedTestModel;
           if (testModel != null) {
             return buildScaffoldWithModel(context, testModel);
           }
@@ -148,56 +135,137 @@ class _PrelimsMcqInstructionScreenState
     TestModel dailyTestModel,
   ) {
     return Scaffold(
+      backgroundColor: const Color(0xfff7f8f9),
       appBar: AppBar(
         leading: IconButton(
           onPressed: _handleBackNavigation,
           icon: const Icon(Icons.arrow_back),
         ),
         title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
+        centerTitle: false,
+        elevation: 0,
+        backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        child: TestModule(
-          title: "Test Instructions",
-          prefixIcon: Icons.menu_book_outlined,
-          cards: [
-            InfoTile(
-              value: dailyTestModel.noQuestions.toString(),
-              label: "Questions",
-            ),
-            10.hGap,
-            InfoTile(
-              value: dailyTestModel.duration.toString(),
-              label: "Minutes",
-            ),
-            10.hGap,
-            Text("Instructions: ", style: AppTexts.labelTextStyle),
-            10.hGap,
-            ..._instructions.map(
-              (text) => _buildInstructionTile(
-                text.replaceAll(
-                  "{questions}",
-                  dailyTestModel.noQuestions.toString(),
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Stats Cards
+            Row(
+              children: [
+                Expanded(
+                  child: InfoTile(
+                    value: dailyTestModel.noQuestions.toString(),
+                    label: "QUESTIONS",
+                    icon: Icons.quiz_rounded,
+                  ),
                 ),
+                15.wGap,
+                Expanded(
+                  child: InfoTile(
+                    value: dailyTestModel.duration.toString(),
+                    label: "MINUTES",
+                    icon: Icons.access_time,
+                  ),
+                ),
+              ],
+            ),
+            20.hGap,
+
+            // Instructions Card
+            Container(
+              padding: EdgeInsets.all(20.r),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(13),
+                    offset: const Offset(0, 4),
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Test Instructions:", style: AppTexts.labelTextStyle),
+                  15.hGap,
+                  _buildInstructionTile(
+                    "This test contains ${dailyTestModel.noQuestions} multiple choice questions.",
+                    Icons.check_circle_rounded,
+                    AppColors.primary,
+                  ),
+                  _buildInstructionTile(
+                    "There is a penalty of 0.33 marks for each incorrect response.",
+                    Icons.error_outline_rounded,
+                    Colors.red,
+                  ),
+                  _buildInstructionTile(
+                    "You can navigate between questions using next/previous buttons.",
+                    Icons.compare_arrows_rounded,
+                    Colors.blue,
+                  ),
+                  _buildInstructionTile(
+                    "Click to Submit to finish test and generate your result.",
+                    Icons.flag_rounded,
+                    Colors.blue,
+                  ),
+                ],
               ),
             ),
-            15.hGap,
+            20.hGap,
+
+            // Language Selection
             Text("Choose Language", style: AppTexts.labelTextStyle),
             10.hGap,
-            Wrap(
-              spacing: 8,
+            Row(
               children:
                   availableLanguagesButton
                       .where((code) => _languageLabels.containsKey(code))
-                      .map((code) => _languageButton(code))
+                      .map(
+                        (code) => Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 8.w),
+                            child: _languageButton(code),
+                          ),
+                        ),
+                      )
                       .toList(),
             ),
-            15.hGap,
+            25.hGap,
+
+            // Start Test
             ActionButton(
               text: "Start Test",
               onTap: () => _handleTestStart(dailyTestModel),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              backgroundColor: AppColors.primary,
             ),
+            15.hGap,
+
+            // Secondary Actions
+            Row(
+              children: [
+                Expanded(
+                  child: _buildOutlinedButton("Download", Icons.download, () {
+                    context.push(AppRoutes.omrScreen);
+                  }),
+                ),
+                15.wGap,
+                Expanded(
+                  child: _buildOutlinedButton(
+                    "Submit OMR",
+                    Icons.upload_file,
+                    () {},
+                  ),
+                ),
+              ],
+            ),
+            30.hGap,
           ],
-        ).padAll(AppPaddings.defaultPadding),
+        ),
       ),
     );
   }
@@ -212,23 +280,23 @@ class _PrelimsMcqInstructionScreenState
     }
   }
 
-  Widget _buildInstructionTile(String text) {
+  Widget _buildInstructionTile(String text, IconData icon, Color iconColor) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 3.h),
+      padding: EdgeInsets.symmetric(vertical: 5.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.only(top: 6.h),
-            child: Icon(Icons.circle, size: 6.sp),
-          ),
-          10.wGap,
+          Icon(icon, size: 18.sp, color: iconColor),
+          12.wGap,
           Expanded(
             child: Text(
               text,
-              maxLines: 3,
-              overflow: TextOverflow.visible,
-              style: AppTexts.subTitle.copyWith(color: Colors.black),
+              style: AppTexts.subTitle.copyWith(
+                color: Colors.grey[700],
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -238,21 +306,64 @@ class _PrelimsMcqInstructionScreenState
 
   Widget _languageButton(String code) {
     final bool isSelected = selectedLanguage == code;
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.blue.shade100 : null,
-        side: BorderSide(
-          color: isSelected ? Colors.blue : Colors.grey,
-          width: 2,
+    return InkWell(
+      onTap: () => setState(() => selectedLanguage = code),
+      borderRadius: BorderRadius.circular(8.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE8F1FF) : Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.grey.shade300,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isSelected) ...[
+              Icon(Icons.language, size: 16.sp, color: AppColors.primary),
+              8.wGap,
+            ],
+            Text(
+              _languageLabels[code]!,
+              style: TextStyle(
+                color: isSelected ? AppColors.primary : Colors.grey[700],
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+              ),
+            ),
+          ],
         ),
       ),
-      onPressed: () => setState(() => selectedLanguage = code),
-      child: Text(
-        _languageLabels[code]!,
-        style: TextStyle(
-          color: isSelected ? Colors.blue : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
+    );
+  }
+
+  Widget _buildOutlinedButton(String text, IconData icon, VoidCallback onTap) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        side: BorderSide(color: Colors.grey.shade300),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        backgroundColor: Colors.white,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 18.sp, color: Colors.black87),
+          8.wGap,
+          Text(
+            text,
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 13.sp,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -408,24 +519,53 @@ class _PrelimsMcqInstructionScreenState
 class InfoTile extends StatelessWidget {
   final String value;
   final String label;
+  final IconData icon;
 
-  const InfoTile({super.key, required this.value, required this.label});
+  const InfoTile({
+    super.key,
+    required this.value,
+    required this.label,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return BorderedContainer(
-      padding: EdgeInsets.all(AppPaddings.defaultPadding),
-      radius: BorderRadius.zero,
-      child: Center(
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 7.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(13),
+            offset: const Offset(0, 4),
+            blurRadius: 15,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: const Color(0xFF88ABEE), size: 24.sp),
+          10.hGap,
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
-            Text(label, style: AppTexts.subTitle.copyWith(fontSize: 14.sp)),
-          ],
-        ),
+          ),
+          4.hGap,
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[400],
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }

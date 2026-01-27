@@ -455,6 +455,16 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(PrelimsMcqTestScreen(), state);
     },
   ),
+  GoRoute(
+    path: AppRoutes.prelimsInstructionsScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as PrelimsInstructionScreenArgs;
+      return _slideTransition(
+        PrelimsMcqInstructionScreen(testModel: args.testModal),
+        state,
+      );
+    },
+  ),
 ];
 
 Page<dynamic> _slideTransition(Widget screen, GoRouterState state) =>

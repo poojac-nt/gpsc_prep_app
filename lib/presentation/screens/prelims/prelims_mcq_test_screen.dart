@@ -3,19 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/prelims_test_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../core/cache_manager.dart';
-import '../../../core/di/di.dart';
-import '../../../data/repositories/prelims_progress_repository.dart';
 import '../../blocs/prelims/prelims_test_bloc.dart';
 
 class PrelimsMcqTestScreen extends StatefulWidget {
@@ -37,166 +34,80 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("Prelims Tests", style: AppTexts.titleTextStyle),
-          centerTitle: false,
-        ),
-        body: BlocConsumer<PrelimsTestBloc, PrelimsTestState>(
-          listener: (context, state) {},
-          builder: (context, state) {
-            if (state is PrelimsTestFetching) {
-              return _buildWhenLoading();
-            } else if (state is PrelimsTestFetched) {
-              final tests = state.prelimsTests;
-              if (tests.isEmpty) {
-                return Center(child: Text("No prelims test available"));
-              }
-              return RefreshIndicator(
-                color: AppColors.primary,
-                onRefresh: () async {
-                  return context.read<PrelimsTestBloc>().add(
-                    FetchPrelimsTest(),
-                  );
-                },
-                child: ListView.builder(
-                  padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-                  itemCount: tests.length,
-                  itemBuilder: (context, index) {
-                    final test = tests[index];
-                    final testResult = state.testResults[test.id];
-                    final hasResult = testResult != null;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Prelims Tests", style: AppTexts.titleTextStyle),
+        centerTitle: false,
+      ),
+      body: BlocConsumer<PrelimsTestBloc, PrelimsTestState>(
+        listener: (context, state) {},
+        builder: (context, state) {
+          if (state is PrelimsTestFetching) {
+            return _buildWhenLoading();
+          } else if (state is PrelimsTestFetched) {
+            final tests = state.prelimsTests;
+            if (tests.isEmpty) {
+              return Center(child: Text("No prelims test available"));
+            }
+            return RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: () async {
+                return context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
+              },
+              child: ListView.builder(
+                padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+                itemCount: tests.length,
+                itemBuilder: (context, index) {
+                  final test = tests[index];
+                  final testResult = state.testResults[test.id];
+                  final hasResult = testResult != null;
 
-                    // Default values
-                    DateTime? submittedAt;
-                    bool isEligibleForRetest = false;
+                  // Default values
+                  String? lastAttemptedDate;
+                  bool isEligibleForRetest = false;
 
-                    if (hasResult) {
-                      final createdAtString = testResult.createdAt;
-                      if (createdAtString != null &&
-                          createdAtString.isNotEmpty) {
-                        try {
-                          submittedAt = DateTime.parse(createdAtString);
-                          isEligibleForRetest =
-                              DateTime.now().difference(submittedAt).inHours >=
-                              12;
-                        } catch (e) {
-                          // ignore parse error
-                        }
+                  if (hasResult) {
+                    final createdAtString = testResult.createdAt;
+                    if (createdAtString != null && createdAtString.isNotEmpty) {
+                      try {
+                        final submittedAt = DateTime.parse(createdAtString);
+
+                        // Simple formatting: dd/MM/yyyy HH:mm
+                        // You might want to use DateFormat from intl package if available
+                        final date =
+                            "${submittedAt.day.toString().padLeft(2, '0')}/${submittedAt.month.toString().padLeft(2, '0')}/${submittedAt.year}";
+                        final time =
+                            "${submittedAt.hour.toString().padLeft(2, '0')}:${submittedAt.minute.toString().padLeft(2, '0')}";
+                        lastAttemptedDate = "$date at $time";
+
+                        isEligibleForRetest =
+                            DateTime.now().difference(submittedAt).inHours >=
+                            12;
+                      } catch (e) {
+                        // ignore parse error
                       }
                     }
+                  }
 
-                    // Check for saved progress
-                    final progressRepo = getIt<PrelimsProgressRepository>();
-                    final userId = getIt<CacheManager>().getUserId();
-                    final savedProgress = progressRepo.getProgress(
-                      userId,
-                      test.id,
-                    );
-                    final hasProgress =
-                        savedProgress != null && !savedProgress.isExpired();
-
-                    return Column(
-                      children: [
-                        TestModule(
-                          showShareButton: true,
-                          testModel: test,
-                          title: "Prelims Tests",
-                          subtitle: "Prelims test practice",
-                          prefixIcon: Icons.calendar_today_outlined,
-                          cards: [
-                            TestTile(
-                              title: test.name,
-                              subtitle:
-                                  "${test.noQuestions} Questions · ${test.duration} min",
-                              onTap: () {
-                                if (hasResult) {
-                                  context.pushReplacement(
-                                    AppRoutes.resultScreen,
-                                    extra: ResultScreenArgs(
-                                      isFromTest: false,
-                                      testModal: test,
-                                    ),
-                                  );
-                                } else {
-                                  context.pushReplacementNamed(
-                                    AppRoutes.mcqTestInstructionScreen,
-                                    extra: TestInstructionScreenArgs(
-                                      testModal: test,
-                                    ),
-                                  );
-                                }
-                              },
-                              hasResult: hasResult,
-                              widgets:
-                                  hasResult && isEligibleForRetest
-                                      ? [
-                                        Column(
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                AppIcons.retestIcon,
-                                                color: AppColors.primary,
-                                              ),
-                                              onPressed: () {
-                                                context.pushReplacement(
-                                                  AppRoutes
-                                                      .mcqTestInstructionScreen,
-                                                  extra:
-                                                      TestInstructionScreenArgs(
-                                                        testModal: test,
-                                                      ),
-                                                );
-                                              },
-                                            ),
-                                            const Text("Retest"),
-                                          ],
-                                        ),
-                                        10.wGap,
-                                      ]
-                                      : !hasResult && hasProgress
-                                      ? [
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 8.w,
-                                            vertical: 4.h,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.orange.shade100,
-                                            borderRadius: BorderRadius.circular(
-                                              4.r,
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.orange,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'RESUME',
-                                            style: TextStyle(
-                                              color: Colors.orange.shade900,
-                                              fontSize: 10.sp,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        10.wGap,
-                                      ]
-                                      : [],
-                            ).padSymmetric(vertical: 6.h),
-                          ],
-                        ),
-                        10.hGap,
-                      ],
-                    );
-                  },
-                ),
-              );
-            }
-            return Container();
-          },
-        ),
+                  return GestureDetector(
+                    onTap: () {
+                      context.pushReplacement(
+                        AppRoutes.prelimsInstructionsScreen,
+                        extra: PrelimsInstructionScreenArgs(testModal: test),
+                      );
+                    },
+                    child: PrelimsTestCard(
+                      testModel: test,
+                      isAttempted: hasResult,
+                      lastAttemptedDate: lastAttemptedDate,
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+          return Container();
+        },
       ),
     );
   }

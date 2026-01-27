@@ -146,6 +146,7 @@ abstract class AppRoutes {
   static const String prelimsMcqInstructionScreen =
       '/fullLengthMcqInstructionScreen';
   static const String prelimsMcqTestScreen = '/fullLengthMcqTestScreen';
+  static const String prelimsInstructionsScreen = '/prelimsInstructionsScreen';
 }
 
 class AdUnitIds {

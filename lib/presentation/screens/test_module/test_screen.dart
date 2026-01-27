@@ -867,58 +867,6 @@ class _TestScreenState extends State<TestScreen> {
                             TestModule(
                               title: "Question Navigator",
                               cards: [
-                                // Wrap(
-                                //   children: List.generate(state.questions.length, (
-                                //     index,
-                                //   ) {
-                                //     return Padding(
-                                //       padding: EdgeInsets.only(right: 5.w),
-                                //       child: QuestionNavigatorButton(
-                                //         text: "${index + 1}",
-                                //         backgroundColor:
-                                //             state.currentIndex == index
-                                //                 ? Colors.grey
-                                //                 : state.answeredStatus[index]
-                                //                 ? state.isReview
-                                //                     ? state.isCorrect![index] ==
-                                //                             false
-                                //                         ? Colors.red
-                                //                         : Colors.green
-                                //                     : Colors.black
-                                //                 : Colors.white,
-                                //         fontColor:
-                                //             state.currentIndex == index
-                                //                 ? Colors.black
-                                //                 : state.answeredStatus[index]
-                                //                 ? Colors.white
-                                //                 : Colors.black,
-                                //         borderColor:
-                                //             state.currentIndex == index
-                                //                 ? Colors.grey
-                                //                 : state.answeredStatus[index]
-                                //                 ? state.isReview
-                                //                     ? state.isCorrect![index] ==
-                                //                             false
-                                //                         ? Colors.red
-                                //                         : Colors.green
-                                //                     : Colors.black
-                                //                 : Colors.black,
-                                //         onTap: () {
-                                //           scrollController.animateTo(
-                                //             0.0,
-                                //             duration: Duration(
-                                //               milliseconds: 500,
-                                //             ),
-                                //             curve: Curves.easeOut,
-                                //           );
-                                //           context
-                                //               .read<QuestionCubit>()
-                                //               .jumpToQuestion(index);
-                                //         },
-                                //       ),
-                                //     );
-                                //   }),
-                                // ),
                                 Wrap(
                                   spacing: 6.w,
                                   runSpacing: 6.h,

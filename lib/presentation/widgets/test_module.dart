@@ -75,8 +75,10 @@ class TestModule extends StatelessWidget {
                 trailing!,
             ],
           ),
-          Text(subtitle ?? '', style: AppTexts.subTitle),
-          if (subtitle != null) 10.hGap,
+          if (subtitle != null && subtitle!.isNotEmpty) ...[
+            Text(subtitle ?? '', style: AppTexts.subTitle),
+            10.hGap,
+          ],
           ...cards,
         ],
       ),
