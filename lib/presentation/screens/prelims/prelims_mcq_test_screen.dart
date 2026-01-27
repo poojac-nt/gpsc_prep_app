@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/prelims_test_card.dart';
+import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -64,7 +67,15 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
 
                   // Default values
                   String? lastAttemptedDate;
-                  bool isEligibleForRetest = false;
+                  // Check for saved progress
+                  final progressRepo = getIt<PrelimsProgressRepository>();
+                  final userId = getIt<CacheManager>().getUserId();
+                  final savedProgress = progressRepo.getProgress(
+                    userId,
+                    test.id,
+                  );
+                  final hasProgress =
+                      savedProgress != null && !savedProgress.isExpired();
 
                   if (hasResult) {
                     final createdAtString = testResult.createdAt;
@@ -80,9 +91,10 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                             "${submittedAt.hour.toString().padLeft(2, '0')}:${submittedAt.minute.toString().padLeft(2, '0')}";
                         lastAttemptedDate = "$date at $time";
 
-                        isEligibleForRetest =
+                        final isEligibleForRetest =
                             DateTime.now().difference(submittedAt).inHours >=
                             12;
+                        debugPrint("Retest eligibility: $isEligibleForRetest");
                       } catch (e) {
                         // ignore parse error
                       }
@@ -93,13 +105,17 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                     onTap: () {
                       context.pushReplacement(
                         AppRoutes.prelimsInstructionsScreen,
-                        extra: PrelimsInstructionScreenArgs(testModal: test),
+                        extra: PrelimsInstructionScreenArgs(
+                          testModal: test,
+                          hasProgress: hasProgress,
+                        ),
                       );
                     },
                     child: PrelimsTestCard(
                       testModel: test,
                       isAttempted: hasResult,
                       lastAttemptedDate: lastAttemptedDate,
+                      hasProgress: hasProgress,
                     ),
                   );
                 },

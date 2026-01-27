@@ -43,6 +43,7 @@ class _PrelimsMcqInstructionScreenState
   TestModel? _fetchedTestModel;
   late bool isFromId;
   bool _noTestDetected = false;
+  bool _hasProgress = false;
 
   final Map<String, String> _languageLabels = {
     'en': 'English',
@@ -59,6 +60,7 @@ class _PrelimsMcqInstructionScreenState
         FetchSingleTestFromId(widget.testId!),
       );
     }
+    _checkProgress();
     fetchAvailableLanguages();
     selectedLanguage =
         availableLanguagesButton.contains('en')
@@ -76,6 +78,19 @@ class _PrelimsMcqInstructionScreenState
     setState(() {
       availableLanguagesButton = availableLanguages;
     });
+  }
+
+  Future<void> _checkProgress() async {
+    final testId = widget.testId ?? widget.testModel?.id;
+    if (testId == null) return;
+
+    final progressRepo = getIt<PrelimsProgressRepository>();
+    final userId = getIt<CacheManager>().getUserId();
+    final savedProgress = progressRepo.getProgress(userId, testId);
+
+    if (savedProgress != null && !savedProgress.isExpired()) {
+      setState(() => _hasProgress = true);
+    }
   }
 
   @override
@@ -238,7 +253,7 @@ class _PrelimsMcqInstructionScreenState
 
             // Start Test
             ActionButton(
-              text: "Start Test",
+              text: _hasProgress ? "Resume Test" : "Start Test",
               onTap: () => _handleTestStart(dailyTestModel),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               backgroundColor: AppColors.primary,
@@ -466,10 +481,12 @@ class _PrelimsMcqInstructionScreenState
             actions: [
               TextButton(
                 onPressed: () async {
+                  final userId = getIt<CacheManager>().getUserId();
                   await getIt<PrelimsProgressRepository>().deleteProgress(
-                    getIt<CacheManager>().getUserId(),
+                    userId,
                     test.id,
                   );
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                   _startTest(test);
                 },

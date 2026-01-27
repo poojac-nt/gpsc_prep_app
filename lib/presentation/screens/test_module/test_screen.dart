@@ -472,7 +472,27 @@ class _TestScreenState extends State<TestScreen> {
                                                                             .white,
                                                                   ),
                                                             ),
-                                                            onPressed: () {
+                                                            onPressed: () async {
+                                                              if (_isPrelimsTest()) {
+                                                                final userId =
+                                                                    getIt<
+                                                                          CacheManager
+                                                                        >()
+                                                                        .getUserId();
+                                                                await getIt<
+                                                                      PrelimsProgressRepository
+                                                                    >()
+                                                                    .deleteProgress(
+                                                                      userId,
+                                                                      widget
+                                                                          .dailyTestModel
+                                                                          .id,
+                                                                    );
+                                                              }
+                                                              if (!context
+                                                                  .mounted) {
+                                                                return;
+                                                              }
                                                               context.go(
                                                                 AppRoutes
                                                                     .studentDashboard,

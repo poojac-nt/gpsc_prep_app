@@ -13,12 +13,14 @@ class PrelimsTestCard extends StatelessWidget {
   final String? lastAttemptedDate;
   final TestModel testModel;
   final bool isEligibleForRetest;
+  final bool hasProgress;
 
   const PrelimsTestCard({
     super.key,
     required this.testModel,
     this.isAttempted = false,
     this.isEligibleForRetest = false,
+    this.hasProgress = false,
     this.lastAttemptedDate,
   });
 
@@ -54,6 +56,26 @@ class PrelimsTestCard extends StatelessWidget {
                 color: AppColors.gray500,
               ),
             ),
+            if (hasProgress && !isAttempted) ...[
+              const Spacer(),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(25),
+                  borderRadius: BorderRadius.circular(4.r),
+                  border: Border.all(color: AppColors.primary, width: 0.5),
+                ),
+                child: Text(
+                  'RESUME',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
         8.hGap,
@@ -109,42 +131,6 @@ class PrelimsTestCard extends StatelessWidget {
 
   Widget _buildMetadataIcon(IconData icon) {
     return Icon(icon, size: 14.sp, color: AppColors.gray500);
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color backgroundColor,
-    required Color textColor,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(8.r),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10.h),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16.sp, color: textColor),
-              6.wGap,
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildSecondaryButton({

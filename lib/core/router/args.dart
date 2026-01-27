@@ -86,6 +86,7 @@ class QuestionPreviewScreenArgs {
 class PrelimsInstructionScreenArgs {
   final int? testId;
   final TestModel? testModal;
+  final bool? hasProgress;
 
-  PrelimsInstructionScreenArgs({this.testId, this.testModal});
+  PrelimsInstructionScreenArgs({this.testId, this.testModal, this.hasProgress});
 }

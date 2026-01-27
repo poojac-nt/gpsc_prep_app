@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
+import 'package:gpsc_prep_app/utils/enums/test_type_enum.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
@@ -41,6 +45,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
   TestModel? _fetchedTestModel;
   late bool isFromId;
   bool _noTestDetected = false;
+  bool _hasProgress = false;
 
   final Map<String, String> _languageLabels = {
     'en': 'English',
@@ -64,6 +69,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
         FetchSingleTestFromId(widget.testId!),
       );
     }
+    _checkProgress();
     fetchAvailableLanguages();
     selectedLanguage =
         availableLanguagesButton.contains('en')
@@ -81,6 +87,19 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     setState(() {
       availableLanguagesButton = availableLanguages;
     });
+  }
+
+  Future<void> _checkProgress() async {
+    final testId = widget.testId ?? widget.dailyTestModel?.id;
+    if (testId == null) return;
+
+    final progressRepo = getIt<PrelimsProgressRepository>();
+    final userId = getIt<CacheManager>().getUserId();
+    final savedProgress = progressRepo.getProgress(userId, testId);
+
+    if (savedProgress != null && !savedProgress.isExpired()) {
+      setState(() => _hasProgress = true);
+    }
   }
 
   @override
@@ -185,7 +204,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
             ),
             15.hGap,
             ActionButton(
-              text: "Start Test",
+              text: _hasProgress ? "Resume Test" : "Start Test",
               onTap: () => _handleTestStart(dailyTestModel),
             ),
           ],
@@ -250,6 +269,19 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
   }
 
   Future<void> _handleTestStart(TestModel dailyTestModel) async {
+    // Only check for progress for Prelims tests
+    if (dailyTestModel.testType == TestType.prelims) {
+      final progressRepo = getIt<PrelimsProgressRepository>();
+      final userId = getIt<CacheManager>().getUserId();
+
+      // Check for saved progress FIRST
+      final savedProgress = progressRepo.getProgress(userId, dailyTestModel.id);
+      if (savedProgress != null && !savedProgress.isExpired()) {
+        _showResumeDialog(dailyTestModel, savedProgress);
+        return;
+      }
+    }
+
     final supabaseHelper = getIt<SupabaseHelper>();
     try {
       final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
@@ -310,6 +342,69 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
         isFromResult: false,
         language: selectedLanguage,
         testModal: dailyTestModel,
+        hasPrelimsProgress: false, // Starting fresh
+      ),
+    );
+  }
+
+  void _showResumeDialog(TestModel test, PrelimsTestProgress progress) {
+    final answered = progress.answeredStatus.where((a) => a).length;
+    final mins = progress.remainingTimeInSeconds ~/ 60;
+    final secs = progress.remainingTimeInSeconds % 60;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Resume Test?"),
+            content: Text(
+              "You have an incomplete test:\n\n"
+              "• Answered: $answered/${progress.totalQuestions}\n"
+              "• Question: ${progress.currentQuestionIndex + 1}\n"
+              "• Time left: ${mins}m ${secs}s\n\n"
+              "Resume or start fresh?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  final userId = getIt<CacheManager>().getUserId();
+                  await getIt<PrelimsProgressRepository>().deleteProgress(
+                    userId,
+                    test.id,
+                  );
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  _startTest(test);
+                },
+                child: const Text("Start Fresh"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _resumeTest(test, progress);
+                },
+                child: const Text(
+                  "Resume",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _resumeTest(TestModel test, PrelimsTestProgress progress) {
+    context.pushReplacement(
+      AppRoutes.testScreen,
+      extra: TestScreenArgs(
+        isFromResult: false,
+        language: progress.languageCode,
+        testModal: test,
+        hasPrelimsProgress: true, // Resuming from progress
       ),
     );
   }
