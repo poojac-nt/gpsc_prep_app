@@ -239,6 +239,9 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     final currentState = state;
     if (currentState is! McqQuestionCubitLoaded) return false;
 
+    // Update navigator page based on restored index
+    _currentNavigatorPage = progress.currentQuestionIndex ~/ navigatorPageSize;
+
     // Restore state from saved progress
     emit(
       McqQuestionCubitLoaded(
