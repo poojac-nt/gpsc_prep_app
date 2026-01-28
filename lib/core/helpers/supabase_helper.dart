@@ -711,25 +711,39 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, void>> insertTestDetailedResult({
-    required DetailedTestResult detailedTestResult,
+  Future<Either<Failure, void>> insertDetailedTestResult({
+    required List<DetailedTestResult> detailedTestResults,
   }) async {
     try {
-      final result = await supabase
-          .from(SupabaseKeys.testDetailedResults)
-          .upsert({
-            'user_id': detailedTestResult.userId,
-            'test_id': detailedTestResult.testId,
-            'question_id': detailedTestResult.questionId,
-            'is_correct': detailedTestResult.isCorrect,
-            'selected_option': detailedTestResult.selectedOption,
-          });
+      final payload =
+          detailedTestResults
+              .map(
+                (e) => {
+                  'user_id': e.userId,
+                  'test_id': e.testId,
+                  'question_id': e.questionId,
+                  'is_correct': e.isCorrect,
+                  'selected_option': e.selectedOption,
+                },
+              )
+              .toList();
 
-      _log.i('Inserted test detailed result: $result');
+      await supabase
+          .from(SupabaseKeys.testDetailedResults)
+          .upsert(payload, onConflict: 'user_id,test_id,question_id');
+
+      _log.i(
+        'Batch upserted ${detailedTestResults.length} test detailed results for test ID: ${detailedTestResults.first.testId}',
+      );
+
       return const Right(null);
     } catch (e) {
-      _log.e('Error inserting test detailed result: $e');
-      return Left(Failure("Error inserting test detailed result"));
+      _log.e(
+        'Unexpected error while batch inserting test detailed results :${e.toString()}',
+      );
+      return Left(
+        Failure('Error inserting test detailed results: ${e.toString()}'),
+      );
     }
   }
 

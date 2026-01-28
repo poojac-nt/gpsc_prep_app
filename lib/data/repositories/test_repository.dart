@@ -82,11 +82,11 @@ class TestRepository {
     questionId: questionId,
   );
 
-  Future<Either<Failure, void>> insertTestResultDetail({
-    required DetailedTestResult detailedTestResult,
+  Future<Either<Failure, void>> insertDetailedTestResult({
+    required List<DetailedTestResult> detailedTestResults,
   }) {
-    return _supabase.insertTestDetailedResult(
-      detailedTestResult: detailedTestResult,
+    return _supabase.insertDetailedTestResult(
+      detailedTestResults: detailedTestResults,
     );
   }
 

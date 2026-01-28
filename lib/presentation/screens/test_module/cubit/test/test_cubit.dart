@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
@@ -29,39 +29,37 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     required int secSpent,
     required String languageCode,
   }) async {
-    // Clear any existing prelims progress for this test
     final userId = cache.getUserId();
+
     await getIt<PrelimsProgressRepository>().deleteProgress(userId, testId);
 
-    final attempted = answeredStatus.where((status) => status).length;
+    final attempted = answeredStatus.where((e) => e).length;
     final notAttempted = questionsModel.length - attempted;
     final timeSpent = (minSpent * 60) + secSpent;
 
     int correctAnswers = 0;
     int incorrectAnswers = 0;
-    List<bool?> isCorrect = [];
     double totalScore = 0.0;
+
+    final List<bool?> isCorrect = [];
+    final List<DetailedTestResult> batchResults = [];
 
     for (int i = 0; i < questionsModel.length; i++) {
       final userAnswer = selectedOption[i];
-      final correctAnswer =
-          questionsModel[i].getLanguageData(languageCode).correctAnswer;
+      final languageData = questionsModel[i].getLanguageData(languageCode);
+      final correctAnswer = languageData.correctAnswer;
       final questionId = questionsModel[i].questionId;
 
       bool? isAnswerCorrect;
       if (userAnswer != null) {
-        // Get identifiers for both user answer and correct answer for reliable comparison
-        final userId = _getOptionIdentifier(
-          userAnswer,
-          questionsModel[i].getLanguageData(languageCode),
-        );
-        final correctId = _getOptionIdentifier(
+        final userOptionId = _getOptionIdentifier(userAnswer, languageData);
+        final correctOptionId = _getOptionIdentifier(
           correctAnswer,
-          questionsModel[i].getLanguageData(languageCode),
+          languageData,
         );
 
-        if (userId != null &&
-            userId.toUpperCase() == correctId?.toUpperCase()) {
+        if (userOptionId != null &&
+            userOptionId.toUpperCase() == correctOptionId?.toUpperCase()) {
           correctAnswers++;
           totalScore += marks[i];
           isAnswerCorrect = true;
@@ -77,38 +75,36 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
       isCorrect.add(isAnswerCorrect);
 
       if (isAnswerCorrect != null) {
-        final optionIdentifier = _getOptionIdentifier(
-          selectedOption[i],
-          questionsModel[i].getLanguageData(languageCode),
-        );
+        final optionIdentifier = _getOptionIdentifier(userAnswer, languageData);
 
-        final detailedTestResult = DetailedTestResult(
-          userId: cache.getUserId(),
-          testId: testId,
-          questionId: questionId,
-          isCorrect: isAnswerCorrect,
-          selectedOption: optionIdentifier,
+        batchResults.add(
+          DetailedTestResult(
+            userId: userId,
+            testId: testId,
+            questionId: questionId,
+            isCorrect: isAnswerCorrect,
+            selectedOption: optionIdentifier,
+          ),
         );
-        final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
-        if (!isOnline) {
-          final box = Hive.box<DetailedTestResult>('detailed_test_results');
-          box.add(detailedTestResult);
-          _log.e(
-            "❌ No internet connection, skipping insert for question $questionId",
-          );
-        } else {
-          final result = await _repository.insertTestResultDetail(
-            detailedTestResult: detailedTestResult,
-          );
-
-          result.fold(
-            (failure) => _log.e(
-              'Insert failed for question $questionId: ${failure.message}',
-            ),
-            (_) => _log.i('Insert successful for question $questionId'),
-          );
-        }
       }
+    }
+
+    final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+
+    if (!isOnline) {
+      final box = Hive.box<DetailedTestResult>('detailed_test_results');
+      await box.addAll(batchResults);
+
+      _log.e('❌ Offline: saved ${batchResults.length} results to Hive');
+    } else {
+      final result = await _repository.insertDetailedTestResult(
+        detailedTestResults: batchResults,
+      );
+
+      result.fold(
+        (failure) => _log.e('Batch insert failed: ${failure.message}'),
+        (_) => _log.i('Batch insert successful (${batchResults.length} rows)'),
+      );
     }
 
     emit(

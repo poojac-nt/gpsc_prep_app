@@ -566,33 +566,39 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     }
 
     final repository = getIt<TestRepository>();
-    final keysToDelete = <dynamic>[];
 
-    for (var key in box.keys) {
+    // 1️⃣ Collect all stored results
+    final results = <DetailedTestResult>[];
+    final keys = <dynamic>[];
+
+    for (final key in box.keys) {
       final result = box.get(key);
       if (result == null) continue;
 
-      final response = await repository.insertTestResultDetail(
-        detailedTestResult: result,
-      );
-
-      response.fold(
-        (failure) => log.e(
-          '❌ Failed to sync questionId ${result.questionId}: ${failure.message}',
-        ),
-        (_) {
-          log.i('✅ Synced questionId ${result.questionId}');
-          keysToDelete.add(key);
-        },
-      );
+      results.add(result);
+      keys.add(key);
     }
 
-    if (keysToDelete.isNotEmpty) {
-      await box.deleteAll(keysToDelete);
-      log.i(
-        '🧹 Deleted ${keysToDelete.length} synced offline results from Hive',
-      );
+    if (results.isEmpty) {
+      log.i('ℹ️ No valid offline results found');
+      return;
     }
+
+    // 2️⃣ Batch sync
+    final response = await repository.insertDetailedTestResult(
+      detailedTestResults: results,
+    );
+
+    // 3️⃣ Delete ONLY on full success
+    response.fold(
+      (failure) {
+        log.e('❌ Failed to sync offline question results: ${failure.message}');
+      },
+      (_) async {
+        await box.deleteAll(keys);
+        log.i('✅ Synced and deleted ${keys.length} offline question results');
+      },
+    );
   }
 }
 
