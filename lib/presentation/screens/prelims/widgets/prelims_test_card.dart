@@ -116,7 +116,7 @@ class PrelimsTestCard extends StatelessWidget {
                 icon: Icons.visibility_outlined,
                 label: "Result",
                 onTap: () {
-                  context.pushReplacement(
+                  context.push(
                     AppRoutes.resultScreen,
                     extra: ResultScreenArgs(
                       isFromTest: false,

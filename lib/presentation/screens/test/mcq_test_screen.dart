@@ -157,7 +157,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                         "${test.noQuestions} Questions · ${test.duration} min",
                     onTap: () {
                       if (hasResult) {
-                        context.pushReplacement(
+                        context.push(
                           AppRoutes.resultScreen,
                           extra: ResultScreenArgs(
                             isFromTest: false,
@@ -165,7 +165,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                           ),
                         );
                       } else {
-                        context.pushReplacementNamed(
+                        context.push(
                           AppRoutes.mcqTestInstructionScreen,
                           extra: TestInstructionScreenArgs(testModal: test),
                         );

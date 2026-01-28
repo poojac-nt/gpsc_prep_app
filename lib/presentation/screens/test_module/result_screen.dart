@@ -59,7 +59,7 @@ class _ResultScreenState extends State<ResultScreen> {
         if (widget.isFromTestScreen) {
           context.read<DashboardBloc>().add(FetchDashboardAnalytics());
         }
-        context.go(AppRoutes.studentDashboard);
+        context.pop();
       },
       child: Scaffold(
         backgroundColor: Colors.white,

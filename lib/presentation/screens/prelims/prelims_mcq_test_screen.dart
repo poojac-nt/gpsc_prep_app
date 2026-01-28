@@ -87,9 +87,7 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                         // You might want to use DateFormat from intl package if available
                         final date =
                             "${submittedAt.day.toString().padLeft(2, '0')}/${submittedAt.month.toString().padLeft(2, '0')}/${submittedAt.year}";
-                        final time =
-                            "${submittedAt.hour.toString().padLeft(2, '0')}:${submittedAt.minute.toString().padLeft(2, '0')}";
-                        lastAttemptedDate = "$date at $time";
+                        lastAttemptedDate = date;
 
                         final isEligibleForRetest =
                             DateTime.now().difference(submittedAt).inHours >=
@@ -103,7 +101,7 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
 
                   return GestureDetector(
                     onTap: () {
-                      context.pushReplacement(
+                      context.push(
                         AppRoutes.prelimsInstructionsScreen,
                         extra: PrelimsInstructionScreenArgs(
                           testModal: test,
