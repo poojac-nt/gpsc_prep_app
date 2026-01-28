@@ -1211,7 +1211,7 @@ class _TestScreenState extends State<TestScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  context.go(AppRoutes.studentDashboard);
+                  context.pop();
                 },
                 child: const Text("OK"),
               ),

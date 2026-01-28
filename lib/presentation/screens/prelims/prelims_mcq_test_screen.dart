@@ -100,15 +100,18 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                   }
 
                   return GestureDetector(
-                    onTap: () {
-                      context.push(
-                        AppRoutes.prelimsInstructionsScreen,
-                        extra: PrelimsInstructionScreenArgs(
-                          testModal: test,
-                          hasProgress: hasProgress,
-                        ),
-                      );
-                    },
+                    onTap:
+                        hasResult
+                            ? () {}
+                            : () {
+                              context.push(
+                                AppRoutes.prelimsInstructionsScreen,
+                                extra: PrelimsInstructionScreenArgs(
+                                  testModal: test,
+                                  hasProgress: hasProgress,
+                                ),
+                              );
+                            },
                     child: PrelimsTestCard(
                       testModel: test,
                       isAttempted: hasResult,
@@ -127,93 +130,78 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
   }
 
   /// Skeleton for loading state
-  Padding _buildWhenLoading() {
-    return Padding(
-      padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-      child: Skeletonizer(
-        enabled: true,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TestModule(
-                title: "Daily Tests",
-                subtitle: "Subject-based Daily Practice",
-                prefixIcon: Icons.calendar_today_outlined,
-                cards: List.generate(
-                  3,
-                  (index) => TestTile(
-                    title: "Loading Test $index",
-                    subtitle: "00 Questions · 0 min",
-                    onTap: () {},
-                  ).padSymmetric(vertical: 6.h),
-                ),
-              ),
-              10.hGap,
-              TestModule(
-                title: "Mock Tests",
-                subtitle: "Full Length Practice Exams",
-                prefixIcon: Icons.description_outlined,
-                cards: [
-                  TestTile(
-                    title: "GPSC Mock Test #1",
-                    subtitle: "100 Questions · 2 hours",
-                    widgets: [
-                      Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.accentColor,
-                            width: 1,
-                          ),
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Icon(
-                          Icons.file_download_outlined,
-                          color: Colors.black,
-                        ),
+  Widget _buildWhenLoading() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.builder(
+        padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 16.h),
+            child: TestModule(
+              showShareButton: true,
+              title: "General Studies Test ${index + 1}",
+              fontSize: 20.sp,
+              cards: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.quiz_rounded,
+                      size: 14.sp,
+                      color: AppColors.gray500,
+                    ),
+                    4.wGap,
+                    Text(
+                      "50 Questions",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.gray500,
                       ),
-                    ],
-                    onTap: () {},
-                  ),
-                ],
-              ),
-              10.hGap,
-              TestModule(
-                title: 'Offline Mode',
-                subtitle: 'Download tests for offline Practice',
-                prefixIcon: Icons.file_download_outlined,
-                cards: [
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_download_outlined),
-                        10.wGap,
-                        Text('Download PDF Test', style: AppTexts.title),
-                      ],
                     ),
-                  ),
-                  10.hGap,
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_upload_outlined),
-                        10.wGap,
-                        Text('Upload Answers', style: AppTexts.title),
-                      ],
+                    16.wGap,
+                    Icon(
+                      Icons.access_time_filled,
+                      size: 14.sp,
+                      color: AppColors.gray500,
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ).padAll(AppPaddings.appPaddingInt),
-        ),
+                    4.wGap,
+                    Text(
+                      "60 min",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.gray500,
+                      ),
+                    ),
+                  ],
+                ),
+                12.hGap,
+                // Add dummy content to increase height
+                Text(
+                  "This is a sample description to increase the height of the skeleton container.",
+                  maxLines: 2,
+                  style: TextStyle(fontSize: 14.sp, color: Colors.transparent),
+                ),
+                12.hGap,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 80.w,
+                      height: 30.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

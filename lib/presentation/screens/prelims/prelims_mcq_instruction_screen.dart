@@ -236,20 +236,21 @@ class _PrelimsMcqInstructionScreenState
             Text("Choose Language", style: AppTexts.labelTextStyle),
             10.hGap,
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children:
                   availableLanguagesButton
                       .where((code) => _languageLabels.containsKey(code))
                       .map(
                         (code) => Expanded(
                           child: Padding(
-                            padding: EdgeInsets.only(right: 8.w),
+                            padding: EdgeInsets.symmetric(horizontal: 5.w),
                             child: _languageButton(code),
                           ),
                         ),
                       )
                       .toList(),
             ),
-            25.hGap,
+            20.hGap,
 
             // Start Test
             ActionButton(
@@ -278,6 +279,7 @@ class _PrelimsMcqInstructionScreenState
                 Expanded(
                   child: _buildOutlinedButton(
                     "Submit OMR",
+                    color: _hasProgress ? Colors.grey : Colors.black87,
                     Icons.upload_file,
                     () {},
                   ),
@@ -362,7 +364,12 @@ class _PrelimsMcqInstructionScreenState
     );
   }
 
-  Widget _buildOutlinedButton(String text, IconData icon, VoidCallback onTap) {
+  Widget _buildOutlinedButton(
+    String text,
+    IconData icon,
+    VoidCallback onTap, {
+    Color color = Colors.black87,
+  }) {
     return OutlinedButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
@@ -374,12 +381,12 @@ class _PrelimsMcqInstructionScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 18.sp, color: Colors.black87),
+          Icon(icon, size: 18.sp, color: color),
           8.wGap,
           Text(
             text,
             style: TextStyle(
-              color: Colors.black87,
+              color: color,
               fontWeight: FontWeight.bold,
               fontSize: 13.sp,
             ),
