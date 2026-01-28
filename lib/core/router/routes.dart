@@ -440,15 +440,14 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.omrScreen,
     pageBuilder: (context, state) {
-      return _slideTransition(OMRScreen(), state);
+      final args = state.extra as OMRScreenArgs;
+      return _slideTransition(
+        OMRScreen(testModel: args.testModal, language: args.language),
+        state,
+      );
     },
   ),
-  GoRoute(
-    path: AppRoutes.prelimsMcqInstructionScreen,
-    pageBuilder: (context, state) {
-      return _slideTransition(PrelimsMcqInstructionScreen(), state);
-    },
-  ),
+
   GoRoute(
     path: AppRoutes.prelimsMcqTestScreen,
     pageBuilder: (context, state) {
@@ -458,9 +457,12 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.prelimsInstructionsScreen,
     pageBuilder: (context, state) {
-      final args = state.extra as PrelimsInstructionScreenArgs;
+      final args = state.extra as PrelimsInstructionScreenArgs?;
       return _slideTransition(
-        PrelimsMcqInstructionScreen(testModel: args.testModal),
+        PrelimsMcqInstructionScreen(
+          testModel: args?.testModal,
+          testId: args?.testId,
+        ),
         state,
       );
     },

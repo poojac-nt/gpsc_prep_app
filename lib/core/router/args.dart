@@ -90,3 +90,10 @@ class PrelimsInstructionScreenArgs {
 
   PrelimsInstructionScreenArgs({this.testId, this.testModal, this.hasProgress});
 }
+
+class OMRScreenArgs {
+  final TestModel testModal;
+  final String? language;
+
+  OMRScreenArgs({required this.testModal, this.language});
+}

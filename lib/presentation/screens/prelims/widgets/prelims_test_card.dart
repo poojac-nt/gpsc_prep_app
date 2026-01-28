@@ -103,7 +103,10 @@ class PrelimsTestCard extends StatelessWidget {
                   onTap: () {
                     context.pushReplacementNamed(
                       AppRoutes.prelimsInstructionsScreen,
-                      extra: PrelimsInstructionScreenArgs(testModal: testModel),
+                      extra: PrelimsInstructionScreenArgs(
+                        testModal: testModel,
+                        testId: testModel.id,
+                      ),
                     );
                   },
                 ),

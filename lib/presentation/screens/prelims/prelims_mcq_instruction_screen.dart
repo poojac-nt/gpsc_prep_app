@@ -265,7 +265,13 @@ class _PrelimsMcqInstructionScreenState
               children: [
                 Expanded(
                   child: _buildOutlinedButton("Download", Icons.download, () {
-                    context.push(AppRoutes.omrScreen);
+                    context.push(
+                      AppRoutes.omrScreen,
+                      extra: OMRScreenArgs(
+                        testModal: widget.testModel!,
+                        language: selectedLanguage,
+                      ),
+                    );
                   }),
                 ),
                 15.wGap,

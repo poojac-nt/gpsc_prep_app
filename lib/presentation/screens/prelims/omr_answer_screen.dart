@@ -2,19 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../../core/di/di.dart';
 import '../../../core/helpers/log_helper.dart';
 import '../../../utils/extensions/padding.dart';
+import '../../blocs/question/question_bloc.dart';
 import '../../blocs/timer/timer_bloc.dart';
 import '../../blocs/timer/timer_event.dart';
 import '../../blocs/timer/timer_state.dart';
 import '../../widgets/custom_alertdialog.dart';
 
 class OMRScreen extends StatefulWidget {
-  const OMRScreen({super.key});
+  const OMRScreen({super.key, required this.testModel, this.language});
+  final TestModel testModel;
+  final String? language;
 
   @override
   State<OMRScreen> createState() => _OMRScreenState();
@@ -32,7 +36,10 @@ class _OMRScreenState extends State<OMRScreen> {
   @override
   void initState() {
     super.initState();
-    _totalPages = (_totalQuestions / _questionsPerPage).ceil();
+    _totalPages = (widget.testModel.noQuestions / _questionsPerPage).ceil();
+    context.read<QuestionBloc>().add(
+      LoadMcqQuestion(widget.testModel.id, widget.language),
+    );
   }
 
   int get _attemptedCount =>
@@ -45,23 +52,14 @@ class _OMRScreenState extends State<OMRScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("OMR Screen"),
-                Text(
-                  "Attempted: $_attemptedCount/$_totalQuestions",
-                  // Updated counter
-                  style: TextStyle(fontSize: 12.sp, color: Colors.black54),
-                ),
-              ],
-            ),
-          ],
-        ),
+        title: const Text("OMR Screen"),
+        actionsPadding: EdgeInsets.all(10),
+        actions: [
+          Text(
+            "Attempted: $_attemptedCount/${widget.testModel.noQuestions}",
+            style: TextStyle(fontSize: 12.sp, color: Colors.black54),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -185,40 +183,6 @@ class _OMRScreenState extends State<OMRScreen> {
       ),
     );
   }
-
-  void _buildAutoSubmitDialog(BuildContext context) {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        final total = 10;
-        final attempted = 5;
-        return CustomAlertdialog(
-          title: "Time is over",
-          mainContent: "You have attempted $attempted out of $total questions.",
-          content:
-              'Your time for this test has ended. Submitting your answers now and showing your results.',
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                "View Result",
-                style: AppTexts.title.copyWith(color: Colors.white),
-              ),
-              onPressed: () {
-                context.pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
 class TopLabelRow extends StatelessWidget {
@@ -270,9 +234,18 @@ class RadioContainer extends StatelessWidget {
                 ? Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: AppColors.primary,
                   ),
-                  margin: EdgeInsets.all(10),
+                  child: Center(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ) // No text when selected, to show a solid circle
                 : Center(
                   child: Text(

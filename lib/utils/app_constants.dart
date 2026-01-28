@@ -143,8 +143,6 @@ abstract class AppRoutes {
   static const String allQuestionTypesAnalyticsScreen =
       '/allQuestionTypesAnalyticsScreen';
   static const String omrScreen = '/omrScreen';
-  static const String prelimsMcqInstructionScreen =
-      '/fullLengthMcqInstructionScreen';
   static const String prelimsMcqTestScreen = '/fullLengthMcqTestScreen';
   static const String prelimsInstructionsScreen = '/prelimsInstructionsScreen';
 }
