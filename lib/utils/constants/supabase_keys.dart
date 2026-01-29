@@ -24,6 +24,7 @@ abstract class SupabaseKeys {
   static final String getOverAllAnalytics = 'get_combined_analytics';
   static final String getDashboardAnalytics = 'dashboard_analytics_v3';
   static final String getAccuracyTrend = 'get_accuracy_trends';
+  static final String getTestAttemptState = 'get_test_attempt_state';
 
   ///table
   static final String usersTable = 'users';

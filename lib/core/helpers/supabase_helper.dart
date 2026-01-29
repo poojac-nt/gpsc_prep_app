@@ -17,6 +17,7 @@ import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
@@ -412,6 +413,24 @@ class SupabaseHelper {
 
       return Right(results);
     } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, TestAttemptState>> fetchTestAttemptState(
+    int testId,
+  ) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getTestAttemptState,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results = TestAttemptState.fromJson(response);
+      _log.i('Fetched TestAttemptState: $results');
+      return Right(results);
+    } catch (e) {
+      _log.e('Error fetching TestAttemptState: $e');
       return Left(Failure(e.toString()));
     }
   }

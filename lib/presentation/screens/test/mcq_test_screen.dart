@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
@@ -12,6 +13,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class MCQTestScreen extends StatefulWidget {
@@ -122,25 +124,13 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         itemCount: filtered.length,
         itemBuilder: (context, index) {
           final test = filtered[index];
-          final testResult = state.testResults[test.id];
-          final hasResult = testResult != null;
-
-          // Default values
-          DateTime? submittedAt;
-          bool isEligibleForRetest = false;
-
-          if (hasResult) {
-            final createdAtString = testResult.createdAt;
-            if (createdAtString != null && createdAtString.isNotEmpty) {
-              try {
-                submittedAt = DateTime.parse(createdAtString);
-                isEligibleForRetest =
-                    DateTime.now().difference(submittedAt).inHours >= 12;
-              } catch (e) {
-                // ignore parse error
-              }
-            }
-          }
+          final testAttemptState = state.testResults[test.id];
+          final hasAttempted =
+              testAttemptState != null && testAttemptState.attemptsDone > 0;
+          final canShowRetestButton =
+              testAttemptState != null &&
+              testAttemptState.attemptsDone == 1 &&
+              testAttemptState.canRetry;
 
           return Column(
             children: [
@@ -156,7 +146,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                     subtitle:
                         "${test.noQuestions} Questions · ${test.duration} min",
                     onTap: () {
-                      if (hasResult) {
+                      if (hasAttempted) {
                         context.push(
                           AppRoutes.resultScreen,
                           extra: ResultScreenArgs(
@@ -171,9 +161,9 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                         );
                       }
                     },
-                    hasResult: hasResult,
+                    hasResult: hasAttempted,
                     widgets:
-                        hasResult && isEligibleForRetest
+                        canShowRetestButton
                             ? [
                               Column(
                                 children: [
@@ -183,7 +173,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       color: AppColors.primary,
                                     ),
                                     onPressed: () {
-                                      context.pushReplacement(
+                                      context.push(
                                         AppRoutes.mcqTestInstructionScreen,
                                         extra: TestInstructionScreenArgs(
                                           testModal: test,
@@ -191,7 +181,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                                       );
                                     },
                                   ),
-                                  Text("Retest"),
+                                  const Text("Retest"),
                                 ],
                               ),
                               10.wGap,
@@ -205,6 +195,50 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
           );
         },
       ),
+    );
+  }
+
+  void _showAlreadyGivenTestDialog(TestAttemptState attemptState) {
+    if (attemptState.retryAvailableAt.isEmpty) return;
+
+    DateTime availableAt =
+        DateTime.parse(attemptState.retryAvailableAt).toLocal();
+    String formattedDate = DateFormat(
+      'dd MMM yyyy, hh:mm a',
+    ).format(availableAt);
+
+    // Calculate last attempt by subtracting cooldown
+    DateTime lastAttempt = availableAt.subtract(
+      Duration(hours: attemptState.cooldownHours),
+    );
+    String formattedLastAttempt = DateFormat(
+      'dd MMM yyyy, hh:mm a',
+    ).format(lastAttempt);
+
+    Duration remaining = availableAt.difference(DateTime.now());
+    int hoursRemaining = remaining.inHours;
+    int minutesRemaining = remaining.inMinutes % 60;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Test Status"),
+          content: Text(
+            "You have already given the test.\n\n"
+            "Last attempt: $formattedLastAttempt\n"
+            "You can attempt again in ${hoursRemaining > 0 ? '$hoursRemaining hour(s) ' : ''}$minutesRemaining minute(s).\n"
+            "Available at: $formattedDate",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
     );
   }
 

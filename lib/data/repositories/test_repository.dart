@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_mo
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 import '../../core/error/failure.dart';
@@ -49,6 +50,10 @@ class TestRepository {
 
   Future<Either<Failure, List<TestResultModel>>> fetchAllTestResults() async =>
       await _supabase.fetchAllTestResults();
+
+  Future<Either<Failure, TestAttemptState>> fetchTestAttemptState(
+    int testId,
+  ) async => await _supabase.fetchTestAttemptState(testId);
 
   Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest() async =>
       await _supabase.fetchDescriptiveTests();

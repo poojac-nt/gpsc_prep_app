@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 
 import 'daily_test_event.dart';
 import 'daily_test_state.dart';
@@ -19,22 +19,24 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
     emit(DailyTestFetching());
 
     final testsResult = await _testRepository.fetchDailyTest();
-    final resultsResult = await _testRepository.fetchAllTestResults();
 
     await testsResult.fold(
       (failure) async {
         emit(DailyTestFetchFailed(failure));
       },
       (tests) async {
-        final Map<int, TestResultModel> resultMap = {};
+        final Map<int, TestAttemptState> attemptStateMap = {};
 
-        resultsResult.fold((_) {}, (results) {
-          for (final result in results) {
-            resultMap[result.testId] = result;
-          }
-        });
+        for (final test in tests) {
+          final attemptStateResult = await _testRepository
+              .fetchTestAttemptState(test.id);
 
-        emit(DailyTestFetched(tests, resultMap));
+          attemptStateResult.fold((_) {}, (state) {
+            attemptStateMap[test.id] = state;
+          });
+        }
+
+        emit(DailyTestFetched(tests, attemptStateMap));
       },
     );
   }
