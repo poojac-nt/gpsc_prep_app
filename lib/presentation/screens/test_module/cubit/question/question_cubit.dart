@@ -107,7 +107,33 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     );
   }
 
-  /// Helper method to get option identifier (A, B, C, D) from option text
+  void answerQuestionAt(int index, String? option) {
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
+
+    if (index < 0 || index >= currentState.questions.length) return;
+
+    // Convert option text to identifier (A, B, C, D)
+    String? optionIdentifier;
+    if (option != null) {
+      final questionAtIndex = currentState.questions[index];
+      optionIdentifier = _getOptionIdentifier(option, questionAtIndex);
+    }
+
+    final updatedSelected = List<String?>.from(currentState.selectedOption);
+    updatedSelected[index] = optionIdentifier;
+
+    final updatedStatus = List<bool>.from(currentState.answeredStatus);
+    updatedStatus[index] = option != null;
+
+    emit(
+      currentState.copyWith(
+        selectedOption: updatedSelected,
+        answeredStatus: updatedStatus,
+      ),
+    );
+  }
+
   String? _getOptionIdentifier(
     String optionText,
     QuestionLanguageData questionData,
@@ -129,26 +155,18 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     final trimmedD = questionData.optD.trim();
 
     if (trimmed == trimmedA) {
-      return _resolveCase(trimmedA, 'A', 'a');
+      return 'a';
     }
     if (trimmed == trimmedB) {
-      return _resolveCase(trimmedB, 'B', 'b');
+      return 'b';
     }
     if (trimmed == trimmedC) {
-      return _resolveCase(trimmedC, 'C', 'c');
+      return 'c';
     }
     if (trimmed == trimmedD) {
-      return _resolveCase(trimmedD, 'D', 'd');
+      return 'd';
     }
-
     return null;
-  }
-
-  String _resolveCase(String optionText, String upper, String lower) {
-    final trimmed = optionText.trim();
-    if (trimmed.isEmpty) return upper;
-    // Check if the original text started with a lowercase letter
-    return trimmed[0] == trimmed[0].toLowerCase() ? lower : upper;
   }
 
   void nextQuestion() {

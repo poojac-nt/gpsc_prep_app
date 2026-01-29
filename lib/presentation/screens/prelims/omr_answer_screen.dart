@@ -8,6 +8,16 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../utils/extensions/padding.dart';
 import '../../blocs/question/question_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
+import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
+import 'package:gpsc_prep_app/utils/services/ad_service.dart';
 
 class OMRScreen extends StatefulWidget {
   const OMRScreen({super.key, required this.testModel, this.language});
@@ -22,8 +32,7 @@ class _OMRScreenState extends State<OMRScreen> {
   int _currentPage = 0;
   final int _questionsPerPage = 50;
   late final int _totalPages;
-
-  final Map<int, String?> _selectedAnswers = {};
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -34,185 +43,277 @@ class _OMRScreenState extends State<OMRScreen> {
     );
   }
 
-  int get _attemptedCount =>
-      _selectedAnswers.values.where((answer) => answer != null).length;
-
   @override
   Widget build(BuildContext context) {
     final bool isFirstPage = _currentPage == 0;
     final bool isLastPage = _currentPage == _totalPages - 1;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("OMR Screen"),
-        actionsPadding: EdgeInsets.all(10),
-        actions: [
-          Text(
-            "Attempted: $_attemptedCount/${widget.testModel.noQuestions}",
-            style: TextStyle(fontSize: 12.sp, color: Colors.black54),
+    return BlocListener<TestCubit, TestCubitSubmitted>(
+      listener: (context, state) {
+        context.read<TestBloc>().add(
+          SubmitTest(
+            widget.testModel.id,
+            state.questions,
+            state.selectedOption,
+            state.answeredStatus,
+            state.totalQuestions,
+            state.correctAnswers,
+            state.inCorrectAnswers,
+            state.attemptedQuestions,
+            state.notAttemptedQuestions,
+            state.score,
+            state.timeSpent,
           ),
-        ],
-      ),
-      body: BlocBuilder<QuestionBloc, QuestionState>(
-        builder: (context, state) {
-          if (state is QuestionLoading) {
-            return _buildSkeleton();
-          } else if (state is McqQuestionLoaded) {
-            return Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 5.h),
-                  decoration: const BoxDecoration(
-                    color: Color(0xffF1F5F9),
-                    border: Border(
-                      bottom: BorderSide(color: Colors.blueGrey, width: 0.67),
-                      top: BorderSide(color: Colors.blueGrey, width: 0.67),
-                    ),
+        );
+        Environment.isDevelopment ? null : AdService().showInterstitialAd();
+        context.pushReplacement(
+          AppRoutes.resultScreen,
+          extra: ResultScreenArgs(
+            isFromTest: true,
+            testModal: widget.testModel,
+          ),
+        );
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("OMR Screen"),
+          actionsPadding: EdgeInsets.all(10),
+          actions: [
+            BlocBuilder<QuestionCubit, QuestionCubitState>(
+              builder: (context, state) {
+                int attemptedCount = 0;
+                if (state is McqQuestionCubitLoaded) {
+                  attemptedCount =
+                      state.answeredStatus.where((e) => e).length;
+                }
+                return Text(
+                  "Attempted: $attemptedCount/${widget.testModel.noQuestions}",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.black54,
                   ),
-                  child: const Row(
+                );
+              },
+            ),
+          ],
+        ),
+        body: BlocConsumer<QuestionBloc, QuestionState>(
+          listener: (context, state) {
+            if (state is McqQuestionLoaded && !_initialized) {
+              _initialized = true;
+              context.read<QuestionCubit>()
+                ..reset()
+                ..initialize(
+                  state.questions,
+                  state.questionsModels,
+                  widget.language ?? 'en',
+                );
+            }
+          },
+          builder: (context, questionBlocState) {
+            if (questionBlocState is QuestionLoading) {
+              return _buildSkeleton();
+            } else if (questionBlocState is McqQuestionLoaded) {
+              return BlocBuilder<QuestionCubit, QuestionCubitState>(
+                builder: (context, questionCubitState) {
+                  if (questionCubitState is! McqQuestionCubitLoaded) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  return Column(
                     children: [
-                      Expanded(
-                        flex: 1,
-                        child: Center(child: TopLabelRow(text: "Q.No.")),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Center(child: TopLabelRow(text: "A")),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Center(child: TopLabelRow(text: "B")),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Center(child: TopLabelRow(text: "C")),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Center(child: TopLabelRow(text: "D")),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Center(child: TopLabelRow(text: "E")),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  flex: 10,
-                  child: ListView.builder(
-                    itemCount: _questionsPerPage,
-                    itemBuilder: (context, index) {
-                      final int globalIndex =
-                          (_currentPage * _questionsPerPage) + index;
-                      // Check if we have valid data for this index
-                      if (globalIndex >= state.questionsModels.length) {
-                        return const SizedBox.shrink();
-                      }
-
-                      final question = state.questionsModels[globalIndex];
-                      final int questionId = question.questionId;
-                      final int displayQuestionNumber = globalIndex + 1;
-
-                      final selectedOption = _selectedAnswers[questionId];
-
-                      return Container(
-                        color:
-                            index % 2 == 0
-                                ? Colors.white
-                                : const Color(0xffFBFCFD),
-                        padding: EdgeInsets.symmetric(vertical: 6.h),
-                        child: Row(
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 5.h),
+                        decoration: const BoxDecoration(
+                          color: Color(0xffF1F5F9),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.blueGrey,
+                              width: 0.67,
+                            ),
+                            top: BorderSide(
+                              color: Colors.blueGrey,
+                              width: 0.67,
+                            ),
+                          ),
+                        ),
+                        child: const Row(
                           children: [
                             Expanded(
                               flex: 1,
-                              child: Center(
-                                child: Text(
-                                  displayQuestionNumber.toString().padLeft(
-                                    3,
-                                    '0',
-                                  ),
-                                  style: const TextStyle(
-                                    color: Color(0xff64748B),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                              child: Center(child: TopLabelRow(text: "Q.No.")),
                             ),
-                            ...['A', 'B', 'C', 'D', 'E'].map(
-                              (option) => Expanded(
-                                flex: 1,
-                                child: Center(
-                                  child: RadioContainer(
-                                    text: option,
-                                    isSelected: selectedOption == option,
-                                    onTap: () {
-                                      setState(() {
-                                        if (selectedOption == option) {
-                                          _selectedAnswers[questionId] = null;
-                                        } else {
-                                          _selectedAnswers[questionId] = option;
-                                        }
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ),
+                            Expanded(
+                              flex: 1,
+                              child: Center(child: TopLabelRow(text: "A")),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Center(child: TopLabelRow(text: "B")),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Center(child: TopLabelRow(text: "C")),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Center(child: TopLabelRow(text: "D")),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Center(child: TopLabelRow(text: "E")),
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
+                      ),
                       Expanded(
-                        child: ActionButton(
-                          text: "Prev",
-                          onTap:
-                              isFirstPage
-                                  ? () {} // Disable button on the first page
-                                  : () {
-                                    setState(() {
-                                      _currentPage--;
-                                    });
-                                  },
-                          fontColor: Colors.white,
-                          backgroundColor:
-                              isFirstPage ? Colors.grey : AppColors.primary,
+                        flex: 10,
+                        child: ListView.builder(
+                          itemCount: _questionsPerPage,
+                          itemBuilder: (context, index) {
+                            final int globalIndex =
+                                (_currentPage * _questionsPerPage) + index;
+                            // Check if we have valid data for this index
+                            if (globalIndex >=
+                                questionBlocState.questionsModels.length) {
+                              return const SizedBox.shrink();
+                            }
+
+                            final displayQuestionNumber = globalIndex + 1;
+                            // Use selectedOption from Cubit
+                            // The list in Cubit corresponds to questions list
+                            final selectedOption =
+                                questionCubitState.selectedOption[globalIndex];
+
+                            return Container(
+                              color:
+                                  index % 2 == 0
+                                      ? Colors.white
+                                      : const Color(0xffFBFCFD),
+                              padding: EdgeInsets.symmetric(vertical: 6.h),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 1,
+                                    child: Center(
+                                      child: Text(
+                                        displayQuestionNumber
+                                            .toString()
+                                            .padLeft(3, '0'),
+                                        style: const TextStyle(
+                                          color: Color(0xff64748B),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  ...['A', 'B', 'C', 'D', 'E'].map(
+                                    (option) => Expanded(
+                                      flex: 1,
+                                      child: Center(
+                                        child: RadioContainer(
+                                          text: option,
+                                          isSelected:
+                                              selectedOption == option,
+                                          onTap: () {
+                                            if (selectedOption == option) {
+                                              context
+                                                  .read<QuestionCubit>()
+                                                  .answerQuestionAt(
+                                                    globalIndex,
+                                                    null,
+                                                  );
+                                            } else {
+                                              context
+                                                  .read<QuestionCubit>()
+                                                  .answerQuestionAt(
+                                                    globalIndex,
+                                                    option,
+                                                  );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      30.wGap,
                       Expanded(
-                        child: ActionButton(
-                          text: isLastPage ? "Submit" : "Next",
-                          onTap: () {
-                            if (isLastPage) {
-                              // Handle submit logic
-                            } else {
-                              setState(() {
-                                _currentPage++;
-                              });
-                            }
-                          },
-                          fontColor: Colors.white,
-                          backgroundColor: AppColors.primary,
-                        ),
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Expanded(
+                              child: ActionButton(
+                                text: "Prev",
+                                onTap:
+                                    isFirstPage
+                                        ? () {} // Disable button on the first page
+                                        : () {
+                                          setState(() {
+                                            _currentPage--;
+                                          });
+                                        },
+                                fontColor: Colors.white,
+                                backgroundColor:
+                                    isFirstPage
+                                        ? Colors.grey
+                                        : AppColors.primary,
+                              ),
+                            ),
+                            30.wGap,
+                            Expanded(
+                              child: ActionButton(
+                                text: isLastPage ? "Submit" : "Next",
+                                onTap: () {
+                                  if (isLastPage) {
+                                    context
+                                        .read<TestCubit>()
+                                        .calculateAndEmitTestResult(
+                                          testId: widget.testModel.id,
+                                          questionsModel:
+                                              questionBlocState.questionsModels,
+                                          questions:
+                                              questionBlocState.questions,
+                                          selectedOption:
+                                              questionCubitState.selectedOption,
+                                          answeredStatus:
+                                              questionCubitState.answeredStatus,
+                                          marks: questionBlocState.marks,
+                                          minSpent: 0,
+                                          secSpent: 0,
+                                          languageCode:
+                                              widget.language ?? 'en',
+                                        );
+                                  } else {
+                                    setState(() {
+                                      _currentPage++;
+                                    });
+                                  }
+                                },
+                                fontColor: Colors.white,
+                                backgroundColor: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ).padSymmetric(horizontal: 10.w),
                       ),
                     ],
-                  ).padSymmetric(horizontal: 10.w),
-                ),
-              ],
-            );
-          } else if (state is QuestionLoadFailed) {
-            return Center(child: Text("Error: ${state.failure.message}"));
-          }
-          return const Center(child: Text("Initializing..."));
-        },
+                  );
+                },
+              );
+            } else if (questionBlocState is QuestionLoadFailed) {
+              return Center(
+                child: Text("Error: ${questionBlocState.failure.message}"),
+              );
+            }
+            return const Center(child: Text("Initializing..."));
+          },
+        ),
       ),
     );
   }
