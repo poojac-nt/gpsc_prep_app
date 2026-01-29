@@ -160,6 +160,32 @@ final List<GoRoute> appRoutes = [
           ),
         ],
       ),
+      // DESC Test Instruction Route
+      GoRoute(
+        path: 'descriptiveTestScreen',
+        pageBuilder: (context, state) => _slideTransition(Container(), state),
+        // Placeholder if needed
+        routes: [
+          GoRoute(
+            path: 'descriptiveTestInstructionScreen/:testId',
+            pageBuilder: (context, state) {
+              final testIdParam = state.pathParameters['testId'];
+              final testId = int.tryParse(testIdParam ?? '');
+              // If you pass extra args, handle them here
+              if (testId == null) {
+                return _slideTransition(
+                  const ErrorScreen(message: 'Invalid Test ID'),
+                  state,
+                );
+              }
+              return _slideTransition(
+                DescriptiveTestInstructionScreen(testId: testId),
+                state,
+              );
+            },
+          ),
+        ],
+      ),
       GoRoute(
         path: 'mcqTestScreen',
         pageBuilder:
@@ -451,6 +477,27 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as OMRScreenArgs;
       return _slideTransition(
         OMRScreen(testModel: args.testModal, language: args.language),
+        state,
+      );
+    },
+  ),
+
+  // RESTORED ROOT LEVEL ROUTES FOR COMPATIBILITY
+  GoRoute(
+    path: AppRoutes.prelimsMcqTestScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(PrelimsMcqTestScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.prelimsInstructionsScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as PrelimsInstructionScreenArgs?;
+      return _slideTransition(
+        PrelimsMcqInstructionScreen(
+          testId: args?.testId,
+          testModel: args?.testModal,
+        ),
         state,
       );
     },
