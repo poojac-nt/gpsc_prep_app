@@ -15,6 +15,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../widgets/bordered_container.dart';
@@ -73,7 +74,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                     title: "Daily Practice",
                     subtitle: "Subject based Daily test",
                     prefixIcon: Icons.calendar_today_outlined,
-                    isDesc: true,
+                    testType: TestType.desc,
                     descTestModel: descTests[index],
                     showShareButton: true,
                     cards: [

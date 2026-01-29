@@ -102,6 +102,10 @@ final List<GoRoute> appRoutes = [
           router.push(
             '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$id',
           );
+        } else if (type == 'prelims') {
+          router.push(
+            '/studentDashboard/fullLengthMcqTestScreen/prelimsInstructionsScreen/$id',
+          );
         } else {
           router.pushReplacement('/error?message=Unknown+test+type');
         }
@@ -126,6 +130,36 @@ final List<GoRoute> appRoutes = [
         (context, state) => _slideTransition(StudentDashboardScreen(), state),
     routes: [
       // MCQ Test Instruction Route
+      GoRoute(
+        path: 'fullLengthMcqTestScreen',
+        name: AppRoutes.prelimsMcqTestScreen,
+        pageBuilder:
+            (context, state) => _slideTransition(PrelimsMcqTestScreen(), state),
+        routes: [
+          GoRoute(
+            path: 'prelimsInstructionsScreen/:testId',
+            name: AppRoutes.prelimsInstructionsScreen,
+            pageBuilder: (context, state) {
+              final testIdParam = state.pathParameters['testId'];
+              final testId = int.tryParse(testIdParam ?? '');
+              final args = state.extra as PrelimsInstructionScreenArgs?;
+              final finalTestId = args?.testId ?? testId;
+
+              if (finalTestId == null) {
+                return _slideTransition(
+                  const ErrorScreen(message: 'Invalid Test ID'),
+                  state,
+                );
+              }
+
+              return _slideTransition(
+                PrelimsMcqInstructionScreen(testId: finalTestId),
+                state,
+              );
+            },
+          ),
+        ],
+      ),
       GoRoute(
         path: 'mcqTestScreen',
         pageBuilder:
@@ -152,32 +186,6 @@ final List<GoRoute> appRoutes = [
 
               return _slideTransition(
                 MCQTestInstructionScreen(testId: finalTestId),
-                state,
-              );
-            },
-          ),
-        ],
-      ),
-      // DESC Test Instruction Route
-      GoRoute(
-        path: 'descriptiveTestScreen',
-        pageBuilder: (context, state) => _slideTransition(Container(), state),
-        // Placeholder if needed
-        routes: [
-          GoRoute(
-            path: 'descriptiveTestInstructionScreen/:testId',
-            pageBuilder: (context, state) {
-              final testIdParam = state.pathParameters['testId'];
-              final testId = int.tryParse(testIdParam ?? '');
-              // If you pass extra args, handle them here
-              if (testId == null) {
-                return _slideTransition(
-                  const ErrorScreen(message: 'Invalid Test ID'),
-                  state,
-                );
-              }
-              return _slideTransition(
-                DescriptiveTestInstructionScreen(testId: testId),
                 state,
               );
             },
@@ -443,26 +451,6 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as OMRScreenArgs;
       return _slideTransition(
         OMRScreen(testModel: args.testModal, language: args.language),
-        state,
-      );
-    },
-  ),
-
-  GoRoute(
-    path: AppRoutes.prelimsMcqTestScreen,
-    pageBuilder: (context, state) {
-      return _slideTransition(PrelimsMcqTestScreen(), state);
-    },
-  ),
-  GoRoute(
-    path: AppRoutes.prelimsInstructionsScreen,
-    pageBuilder: (context, state) {
-      final args = state.extra as PrelimsInstructionScreenArgs?;
-      return _slideTransition(
-        PrelimsMcqInstructionScreen(
-          testModel: args?.testModal,
-          testId: args?.testId,
-        ),
         state,
       );
     },

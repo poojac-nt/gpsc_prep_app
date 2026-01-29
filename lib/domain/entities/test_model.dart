@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/utils/enums/test_type_enum.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'test_model.g.dart';

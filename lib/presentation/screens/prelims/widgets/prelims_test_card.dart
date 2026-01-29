@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../../../core/router/args.dart';
 
@@ -31,6 +32,7 @@ class PrelimsTestCard extends StatelessWidget {
       fontSize: 20.sp,
       testModel: testModel,
       showShareButton: true,
+      testType: TestType.prelims,
       cards: [
         // Metadata: Questions and Duration
         Row(

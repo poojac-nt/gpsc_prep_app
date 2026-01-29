@@ -25,7 +25,7 @@ Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
     };
 
 const _$TestTypeEnumMap = {
-  TestType.dtmcq: 'dtmcq',
   TestType.mcq: 'mcq',
+  TestType.desc: 'desc',
   TestType.prelims: 'prelims',
 };

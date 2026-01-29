@@ -1,4 +1,4 @@
-enum TestType { mcq, desc }
+enum TestType { mcq, desc, prelims }
 
 extension TestTypeExtension on TestType {
   String get name {
@@ -7,6 +7,8 @@ extension TestTypeExtension on TestType {
         return 'mcq';
       case TestType.desc:
         return 'desc';
+      case TestType.prelims:
+        return 'prelims';
     }
   }
 }

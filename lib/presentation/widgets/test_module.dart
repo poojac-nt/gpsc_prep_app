@@ -23,7 +23,7 @@ class TestModule extends StatelessWidget {
     this.iconColor = Colors.black,
     this.prefixIcon,
     this.cards = const <Widget>[],
-    this.isDesc = false,
+    this.testType = TestType.mcq,
     this.trailing,
   });
 
@@ -37,7 +37,7 @@ class TestModule extends StatelessWidget {
   final bool showShareButton;
   final IconData? prefixIcon;
   final List<Widget> cards;
-  final bool isDesc;
+  final TestType testType;
   final Widget? trailing;
 
   @override
@@ -68,7 +68,7 @@ class TestModule extends StatelessWidget {
                   tooltip: "Share Test",
                   icon: const Icon(AppIcons.shareTest),
                   onPressed: () {
-                    _handleShare(context, isDesc);
+                    _handleShare(context, testType);
                   },
                 )
               else if (trailing != null)
@@ -85,18 +85,18 @@ class TestModule extends StatelessWidget {
     );
   }
 
-  Future<void> _handleShare(BuildContext context, bool isDesc) async {
+  Future<void> _handleShare(BuildContext context, TestType testType) async {
     try {
       final shareableUrl = DeepLinkGenerator.generateShareableUrl(
-        testId: isDesc ? descTestModel!.id : testModel!.id,
-        testType: isDesc ? TestType.desc : TestType.mcq,
+        testId: testType == TestType.desc ? descTestModel!.id : testModel!.id,
+        testType: testType,
       );
 
       final uri = Uri.parse(shareableUrl);
       await SharePlus.instance.share(
         ShareParams(
           text:
-              "Check out this ${isDesc ? descTestModel!.name : testModel!.name} Test! 🚀\n$uri",
+              "Check out this ${testType == TestType.desc ? descTestModel!.name : testModel!.name} Test! 🚀\n$uri",
           subject: 'GPSC Prep Test Share',
         ),
       );
