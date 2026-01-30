@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 import '../../../../../domain/entities/question_language_model.dart';
@@ -18,6 +19,7 @@ class TestCubitSubmitted {
   final int? timeSpent;
   final List<bool> answeredStatus;
   final int? userRank;
+  final List<DetailedTestResult> batchResults;
 
   factory TestCubitSubmitted.initial() => TestCubitSubmitted();
 
@@ -37,6 +39,7 @@ class TestCubitSubmitted {
     this.topScore,
     this.userRank,
     this.isAnswerCorrect = const [],
+    this.batchResults = const [],
   });
 
   TestCubitSubmitted copyWith({
@@ -54,6 +57,7 @@ class TestCubitSubmitted {
     int? timeSpent,
     List<bool>? answeredStatus,
     int? userRank,
+    List<DetailedTestResult>? batchResults,
   }) {
     return TestCubitSubmitted(
       totalQuestions: totalQuestions ?? this.totalQuestions,
@@ -71,6 +75,7 @@ class TestCubitSubmitted {
       timeSpent: timeSpent ?? this.timeSpent,
       answeredStatus: answeredStatus ?? this.answeredStatus,
       userRank: userRank ?? this.userRank,
+      batchResults: batchResults ?? this.batchResults,
     );
   }
 }

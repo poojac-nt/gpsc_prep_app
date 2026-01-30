@@ -32,9 +32,13 @@ class TestRepository {
     int testID,
   ) async => await _supabase.fetchDescTestQuestions(testID);
 
-  Future<Either<Failure, List<TestResultModel>>> insertTestResult(
+  Future<Either<Failure, TestResultModel>> submitTestResultWithDetails(
     TestResultModel testResult,
-  ) async => await _supabase.insertDailyMcqTestsResults(testResult);
+    List<DetailedTestResult> detailedResults,
+  ) async => await _supabase.submitTestResultWithDetails(
+    test: testResult,
+    detailedResults: detailedResults,
+  );
 
   Future<Either<Failure, TestResultModel?>> singleTestResult(
     int testId,

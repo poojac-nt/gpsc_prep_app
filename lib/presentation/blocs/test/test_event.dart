@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 
 import '../../../../../domain/entities/question_language_model.dart';
 
@@ -17,6 +18,7 @@ class SubmitTest extends TestEvent {
   final int? notAttemptedQuestions;
   final double? score;
   final int? timeTaken;
+  final List<DetailedTestResult> batchResults;
 
   SubmitTest(
     this.testId,
@@ -30,6 +32,7 @@ class SubmitTest extends TestEvent {
     this.notAttemptedQuestions,
     this.score,
     this.timeTaken,
+    this.batchResults,
   );
 }
 

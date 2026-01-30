@@ -301,6 +301,7 @@ class _TestScreenState extends State<TestScreen> {
                   state.notAttemptedQuestions,
                   state.score,
                   state.timeSpent,
+                  state.batchResults,
                 ),
               );
               final timerState = context.read<TimerBloc>().state;

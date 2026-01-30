@@ -4,6 +4,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
@@ -35,6 +36,17 @@ class TestBloc extends Bloc<TestEvent, TestState> {
     if (!isOnline) {
       final box = Hive.box<TestResultModel>('test_results');
       box.put('latest', testResult);
+
+      if (event.batchResults.isNotEmpty) {
+        final detailedBox = Hive.box<DetailedTestResult>(
+          'detailed_test_results',
+        );
+        await detailedBox.addAll(event.batchResults);
+        _log.e(
+          "❌ Offline: saved ${event.batchResults.length} detailed results to Hive",
+        );
+      }
+
       _log.e("❌ No internet connection");
       emit(
         TestSubmitted(
@@ -47,8 +59,16 @@ class TestBloc extends Bloc<TestEvent, TestState> {
     }
 
     try {
-      await _testRepository.insertTestResult(testResult);
-      _log.i("✅ Internet is available. Proceeding...");
+      final result = await _testRepository.submitTestResultWithDetails(
+        testResult,
+        event.batchResults,
+      );
+      _log.i("✅ Internet is available. Proceeding with RPC...");
+
+      result.fold(
+        (failure) => _log.e("🚨 RPC submission failed: ${failure.message}"),
+        (_) => _log.i("✅ Test result and details submitted via RPC."),
+      );
 
       emit(
         TestSubmitted(

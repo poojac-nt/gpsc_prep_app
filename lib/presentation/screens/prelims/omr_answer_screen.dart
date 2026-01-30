@@ -63,6 +63,7 @@ class _OMRScreenState extends State<OMRScreen> {
             state.notAttemptedQuestions,
             state.score,
             state.timeSpent,
+            state.batchResults,
           ),
         );
         Environment.isDevelopment ? null : AdService().showInterstitialAd();
@@ -83,15 +84,11 @@ class _OMRScreenState extends State<OMRScreen> {
               builder: (context, state) {
                 int attemptedCount = 0;
                 if (state is McqQuestionCubitLoaded) {
-                  attemptedCount =
-                      state.answeredStatus.where((e) => e).length;
+                  attemptedCount = state.answeredStatus.where((e) => e).length;
                 }
                 return Text(
                   "Attempted: $attemptedCount/${widget.testModel.noQuestions}",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(fontSize: 12.sp, color: Colors.black54),
                 );
               },
             ),
@@ -213,8 +210,7 @@ class _OMRScreenState extends State<OMRScreen> {
                                       child: Center(
                                         child: RadioContainer(
                                           text: option,
-                                          isSelected:
-                                              selectedOption == option,
+                                          isSelected: selectedOption == option,
                                           onTap: () {
                                             if (selectedOption == option) {
                                               context
@@ -286,8 +282,7 @@ class _OMRScreenState extends State<OMRScreen> {
                                           marks: questionBlocState.marks,
                                           minSpent: 0,
                                           secSpent: 0,
-                                          languageCode:
-                                              widget.language ?? 'en',
+                                          languageCode: widget.language ?? 'en',
                                         );
                                   } else {
                                     setState(() {
@@ -338,26 +333,11 @@ class _OMRScreenState extends State<OMRScreen> {
                   flex: 1,
                   child: Center(child: TopLabelRow(text: "Q.No.")),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Center(child: TopLabelRow(text: "A")),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Center(child: TopLabelRow(text: "B")),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Center(child: TopLabelRow(text: "C")),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Center(child: TopLabelRow(text: "D")),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Center(child: TopLabelRow(text: "E")),
-                ),
+                Expanded(flex: 1, child: Center(child: TopLabelRow(text: "A"))),
+                Expanded(flex: 1, child: Center(child: TopLabelRow(text: "B"))),
+                Expanded(flex: 1, child: Center(child: TopLabelRow(text: "C"))),
+                Expanded(flex: 1, child: Center(child: TopLabelRow(text: "D"))),
+                Expanded(flex: 1, child: Center(child: TopLabelRow(text: "E"))),
               ],
             ),
           ),

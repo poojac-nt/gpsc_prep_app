@@ -299,27 +299,6 @@ class SupabaseHelper {
     TestResultModel test,
   ) async {
     try {
-      // Step 1: Check if result already exists for this user and test
-      final existingResult =
-          await supabase
-              .from(SupabaseKeys.testResultsTable)
-              .select()
-              .eq('user_id', test.userId)
-              .eq('test_id', test.testId)
-              .maybeSingle(); // returns null if not found
-
-      if (existingResult != null) {
-        // Step 2: Delete existing result
-        final deleteResponse = await supabase
-            .from(SupabaseKeys.testResultsTable)
-            .delete()
-            .eq('user_id', test.userId)
-            .eq('test_id', test.testId);
-
-        _log.i('Existing test result deleted: $deleteResponse');
-      }
-
-      // Step 3: Insert the new result
       final response =
           await supabase
               .from(SupabaseKeys.testResultsTable)
@@ -346,6 +325,51 @@ class SupabaseHelper {
       _snackBar.showError('Error inserting test result: ${e.toString()}');
       _log.e('Error inserting/fetching test result: $e');
       return Left(Failure("Error inserting test: ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, TestResultModel>> submitTestResultWithDetails({
+    required TestResultModel test,
+    required List<DetailedTestResult> detailedResults,
+  }) async {
+    try {
+      final payload =
+          detailedResults
+              .map(
+                (e) => {
+                  'question_id': e.questionId,
+                  'is_correct': e.isCorrect,
+                  'selected_option': e.selectedOption,
+                },
+              )
+              .toList();
+
+      final response = await supabase.rpc(
+        'submit_test_attempt',
+        params: {
+          'p_user_id': test.userId,
+          'p_test_id': test.testId,
+          'p_score': test.score,
+          'p_correct_answers': test.correctAnswers,
+          'p_incorrect_answers': test.inCorrectAnswers,
+          'p_attempted_questions': test.attemptedQuestions,
+          'p_not_attempted_questions': test.notAttemptedQuestions,
+          'p_time_taken': test.timeTaken,
+          'p_total_questions': test.totalQuestions,
+          'p_details': payload,
+        },
+      );
+
+      _log.i('Test result inserted via RPC: $response');
+
+      final model = TestResultModel.fromJson(response);
+      _snackBar.showSuccess('Test Result Submitted Successfully');
+
+      return Right(model);
+    } catch (e) {
+      _snackBar.showError('Error submitting test result: ${e.toString()}');
+      _log.e('Error submitting test result: $e');
+      return Left(Failure("RPC submit failed: ${e.toString()}"));
     }
   }
 
@@ -742,6 +766,7 @@ class SupabaseHelper {
                   'test_id': e.testId,
                   'question_id': e.questionId,
                   'is_correct': e.isCorrect,
+                  'attempt_no': 1,
                   'selected_option': e.selectedOption,
                 },
               )
@@ -749,7 +774,10 @@ class SupabaseHelper {
 
       await supabase
           .from(SupabaseKeys.testDetailedResults)
-          .upsert(payload, onConflict: 'user_id,test_id,question_id');
+          .upsert(
+            payload,
+            onConflict: 'user_id,test_id,question_id,attempt_no',
+          );
 
       _log.i(
         'Batch upserted ${detailedTestResults.length} test detailed results for test ID: ${detailedTestResults.first.testId}',

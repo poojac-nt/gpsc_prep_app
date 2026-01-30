@@ -1,22 +1,16 @@
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
-import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_model_extension.dart';
-import 'package:hive/hive.dart';
 
 class TestCubit extends Cubit<TestCubitSubmitted> {
   TestCubit() : super(TestCubitSubmitted.initial());
-  final _log = getIt<LogHelper>();
   final cache = getIt<CacheManager>();
-  final _repository = getIt<TestRepository>();
 
   Future<void> calculateAndEmitTestResult({
     required int testId,
@@ -83,28 +77,11 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
             testId: testId,
             questionId: questionId,
             isCorrect: isAnswerCorrect,
+            attemptNo: 1,
             selectedOption: optionIdentifier,
           ),
         );
       }
-    }
-
-    final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
-
-    if (!isOnline) {
-      final box = Hive.box<DetailedTestResult>('detailed_test_results');
-      await box.addAll(batchResults);
-
-      _log.e('❌ Offline: saved ${batchResults.length} results to Hive');
-    } else {
-      final result = await _repository.insertDetailedTestResult(
-        detailedTestResults: batchResults,
-      );
-
-      result.fold(
-        (failure) => _log.e('Batch insert failed: ${failure.message}'),
-        (_) => _log.i('Batch insert successful (${batchResults.length} rows)'),
-      );
     }
 
     emit(
@@ -122,6 +99,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
         isReview: false,
         score: totalScore,
         timeSpent: timeSpent,
+        batchResults: batchResults,
       ),
     );
   }
