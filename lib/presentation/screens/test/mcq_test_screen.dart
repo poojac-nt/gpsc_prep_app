@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
@@ -13,7 +12,6 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class MCQTestScreen extends StatefulWidget {
@@ -109,8 +107,24 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                 .toList();
 
     if (filtered.isEmpty) {
-      return Center(
-        child: Text("No tests available for ${filter ?? "All Subjects"}"),
+      return RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          return context.read<DailyTestBloc>().add(FetchTests());
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: 0.8.sh,
+              child: Center(
+                child: Text(
+                  "No tests available for ${filter ?? "All Subjects"}",
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -199,12 +213,13 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
   }
 
   /// Skeleton for loading state
-  Padding _buildWhenLoading() {
+  Widget _buildWhenLoading() {
     return Padding(
       padding: EdgeInsets.all(AppPaddings.appPaddingInt),
       child: Skeletonizer(
         enabled: true,
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
               Row(
