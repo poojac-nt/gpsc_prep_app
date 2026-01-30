@@ -198,50 +198,6 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
     );
   }
 
-  void _showAlreadyGivenTestDialog(TestAttemptState attemptState) {
-    if (attemptState.retryAvailableAt.isEmpty) return;
-
-    DateTime availableAt =
-        DateTime.parse(attemptState.retryAvailableAt).toLocal();
-    String formattedDate = DateFormat(
-      'dd MMM yyyy, hh:mm a',
-    ).format(availableAt);
-
-    // Calculate last attempt by subtracting cooldown
-    DateTime lastAttempt = availableAt.subtract(
-      Duration(hours: attemptState.cooldownHours),
-    );
-    String formattedLastAttempt = DateFormat(
-      'dd MMM yyyy, hh:mm a',
-    ).format(lastAttempt);
-
-    Duration remaining = availableAt.difference(DateTime.now());
-    int hoursRemaining = remaining.inHours;
-    int minutesRemaining = remaining.inMinutes % 60;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Test Status"),
-          content: Text(
-            "You have already given the test.\n\n"
-            "Last attempt: $formattedLastAttempt\n"
-            "You can attempt again in ${hoursRemaining > 0 ? '$hoursRemaining hour(s) ' : ''}$minutesRemaining minute(s).\n"
-            "Available at: $formattedDate",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   /// Skeleton for loading state
   Padding _buildWhenLoading() {
     return Padding(

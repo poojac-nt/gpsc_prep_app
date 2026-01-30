@@ -10,19 +10,28 @@ class DifficultyWiseBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxY =
+    final maxAttempted =
         data
-            .map((e) => e.totalQuestionsInTest)
+            .map((e) => e.attemptedCount)
             .fold<int>(0, (a, b) => a > b ? a : b)
             .toDouble();
+
+    // Determine adjustedMaxY based on max attempted
+    double adjustedMaxY;
+    if (maxAttempted <= 10) {
+      adjustedMaxY = 10;
+    } else {
+      // Round up to nearest 50 as requested (e.g., 137 -> 150)
+      adjustedMaxY = ((maxAttempted / 50).ceil() * 50).toDouble();
+    }
 
     return SizedBox(
       height: 300.h,
       child: BarChart(
         BarChartData(
-          maxY: maxY.toDouble(),
+          maxY: adjustedMaxY,
           barTouchData: _barTouchData(),
-          titlesData: _titlesData(),
+          titlesData: _titlesData(adjustedMaxY),
           borderData: FlBorderData(
             show: true,
             border: Border(
@@ -48,7 +57,7 @@ class DifficultyWiseBarChart extends StatelessWidget {
         x: index,
         barRods: [
           BarChartRodData(
-            toY: item.totalQuestionsInTest.toDouble(),
+            toY: item.attemptedCount.toDouble(),
             color: Colors.transparent,
             rodStackItems: [
               BarChartRodStackItem(
@@ -94,13 +103,33 @@ class DifficultyWiseBarChart extends StatelessWidget {
   }
 
   /// 🔹 X & Y Axis Titles
-  FlTitlesData _titlesData() {
+  FlTitlesData _titlesData(double maxY) {
+    // Calculate a "round" interval for better readability
+    double interval;
+    if (maxY <= 10) {
+      interval = 2;
+    } else if (maxY <= 25) {
+      interval = 5;
+    } else if (maxY <= 50) {
+      interval = 10;
+    } else if (maxY <= 100) {
+      interval = 20;
+    } else if (maxY <= 250) {
+      interval = 50;
+    } else {
+      interval = (maxY / 5).ceilToDouble();
+    }
+
     return FlTitlesData(
       leftTitles: AxisTitles(
-        sideTitles: SideTitles(showTitles: true, reservedSize: 40, interval: 1),
+        sideTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 40,
+          interval: interval,
+        ),
       ),
-      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
       bottomTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
