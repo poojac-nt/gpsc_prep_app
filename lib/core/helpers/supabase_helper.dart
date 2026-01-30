@@ -581,29 +581,6 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, Map<String, dynamic>>> fetchAttemptedAllTests() async {
-    try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getAttemptedTestStats,
-        params: {'user_id': _cache.user!.id},
-      );
-
-      final data = response as Map<String, dynamic>;
-      final attemptedTests = data['attempted_tests'];
-      final averageScore = data['average_score'];
-
-      _log.i('Attempted Tests: $attemptedTests Average Score: $averageScore');
-
-      return Right({
-        'attempted_tests': attemptedTests,
-        'average_score': averageScore.toDouble(),
-      });
-    } catch (e) {
-      _log.e('Error in fetching attempted tests: $e');
-      return Left(Failure("Error in fetching attempted tests"));
-    }
-  }
-
   Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async {
     try {
       final response =
@@ -751,46 +728,6 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error fetching question correctness for test ID $testId: $e');
       return Left(Failure("Failed to fetch data for test ID $testId"));
-    }
-  }
-
-  Future<Either<Failure, void>> insertDetailedTestResult({
-    required List<DetailedTestResult> detailedTestResults,
-  }) async {
-    try {
-      final payload =
-          detailedTestResults
-              .map(
-                (e) => {
-                  'user_id': e.userId,
-                  'test_id': e.testId,
-                  'question_id': e.questionId,
-                  'is_correct': e.isCorrect,
-                  'attempt_no': 1,
-                  'selected_option': e.selectedOption,
-                },
-              )
-              .toList();
-
-      await supabase
-          .from(SupabaseKeys.testDetailedResults)
-          .upsert(
-            payload,
-            onConflict: 'user_id,test_id,question_id,attempt_no',
-          );
-
-      _log.i(
-        'Batch upserted ${detailedTestResults.length} test detailed results for test ID: ${detailedTestResults.first.testId}',
-      );
-
-      return const Right(null);
-    } catch (e) {
-      _log.e(
-        'Unexpected error while batch inserting test detailed results :${e.toString()}',
-      );
-      return Left(
-        Failure('Error inserting test detailed results: ${e.toString()}'),
-      );
     }
   }
 

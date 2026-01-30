@@ -6,7 +6,6 @@ import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
@@ -125,8 +124,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               if (state is ConnectivityOffline) {
                 ConnectivityDialogHelper.showOfflineDialog(context);
               } else if (state is ConnectivityOnline) {
-                syncLatestIfExists(context);
-                syncOfflineQuestionResults();
+                syncOfflineResults(context);
                 ConnectivityDialogHelper.dismissDialog(context);
               }
             },
@@ -528,77 +526,60 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   /// ✅ Sync offline results if internet is available
-  Future<void> syncLatestIfExists(BuildContext context) async {
-    final testResultBox = getIt<Box<TestResultModel>>();
-    final latest = testResultBox.get('latest');
-    if (latest == null) return;
-
+  Future<void> syncOfflineResults(BuildContext context) async {
     final log = getIt<LogHelper>();
     final isOnline =
         context.read<ConnectivityBloc>().state is ConnectivityOnline;
 
-    if (isOnline) {
-      try {
-        await getIt<SupabaseHelper>().insertDailyMcqTestsResults(latest);
-        await testResultBox.delete('latest');
-        if (!context.mounted) return;
-        context.read<DashboardBloc>().add(FetchDashboardAnalytics());
-        log.i('✅ Synced test result to Supabase and removed from Hive');
-      } catch (e) {
-        log.e('❌ Sync failed: $e');
+    if (!isOnline) return;
+
+    final testResultBox = getIt<Box<TestResultModel>>();
+    final detailedBox = Hive.box<DetailedTestResult>('detailed_test_results');
+
+    final latest = testResultBox.get('latest');
+    final offlineDetails = <DetailedTestResult>[];
+    final detailKeys = <dynamic>[];
+
+    if (latest == null && detailedBox.isEmpty) {
+      log.i('ℹ️ No offline results to sync');
+      return;
+    }
+
+    // Collect all offline detailed results
+    for (final key in detailedBox.keys) {
+      final result = detailedBox.get(key);
+      if (result != null) {
+        offlineDetails.add(result);
+        detailKeys.add(key);
       }
     }
-  }
 
-  Future<void> syncOfflineQuestionResults() async {
-    final box = Hive.box<DetailedTestResult>('detailed_test_results');
-    final log = getIt<LogHelper>();
-    final isOnline = getIt<ConnectivityBloc>().state is ConnectivityOnline;
+    if (latest != null) {
+      try {
+        final repository = getIt<TestRepository>();
+        final response = await repository.submitTestResultWithDetails(
+          latest,
+          offlineDetails,
+        );
 
-    if (!isOnline) {
-      log.e('❌ Cannot sync question results — No Internet');
-      return;
+        response.fold(
+          (failure) {
+            log.e('❌ Sync failed: ${failure.message}');
+          },
+          (_) async {
+            await testResultBox.delete('latest');
+            await detailedBox.deleteAll(detailKeys);
+            if (!context.mounted) return;
+            context.read<DashboardBloc>().add(FetchDashboardAnalytics());
+            log.i('✅ Synced offline test result and details to Supabase');
+          },
+        );
+      } catch (e) {
+        log.e('❌ Sync exception: $e');
+      }
+    } else if (offlineDetails.isNotEmpty) {
+      log.w('⚠️ Found detailed results but no summary result to sync.');
     }
-
-    if (box.isEmpty) {
-      log.i('ℹ️ No offline question results to sync');
-      return;
-    }
-
-    final repository = getIt<TestRepository>();
-
-    // 1️⃣ Collect all stored results
-    final results = <DetailedTestResult>[];
-    final keys = <dynamic>[];
-
-    for (final key in box.keys) {
-      final result = box.get(key);
-      if (result == null) continue;
-
-      results.add(result);
-      keys.add(key);
-    }
-
-    if (results.isEmpty) {
-      log.i('ℹ️ No valid offline results found');
-      return;
-    }
-
-    // 2️⃣ Batch sync
-    final response = await repository.insertDetailedTestResult(
-      detailedTestResults: results,
-    );
-
-    // 3️⃣ Delete ONLY on full success
-    response.fold(
-      (failure) {
-        log.e('❌ Failed to sync offline question results: ${failure.message}');
-      },
-      (_) async {
-        await box.deleteAll(keys);
-        log.i('✅ Synced and deleted ${keys.length} offline question results');
-      },
-    );
   }
 }
 

@@ -40,10 +40,6 @@ class TestRepository {
     detailedResults: detailedResults,
   );
 
-  Future<Either<Failure, TestResultModel?>> singleTestResult(
-    int testId,
-  ) async => await _supabase.fetchResultForSingleMcqTest(testId: testId);
-
   Future<Either<Failure, TestResultWithTopScoreModel?>>
   getUserTestResultWithTopScore(int testId) async =>
       await _supabase.getUserTestResultWithTopScore(testId: testId);
@@ -66,9 +62,6 @@ class TestRepository {
     int testId,
   ) async => await _supabase.fetchAnswersForTest(testId);
 
-  Future<Either<Failure, Map<String, dynamic>>>
-  fetchAllAttemptedTests() async => await _supabase.fetchAttemptedAllTests();
-
   Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async =>
       await _supabase.fetchSingleTestFromId(testId);
 
@@ -90,14 +83,6 @@ class TestRepository {
     files: files,
     questionId: questionId,
   );
-
-  Future<Either<Failure, void>> insertDetailedTestResult({
-    required List<DetailedTestResult> detailedTestResults,
-  }) {
-    return _supabase.insertDetailedTestResult(
-      detailedTestResults: detailedTestResults,
-    );
-  }
 
   Future<Either<Failure, List<OptionMatrixModel>>> optionMatrixForQuestion({
     required int testId,
