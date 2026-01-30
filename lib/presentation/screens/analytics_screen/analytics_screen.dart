@@ -117,6 +117,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         else if (state.data.isEmpty)
           _buildEmptyWidget("No subject data available yet")
         else ...[
+          10.hGap,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -245,7 +246,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       Text(
                         "${state.overallAccuracy}%",
                         style: TextStyle(
-                          fontSize: 32.sp,
+                          fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -390,33 +391,39 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         else if (state.data.isEmpty)
           _buildEmptyWidget("No question type data available yet")
         else
-          SizedBox(
-            height: 180.h,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: state.data.length,
-              separatorBuilder: (context, index) => 12.wGap,
-              itemBuilder: (context, index) {
-                // Fixed gradient colors for each question type
-                final List<Color> cardGradient;
-                if (index == 0) {
-                  cardGradient = [Color(0xFF667eea), Color(0xFF764ba2)];
-                } else if (index == 1) {
-                  cardGradient = [Color(0xFF06beb6), Color(0xFF48b1bf)];
-                } else if (index == 2) {
-                  cardGradient = [Color(0xFFf857a6), Color(0xFFff5858)];
-                } else {
-                  cardGradient = gradientColors[index % gradientColors.length];
-                }
+          Column(
+            children: [
+              10.hGap,
+              SizedBox(
+                height: 180.h,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: state.data.length,
+                  separatorBuilder: (context, index) => 12.wGap,
+                  itemBuilder: (context, index) {
+                    // Fixed gradient colors for each question type
+                    final List<Color> cardGradient;
+                    if (index == 0) {
+                      cardGradient = [Color(0xFF667eea), Color(0xFF764ba2)];
+                    } else if (index == 1) {
+                      cardGradient = [Color(0xFF06beb6), Color(0xFF48b1bf)];
+                    } else if (index == 2) {
+                      cardGradient = [Color(0xFFf857a6), Color(0xFFff5858)];
+                    } else {
+                      cardGradient =
+                          gradientColors[index % gradientColors.length];
+                    }
 
-                return _buildTypeCard(
-                  state.data[index].questionType!.type,
-                  state.data[index].accuracyPct,
-                  cardGradient,
-                );
-              },
-            ),
+                    return _buildTypeCard(
+                      state.data[index].questionType!.type,
+                      state.data[index].accuracyPct,
+                      cardGradient,
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         if (!state.isLoading && state.data.isNotEmpty)
           Row(
@@ -492,7 +499,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Text(
                 "$value%",
                 style: TextStyle(
-                  fontSize: 32.sp,
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   height: 1.1,
