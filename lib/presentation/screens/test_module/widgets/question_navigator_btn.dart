@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../utils/app_constants.dart';
 
@@ -24,6 +25,7 @@ class QuestionNavigatorButton extends StatelessWidget {
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
+        fixedSize: Size(70.w, 40.h),
         shape: RoundedRectangleBorder(
           borderRadius: AppBorders.borderRadius,
           side: BorderSide(color: borderColor, width: 1),

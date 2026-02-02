@@ -888,6 +888,7 @@ class _TestScreenState extends State<TestScreen> {
                             TestModule(
                               title: "Question Navigator",
                               cards: [
+                                10.hGap,
                                 Wrap(
                                   spacing: 6.w,
                                   runSpacing: 6.h,

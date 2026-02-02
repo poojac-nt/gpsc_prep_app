@@ -102,24 +102,31 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                     }
                   }
 
+                  final attemptState = state.testAttemptStates[test.id];
+                  final isEligibleForRetest =
+                      attemptState != null &&
+                      attemptState.attemptsDone == 1 &&
+                      attemptState.canRetry;
+
                   return GestureDetector(
                     onTap:
                         hasResult
                             ? () {}
                             : () {
-                              context.push(
-                                AppRoutes.prelimsInstructionsScreen,
-                                extra: PrelimsInstructionScreenArgs(
-                                  testModal: test,
-                                  hasProgress: hasProgress,
-                                ),
-                              );
-                            },
+                                context.push(
+                                  AppRoutes.prelimsInstructionsScreen,
+                                  extra: PrelimsInstructionScreenArgs(
+                                    testModal: test,
+                                    hasProgress: hasProgress,
+                                  ),
+                                );
+                              },
                     child: PrelimsTestCard(
                       testModel: test,
                       isAttempted: hasResult,
                       lastAttemptedDate: lastAttemptedDate,
                       hasProgress: hasProgress,
+                      isEligibleForRetest: isEligibleForRetest,
                     ),
                   );
                 },
