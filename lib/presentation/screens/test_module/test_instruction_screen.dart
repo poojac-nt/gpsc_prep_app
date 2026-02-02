@@ -219,7 +219,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       debugPrint("Test Id is Null");
     } else {
       debugPrint("Going to Dashboard");
-      context.pushReplacement(AppRoutes.studentDashboard);
+      context.pushReplacement(AppRoutes.mcqTestScreen);
     }
   }
 

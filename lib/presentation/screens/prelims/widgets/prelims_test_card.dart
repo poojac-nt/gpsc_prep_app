@@ -103,7 +103,7 @@ class PrelimsTestCard extends StatelessWidget {
                   icon: Icons.refresh,
                   label: "Retest",
                   onTap: () {
-                    context.pushReplacement(
+                    context.push(
                       AppRoutes.prelimsInstructionsScreen,
                       extra: PrelimsInstructionScreenArgs(
                         testModal: testModel,

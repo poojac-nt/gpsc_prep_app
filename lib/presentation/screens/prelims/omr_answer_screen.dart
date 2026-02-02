@@ -164,138 +164,148 @@ class _OMRScreenState extends State<OMRScreen> {
                         ),
                       ),
                       Expanded(
-                        flex: 10,
-                        child: ListView.builder(
-                          itemCount: _questionsPerPage,
-                          itemBuilder: (context, index) {
-                            final int globalIndex =
-                                (_currentPage * _questionsPerPage) + index;
-                            // Check if we have valid data for this index
-                            if (globalIndex >=
-                                questionBlocState.questionsModels.length) {
-                              return const SizedBox.shrink();
-                            }
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _questionsPerPage,
+                                itemBuilder: (context, index) {
+                                  final int globalIndex =
+                                      (_currentPage * _questionsPerPage) + index;
+                                  // Check if we have valid data for this index
+                                  if (globalIndex >=
+                                      questionBlocState.questionsModels.length) {
+                                    return const SizedBox.shrink();
+                                  }
 
-                            final displayQuestionNumber = globalIndex + 1;
-                            // Use selectedOption from Cubit
-                            // The list in Cubit corresponds to questions list
-                            final selectedOption =
-                                questionCubitState.selectedOption[globalIndex];
+                                  final displayQuestionNumber = globalIndex + 1;
+                                  // Use selectedOption from Cubit
+                                  // The list in Cubit corresponds to questions list
+                                  final selectedOption = questionCubitState
+                                      .selectedOption[globalIndex];
 
-                            return Container(
-                              color:
-                                  index % 2 == 0
-                                      ? Colors.white
-                                      : const Color(0xffFBFCFD),
-                              padding: EdgeInsets.symmetric(vertical: 6.h),
-                              child: Row(
+                                  return Container(
+                                    color: index % 2 == 0
+                                        ? Colors.white
+                                        : const Color(0xffFBFCFD),
+                                    padding: EdgeInsets.symmetric(vertical: 6.h),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Center(
+                                            child: Text(
+                                              displayQuestionNumber
+                                                  .toString()
+                                                  .padLeft(3, '0'),
+                                              style: const TextStyle(
+                                                color: Color(0xff64748B),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        ...['A', 'B', 'C', 'D', 'E'].map(
+                                          (option) => Expanded(
+                                            flex: 1,
+                                            child: Center(
+                                              child: RadioContainer(
+                                                text: option,
+                                                isSelected:
+                                                    selectedOption == option,
+                                                onTap: () {
+                                                  if (selectedOption ==
+                                                      option) {
+                                                    context
+                                                        .read<QuestionCubit>()
+                                                        .answerQuestionAt(
+                                                          globalIndex,
+                                                          null,
+                                                        );
+                                                  } else {
+                                                    context
+                                                        .read<QuestionCubit>()
+                                                        .answerQuestionAt(
+                                                          globalIndex,
+                                                          option,
+                                                        );
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                              20.hGap,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   Expanded(
-                                    flex: 1,
-                                    child: Center(
-                                      child: Text(
-                                        displayQuestionNumber
-                                            .toString()
-                                            .padLeft(3, '0'),
-                                        style: const TextStyle(
-                                          color: Color(0xff64748B),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                    child: ActionButton(
+                                      text: "Prev",
+                                      onTap: isFirstPage
+                                          ? () {} // Disable button on the first page
+                                          : () {
+                                              setState(() {
+                                                _currentPage--;
+                                              });
+                                            },
+                                      fontColor: Colors.white,
+                                      backgroundColor: isFirstPage
+                                          ? Colors.grey
+                                          : AppColors.primary,
                                     ),
                                   ),
-                                  ...['A', 'B', 'C', 'D', 'E'].map(
-                                    (option) => Expanded(
-                                      flex: 1,
-                                      child: Center(
-                                        child: RadioContainer(
-                                          text: option,
-                                          isSelected: selectedOption == option,
-                                          onTap: () {
-                                            if (selectedOption == option) {
-                                              context
-                                                  .read<QuestionCubit>()
-                                                  .answerQuestionAt(
-                                                    globalIndex,
-                                                    null,
-                                                  );
-                                            } else {
-                                              context
-                                                  .read<QuestionCubit>()
-                                                  .answerQuestionAt(
-                                                    globalIndex,
-                                                    option,
-                                                  );
-                                            }
-                                          },
-                                        ),
-                                      ),
+                                  30.wGap,
+                                  Expanded(
+                                    child: ActionButton(
+                                      text: isLastPage ? "Submit" : "Next",
+                                      onTap: () {
+                                        if (isLastPage) {
+                                          context
+                                              .read<TestCubit>()
+                                              .calculateAndEmitTestResult(
+                                                testId: widget.testModel.id,
+                                                questionsModel:
+                                                    questionBlocState
+                                                        .questionsModels,
+                                                questions:
+                                                    questionBlocState.questions,
+                                                selectedOption:
+                                                    questionCubitState
+                                                        .selectedOption,
+                                                answeredStatus:
+                                                    questionCubitState
+                                                        .answeredStatus,
+                                                marks: questionBlocState.marks,
+                                                minSpent: 0,
+                                                secSpent: 0,
+                                                languageCode:
+                                                    widget.language ?? 'en',
+                                              );
+                                        } else {
+                                          setState(() {
+                                            _currentPage++;
+                                          });
+                                        }
+                                      },
+                                      fontColor: Colors.white,
+                                      backgroundColor: AppColors.primary,
                                     ),
                                   ),
                                 ],
-                              ),
-                            );
-                          },
+                              ).padSymmetric(horizontal: 10.w),
+                              20.hGap,
+                            ],
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Expanded(
-                              child: ActionButton(
-                                text: "Prev",
-                                onTap:
-                                    isFirstPage
-                                        ? () {} // Disable button on the first page
-                                        : () {
-                                          setState(() {
-                                            _currentPage--;
-                                          });
-                                        },
-                                fontColor: Colors.white,
-                                backgroundColor:
-                                    isFirstPage
-                                        ? Colors.grey
-                                        : AppColors.primary,
-                              ),
-                            ),
-                            30.wGap,
-                            Expanded(
-                              child: ActionButton(
-                                text: isLastPage ? "Submit" : "Next",
-                                onTap: () {
-                                  if (isLastPage) {
-                                    context
-                                        .read<TestCubit>()
-                                        .calculateAndEmitTestResult(
-                                          testId: widget.testModel.id,
-                                          questionsModel:
-                                              questionBlocState.questionsModels,
-                                          questions:
-                                              questionBlocState.questions,
-                                          selectedOption:
-                                              questionCubitState.selectedOption,
-                                          answeredStatus:
-                                              questionCubitState.answeredStatus,
-                                          marks: questionBlocState.marks,
-                                          minSpent: 0,
-                                          secSpent: 0,
-                                          languageCode: widget.language ?? 'en',
-                                        );
-                                  } else {
-                                    setState(() {
-                                      _currentPage++;
-                                    });
-                                  }
-                                },
-                                fontColor: Colors.white,
-                                backgroundColor: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ).padSymmetric(horizontal: 10.w),
                       ),
                     ],
                   );
@@ -342,70 +352,77 @@ class _OMRScreenState extends State<OMRScreen> {
             ),
           ),
           Expanded(
-            flex: 10,
-            child: ListView.builder(
-              itemCount: 15, // Dummy count for skeleton
-              itemBuilder: (context, index) {
-                return Container(
-                  color:
-                      index % 2 == 0 ? Colors.white : const Color(0xffFBFCFD),
-                  padding: EdgeInsets.symmetric(vertical: 6.h),
-                  child: Row(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 15, // Dummy count for skeleton
+                    itemBuilder: (context, index) {
+                      return Container(
+                        color: index % 2 == 0
+                            ? Colors.white
+                            : const Color(0xffFBFCFD),
+                        padding: EdgeInsets.symmetric(vertical: 6.h),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Center(
+                                child: Text(
+                                  "000",
+                                  style: const TextStyle(
+                                    color: Color(0xff64748B),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            ...['A', 'B', 'C', 'D', 'E'].map(
+                              (option) => Expanded(
+                                flex: 1,
+                                child: Center(
+                                  child: RadioContainer(
+                                    text: option,
+                                    isSelected: false,
+                                    onTap: () {},
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  20.hGap,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Expanded(
-                        flex: 1,
-                        child: Center(
-                          child: Text(
-                            "000",
-                            style: const TextStyle(
-                              color: Color(0xff64748B),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        child: ActionButton(
+                          text: "Prev",
+                          onTap: () {},
+                          fontColor: Colors.white,
+                          backgroundColor: Colors.grey,
                         ),
                       ),
-                      ...['A', 'B', 'C', 'D', 'E'].map(
-                        (option) => Expanded(
-                          flex: 1,
-                          child: Center(
-                            child: RadioContainer(
-                              text: option,
-                              isSelected: false,
-                              onTap: () {},
-                            ),
-                          ),
+                      30.wGap,
+                      Expanded(
+                        child: ActionButton(
+                          text: "Next",
+                          onTap: () {},
+                          fontColor: Colors.white,
+                          backgroundColor: AppColors.primary,
                         ),
                       ),
                     ],
-                  ),
-                );
-              },
+                  ).padSymmetric(horizontal: 10.w),
+                  20.hGap,
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: ActionButton(
-                    text: "Prev",
-                    onTap: () {},
-                    fontColor: Colors.white,
-                    backgroundColor: Colors.grey,
-                  ),
-                ),
-                30.wGap,
-                Expanded(
-                  child: ActionButton(
-                    text: "Next",
-                    onTap: () {},
-                    fontColor: Colors.white,
-                    backgroundColor: AppColors.primary,
-                  ),
-                ),
-              ],
-            ).padSymmetric(horizontal: 10.w),
           ),
         ],
       ),

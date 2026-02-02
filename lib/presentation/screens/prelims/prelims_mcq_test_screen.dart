@@ -40,79 +40,84 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
         title: Text("Prelims Tests", style: AppTexts.titleTextStyle),
         centerTitle: false,
       ),
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: () async {
-          context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
+      body: PopScope(
+        onPopInvokedWithResult: (canPop, _) {
+          context.go(AppRoutes.studentDashboard);
         },
-        child: BlocConsumer<PrelimsTestBloc, PrelimsTestState>(
-          listener: (context, state) {},
-          builder: (context, state) {
-            if (state is PrelimsTestFetching) {
-              return _buildWhenLoading();
-            } else if (state is PrelimsTestFetched) {
-              final tests = state.prelimsTests;
-              if (tests.isEmpty) {
-                return ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    SizedBox(
-                      height: 0.7.sh,
-                      child: const Center(
-                        child: Text("No prelims test available"),
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () async {
+            context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
+          },
+          child: BlocConsumer<PrelimsTestBloc, PrelimsTestState>(
+            listener: (context, state) {},
+            builder: (context, state) {
+              if (state is PrelimsTestFetching) {
+                return _buildWhenLoading();
+              } else if (state is PrelimsTestFetched) {
+                final tests = state.prelimsTests;
+                if (tests.isEmpty) {
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: 0.7.sh,
+                        child: const Center(
+                          child: Text("No prelims test available"),
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              }
-              return ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-                itemCount: tests.length,
-                itemBuilder: (context, index) {
-                  final test = tests[index];
-                  final testResult = state.testResults[test.id];
-                  final hasResult = testResult != null;
-
-                  // Default values
-                  String? lastAttemptedDate;
-                  // Check for saved progress
-                  final progressRepo = getIt<PrelimsProgressRepository>();
-                  final userId = getIt<CacheManager>().getUserId();
-                  final savedProgress = progressRepo.getProgress(
-                    userId,
-                    test.id,
+                    ],
                   );
-                  final hasProgress =
-                      savedProgress != null && !savedProgress.isExpired();
+                }
+                return ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+                  itemCount: tests.length,
+                  itemBuilder: (context, index) {
+                    final test = tests[index];
+                    final testResult = state.testResults[test.id];
+                    final hasResult = testResult != null;
 
-                  if (hasResult) {
-                    final createdAtString = testResult.createdAt;
-                    if (createdAtString != null && createdAtString.isNotEmpty) {
-                      try {
-                        final submittedAt = DateTime.parse(createdAtString);
+                    // Default values
+                    String? lastAttemptedDate;
+                    // Check for saved progress
+                    final progressRepo = getIt<PrelimsProgressRepository>();
+                    final userId = getIt<CacheManager>().getUserId();
+                    final savedProgress = progressRepo.getProgress(
+                      userId,
+                      test.id,
+                    );
+                    final hasProgress =
+                        savedProgress != null && !savedProgress.isExpired();
 
-                        // Simple formatting: dd/MM/yyyy HH:mm
-                        final date =
-                            "${submittedAt.day.toString().padLeft(2, '0')}/${submittedAt.month.toString().padLeft(2, '0')}/${submittedAt.year}";
-                        lastAttemptedDate = date;
-                      } catch (e) {
-                        // ignore parse error
+                    if (hasResult) {
+                      final createdAtString = testResult.createdAt;
+                      if (createdAtString != null &&
+                          createdAtString.isNotEmpty) {
+                        try {
+                          final submittedAt = DateTime.parse(createdAtString);
+
+                          // Simple formatting: dd/MM/yyyy HH:mm
+                          final date =
+                              "${submittedAt.day.toString().padLeft(2, '0')}/${submittedAt.month.toString().padLeft(2, '0')}/${submittedAt.year}";
+                          lastAttemptedDate = date;
+                        } catch (e) {
+                          // ignore parse error
+                        }
                       }
                     }
-                  }
 
-                  final attemptState = state.testAttemptStates[test.id];
-                  final isEligibleForRetest =
-                      attemptState != null &&
-                      attemptState.attemptsDone == 1 &&
-                      attemptState.canRetry;
+                    final attemptState = state.testAttemptStates[test.id];
+                    final isEligibleForRetest =
+                        attemptState != null &&
+                        attemptState.attemptsDone == 1 &&
+                        attemptState.canRetry;
 
-                  return GestureDetector(
-                    onTap:
-                        hasResult
-                            ? () {}
-                            : () {
+                    return GestureDetector(
+                      onTap:
+                          hasResult
+                              ? () {}
+                              : () {
                                 context.push(
                                   AppRoutes.prelimsInstructionsScreen,
                                   extra: PrelimsInstructionScreenArgs(
@@ -121,19 +126,23 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                                   ),
                                 );
                               },
-                    child: PrelimsTestCard(
-                      testModel: test,
-                      isAttempted: hasResult,
-                      lastAttemptedDate: lastAttemptedDate,
-                      hasProgress: hasProgress,
-                      isEligibleForRetest: isEligibleForRetest,
-                    ),
-                  );
-                },
-              );
-            }
-            return Container();
-          },
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 15.h),
+                        child: PrelimsTestCard(
+                          testModel: test,
+                          isAttempted: hasResult,
+                          lastAttemptedDate: lastAttemptedDate,
+                          hasProgress: hasProgress,
+                          isEligibleForRetest: isEligibleForRetest,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+              return Container();
+            },
+          ),
         ),
       ),
     );

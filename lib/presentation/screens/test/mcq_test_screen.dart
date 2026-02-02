@@ -33,59 +33,64 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
-          centerTitle: false,
-          bottom: TabBar(
-            tabAlignment: TabAlignment.center,
-            padding: EdgeInsets.zero,
-            isScrollable: true,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: Colors.black54,
-            labelStyle: AppTexts.titleTextStyle.copyWith(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, value) {
+        context.go(AppRoutes.studentDashboard);
+      },
+      child: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
+            centerTitle: false,
+            bottom: TabBar(
+              tabAlignment: TabAlignment.center,
+              padding: EdgeInsets.zero,
+              isScrollable: true,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: Colors.black54,
+              labelStyle: AppTexts.titleTextStyle.copyWith(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: AppTexts.titleTextStyle.copyWith(
+                fontWeight: FontWeight.w500,
+                fontSize: 14.sp,
+              ),
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(width: 3, color: AppColors.primary),
+                insets: EdgeInsets.symmetric(horizontal: 16.w),
+              ),
+              indicatorSize: TabBarIndicatorSize.label,
+              labelPadding: EdgeInsets.symmetric(
+                horizontal: 18.w,
+                vertical: 10.h,
+              ),
+              tabs: const [
+                Tab(text: "All Subjects"),
+                Tab(text: "Current Affairs"),
+                Tab(text: "Math"),
+              ],
             ),
-            unselectedLabelStyle: AppTexts.titleTextStyle.copyWith(
-              fontWeight: FontWeight.w500,
-              fontSize: 14.sp,
-            ),
-            indicator: UnderlineTabIndicator(
-              borderSide: BorderSide(width: 3, color: AppColors.primary),
-              insets: EdgeInsets.symmetric(horizontal: 16.w),
-            ),
-            indicatorSize: TabBarIndicatorSize.label,
-            labelPadding: EdgeInsets.symmetric(
-              horizontal: 18.w,
-              vertical: 10.h,
-            ),
-            tabs: const [
-              Tab(text: "All Subjects"),
-              Tab(text: "Current Affairs"),
-              Tab(text: "Math"),
-            ],
           ),
-        ),
-        body: BlocConsumer<DailyTestBloc, DailyTestState>(
-          listener: (context, state) {},
-          builder: (context, state) {
-            if (state is DailyTestFetching) {
-              return _buildWhenLoading();
-            } else if (state is DailyTestFetched) {
-              final tests = state.dailyTestModel;
-              return TabBarView(
-                children: [
-                  _buildFilteredList(tests, null, state), // all subjects
-                  _buildFilteredList(tests, "Current Affairs", state),
-                  _buildFilteredList(tests, "Math", state),
-                ],
-              );
-            }
-            return Container();
-          },
+          body: BlocConsumer<DailyTestBloc, DailyTestState>(
+            listener: (context, state) {},
+            builder: (context, state) {
+              if (state is DailyTestFetching) {
+                return _buildWhenLoading();
+              } else if (state is DailyTestFetched) {
+                final tests = state.dailyTestModel;
+                return TabBarView(
+                  children: [
+                    _buildFilteredList(tests, null, state), // all subjects
+                    _buildFilteredList(tests, "Current Affairs", state),
+                    _buildFilteredList(tests, "Math", state),
+                  ],
+                );
+              }
+              return Container();
+            },
+          ),
         ),
       ),
     );

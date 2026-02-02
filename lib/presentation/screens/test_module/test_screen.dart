@@ -494,9 +494,9 @@ class _TestScreenState extends State<TestScreen> {
                                                                   .mounted) {
                                                                 return;
                                                               }
-                                                              context.go(
+                                                              context.pushReplacement(
                                                                 AppRoutes
-                                                                    .studentDashboard,
+                                                                    .mcqTestScreen,
                                                               ); // Close dialog
                                                             },
                                                           ),

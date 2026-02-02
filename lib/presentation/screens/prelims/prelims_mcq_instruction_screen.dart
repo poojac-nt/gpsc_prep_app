@@ -134,7 +134,7 @@ class _PrelimsMcqInstructionScreenState
               'This test does not exist.',
               style: TextStyle(fontSize: 18),
             ),
-            const SizedBox(height: 16),
+            16.hGap,
             ElevatedButton(
               onPressed: () => context.go(AppRoutes.studentDashboard),
               child: const Text('Go back to Dashboard'),
@@ -149,145 +149,150 @@ class _PrelimsMcqInstructionScreenState
     BuildContext context,
     TestModel dailyTestModel,
   ) {
-    return Scaffold(
-      backgroundColor: const Color(0xfff7f8f9),
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: _handleBackNavigation,
-          icon: const Icon(Icons.arrow_back),
+    return PopScope(
+      onPopInvokedWithResult: (canPop, _) {
+        context.pushReplacement(AppRoutes.prelimsMcqTestScreen);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xfff7f8f9),
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: _handleBackNavigation,
+            icon: const Icon(Icons.arrow_back),
+          ),
+          title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
+          centerTitle: false,
+          elevation: 0,
+          backgroundColor: Colors.white,
         ),
-        title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Stats Cards
-            Row(
-              children: [
-                Expanded(
-                  child: InfoTile(
-                    value: dailyTestModel.noQuestions.toString(),
-                    label: "QUESTIONS",
-                    icon: Icons.quiz_rounded,
-                  ),
-                ),
-                15.wGap,
-                Expanded(
-                  child: InfoTile(
-                    value: dailyTestModel.duration.toString(),
-                    label: "MINUTES",
-                    icon: Icons.access_time,
-                  ),
-                ),
-              ],
-            ),
-            20.hGap,
-
-            // Instructions Card
-            Container(
-              padding: EdgeInsets.all(20.r),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(13),
-                    offset: const Offset(0, 4),
-                    blurRadius: 20,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Stats Cards
+              Row(
                 children: [
-                  Text("Test Instructions:", style: AppTexts.labelTextStyle),
-                  15.hGap,
-                  _buildInstructionTile(
-                    "This test contains ${dailyTestModel.noQuestions} multiple choice questions.",
-                    Icons.check_circle_rounded,
-                    AppColors.primary,
+                  Expanded(
+                    child: InfoTile(
+                      value: dailyTestModel.noQuestions.toString(),
+                      label: "QUESTIONS",
+                      icon: Icons.quiz_rounded,
+                    ),
                   ),
-                  _buildInstructionTile(
-                    "There is a penalty of 0.33 marks for each incorrect response.",
-                    Icons.error_outline_rounded,
-                    Colors.red,
-                  ),
-                  _buildInstructionTile(
-                    "You can navigate between questions using next/previous buttons.",
-                    Icons.compare_arrows_rounded,
-                    Colors.blue,
-                  ),
-                  _buildInstructionTile(
-                    "Click to Submit to finish test and generate your result.",
-                    Icons.flag_rounded,
-                    Colors.blue,
+                  15.wGap,
+                  Expanded(
+                    child: InfoTile(
+                      value: dailyTestModel.duration.toString(),
+                      label: "MINUTES",
+                      icon: Icons.access_time,
+                    ),
                   ),
                 ],
               ),
-            ),
-            20.hGap,
+              20.hGap,
 
-            // Language Selection
-            Text("Choose Language", style: AppTexts.labelTextStyle),
-            10.hGap,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children:
-                  availableLanguagesButton
-                      .where((code) => _languageLabels.containsKey(code))
-                      .map(
-                        (code) => Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5.w),
-                            child: _languageButton(code),
+              // Instructions Card
+              Container(
+                padding: EdgeInsets.all(20.r),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(13),
+                      offset: const Offset(0, 4),
+                      blurRadius: 20,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Test Instructions:", style: AppTexts.labelTextStyle),
+                    15.hGap,
+                    _buildInstructionTile(
+                      "This test contains ${dailyTestModel.noQuestions} multiple choice questions.",
+                      Icons.check_circle_rounded,
+                      AppColors.primary,
+                    ),
+                    _buildInstructionTile(
+                      "There is a penalty of 0.33 marks for each incorrect response.",
+                      Icons.error_outline_rounded,
+                      Colors.red,
+                    ),
+                    _buildInstructionTile(
+                      "You can navigate between questions using next/previous buttons.",
+                      Icons.compare_arrows_rounded,
+                      Colors.blue,
+                    ),
+                    _buildInstructionTile(
+                      "Click to Submit to finish test and generate your result.",
+                      Icons.flag_rounded,
+                      Colors.blue,
+                    ),
+                  ],
+                ),
+              ),
+              20.hGap,
+
+              // Language Selection
+              Text("Choose Language", style: AppTexts.labelTextStyle),
+              10.hGap,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children:
+                    availableLanguagesButton
+                        .where((code) => _languageLabels.containsKey(code))
+                        .map(
+                          (code) => Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.w),
+                              child: _languageButton(code),
+                            ),
                           ),
+                        )
+                        .toList(),
+              ),
+              20.hGap,
+
+              // Start Test
+              ActionButton(
+                text: _hasProgress ? "Resume Test" : "Start Test",
+                onTap: () => _handleTestStart(dailyTestModel),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                backgroundColor: AppColors.primary,
+              ),
+              15.hGap,
+
+              // Secondary Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildOutlinedButton("Download", Icons.download, () {
+                      context.push(
+                        AppRoutes.omrScreen,
+                        extra: OMRScreenArgs(
+                          testModal: widget.testModel!,
+                          language: selectedLanguage,
                         ),
-                      )
-                      .toList(),
-            ),
-            20.hGap,
-
-            // Start Test
-            ActionButton(
-              text: _hasProgress ? "Resume Test" : "Start Test",
-              onTap: () => _handleTestStart(dailyTestModel),
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              backgroundColor: AppColors.primary,
-            ),
-            15.hGap,
-
-            // Secondary Actions
-            Row(
-              children: [
-                Expanded(
-                  child: _buildOutlinedButton("Download", Icons.download, () {
-                    context.push(
-                      AppRoutes.omrScreen,
-                      extra: OMRScreenArgs(
-                        testModal: widget.testModel!,
-                        language: selectedLanguage,
-                      ),
-                    );
-                  }),
-                ),
-                15.wGap,
-                Expanded(
-                  child: _buildOutlinedButton(
-                    "Submit OMR",
-                    color: _hasProgress ? Colors.grey : Colors.black87,
-                    Icons.upload_file,
-                    () {},
+                      );
+                    }),
                   ),
-                ),
-              ],
-            ),
-            30.hGap,
-          ],
+                  15.wGap,
+                  Expanded(
+                    child: _buildOutlinedButton(
+                      "Submit OMR",
+                      color: _hasProgress ? Colors.grey : Colors.black87,
+                      Icons.upload_file,
+                      () {},
+                    ),
+                  ),
+                ],
+              ),
+              30.hGap,
+            ],
+          ),
         ),
       ),
     );
@@ -299,7 +304,7 @@ class _PrelimsMcqInstructionScreenState
       debugPrint("Test Id is Null");
     } else {
       debugPrint("Going to Dashboard");
-      context.pushReplacement(AppRoutes.studentDashboard);
+      context.pushReplacement(AppRoutes.prelimsMcqTestScreen);
     }
   }
 
