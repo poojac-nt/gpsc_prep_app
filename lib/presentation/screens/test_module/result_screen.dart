@@ -78,7 +78,7 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
         body: BlocBuilder<TestBloc, TestState>(
           builder: (context, testBlocState) {
-            if (testBlocState is TestSubmitted) {
+            if (testBlocState is TestSubmitted && widget.isFromTestScreen) {
               return BlocBuilder<TestCubit, TestCubitSubmitted>(
                 builder: (context, testCubitState) {
                   final data = _TestResultData(

@@ -13,7 +13,7 @@ TestAttemptState _$TestAttemptStateFromJson(Map<String, dynamic> json) =>
       nextAttemptNo: (json['next_attempt_no'] as num).toInt(),
       cooldownHours: (json['cooldown_hours'] as num).toInt(),
       canRetry: json['can_retry'] as bool,
-      retryAvailableAt: json['retry_available_at'] as String,
+      retryAvailableAt: json['retry_available_at'] as String?,
     );
 
 Map<String, dynamic> _$TestAttemptStateToJson(TestAttemptState instance) =>
