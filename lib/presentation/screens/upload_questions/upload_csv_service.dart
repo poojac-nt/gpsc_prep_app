@@ -124,6 +124,7 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
     final firstTestName = firstRowMap['test_name'] ?? '';
     final firstTestType = firstRowMap['test_type'] ?? '';
     final firstDuration = firstRowMap['duration'] ?? '';
+    final firstLink = firstRowMap['link'] ?? '';
 
     if (isTestUpload) {
       if (firstTestName.isEmpty ||
@@ -134,31 +135,29 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
         );
         return null;
       }
-    } else {
-      if ([
-        firstTestName,
-        firstTestType,
-        firstDuration,
-      ].any((e) => e.trim().isNotEmpty)) {
-        _snackBar.showError(
-          'You selected Bulk Upload, but test metadata was found. Please use Test Upload instead.',
-        );
+
+      // ✅ link mandatory for prelims
+      if (firstTestType.toLowerCase() == 'prelims' && firstLink.isEmpty) {
+        _snackBar.showError('Link is mandatory when test_type is "prelims".');
         return null;
       }
+    }
 
-      for (var i = 1; i < dataRows.length; i++) {
-        final rowMap = Map.fromIterables(
-          headers,
-          dataRows[i].map((e) => e.toString().trim()),
+    if (!isTestUpload && firstLink.isNotEmpty) {
+      _snackBar.showError('Column "link" is only allowed for Test Upload.');
+      return null;
+    }
+    for (var i = 1; i < dataRows.length; i++) {
+      final rowMap = Map.fromIterables(
+        headers,
+        dataRows[i].map((e) => e.toString().trim()),
+      );
+
+      if ((rowMap['link'] ?? '').toString().trim().isNotEmpty) {
+        _snackBar.showError(
+          'Column "link" must be provided only in the first row.',
         );
-        if ((rowMap['test_name']?.isNotEmpty ?? false) ||
-            (rowMap['test_type']?.isNotEmpty ?? false) ||
-            (rowMap['duration']?.isNotEmpty ?? false)) {
-          _snackBar.showError(
-            'Test fields should not appear in any row for bulk upload.',
-          );
-          return null;
-        }
+        return null;
       }
     }
 
@@ -251,7 +250,7 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
 
       grouped.putIfAbsent(srNo, () {
         final base = {
-          "sr_no": srNoInt, // ✅ include sr_no
+          "sr_no": srNoInt,
           "question_type": questionType,
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
@@ -263,11 +262,14 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
           base['test_name'] = firstTestName;
           base['duration'] = int.tryParse(firstDuration) ?? 1;
           base['test_type'] = firstTestType;
+          if (firstLink.isNotEmpty) {
+            base['link'] = firstLink;
+          }
         }
         return base;
       });
 
-      grouped[srNo]!["languages"][lang] = langData;
+      grouped[srNo]!['languages'][lang] = langData;
     }
 
     if (grouped.isEmpty) {
@@ -275,8 +277,7 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
       return null;
     }
 
-    // ✅ Optional debug
-    _log.i('📤 Payload sample: ${grouped.values.take(3).toList()}');
+    _log.i('📤 Payload sample: ${grouped.values.take(2).toList()}');
 
     return grouped.values.toList();
   } catch (e, stack) {
