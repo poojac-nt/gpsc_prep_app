@@ -28,6 +28,8 @@ abstract class SupabaseKeys {
   static final String submitTestAttempt = 'submit_test_attempt';
   static final String getUserTestReviewByQuestionType =
       'get_test_question_type_analysis';
+  static final String getUserTestReviewBySubject =
+      'get_test_subject_wise_analytics';
 
   ///table
   static final String usersTable = 'users';

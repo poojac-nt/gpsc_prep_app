@@ -104,4 +104,8 @@ class TestRepository {
   Future<Either<Failure, List<TestReviewAnalytics>>>
   fetchUserTestReviewByQuestionType(int testId) async =>
       await _supabase.fetchUserTestReviewByQuestionType(testId: testId);
+
+  Future<Either<Failure, List<TestReviewAnalytics>>>
+  fetchUserTestReviewBySubject(int testId) async =>
+      await _supabase.fetchUserTestReviewBySubject(testId: testId);
 }

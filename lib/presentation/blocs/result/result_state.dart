@@ -17,11 +17,13 @@ class ResultDataSuccess extends ResultState {
   final TestResultWithTopScoreModel result;
   final List<TestReviewAnalytics>? reviewByDifficulty;
   final List<TestReviewAnalytics>? reviewByQuestionType;
+  final List<TestReviewAnalytics>? reviewBySubject;
 
   ResultDataSuccess({
     required this.result,
     this.reviewByDifficulty,
     this.reviewByQuestionType,
+    this.reviewBySubject,
   });
 }
 

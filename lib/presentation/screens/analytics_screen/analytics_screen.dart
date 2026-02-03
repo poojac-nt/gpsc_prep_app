@@ -45,44 +45,55 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         title: Text("Performance Analytics", style: AppTexts.titleTextStyle),
         backgroundColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            BlocSelector<AnalyticsBloc, AnalyticsState, SubjectMasteryState>(
-              selector: (state) => state.subjectMastery,
-              builder: (_, state) => _buildSubjectMasterySection(state: state),
-            ),
-            20.hGap,
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          context.read<AnalyticsBloc>()
+            ..add(LoadSubjectMasteryEvent(AnalyticsRange.weekly))
+            ..add(LoadDifficultyAnalyticsEvent(AnalyticsRange.weekly))
+            ..add(LoadQuestionTypeAnalyticsEvent(AnalyticsRange.weekly))
+            ..add(FetchTrendData());
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              BlocSelector<AnalyticsBloc, AnalyticsState, SubjectMasteryState>(
+                selector: (state) => state.subjectMastery,
+                builder:
+                    (_, state) => _buildSubjectMasterySection(state: state),
+              ),
+              20.hGap,
 
-            BlocSelector<
-              AnalyticsBloc,
-              AnalyticsState,
-              DifficultyAnalyticsState
-            >(
-              selector: (state) => state.difficulty,
-              builder:
-                  (_, state) => _buildDifficultyAnalysisSection(state: state),
-            ),
-            20.hGap,
+              BlocSelector<
+                AnalyticsBloc,
+                AnalyticsState,
+                DifficultyAnalyticsState
+              >(
+                selector: (state) => state.difficulty,
+                builder:
+                    (_, state) => _buildDifficultyAnalysisSection(state: state),
+              ),
+              20.hGap,
 
-            BlocSelector<
-              AnalyticsBloc,
-              AnalyticsState,
-              QuestionTypeAnalyticsState
-            >(
-              selector: (state) => state.questionTypes,
-              builder: (_, state) => _buildQuestionTypesSection(state: state),
-            ),
-            20.hGap,
+              BlocSelector<
+                AnalyticsBloc,
+                AnalyticsState,
+                QuestionTypeAnalyticsState
+              >(
+                selector: (state) => state.questionTypes,
+                builder: (_, state) => _buildQuestionTypesSection(state: state),
+              ),
+              20.hGap,
 
-            BlocSelector<AnalyticsBloc, AnalyticsState, TrendDataState>(
-              selector: (state) => state.trendData,
-              builder:
-                  (_, state) => _buildProgressTrendsSection(trendData: state),
-            ),
-            40.hGap,
-          ],
-        ).padAll(AppPaddings.defaultPadding),
+              BlocSelector<AnalyticsBloc, AnalyticsState, TrendDataState>(
+                selector: (state) => state.trendData,
+                builder:
+                    (_, state) => _buildProgressTrendsSection(trendData: state),
+              ),
+              40.hGap,
+            ],
+          ).padAll(AppPaddings.defaultPadding),
+        ),
       ),
     );
   }

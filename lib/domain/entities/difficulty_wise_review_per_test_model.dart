@@ -22,7 +22,6 @@ class TestReviewAnalytics {
     required this.incorrectCount,
   });
 
-  /// 🔹 Difficulty JSON
   factory TestReviewAnalytics.fromDifficultyJson(Map<String, dynamic> json) {
     return TestReviewAnalytics(
       analyticsType: json['difficulty_level'] as String,
@@ -33,10 +32,19 @@ class TestReviewAnalytics {
     );
   }
 
-  /// 🔹 Question type JSON
   factory TestReviewAnalytics.fromQuestionTypeJson(Map<String, dynamic> json) {
     return TestReviewAnalytics(
       analyticsType: json['question_type'] as String,
+      totalQuestionsInTest: json['total_questions_in_test'],
+      attemptedCount: json['attempted_count'],
+      correctCount: json['correct_count'],
+      incorrectCount: json['incorrect_count'],
+    );
+  }
+
+  factory TestReviewAnalytics.fromSubjectJson(Map<String, dynamic> json) {
+    return TestReviewAnalytics(
+      analyticsType: json['subject_name'] as String,
       totalQuestionsInTest: json['total_questions_in_test'],
       attemptedCount: json['attempted_count'],
       correctCount: json['correct_count'],

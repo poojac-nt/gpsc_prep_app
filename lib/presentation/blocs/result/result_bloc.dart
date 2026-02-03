@@ -32,6 +32,7 @@ class ResultBloc extends Bloc<ResultEvent, ResultState> {
       _testRepository.getUserTestResultWithTopScore(event.testId),
       _testRepository.fetchUserTestReview(event.testId),
       _testRepository.fetchUserTestReviewByQuestionType(event.testId),
+      _testRepository.fetchUserTestReviewBySubject(event.testId),
     ]);
 
     final topScoreResult =
@@ -40,6 +41,8 @@ class ResultBloc extends Bloc<ResultEvent, ResultState> {
         results[1] as Either<Failure, List<TestReviewAnalytics>?>;
     final questionTypeResult =
         results[2] as Either<Failure, List<TestReviewAnalytics>?>;
+    final subjectWiseResult =
+        results[3] as Either<Failure, List<TestReviewAnalytics>?>;
 
     topScoreResult.fold((failure) => emit(SingleResultFailure(failure)), (
       data,
@@ -71,11 +74,24 @@ class ResultBloc extends Bloc<ResultEvent, ResultState> {
           reviewsByQuestionType = reviewData;
         },
       );
+      List<TestReviewAnalytics>? reviewsBySubject;
+      subjectWiseResult.fold(
+        (failure) {
+          _log.e('Failed to fetch review data: ${failure.toString()}');
+          _snackBarHelper.showError(
+            'Failed to load review data. Please try again later.',
+          );
+        },
+        (reviewData) {
+          reviewsBySubject = reviewData;
+        },
+      );
       emit(
         ResultDataSuccess(
           result: data!,
           reviewByDifficulty: reviews,
           reviewByQuestionType: reviewsByQuestionType,
+          reviewBySubject: reviewsBySubject,
         ),
       );
     });

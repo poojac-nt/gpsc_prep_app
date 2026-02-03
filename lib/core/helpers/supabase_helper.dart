@@ -564,6 +564,25 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<TestReviewAnalytics>>>
+  fetchUserTestReviewBySubject({required int testId}) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestReviewBySubject,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results =
+          (response as List)
+              .map((e) => TestReviewAnalytics.fromSubjectJson(e))
+              .toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
   Future<void> updateOrInsertFcmToken(String fcmToken) async {
     try {
       final userId = supabase.auth.currentSession?.user.id;
