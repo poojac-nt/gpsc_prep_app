@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 
 class DifficultyWiseBarChart extends StatelessWidget {
-  final List<TestReviewByDifficulty> data;
+  final List<TestReviewAnalytics> data;
 
   const DifficultyWiseBarChart({super.key, required this.data});
 
@@ -92,7 +92,7 @@ class DifficultyWiseBarChart extends StatelessWidget {
           final item = data[group.x.toInt()];
 
           return BarTooltipItem(
-            '${item.difficultyLevel.toUpperCase()}\n'
+            '${item.analyticsType.toUpperCase()}\n'
             'Correct: ${item.correctCount}\n'
             'Incorrect: ${item.incorrectCount}',
             const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -143,7 +143,7 @@ class DifficultyWiseBarChart extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                data[index].difficultyLevel,
+                data[index].analyticsType,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             );

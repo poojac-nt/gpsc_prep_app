@@ -99,6 +99,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     testCubitState.answeredStatus,
                     testCubitState.selectedOption,
                     null,
+                    null,
                   );
                 },
               );
@@ -125,6 +126,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     null,
                     null,
                     resultState.reviewByDifficulty,
+                    resultState.reviewByQuestionType,
                   );
                 }
                 if (resultState is ResultLoading) {
@@ -146,7 +148,8 @@ class _ResultScreenState extends State<ResultScreen> {
     dynamic isCorrect,
     dynamic answeredStatus,
     dynamic selectedOption,
-    List<TestReviewByDifficulty>? reviewByDifficulty,
+    List<TestReviewAnalytics>? reviewByDifficulty,
+    List<TestReviewAnalytics>? reviewByQuestionType,
   ) {
     return SingleChildScrollView(
       child: Column(
@@ -299,7 +302,20 @@ class _ResultScreenState extends State<ResultScreen> {
                 20.hGap,
               ],
             ).padAll(AppPaddings.defaultPadding),
-
+          // Question Type Analysis Module
+          if (reviewByQuestionType != null && reviewByQuestionType.isNotEmpty)
+            TestModule(
+              title: "Question Type Analysis",
+              iconSize: 26.sp,
+              fontSize: 20.sp,
+              prefixIcon: Icons.bar_chart,
+              iconColor: AppColors.primary,
+              cards: [
+                20.hGap,
+                DifficultyWiseBarChart(data: reviewByQuestionType),
+                20.hGap,
+              ],
+            ).padAll(AppPaddings.defaultPadding),
           // Action Buttons
           if (questions != null) ...[
             Padding(

@@ -15,9 +15,14 @@ class ResultError extends ResultState {
 
 class ResultDataSuccess extends ResultState {
   final TestResultWithTopScoreModel result;
-  final List<TestReviewByDifficulty>? reviewByDifficulty;
+  final List<TestReviewAnalytics>? reviewByDifficulty;
+  final List<TestReviewAnalytics>? reviewByQuestionType;
 
-  ResultDataSuccess({required this.result, this.reviewByDifficulty});
+  ResultDataSuccess({
+    required this.result,
+    this.reviewByDifficulty,
+    this.reviewByQuestionType,
+  });
 }
 
 class SingleResultFailure extends ResultState {

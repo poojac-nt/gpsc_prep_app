@@ -144,7 +144,7 @@ class PrelimsTestCard extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: AppColors.gray100, // Light background for secondary buttons
+      color: AppColors.primary, // Light background for secondary buttons
       borderRadius: BorderRadius.circular(6.r),
       child: InkWell(
         onTap: onTap,
@@ -153,14 +153,14 @@ class PrelimsTestCard extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
           child: Row(
             children: [
-              Icon(icon, size: 14.sp, color: AppColors.gray900),
+              Icon(icon, size: 14.sp, color: Colors.white),
               4.wGap,
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.gray900,
+                  color: Colors.white,
                 ),
               ),
             ],

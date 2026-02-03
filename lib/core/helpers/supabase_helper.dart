@@ -525,7 +525,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<TestReviewByDifficulty>>> fetchUserTestReview({
+  Future<Either<Failure, List<TestReviewAnalytics>>> fetchUserTestReview({
     required int testId,
   }) async {
     try {
@@ -536,7 +536,26 @@ class SupabaseHelper {
 
       final results =
           (response as List)
-              .map((e) => TestReviewByDifficulty.fromJson(e))
+              .map((e) => TestReviewAnalytics.fromDifficultyJson(e))
+              .toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<TestReviewAnalytics>>>
+  fetchUserTestReviewByQuestionType({required int testId}) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestReviewByQuestionType,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results =
+          (response as List)
+              .map((e) => TestReviewAnalytics.fromQuestionTypeJson(e))
               .toList();
 
       return Right(results);

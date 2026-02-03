@@ -26,6 +26,8 @@ abstract class SupabaseKeys {
   static final String getAccuracyTrend = 'get_accuracy_trends';
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
+  static final String getUserTestReviewByQuestionType =
+      'get_test_question_type_analysis';
 
   ///table
   static final String usersTable = 'users';

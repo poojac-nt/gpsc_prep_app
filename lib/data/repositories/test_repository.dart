@@ -44,7 +44,7 @@ class TestRepository {
   getUserTestResultWithTopScore(int testId) async =>
       await _supabase.getUserTestResultWithTopScore(testId: testId);
 
-  Future<Either<Failure, List<TestReviewByDifficulty>>> fetchUserTestReview(
+  Future<Either<Failure, List<TestReviewAnalytics>>> fetchUserTestReview(
     int testId,
   ) async => await _supabase.fetchUserTestReview(testId: testId);
 
@@ -100,4 +100,8 @@ class TestRepository {
 
   Future<Either<Failure, void>> deleteUserTest({required int testId}) async =>
       await _supabase.deleteUserTest(testId: testId);
+
+  Future<Either<Failure, List<TestReviewAnalytics>>>
+  fetchUserTestReviewByQuestionType(int testId) async =>
+      await _supabase.fetchUserTestReviewByQuestionType(testId: testId);
 }
