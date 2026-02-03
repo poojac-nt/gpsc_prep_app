@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -91,32 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _setupFirebaseMessaging() async {
-    try {
-      await FirebaseMessaging.instance.requestPermission();
-
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      if (fcmToken != null) {
-        await _setFcmToken(fcmToken);
-      }
-
-      FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
-        await _setFcmToken(token);
-      });
-
-      FirebaseMessaging.onMessage.listen((payload) {
-        final notification = payload.notification;
-        if (notification != null) {
-          getIt<SnackBarHelper>().showSuccess(notification.body ?? "");
-        }
-      });
-    } catch (e) {
-      debugPrint("Firebase setup failed: $e");
-      getIt<SnackBarHelper>().showError("Firebase setup failed.");
-    }
-  }
-
-  Future<void> _setFcmToken(String token) async {
-    await getIt<SupabaseHelper>().updateOrInsertFcmToken(token);
+    await getIt<FCMService>().setupFirebaseMessaging();
   }
 
   void _navigateBasedOnUserRole() {

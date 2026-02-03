@@ -4,7 +4,7 @@ class DetailedAnalyticsState {
   final List<Difficulty> difficultyData;
   final List<Difficulty> questionTypeData;
   final List<SubjectScore> subjectData;
-  final String? overallAccuracy;
+  final num? overallAccuracy;
   final bool isLoading;
   final Failure? error;
 
@@ -34,7 +34,7 @@ class DetailedAnalyticsState {
     List<Difficulty>? difficultyData,
     List<Difficulty>? questionTypeData,
     List<SubjectScore>? subjectData,
-    String? overallAccuracy,
+    num? overallAccuracy,
     bool? isLoading,
     Failure? error,
   }) {

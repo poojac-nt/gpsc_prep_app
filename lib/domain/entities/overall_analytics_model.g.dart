@@ -18,7 +18,7 @@ OverAllAnalyticsModel _$OverAllAnalyticsModelFromJson(
       subjectScores: (json['subject_scores'] as List<dynamic>)
           .map((e) => SubjectScore.fromJson(e as Map<String, dynamic>))
           .toList(),
-      userAccuracyOverall: json['user_accuracy_overall'] as String,
+      userAccuracyOverall: json['user_accuracy_overall'] as num,
     );
 
 Map<String, dynamic> _$OverAllAnalyticsModelToJson(

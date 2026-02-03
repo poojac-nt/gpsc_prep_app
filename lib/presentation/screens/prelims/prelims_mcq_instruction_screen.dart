@@ -504,6 +504,7 @@ class _PrelimsMcqInstructionScreenState
                     userId,
                     test.id,
                   );
+                  await getIt<TestRepository>().deleteUserTest(testId: test.id);
                   if (!context.mounted) return;
                   Navigator.pop(context);
                   _startTest(test);

@@ -38,6 +38,7 @@ abstract class SupabaseKeys {
   static final String descTestResult = 'desc_test_detailed_results';
   static final String testDetailedResults = 'test_detailed_results';
   static final String studyMaterial = 'study_material';
+  static final String userTests = 'user_tests';
 
   ///columns
   static final String email = 'user_email';

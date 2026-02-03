@@ -13,7 +13,7 @@ class OverAllAnalyticsModel {
   @JsonKey(name: "subject_scores")
   List<SubjectScore> subjectScores;
   @JsonKey(name: "user_accuracy_overall")
-  String userAccuracyOverall;
+  num userAccuracyOverall;
 
   OverAllAnalyticsModel({
     required this.difficulty,

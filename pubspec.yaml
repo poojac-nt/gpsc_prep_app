@@ -72,6 +72,7 @@ dependencies:
   http: ^1.6.0
   pub_semver: ^2.2.0
   meta: ^1.17.0
+  flutter_local_notifications: ^20.0.0
 
 
 dev_dependencies:

@@ -345,7 +345,7 @@ class SupabaseHelper {
               .toList();
 
       final response = await supabase.rpc(
-        'submit_test_attempt',
+        SupabaseKeys.submitTestAttempt,
         params: {
           'p_user_id': test.userId,
           'p_test_id': test.testId,
@@ -370,6 +370,72 @@ class SupabaseHelper {
       _snackBar.showError('Error submitting test result: ${e.toString()}');
       _log.e('Error submitting test result: $e');
       return Left(Failure("RPC submit failed: ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, void>> upsertUserTest({
+    required int testId,
+    required String status,
+  }) async {
+    try {
+      assert(status == 'in_progress' || status == 'paused');
+
+      // Check if row already exists
+      final existing =
+          await supabase
+              .from(SupabaseKeys.userTests)
+              .select('id, started_at')
+              .eq('user_id', _cache.user!.id!)
+              .eq('test_id', testId)
+              .maybeSingle();
+
+      if (existing == null) {
+        // 🔹 First start
+        await supabase.from(SupabaseKeys.userTests).insert({
+          'user_id': _cache.user!.id!,
+          'test_id': testId,
+          'status': status,
+          'started_at': DateTime.now().toUtc().toIso8601String(),
+          'last_reminder_sent_at': null,
+        });
+      } else {
+        // 🔹 Pause / Resume
+        final updatePayload = {
+          'status': status,
+          if (status == 'paused') 'last_reminder_sent_at': null,
+        };
+
+        await supabase
+            .from(SupabaseKeys.userTests)
+            .update(updatePayload)
+            .eq('user_id', _cache.user!.id!)
+            .eq('test_id', testId);
+      }
+
+      _log.i('User test updated: test=$testId status=$status');
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating test status');
+      _log.e('Error updating user test: $e');
+      return Left(
+        Failure('Error inserting or updating user test: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, void>> deleteUserTest({required int testId}) async {
+    try {
+      await supabase
+          .from(SupabaseKeys.userTests)
+          .delete()
+          .eq('user_id', _cache.user!.id!)
+          .eq('test_id', testId);
+
+      _log.i('User test progress deleted: test=$testId');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error deleting user test progress: $e');
+      return Left(Failure('Error deleting user test: ${e.toString()}'));
     }
   }
 
@@ -899,10 +965,7 @@ class SupabaseHelper {
     final userId = _cache.getUserId();
 
     try {
-      final params = <String, dynamic>{
-        'p_user_id': userId,
-        'p_mode': 'occurrence',
-      };
+      final params = <String, dynamic>{'p_user_id': userId};
 
       if (from != null && to != null) {
         params['p_from'] = from.toUtc().toIso8601String();

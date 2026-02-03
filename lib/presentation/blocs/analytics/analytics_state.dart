@@ -80,7 +80,7 @@ class DifficultyAnalyticsState {
   final bool isLoading;
   final AnalyticsRange range;
   final List<Difficulty> data;
-  final String overallAccuracy;
+  final num overallAccuracy;
   final Failure? error;
 
   const DifficultyAnalyticsState({
@@ -96,7 +96,7 @@ class DifficultyAnalyticsState {
       isLoading: false,
       range: AnalyticsRange.weekly,
       data: [],
-      overallAccuracy: '0',
+      overallAccuracy: 0,
     );
   }
 
@@ -104,7 +104,7 @@ class DifficultyAnalyticsState {
     bool? isLoading,
     AnalyticsRange? range,
     List<Difficulty>? data,
-    String? overallAccuracy,
+    num? overallAccuracy,
     Failure? error,
   }) {
     return DifficultyAnalyticsState(

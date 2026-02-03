@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
@@ -65,6 +66,10 @@ void setupHelpers() {
       getIt<SnackBarHelper>(),
       getIt<CacheManager>(),
     ),
+  );
+
+  getIt.registerLazySingleton<FCMService>(
+    () => FCMService(getIt<SupabaseHelper>()),
   );
 }
 

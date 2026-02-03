@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
@@ -362,6 +363,13 @@ class _TestScreenState extends State<TestScreen> {
                               progress.remainingTimeInSeconds,
                             ),
                           );
+
+                          if (_isPrelimsTest()) {
+                            getIt<TestRepository>().updateUserTestStatus(
+                              testId: widget.dailyTestModel.id,
+                              status: 'in_progress',
+                            );
+                          }
                           return; // Skip normal TimerStart
                         }
                       }
@@ -371,6 +379,13 @@ class _TestScreenState extends State<TestScreen> {
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
+
+                    if (_isPrelimsTest()) {
+                      getIt<TestRepository>().updateUserTestStatus(
+                        testId: widget.dailyTestModel.id,
+                        status: 'in_progress',
+                      );
+                    }
                   }
                 }
               },
@@ -475,6 +490,10 @@ class _TestScreenState extends State<TestScreen> {
                                                             ),
                                                             onPressed: () async {
                                                               if (_isPrelimsTest()) {
+                                                                final testId =
+                                                                    widget
+                                                                        .dailyTestModel
+                                                                        .id;
                                                                 final userId =
                                                                     getIt<
                                                                           CacheManager
@@ -485,9 +504,14 @@ class _TestScreenState extends State<TestScreen> {
                                                                     >()
                                                                     .deleteProgress(
                                                                       userId,
-                                                                      widget
-                                                                          .dailyTestModel
-                                                                          .id,
+                                                                      testId,
+                                                                    );
+                                                                await getIt<
+                                                                      TestRepository
+                                                                    >()
+                                                                    .deleteUserTest(
+                                                                      testId:
+                                                                          testId,
                                                                     );
                                                               }
                                                               if (!context
@@ -1196,6 +1220,13 @@ class _TestScreenState extends State<TestScreen> {
       languageCode: widget.language!,
       remainingTimeInSeconds: remainingTime,
     );
+
+    if (_isPrelimsTest()) {
+      await getIt<TestRepository>().updateUserTestStatus(
+        testId: widget.dailyTestModel.id,
+        status: 'paused',
+      );
+    }
 
     if (!context.mounted) return;
 
