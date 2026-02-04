@@ -17,6 +17,8 @@ class TestModel {
   TestType testType;
   @JsonKey(name: "total_marks")
   int totalMarks;
+  @JsonKey(name: "omr_link")
+  String? omrLink;
 
   TestModel({
     required this.id,
@@ -25,6 +27,7 @@ class TestModel {
     required this.noQuestions,
     required this.testType,
     required this.totalMarks,
+    this.omrLink,
   });
 
   factory TestModel.fromJson(Map<String, dynamic> json) =>

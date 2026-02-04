@@ -28,3 +28,10 @@ class DownloadStudyMaterial extends DownLoadPdfEvent {
 
   DownloadStudyMaterial({required this.url, required this.filename});
 }
+
+class DownloadPrelimsOmr extends DownLoadPdfEvent {
+  final String url;
+  final String filename;
+
+  DownloadPrelimsOmr({required this.url, required this.filename});
+}

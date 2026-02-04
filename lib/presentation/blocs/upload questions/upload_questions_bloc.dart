@@ -26,20 +26,17 @@ class UploadQuestionsBloc
     emit(ParseFileInProgress());
 
     try {
-      final parsedPayload = await parseUploadFile(
-        isTestUpload: event.isTestUpload,
-      );
+      final result = await parseUploadFile(isTestUpload: event.isTestUpload);
 
-      if (parsedPayload == null) {
-        emit(ParseFileFailure('Parsing returned null. Please check the file.'));
-      } else {
-        emit(
+      result.fold(
+        (failure) => emit(ParseFileFailure(failure.message)),
+        (parsedPayload) => emit(
           McqParseFileSuccess(
             parsedPayload: parsedPayload,
             isTestUpload: event.isTestUpload,
           ),
-        );
-      }
+        ),
+      );
     } catch (e) {
       emit(ParseFileFailure('Failed to parse file: ${e.toString()}'));
     }
@@ -58,13 +55,10 @@ class UploadQuestionsBloc
         isTestUpload: event.isTestUpload,
       );
 
-      // 🚨 Handle null response case
-      if (result == null) {
-        emit(UploadFileFailure(result.toString()));
-        return;
-      }
-
-      emit(UploadFileSuccess(result));
+      result.fold(
+        (failure) => emit(UploadFileFailure(failure.message)),
+        (successResult) => emit(UploadFileSuccess(successResult)),
+      );
     } catch (e) {
       emit(UploadFileFailure('❌ Upload failed: ${e.toString()}'));
     }
@@ -78,13 +72,13 @@ class UploadQuestionsBloc
     emit(ParseFileInProgress());
 
     try {
-      final parsedPayload = await parseDescUploadFile();
+      final result = await parseDescUploadFile();
 
-      if (parsedPayload == null) {
-        emit(ParseFileFailure('Parsing returned null. Please check the file.'));
-      } else {
-        emit(DescParseFileSuccess(parsedPayload: parsedPayload));
-      }
+      result.fold(
+        (failure) => emit(ParseFileFailure(failure.message)),
+        (parsedPayload) =>
+            emit(DescParseFileSuccess(parsedPayload: parsedPayload)),
+      );
     } catch (e) {
       emit(ParseFileFailure('Failed to parse file: ${e.toString()}'));
     }
@@ -100,25 +94,12 @@ class UploadQuestionsBloc
     try {
       final result = await submitDescTestToSupabase(payload: event.payload);
 
-      // 🚨 Handle null response case
-      if (result == null) {
-        emit(UploadFileFailure('❌ Upload failed: No response received.'));
-      }
-
-      emit(UploadFileSuccess(result!));
+      result.fold(
+        (failure) => emit(UploadFileFailure(failure.message)),
+        (successResult) => emit(UploadFileSuccess(successResult)),
+      );
     } catch (e) {
-      final errorMessage = e.toString();
-      if (errorMessage.contains(
-        'A Daily test has already been created today',
-      )) {
-        emit(
-          UploadFileFailure(
-            'A daily test has already been uploaded today. Only one allowed per day.',
-          ),
-        );
-      } else {
-        emit(UploadFileFailure('❌ Upload failed: $errorMessage'));
-      }
+      emit(UploadFileFailure('❌ Upload failed: ${e.toString()}'));
     }
   }
 }

@@ -5,16 +5,17 @@ import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:either_dart/either.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 
 final _log = getIt<LogHelper>();
 final _supabase = getIt<SupabaseHelper>().supabase;
-final _snackBar = getIt<SnackBarHelper>();
 
-Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
+Future<Either<Failure, List<Map<String, dynamic>>>>
+parseDescUploadFile() async {
   try {
     final pickedFileResult = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -23,16 +24,14 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
     );
 
     if (pickedFileResult == null || pickedFileResult.files.isEmpty) {
-      _snackBar.showError('Upload cancelled by user.');
-      return null;
+      return Left(Failure('Upload cancelled by user.'));
     }
 
     final file = pickedFileResult.files.single;
     final filePath = file.path;
     if (filePath == null) {
       _log.e("❌ File path is null.");
-      _snackBar.showError('File path is null.');
-      return null;
+      return Left(Failure('File path is null.'));
     }
 
     late List<List<dynamic>> rows;
@@ -55,8 +54,7 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
           excel.tables.values.isNotEmpty ? excel.tables.values.first : null;
       if (sheet == null || sheet.rows.isEmpty) {
         _log.e("❌ Excel file has no data.");
-        _snackBar.showError('Excel file has no data.');
-        return null;
+        return Left(Failure('Excel file has no data.'));
       }
       rows =
           sheet.rows
@@ -67,14 +65,12 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
               .toList();
     } else {
       _log.e("❌ Unsupported file format: $ext");
-      _snackBar.showError('Unsupported file format');
-      return null;
+      return Left(Failure('Unsupported file format'));
     }
 
     if (rows.isEmpty) {
       _log.e("❌ The file is empty.");
-      _snackBar.showError('The file is empty.');
-      return null;
+      return Left(Failure('The file is empty.'));
     }
 
     // --- Headers ---
@@ -84,8 +80,7 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
 
     if (dataRows.isEmpty) {
       _log.e("❌ No data rows found.");
-      _snackBar.showError('No data rows found.');
-      return null;
+      return Left(Failure('No data rows found.'));
     }
 
     // ✅ Required headers
@@ -106,8 +101,7 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
     for (final header in requiredHeaders) {
       if (!headers.contains(header)) {
         _log.e("❌ Missing required header: $header");
-        _snackBar.showError('Missing required header: $header');
-        return null;
+        return Left(Failure('Missing required header: $header'));
       }
     }
 
@@ -144,10 +138,9 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
           _log.e(
             "❌ Missing value for \"$key\" in row $rowIndex (sr_no: $srNo)",
           );
-          _snackBar.showError(
-            'Missing value for "$key" in row $rowIndex (sr_no: $srNo)',
+          return Left(
+            Failure('Missing value for "$key" in row $rowIndex (sr_no: $srNo)'),
           );
-          return null;
         }
       }
 
@@ -156,10 +149,11 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
         _log.e(
           "❌ Duplicate language \"$lang\" for sr_no \"$srNo\" at row $rowIndex",
         );
-        _snackBar.showError(
-          'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
+        return Left(
+          Failure(
+            'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
+          ),
         );
-        return null;
       }
 
       final langData = {
@@ -186,19 +180,17 @@ Future<List<Map<String, dynamic>>?> parseDescUploadFile() async {
 
     if (grouped.isEmpty) {
       _log.e("❌ No valid data found.");
-      _snackBar.showError('No valid data found.');
-      return null;
+      return Left(Failure('No valid data found.'));
     }
 
-    return grouped.values.toList();
+    return Right(grouped.values.toList());
   } catch (e, stack) {
     _log.e('❌ Parsing failed (DESC): $e\n$stack');
-    _snackBar.showError('Parsing failed: ${e.toString()}');
-    return null;
+    return Left(Failure('Parsing failed: ${e.toString()}'));
   }
 }
 
-Future<UploadResult?> submitDescTestToSupabase({
+Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
   required List<Map<String, dynamic>> payload,
 }) async {
   try {
@@ -208,16 +200,19 @@ Future<UploadResult?> submitDescTestToSupabase({
     );
 
     final response = rpcResult as Map<String, dynamic>?;
-    if (response == null) return null;
+    if (response == null) {
+      return Left(Failure('Upload failed (DESC): No response received.'));
+    }
 
-    return UploadResult(
-      successCount: response['inserted_questions'] ?? 0,
-      failCount: response['failed'] ?? 0,
-      duplicateCount: response['skipped_duplicates'] ?? 0,
+    return Right(
+      UploadResult(
+        successCount: response['inserted_questions'] ?? 0,
+        failCount: response['failed'] ?? 0,
+        duplicateCount: response['skipped_duplicates'] ?? 0,
+      ),
     );
   } catch (e, stack) {
     _log.e('❌ Upload failed (DESC): $e\n$stack');
-    _snackBar.showError('Upload failed: ${e.toString()}');
-    return null;
+    return Left(Failure('Upload failed: ${e.toString()}'));
   }
 }

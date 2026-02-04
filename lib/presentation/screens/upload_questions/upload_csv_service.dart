@@ -1,18 +1,17 @@
 import 'dart:io';
 
 import 'package:csv/csv.dart';
+import 'package:either_dart/either.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 
 final _log = getIt<LogHelper>();
 final _supabase = getIt<SupabaseHelper>().supabase;
-final _snackBar = getIt<SnackBarHelper>();
 
 class UploadResult {
   final int successCount;
@@ -26,7 +25,17 @@ class UploadResult {
   });
 }
 
-Future<List<Map<String, dynamic>>?> parseUploadFile({
+// ✅ URL Validator
+bool _isValidUrl(String url) {
+  try {
+    final uri = Uri.parse(url);
+    return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
+  } catch (e) {
+    return false;
+  }
+}
+
+Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
   required bool isTestUpload,
 }) async {
   try {
@@ -37,8 +46,7 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
     );
 
     if (pickedFileResult == null || pickedFileResult.files.isEmpty) {
-      _snackBar.showError('Upload cancelled by user.');
-      return null;
+      return Left(Failure('Upload cancelled by user.'));
     }
 
     final file = pickedFileResult.files.single;
@@ -72,21 +80,18 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
               )
               .toList();
     } else {
-      _snackBar.showError('Unsupported file format');
-      return null;
+      return Left(Failure('Unsupported file format'));
     }
 
     if (rows.isEmpty) {
-      _snackBar.showError('The file is empty.');
-      return null;
+      return Left(Failure('The file is empty.'));
     }
 
     final headers =
         rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
     final dataRows = rows.skip(1).toList();
     if (dataRows.isEmpty) {
-      _snackBar.showError('No data rows found.');
-      return null;
+      return Left(Failure('No data rows found.'));
     }
 
     final descRequiredHeaders = {
@@ -124,40 +129,59 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
     final firstTestName = firstRowMap['test_name'] ?? '';
     final firstTestType = firstRowMap['test_type'] ?? '';
     final firstDuration = firstRowMap['duration'] ?? '';
-    final firstLink = firstRowMap['link'] ?? '';
+    final firstOmrLink = firstRowMap['omr_link'] ?? ''; // ✅ Extract omr_link
 
     if (isTestUpload) {
       if (firstTestName.isEmpty ||
           firstTestType.isEmpty ||
           firstDuration.isEmpty) {
-        _snackBar.showError(
-          'Test upload requires test_name, test_type, and duration in the first row.',
+        return Left(
+          Failure(
+            'Test upload requires test_name, test_type, and duration in the first row.',
+          ),
         );
-        return null;
       }
 
-      // ✅ link mandatory for prelims
-      if (firstTestType.toLowerCase() == 'prelims' && firstLink.isEmpty) {
-        _snackBar.showError('Link is mandatory when test_type is "prelims".');
-        return null;
+      // ✅ Fail fast: Validate omr_link for prelims
+      if (firstTestType.toLowerCase() == 'prelims') {
+        if (firstOmrLink.isEmpty) {
+          return Left(Failure('omr link is required for test_type prelims.'));
+        }
+        if (!_isValidUrl(firstOmrLink)) {
+          return Left(
+            Failure(
+              'Invalid omr_link URL: "$firstOmrLink". Must be a valid http/https URL.',
+            ),
+          );
+        }
       }
-    }
-
-    if (!isTestUpload && firstLink.isNotEmpty) {
-      _snackBar.showError('Column "link" is only allowed for Test Upload.');
-      return null;
-    }
-    for (var i = 1; i < dataRows.length; i++) {
-      final rowMap = Map.fromIterables(
-        headers,
-        dataRows[i].map((e) => e.toString().trim()),
-      );
-
-      if ((rowMap['link'] ?? '').toString().trim().isNotEmpty) {
-        _snackBar.showError(
-          'Column "link" must be provided only in the first row.',
+    } else {
+      if ([
+        firstTestName,
+        firstTestType,
+        firstDuration,
+      ].any((e) => e.trim().isNotEmpty)) {
+        return Left(
+          Failure(
+            'You selected Bulk Upload, but test metadata was found. Please use Test Upload instead.',
+          ),
         );
-        return null;
+      }
+
+      for (var i = 1; i < dataRows.length; i++) {
+        final rowMap = Map.fromIterables(
+          headers,
+          dataRows[i].map((e) => e.toString().trim()),
+        );
+        if ((rowMap['test_name']?.isNotEmpty ?? false) ||
+            (rowMap['test_type']?.isNotEmpty ?? false) ||
+            (rowMap['duration']?.isNotEmpty ?? false)) {
+          return Left(
+            Failure(
+              'Test fields should not appear in any row for bulk upload.',
+            ),
+          );
+        }
       }
     }
 
@@ -181,22 +205,7 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
         headers,
         row.map((e) => e.toString().trim()),
       );
-
-      // ✅ sr_no handling
-      final srNoRaw = rowMap['sr_no'];
-      if (srNoRaw == null || srNoRaw.trim().isEmpty) {
-        _snackBar.showError('Missing sr_no in row $rowIndex');
-        return null;
-      }
-      final srNoInt = int.tryParse(srNoRaw.trim());
-      if (srNoInt == null) {
-        _snackBar.showError(
-          'Invalid sr_no "$srNoRaw" in row $rowIndex. Must be numeric.',
-        );
-        return null;
-      }
-      final srNo = srNoInt.toString();
-
+      final srNo = rowMap['sr_no'] ?? 'unknown';
       final questionType = rowMap['question_type']?.toLowerCase() ?? '';
       final lang = rowMap['language_code'];
 
@@ -205,34 +214,34 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
       for (final key in requiredHeaders) {
         final value = rowMap[key]?.toString().trim();
         if (value == null || value.isEmpty) {
-          _snackBar.showError(
-            'Missing value for "$key" in row $rowIndex (sr_no: $srNo)',
+          return Left(
+            Failure('Missing value for "$key" in row $rowIndex (sr_no: $srNo)'),
           );
-          return null;
         }
       }
 
       if (isTestUpload &&
           questionType == 'desc' &&
           firstTestType.toLowerCase() != 'desc') {
-        _snackBar.showError(
-          'Skipped question at row $rowIndex (sr_no: $srNo): DESC type must have test_type = desc',
+        return Left(
+          Failure(
+            'Skipped question at row $rowIndex (sr_no: $srNo): DESC type must have test_type = desc',
+          ),
         );
-        continue;
       }
 
       if (lang == null || lang.isEmpty) {
-        _snackBar.showError(
-          'Missing language_code in row $rowIndex (sr_no: $srNo)',
+        return Left(
+          Failure('Missing language_code in row $rowIndex (sr_no: $srNo)'),
         );
-        return null;
       }
 
       if (grouped[srNo]?['languages']?[lang] != null) {
-        _snackBar.showError(
-          'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
+        return Left(
+          Failure(
+            'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
+          ),
         );
-        return null;
       }
 
       final langData =
@@ -250,7 +259,6 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
 
       grouped.putIfAbsent(srNo, () {
         final base = {
-          "sr_no": srNoInt,
           "question_type": questionType,
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
@@ -262,32 +270,30 @@ Future<List<Map<String, dynamic>>?> parseUploadFile({
           base['test_name'] = firstTestName;
           base['duration'] = int.tryParse(firstDuration) ?? 1;
           base['test_type'] = firstTestType;
-          if (firstLink.isNotEmpty) {
-            base['link'] = firstLink;
+
+          // ✅ Add omr_link only for prelims test_type
+          if (firstTestType.toLowerCase() == 'prelims') {
+            base['omr_link'] = firstOmrLink;
           }
         }
         return base;
       });
 
-      grouped[srNo]!['languages'][lang] = langData;
+      grouped[srNo]!["languages"][lang] = langData;
     }
 
     if (grouped.isEmpty) {
-      _snackBar.showError('No valid data found.');
-      return null;
+      return Left(Failure('No valid data found.'));
     }
 
-    _log.i('📤 Payload sample: ${grouped.values.take(2).toList()}');
-
-    return grouped.values.toList();
+    return Right(grouped.values.toList());
   } catch (e, stack) {
     _log.e('❌ Parsing failed: $e\n$stack');
-    _snackBar.showError('Parsing failed: ${e.toString()}');
-    return null;
+    return Left(Failure('Parsing failed: ${e.toString()}'));
   }
 }
 
-Future<UploadResult?> submitParsedDataToSupabase({
+Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
   required List<Map<String, dynamic>> payload,
   required bool isTestUpload,
 }) async {
@@ -301,18 +307,26 @@ Future<UploadResult?> submitParsedDataToSupabase({
       rpcFunctionName,
       params: {'payload': payload},
     );
-    debugPrint('rpcResult: $payload');
-    final response = rpcResult as Map<String, dynamic>?;
-    if (response == null) return null;
 
-    return UploadResult(
-      successCount: response['inserted'] ?? response['inserted_questions'] ?? 0,
-      failCount: response['failed'] ?? 0,
-      duplicateCount: response['skipped_duplicates'] ?? 0,
+    final response = rpcResult as Map<String, dynamic>?;
+    if (response == null) {
+      return Left(Failure('Upload failed: No response received.'));
+    }
+
+    return Right(
+      UploadResult(
+        successCount:
+            response['inserted'] ?? response['inserted_questions'] ?? 0,
+        failCount: response['failed'] ?? 0,
+        duplicateCount: response['skipped_duplicates'] ?? 0,
+      ),
     );
-  } catch (e) {
-    _log.e('❌ Upload failed: $e');
-    _snackBar.showError('Upload failed: ${e.toString()}');
-    return null;
+  } catch (e, stack) {
+    _log.e('❌ Upload failed: $e\n$stack');
+    if (e.toString().toLowerCase().contains('daily test')) {
+      return Left(Failure('A daily test has already been uploaded today.'));
+    } else {
+      return Left(Failure('Upload failed: ${e.toString()}'));
+    }
   }
 }

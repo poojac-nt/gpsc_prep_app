@@ -25,6 +25,9 @@ Future<Either<Failure, String>> downloadAndOpenPdf({
       throw Exception('Failed to download PDF.');
     }
     debugPrint(response.headers['content-type']);
+
+    final pdfFilename = filename.endsWith('.pdf') ? filename : '$filename.pdf';
+
     final pdfBytes = response.bodyBytes;
 
     if (Platform.isAndroid) {
@@ -33,12 +36,12 @@ Future<Either<Failure, String>> downloadAndOpenPdf({
       if (sdkInt >= 29) {
         // ✅ Scoped Storage for Android 10+
         return Right(
-          await _handleScopedStorageAndroid(pdfBytes, filename, log),
+          await _handleScopedStorageAndroid(pdfBytes, pdfFilename, log),
         );
       }
     }
 
-    return Right(await _handleLegacyStorage(pdfBytes, filename, log));
+    return Right(await _handleLegacyStorage(pdfBytes, pdfFilename, log));
   } catch (e) {
     getIt<LogHelper>().e('Error downloading/opening PDF: $e');
     return Left(Failure('Error downloading/opening PDF: $e'));

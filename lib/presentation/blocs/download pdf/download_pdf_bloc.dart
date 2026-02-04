@@ -26,6 +26,7 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
     on<ExportQuestionsToPdfEvent>(_onExportQuestionsToPdf);
     on<DownloadStudyMaterial>(_downloadStudyMaterial);
     on<DownloadDescTestPdf>(_downloadDescTestPdf);
+    on<DownloadPrelimsOmr>(_downloadPrelimsOmr);
   }
 
   Future<void> _onExportQuestionsToPdf(
@@ -104,6 +105,28 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
 
   Future<void> _downloadStudyMaterial(
     DownloadStudyMaterial event,
+    Emitter<DownLoadPdfState> emit,
+  ) async {
+    emit(DownLoadPdfStarted());
+    final result = await downloadAndOpenPdf(
+      normalUrl: event.url,
+      filename: event.filename,
+    );
+    result.fold(
+      (failure) {
+        emit(PdfDownloadFailure(failure));
+      },
+      (_) {
+        _snackBar.showSuccess(
+          "PDF downloaded successfully into Downloads under StarICS folder",
+        );
+        emit(PdfDownloadSuccess(result.right));
+      },
+    );
+  }
+
+  Future<void> _downloadPrelimsOmr(
+    DownloadPrelimsOmr event,
     Emitter<DownLoadPdfState> emit,
   ) async {
     emit(DownLoadPdfStarted());
