@@ -292,7 +292,7 @@ class _ResultScreenState extends State<ResultScreen> {
           ).padAll(AppPaddings.defaultPadding),
 
           // Difficulty Analysis Module
-          if (reviewByDifficulty != null && reviewByDifficulty.isNotEmpty)
+          if (reviewByDifficulty != null && _hasValidData(reviewByDifficulty))
             TestModule(
               title: "Difficulty Analysis",
               iconSize: 26.sp,
@@ -306,7 +306,7 @@ class _ResultScreenState extends State<ResultScreen> {
               ],
             ).padAll(AppPaddings.defaultPadding),
           // Question Type Analysis Module
-          if (reviewByQuestionType != null && reviewByQuestionType.isNotEmpty)
+          if (reviewByQuestionType != null && _hasValidData(reviewByQuestionType))
             TestModule(
               title: "Question Type Analysis",
               iconSize: 26.sp,
@@ -319,7 +319,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 20.hGap,
               ],
             ).padAll(AppPaddings.defaultPadding),
-          if (reviewBySubject != null && reviewBySubject.isNotEmpty)
+          if (reviewBySubject != null && _hasValidData(reviewBySubject))
             TestModule(
               title: "Subject Analysis",
               iconSize: 26.sp,
@@ -474,6 +474,14 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
       ],
     );
+  }
+
+  bool _hasValidData(List<TestReviewAnalytics>? list) {
+    if (list == null || list.isEmpty) return false;
+    return list.any((item) =>
+        item.attemptedCount > 0 ||
+        item.correctCount > 0 ||
+        item.incorrectCount > 0);
   }
 }
 

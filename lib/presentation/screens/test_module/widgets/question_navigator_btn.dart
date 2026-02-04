@@ -25,7 +25,7 @@ class QuestionNavigatorButton extends StatelessWidget {
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
-        fixedSize: Size(70.w, 40.h),
+        fixedSize: Size(75.w, 40.h),
         shape: RoundedRectangleBorder(
           borderRadius: AppBorders.borderRadius,
           side: BorderSide(color: borderColor, width: 1),

@@ -518,10 +518,17 @@ class _TestScreenState extends State<TestScreen> {
                                                                   .mounted) {
                                                                 return;
                                                               }
-                                                              context.pushReplacement(
-                                                                AppRoutes
-                                                                    .mcqTestScreen,
-                                                              ); // Close dialog
+                                                              widget.dailyTestModel.testType ==
+                                                                      TestType
+                                                                          .mcq
+                                                                  ? context.pushReplacement(
+                                                                    AppRoutes
+                                                                        .mcqTestScreen,
+                                                                  )
+                                                                  : context.pushReplacement(
+                                                                    AppRoutes
+                                                                        .prelimsMcqTestScreen,
+                                                                  ); // Close dialog
                                                             },
                                                           ),
                                                         ],

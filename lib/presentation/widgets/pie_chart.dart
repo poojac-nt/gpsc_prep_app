@@ -16,6 +16,7 @@ class CustomPieChart extends StatelessWidget {
   final double centerSpaceValue;
   final double sectionRadiusMultiplier;
   final Widget? centerWidget;
+  final double startDegreeOffset;
 
   const CustomPieChart({
     super.key,
@@ -31,6 +32,7 @@ class CustomPieChart extends StatelessWidget {
     this.isLabelVisible = true,
     this.centerSpaceValue = 5,
     this.sectionRadiusMultiplier = 0.11,
+    this.startDegreeOffset = 0,
   });
 
   @override
@@ -56,6 +58,7 @@ class CustomPieChart extends StatelessWidget {
                 PieChartData(
                   sectionsSpace: 2,
                   centerSpaceRadius: centerSpace,
+                  startDegreeOffset: startDegreeOffset,
                   borderData: FlBorderData(show: false),
                   sections: [
                     PieChartSectionData(

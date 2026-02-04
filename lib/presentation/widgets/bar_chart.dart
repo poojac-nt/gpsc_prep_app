@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class McqVerticalBarChart extends StatelessWidget {
   final int questionId;
@@ -84,6 +85,7 @@ class _BarChartView extends StatelessWidget {
     return TestModule(
       title: "Option Selection Breakdown",
       cards: [
+        15.hGap,
         Container(
           height: 300.h,
           width: double.maxFinite,
@@ -133,6 +135,7 @@ class _BarChartView extends StatelessWidget {
       enabled: true,
       handleBuiltInTouches: false,
       touchTooltipData: BarTouchTooltipData(
+        tooltipPadding: EdgeInsets.zero,
         tooltipMargin: 0,
         getTooltipColor: (group) => Colors.transparent,
         getTooltipItem: (group, groupIndex, rod, rodIndex) {

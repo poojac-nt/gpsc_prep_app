@@ -827,7 +827,7 @@ class SupabaseHelper {
         return Right(data);
       } else {
         _log.w('No question correctness data found for test ID: $testId');
-        return Left(Failure("No data found for test ID $testId"));
+        return Left(Failure("No one has attempted this question"));
       }
     } catch (e) {
       _log.e('Error fetching question correctness for test ID $testId: $e');
