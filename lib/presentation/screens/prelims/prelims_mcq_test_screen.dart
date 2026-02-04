@@ -27,10 +27,7 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
   @override
   void initState() {
     super.initState();
-    final currentState = context.read<PrelimsTestBloc>().state;
-    if (currentState is! PrelimsTestFetched) {
-      context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
-    }
+    context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
   }
 
   @override

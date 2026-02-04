@@ -140,6 +140,7 @@ class _AllSubjectsAnalyticsScreenState
           ),
           8.wGap,
           DropdownButton<String>(
+            dropdownColor: Colors.white,
             value: _sortBy,
             underline: SizedBox(),
             icon: Icon(

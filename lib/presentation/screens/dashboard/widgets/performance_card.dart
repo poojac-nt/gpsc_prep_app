@@ -98,7 +98,6 @@ class PerformanceCard extends StatelessWidget {
                         itemTwo: 100,
                         colorOne: AppColors.primary,
                         colorTwo: Colors.grey.shade300,
-                        startDegreeOffset: -90,
                         centerWidget: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

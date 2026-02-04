@@ -25,10 +25,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
   void initState() {
     super.initState();
-    final currentState = context.read<DailyTestBloc>().state;
-    if (currentState is! DailyTestFetched) {
-      context.read<DailyTestBloc>().add(FetchTests());
-    }
+    context.read<DailyTestBloc>().add(FetchTests());
   }
 
   @override
@@ -59,11 +56,10 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
               ),
               indicator: UnderlineTabIndicator(
                 borderSide: BorderSide(width: 3, color: AppColors.primary),
-                insets: EdgeInsets.symmetric(horizontal: 16.w),
               ),
               indicatorSize: TabBarIndicatorSize.label,
               labelPadding: EdgeInsets.symmetric(
-                horizontal: 18.w,
+                horizontal: 20.w,
                 vertical: 10.h,
               ),
               tabs: const [

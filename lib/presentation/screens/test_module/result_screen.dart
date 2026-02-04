@@ -24,9 +24,14 @@ import 'package:gpsc_prep_app/presentation/widgets/difficulty_wise_bar_chart.dar
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
+import '../../blocs/daily_test/daily_test_bloc.dart';
+import '../../blocs/daily_test/daily_test_event.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
 import '../../blocs/dashboard/dashboard_bloc_event.dart';
+import '../../blocs/prelims/prelims_test_bloc.dart';
+import '../../blocs/prelims/prelims_test_event.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -55,11 +60,16 @@ class _ResultScreenState extends State<ResultScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) return;
         context.read<ConnectivityBloc>().add(CheckConnectivity());
         if (widget.isFromTestScreen) {
           context.read<DashboardBloc>().add(FetchDashboardAnalytics());
+          if (widget.testModel.testType == TestType.mcq) {
+            context.read<DailyTestBloc>().add(FetchTests());
+          } else if (widget.testModel.testType == TestType.prelims) {
+            context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
+          }
         }
-        context.pop();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -306,7 +316,8 @@ class _ResultScreenState extends State<ResultScreen> {
               ],
             ).padAll(AppPaddings.defaultPadding),
           // Question Type Analysis Module
-          if (reviewByQuestionType != null && _hasValidData(reviewByQuestionType))
+          if (reviewByQuestionType != null &&
+              _hasValidData(reviewByQuestionType))
             TestModule(
               title: "Question Type Analysis",
               iconSize: 26.sp,
@@ -478,10 +489,12 @@ class _ResultScreenState extends State<ResultScreen> {
 
   bool _hasValidData(List<TestReviewAnalytics>? list) {
     if (list == null || list.isEmpty) return false;
-    return list.any((item) =>
-        item.attemptedCount > 0 ||
-        item.correctCount > 0 ||
-        item.incorrectCount > 0);
+    return list.any(
+      (item) =>
+          item.attemptedCount > 0 ||
+          item.correctCount > 0 ||
+          item.incorrectCount > 0,
+    );
   }
 }
 
