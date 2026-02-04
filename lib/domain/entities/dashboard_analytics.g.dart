@@ -40,6 +40,9 @@ LastTest _$LastTestFromJson(Map<String, dynamic> json) => LastTest(
       testName: json['test_name'] as String,
       score: (json['score'] as num).toDouble(),
       gainedScore: (json['gained_score'] as num).toInt(),
+      weakAreas: json['weak_areas'] == null
+          ? null
+          : WeakArea.fromJson(json['weak_areas'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$LastTestToJson(LastTest instance) => <String, dynamic>{
@@ -47,4 +50,17 @@ Map<String, dynamic> _$LastTestToJson(LastTest instance) => <String, dynamic>{
       'test_name': instance.testName,
       'score': instance.score,
       'gained_score': instance.gainedScore,
+      'weak_areas': instance.weakAreas,
+    };
+
+WeakArea _$WeakAreaFromJson(Map<String, dynamic> json) => WeakArea(
+      subject: json['subject'] as String,
+      questionType: json['question_type'] as String,
+      difficultyLevel: json['difficulty_level'] as String,
+    );
+
+Map<String, dynamic> _$WeakAreaToJson(WeakArea instance) => <String, dynamic>{
+      'subject': instance.subject,
+      'question_type': instance.questionType,
+      'difficulty_level': instance.difficultyLevel,
     };

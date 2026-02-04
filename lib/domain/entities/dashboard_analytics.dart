@@ -63,15 +63,41 @@ class LastTest {
   @JsonKey(name: 'gained_score')
   final int gainedScore;
 
+  @JsonKey(name: 'weak_areas')
+  final WeakArea? weakAreas;
+
   LastTest({
     required this.testId,
     required this.testName,
     required this.score,
     required this.gainedScore,
+    this.weakAreas,
   });
 
   factory LastTest.fromJson(Map<String, dynamic> json) =>
       _$LastTestFromJson(json);
 
   Map<String, dynamic> toJson() => _$LastTestToJson(this);
+}
+
+@JsonSerializable()
+class WeakArea {
+  final String subject;
+
+  @JsonKey(name: 'question_type')
+  final String questionType;
+
+  @JsonKey(name: 'difficulty_level')
+  final String difficultyLevel;
+
+  WeakArea({
+    required this.subject,
+    required this.questionType,
+    required this.difficultyLevel,
+  });
+
+  factory WeakArea.fromJson(Map<String, dynamic> json) =>
+      _$WeakAreaFromJson(json);
+
+  Map<String, dynamic> toJson() => _$WeakAreaToJson(this);
 }

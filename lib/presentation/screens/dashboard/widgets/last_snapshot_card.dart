@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../domain/entities/dashboard_analytics.dart';
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
+import '../../../../utils/improvement_tips.dart';
 import 'custom_progress_bar.dart';
 import 'dashboard_container.dart';
 import 'icon_container.dart';
@@ -83,7 +84,7 @@ class LastSnapshotCard extends StatelessWidget {
             minHeight: 10,
           ),
           15.hGap,
-          lastTest != null
+          lastTest?.weakAreas != null
               ? Container(
                 padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -103,28 +104,25 @@ class LastSnapshotCard extends StatelessWidget {
                             style: TextStyle(color: AppColors.primary),
                           ),
                           RichText(
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
                             softWrap: true,
                             text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "Focus more on ",
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                                TextSpan(
-                                  text: "History",
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
+                              children:
+                                  ImprovementTipsProvider.getDeterministicImprovementTip(
+                                    subject: lastTest?.weakAreas?.subject ?? "",
+                                    questionType:
+                                        lastTest?.weakAreas?.questionType ?? "",
+                                    difficulty:
+                                        lastTest?.weakAreas?.difficultyLevel ??
+                                        "",
+                                    testId: lastTest?.testId,
+                                    normalStyle: const TextStyle(
+                                      color: Colors.black54,
+                                    ),
+                                    highlightStyle: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                TextSpan(
-                                  text:
-                                      " in next attempts to improve your overall score",
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                              ],
                             ),
                           ),
                         ],
