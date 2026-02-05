@@ -147,10 +147,7 @@ class _PrelimsMcqInstructionScreenState
     );
   }
 
-  Widget buildScaffoldWithModel(
-    BuildContext context,
-    TestModel dailyTestModel,
-  ) {
+  Widget buildScaffoldWithModel(BuildContext context, TestModel testModel) {
     return PopScope(
       onPopInvokedWithResult: (canPop, _) {
         context.pushReplacement(AppRoutes.prelimsMcqTestScreen);
@@ -162,7 +159,7 @@ class _PrelimsMcqInstructionScreenState
             onPressed: _handleBackNavigation,
             icon: const Icon(Icons.arrow_back),
           ),
-          title: Text(dailyTestModel.name, style: AppTexts.titleTextStyle),
+          title: Text(testModel.name, style: AppTexts.titleTextStyle),
           centerTitle: false,
           elevation: 0,
           backgroundColor: Colors.white,
@@ -189,7 +186,7 @@ class _PrelimsMcqInstructionScreenState
                   children: [
                     Expanded(
                       child: InfoTile(
-                        value: dailyTestModel.noQuestions.toString(),
+                        value: testModel.noQuestions.toString(),
                         label: "QUESTIONS",
                         icon: Icons.quiz_rounded,
                       ),
@@ -197,7 +194,7 @@ class _PrelimsMcqInstructionScreenState
                     15.wGap,
                     Expanded(
                       child: InfoTile(
-                        value: dailyTestModel.duration.toString(),
+                        value: testModel.duration.toString(),
                         label: "MINUTES",
                         icon: Icons.access_time,
                       ),
@@ -229,7 +226,7 @@ class _PrelimsMcqInstructionScreenState
                       ),
                       15.hGap,
                       _buildInstructionTile(
-                        "This test contains ${dailyTestModel.noQuestions} multiple choice questions.",
+                        "This test contains ${testModel.noQuestions} multiple choice questions.",
                         Icons.check_circle_rounded,
                         AppColors.primary,
                       ),
@@ -276,7 +273,7 @@ class _PrelimsMcqInstructionScreenState
                 // Start Test
                 ActionButton(
                   text: _hasProgress ? "Resume Test" : "Start Test",
-                  onTap: () => _handleTestStart(dailyTestModel),
+                  onTap: () => _handleTestStart(testModel),
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   backgroundColor: AppColors.primary,
                 ),
@@ -286,15 +283,19 @@ class _PrelimsMcqInstructionScreenState
                 Row(
                   children: [
                     Expanded(
-                      child: _buildOutlinedButton("Download", Icons.download, () {
-                        context.read<DownLoadPdfBloc>().add(
-                          DownloadPrelimsOmr(
-                            url: dailyTestModel.omrLink ?? '',
-                            filename:
-                                'OMR_${dailyTestModel.name.replaceAll(' ', '_')}',
-                          ),
-                        );
-                      }),
+                      child: _buildOutlinedButton(
+                        "Download",
+                        Icons.download,
+                        () {
+                          context.read<DownLoadPdfBloc>().add(
+                            DownloadPrelimsOmr(
+                              url: testModel.omrLink ?? '',
+                              filename:
+                                  'OMR_${testModel.name.replaceAll(' ', '_')}',
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     15.wGap,
                     Expanded(
@@ -302,7 +303,15 @@ class _PrelimsMcqInstructionScreenState
                         "Submit OMR",
                         color: _hasProgress ? Colors.grey : Colors.black87,
                         Icons.upload_file,
-                        () {},
+                        () {
+                          context.pushReplacement(
+                            AppRoutes.omrScreen,
+                            extra: OMRScreenArgs(
+                              testModal: testModel,
+                              language: selectedLanguage,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
