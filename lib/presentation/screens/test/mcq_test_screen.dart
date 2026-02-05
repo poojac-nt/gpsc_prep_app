@@ -31,7 +31,9 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      canPop: true,
       onPopInvokedWithResult: (didPop, value) {
+        if (didPop) return;
         context.go(AppRoutes.studentDashboard);
       },
       child: DefaultTabController(

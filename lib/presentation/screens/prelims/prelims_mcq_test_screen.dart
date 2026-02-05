@@ -38,7 +38,9 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
         centerTitle: false,
       ),
       body: PopScope(
+        canPop: true,
         onPopInvokedWithResult: (canPop, _) {
+          if (canPop) return;
           context.go(AppRoutes.studentDashboard);
         },
         child: RefreshIndicator(

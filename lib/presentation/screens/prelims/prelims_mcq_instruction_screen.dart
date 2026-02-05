@@ -149,8 +149,9 @@ class _PrelimsMcqInstructionScreenState
 
   Widget buildScaffoldWithModel(BuildContext context, TestModel testModel) {
     return PopScope(
-      onPopInvokedWithResult: (canPop, _) {
-        context.pushReplacement(AppRoutes.prelimsMcqTestScreen);
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        context.pop();
       },
       child: Scaffold(
         backgroundColor: const Color(0xfff7f8f9),
@@ -330,8 +331,8 @@ class _PrelimsMcqInstructionScreenState
       context.pop();
       debugPrint("Test Id is Null");
     } else {
-      debugPrint("Going to Dashboard");
-      context.pushReplacement(AppRoutes.prelimsMcqTestScreen);
+      debugPrint("Going Back");
+      context.pop();
     }
   }
 

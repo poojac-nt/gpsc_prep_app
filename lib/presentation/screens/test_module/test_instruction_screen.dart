@@ -218,8 +218,8 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       context.pop();
       debugPrint("Test Id is Null");
     } else {
-      debugPrint("Going to Dashboard");
-      context.pushReplacement(AppRoutes.mcqTestScreen);
+      debugPrint("Going Back");
+      context.pop();
     }
   }
 
