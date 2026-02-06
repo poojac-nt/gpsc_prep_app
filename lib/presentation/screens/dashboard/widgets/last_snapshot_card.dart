@@ -50,25 +50,28 @@ class LastSnapshotCard extends StatelessWidget {
                 ),
               ),
               3.wGap,
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "$obtainedMarks",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14.sp,
+              Tooltip(
+                message: "$obtainedMarks out of $totalMarks marks",
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "$obtainedMarks",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text: "/$totalMarks",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
+                      TextSpan(
+                        text: "/$totalMarks",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
