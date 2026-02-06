@@ -311,7 +311,7 @@ class _ResultScreenState extends State<ResultScreen> {
               iconColor: Colors.deepPurpleAccent,
               cards: [
                 20.hGap,
-                DifficultyWiseBarChart(data: reviewByDifficulty),
+                AnalyticsBarChart(data: reviewByDifficulty),
                 20.hGap,
               ],
             ).padAll(AppPaddings.defaultPadding),
@@ -326,7 +326,7 @@ class _ResultScreenState extends State<ResultScreen> {
               iconColor: AppColors.primary,
               cards: [
                 20.hGap,
-                DifficultyWiseBarChart(data: reviewByQuestionType),
+                AnalyticsBarChart(data: reviewByQuestionType),
                 20.hGap,
               ],
             ).padAll(AppPaddings.defaultPadding),
@@ -339,7 +339,7 @@ class _ResultScreenState extends State<ResultScreen> {
               iconColor: Colors.brown,
               cards: [
                 20.hGap,
-                DifficultyWiseBarChart(data: reviewBySubject),
+                AnalyticsBarChart(data: reviewBySubject),
                 20.hGap,
               ],
             ).padAll(AppPaddings.defaultPadding),

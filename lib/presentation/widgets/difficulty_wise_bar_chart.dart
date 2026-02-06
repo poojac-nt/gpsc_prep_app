@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 
-class DifficultyWiseBarChart extends StatelessWidget {
+class AnalyticsBarChart extends StatelessWidget {
   final List<TestReviewAnalytics> data;
 
-  const DifficultyWiseBarChart({super.key, required this.data});
+  const AnalyticsBarChart({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
+    // Filter out categories with 0 attempts to keep labels clean
+    final filteredData = data.where((e) => e.attemptedCount > 0).toList();
     final maxAttempted =
-        data
+        filteredData
             .map((e) => e.attemptedCount)
             .fold<int>(0, (a, b) => a > b ? a : b)
             .toDouble();
@@ -30,8 +32,8 @@ class DifficultyWiseBarChart extends StatelessWidget {
       child: BarChart(
         BarChartData(
           maxY: adjustedMaxY,
-          barTouchData: _barTouchData(),
-          titlesData: _titlesData(adjustedMaxY),
+          barTouchData: _barTouchData(filteredData),
+          titlesData: _titlesData(adjustedMaxY, filteredData),
           borderData: FlBorderData(
             show: true,
             border: Border(
@@ -42,14 +44,14 @@ class DifficultyWiseBarChart extends StatelessWidget {
             ),
           ),
           gridData: FlGridData(show: false),
-          barGroups: _barGroups(),
+          barGroups: _barGroups(filteredData),
         ),
       ),
     );
   }
 
   /// 🔹 Bars
-  List<BarChartGroupData> _barGroups() {
+  List<BarChartGroupData> _barGroups(List<TestReviewAnalytics> data) {
     return List.generate(data.length, (index) {
       final item = data[index];
 
@@ -83,7 +85,7 @@ class DifficultyWiseBarChart extends StatelessWidget {
   }
 
   /// 🔹 Tap Tooltip
-  BarTouchData _barTouchData() {
+  BarTouchData _barTouchData(List<TestReviewAnalytics> data) {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
@@ -103,7 +105,10 @@ class DifficultyWiseBarChart extends StatelessWidget {
   }
 
   /// 🔹 X & Y Axis Titles
-  FlTitlesData _titlesData(double maxY) {
+  FlTitlesData _titlesData(
+    double maxY,
+    List<TestReviewAnalytics> filteredData,
+  ) {
     // Calculate a "round" interval for better readability
     double interval;
     if (maxY <= 10) {
@@ -136,14 +141,14 @@ class DifficultyWiseBarChart extends StatelessWidget {
           reservedSize: 30.h,
           getTitlesWidget: (value, meta) {
             final index = value.toInt();
-            if (index < 0 || index >= data.length) {
+            if (index < 0 || index >= filteredData.length) {
               return const SizedBox.shrink();
             }
 
             return Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                data[index].analyticsType,
+                filteredData[index].analyticsType,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             );
