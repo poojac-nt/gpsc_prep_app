@@ -25,6 +25,8 @@ enum QuestionType {
 
   static QuestionType fromString(String type) {
     switch (type) {
+      case 'simple':
+        return QuestionType.simple;
       case 'desc':
         return QuestionType.desc;
       case 'fitb':
@@ -33,10 +35,8 @@ enum QuestionType {
         return QuestionType.mtf;
       case 'stmt':
         return QuestionType.stmt;
-      case 'mod':
-        return QuestionType.simple;
       default:
-        throw ArgumentError('Invalid difficulty level: $type');
+        throw ArgumentError('Invalid question type: $type');
     }
   }
 }

@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
+import 'package:gpsc_prep_app/utils/enums/difficulty_level.dart';
+import 'package:gpsc_prep_app/utils/enums/question_type_enum.dart';
 
 class AnalyticsBarChart extends StatelessWidget {
   final List<TestReviewAnalytics> data;
@@ -94,7 +96,7 @@ class AnalyticsBarChart extends StatelessWidget {
           final item = data[group.x.toInt()];
 
           return BarTooltipItem(
-            '${item.analyticsType.toUpperCase()}\n'
+            '${_getFullName(item.analyticsType).toUpperCase()}\n'
             'Correct: ${item.correctCount}\n'
             'Incorrect: ${item.incorrectCount}',
             const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -138,23 +140,67 @@ class AnalyticsBarChart extends StatelessWidget {
       bottomTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
-          reservedSize: 30.h,
+          reservedSize: 60.h,
+          interval: 1,
           getTitlesWidget: (value, meta) {
             final index = value.toInt();
             if (index < 0 || index >= filteredData.length) {
               return const SizedBox.shrink();
             }
 
-            return Padding(
-              padding: const EdgeInsets.only(top: 8),
+            final rawLabel = filteredData[index].analyticsType;
+            final fullName = _getFullName(rawLabel);
+
+            final label = (fullName == rawLabel)
+                ? _shortenName(rawLabel)
+                : _capitalize(rawLabel);
+
+            return SideTitleWidget(
+              meta: meta,
+              space: 10,
+              angle: 0,
               child: Text(
-                filteredData[index].analyticsType,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.sp),
               ),
             );
           },
         ),
       ),
     );
+  }
+
+  String _capitalize(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
+  String _shortenName(String name) {
+    if (name.isEmpty) return name;
+    final words = name.trim().split(RegExp(r'\s+'));
+    if (words.length == 1) {
+      if (words[0].length <= 4) return words[0];
+      return "${words[0].substring(0, 3)}";
+    } else {
+      return words
+          .map((w) {
+            if (w.length <= 3) return w;
+            return "${w.substring(0, 3)}";
+          })
+          .join(' ');
+    }
+  }
+
+  String _getFullName(String type) {
+    try {
+      return DifficultyLevel.fromString(type).level;
+    } catch (_) {
+      try {
+        return QuestionType.fromString(type).type;
+      } catch (_) {
+        return type; // Return original (e.g. subject name)
+      }
+    }
   }
 }
