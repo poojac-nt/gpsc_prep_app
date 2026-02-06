@@ -151,9 +151,10 @@ class AnalyticsBarChart extends StatelessWidget {
             final rawLabel = filteredData[index].analyticsType;
             final fullName = _getFullName(rawLabel);
 
-            final label = (fullName == rawLabel)
-                ? _shortenName(rawLabel)
-                : _capitalize(rawLabel);
+            final label =
+                (fullName == rawLabel)
+                    ? _shortenName(rawLabel)
+                    : _capitalize(rawLabel);
 
             return SideTitleWidget(
               meta: meta,
@@ -181,12 +182,12 @@ class AnalyticsBarChart extends StatelessWidget {
     final words = name.trim().split(RegExp(r'\s+'));
     if (words.length == 1) {
       if (words[0].length <= 4) return words[0];
-      return "${words[0].substring(0, 3)}";
+      return words[0].substring(0, 3);
     } else {
       return words
           .map((w) {
             if (w.length <= 3) return w;
-            return "${w.substring(0, 3)}";
+            return w.substring(0, 3);
           })
           .join(' ');
     }

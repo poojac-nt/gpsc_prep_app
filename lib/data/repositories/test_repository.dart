@@ -32,7 +32,8 @@ class TestRepository {
     int testID,
   ) async => await _supabase.fetchDescTestQuestions(testID);
 
-  Future<Either<Failure, TestResultModel>> submitTestResultWithDetails(
+  Future<Either<Failure, TestResultWithTopScoreModel>>
+  submitTestResultWithDetails(
     TestResultModel testResult,
     List<DetailedTestResult> detailedResults,
   ) async => await _supabase.submitTestResultWithDetails(

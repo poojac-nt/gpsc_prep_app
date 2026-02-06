@@ -91,15 +91,32 @@ class _ResultScreenState extends State<ResultScreen> {
             if (testBlocState is TestSubmitted && widget.isFromTestScreen) {
               return BlocBuilder<TestCubit, TestCubitSubmitted>(
                 builder: (context, testCubitState) {
+                  final serverResult = testBlocState.serverResult;
                   final data = _TestResultData(
-                    correct: testCubitState.correctAnswers ?? 0,
-                    incorrect: testCubitState.inCorrectAnswers ?? 0,
-                    skipped: testCubitState.notAttemptedQuestions ?? 0,
-                    attempted: testCubitState.attemptedQuestions ?? 0,
-                    total: testCubitState.totalQuestions ?? 0,
-                    score: testCubitState.score ?? 0.0,
-                    userRank: testCubitState.userRank ?? 0,
-                    topScore: 0.0,
+                    correct:
+                        serverResult?.correctAnswers ??
+                        testCubitState.correctAnswers ??
+                        0,
+                    incorrect:
+                        serverResult?.inCorrectAnswers ??
+                        testCubitState.inCorrectAnswers ??
+                        0,
+                    skipped:
+                        serverResult?.notAttemptedQuestions ??
+                        testCubitState.notAttemptedQuestions ??
+                        0,
+                    attempted:
+                        serverResult?.attemptedQuestions ??
+                        testCubitState.attemptedQuestions ??
+                        0,
+                    total:
+                        serverResult?.totalQuestions ??
+                        testCubitState.totalQuestions ??
+                        0,
+                    score: serverResult?.score ?? testCubitState.score ?? 0.0,
+                    userRank:
+                        serverResult?.userRank ?? testCubitState.userRank ?? 0,
+                    topScore: serverResult?.topScore ?? 0.0,
                   );
                   return _buildSummaryBody(
                     context,

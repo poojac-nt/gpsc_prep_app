@@ -328,7 +328,8 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, TestResultModel>> submitTestResultWithDetails({
+  Future<Either<Failure, TestResultWithTopScoreModel>>
+  submitTestResultWithDetails({
     required TestResultModel test,
     required List<DetailedTestResult> detailedResults,
   }) async {
@@ -360,9 +361,12 @@ class SupabaseHelper {
         },
       );
 
-      _log.i('Test result inserted via RPC: $response');
+      _log.i('RPC response: $response');
 
-      final model = TestResultModel.fromJson(response);
+      // Cast response to Map<String, dynamic>
+      final data = response as Map<String, dynamic>;
+      final model = TestResultWithTopScoreModel.fromJson(data);
+
       _snackBar.showSuccess('Test Result Submitted Successfully');
 
       return Right(model);

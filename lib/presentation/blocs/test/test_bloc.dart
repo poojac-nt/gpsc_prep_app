@@ -11,6 +11,8 @@ import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:hive/hive.dart';
 
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+
 import '../analytics/analytics_bloc.dart';
 import '../detailed_analytics/detailed_analytics_bloc.dart';
 
@@ -68,10 +70,13 @@ class TestBloc extends Bloc<TestEvent, TestState> {
       );
       _log.i("✅ Internet is available. Proceeding with RPC...");
 
+      TestResultWithTopScoreModel? serverResult;
+
       result.fold(
         (failure) => _log.e("🚨 RPC submission failed: ${failure.message}"),
-        (_) {
+        (data) {
           _log.i("✅ Test result and details submitted via RPC.");
+          serverResult = data;
           // Clear analytics cache so next time it's opened it fetches fresh data
           getIt<AnalyticsBloc>().add(ResetAnalyticsEvent());
           getIt<DetailedAnalyticsBloc>().add(ResetDetailedAnalyticsEvent());
@@ -83,6 +88,7 @@ class TestBloc extends Bloc<TestEvent, TestState> {
           questions: event.questions,
           selectedOption: event.selectedOptions,
           answeredStatus: event.answeredStatus,
+          serverResult: serverResult,
         ),
       );
     } catch (e) {

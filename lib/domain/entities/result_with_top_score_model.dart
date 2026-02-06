@@ -25,7 +25,7 @@ class TestResultWithTopScoreModel {
   @JsonKey(name: "not_attempted_questions")
   final int notAttemptedQuestions;
 
-  @JsonKey(name: "score")
+  @JsonKey(name: "score", fromJson: _toDouble)
   final double score;
 
   @JsonKey(name: "time_taken")
@@ -34,8 +34,7 @@ class TestResultWithTopScoreModel {
   @JsonKey(name: "created_at")
   final String? createdAt;
 
-  /// ✅ Only exists in RPC response
-  @JsonKey(name: "top_score")
+  @JsonKey(name: "top_score", fromJson: _toDouble)
   final double topScore;
 
   @JsonKey(name: "user_rank")
@@ -55,6 +54,8 @@ class TestResultWithTopScoreModel {
     required this.userRank,
     this.createdAt,
   });
+
+  static double _toDouble(dynamic value) => (value as num).toDouble();
 
   factory TestResultWithTopScoreModel.fromJson(Map<String, dynamic> json) =>
       _$TestResultWithTopScoreModelFromJson(json);

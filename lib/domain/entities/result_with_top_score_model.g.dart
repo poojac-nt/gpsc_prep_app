@@ -16,9 +16,9 @@ TestResultWithTopScoreModel _$TestResultWithTopScoreModelFromJson(
       inCorrectAnswers: (json['incorrect_answers'] as num).toInt(),
       attemptedQuestions: (json['attempted_questions'] as num).toInt(),
       notAttemptedQuestions: (json['not_attempted_questions'] as num).toInt(),
-      score: (json['score'] as num).toDouble(),
+      score: TestResultWithTopScoreModel._toDouble(json['score']),
       timeTaken: (json['time_taken'] as num).toInt(),
-      topScore: (json['top_score'] as num).toDouble(),
+      topScore: TestResultWithTopScoreModel._toDouble(json['top_score']),
       userRank: (json['user_rank'] as num).toInt(),
       createdAt: json['created_at'] as String?,
     );
