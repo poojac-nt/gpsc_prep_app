@@ -22,3 +22,5 @@ class LoadQuestionTypeAnalyticsEvent extends AnalyticsEvent {
 
   LoadQuestionTypeAnalyticsEvent(this.range);
 }
+
+class ResetAnalyticsEvent extends AnalyticsEvent {}

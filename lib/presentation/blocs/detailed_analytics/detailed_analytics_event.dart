@@ -23,3 +23,5 @@ class LoadDetailedSubjectEvent extends DetailedAnalyticsEvent {
 
   LoadDetailedSubjectEvent({required this.from, required this.to});
 }
+
+class ResetDetailedAnalyticsEvent extends DetailedAnalyticsEvent {}

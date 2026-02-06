@@ -26,6 +26,9 @@ class DetailedAnalyticsBloc
     on<LoadDetailedDifficultyEvent>(_onLoadDifficulty);
     on<LoadDetailedQuestionTypeEvent>(_onLoadQuestionType);
     on<LoadDetailedSubjectEvent>(_onLoadSubject);
+    on<ResetDetailedAnalyticsEvent>(
+      (event, emit) => emit(DetailedAnalyticsState.initial()),
+    );
   }
 
   Future<void> _onLoadDifficulty(

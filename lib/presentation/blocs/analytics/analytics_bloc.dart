@@ -20,6 +20,15 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     on<LoadDifficultyAnalyticsEvent>(_loadDifficulty);
     on<LoadQuestionTypeAnalyticsEvent>(_loadQuestionTypes);
     on<FetchTrendData>(_fetchTrendData);
+    on<ResetAnalyticsEvent>(_onReset);
+  }
+
+  void _onReset(ResetAnalyticsEvent event, Emitter<AnalyticsState> emit) {
+    _cachedAnalytics = null;
+    _cachedRange = null;
+    _fetchingFuture = null;
+    _fetchingRange = null;
+    emit(AnalyticsState.initial());
   }
 
   Future<dynamic>? _fetchingFuture;

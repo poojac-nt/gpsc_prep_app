@@ -49,6 +49,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         color: AppColors.primary,
         onRefresh: () async {
           context.read<AnalyticsBloc>()
+            ..add(ResetAnalyticsEvent())
             ..add(LoadSubjectMasteryEvent(AnalyticsRange.weekly))
             ..add(LoadDifficultyAnalyticsEvent(AnalyticsRange.weekly))
             ..add(LoadQuestionTypeAnalyticsEvent(AnalyticsRange.weekly))
