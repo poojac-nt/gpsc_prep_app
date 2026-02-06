@@ -50,7 +50,11 @@ class _AllSubjectsAnalyticsScreenState
   Widget build(BuildContext context) {
     return BlocBuilder<DetailedAnalyticsBloc, DetailedAnalyticsState>(
       builder: (context, state) {
-        final data = state.subjectData;
+        // Use state data if available, otherwise fallback to widget data
+        final data =
+            state.subjectData.isNotEmpty
+                ? state.subjectData
+                : widget.subjectsData;
         final isLoading = state.isLoading;
 
         return Scaffold(
@@ -72,7 +76,7 @@ class _AllSubjectsAnalyticsScreenState
             ),
           ),
           body:
-              isLoading
+              isLoading && data.isEmpty
                   ? Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
                     child: Column(
@@ -97,7 +101,7 @@ class _AllSubjectsAnalyticsScreenState
                           padding: EdgeInsets.only(top: 8.h),
                           child: _buildSortHeader(),
                         ),
-                        if (data.isEmpty)
+                        if (data.isEmpty && !isLoading)
                           EmptyStateUi()
                         else ...[
                           Padding(

@@ -18,7 +18,7 @@ OverAllAnalyticsModel _$OverAllAnalyticsModelFromJson(
       subjectScores: (json['subject_scores'] as List<dynamic>)
           .map((e) => SubjectScore.fromJson(e as Map<String, dynamic>))
           .toList(),
-      userAccuracyOverall: json['user_accuracy_overall'] as num,
+      userAccuracyOverall: _parseToDouble(json['user_accuracy_overall']),
     );
 
 Map<String, dynamic> _$OverAllAnalyticsModelToJson(
@@ -31,12 +31,12 @@ Map<String, dynamic> _$OverAllAnalyticsModelToJson(
     };
 
 Difficulty _$DifficultyFromJson(Map<String, dynamic> json) => Difficulty(
-      attempted: (json['attempted'] as num).toInt(),
-      accuracyPct: (json['accuracy_pct'] as num).toDouble(),
-      correctCount: (json['correct_count'] as num).toInt(),
-      notAttempted: (json['not_attempted'] as num).toInt(),
-      incorrectCount: (json['incorrect_count'] as num).toInt(),
-      totalQuestions: (json['total_questions'] as num).toInt(),
+      attempted: _parseToInt(json['attempted']),
+      accuracyPct: _parseToDouble(json['accuracy_pct']),
+      correctCount: _parseToInt(json['correct_count']),
+      notAttempted: _parseToInt(json['not_attempted']),
+      incorrectCount: _parseToInt(json['incorrect_count']),
+      totalQuestions: _parseToInt(json['total_questions']),
       difficultyLevel: $enumDecodeNullable(
           _$DifficultyLevelEnumMap, json['difficulty_level']),
       questionType:
@@ -71,13 +71,13 @@ const _$QuestionTypeEnumMap = {
 };
 
 SubjectScore _$SubjectScoreFromJson(Map<String, dynamic> json) => SubjectScore(
-      totalScore: (json['total_score'] as num).toDouble(),
+      totalScore: _parseToDouble(json['total_score']),
       subjectName: json['subject_name'] as String,
-      attemptedTests: (json['attempted_tests'] as num).toInt(),
-      totalQuestions: (json['total_questions'] as num).toInt(),
-      correctQuestions: (json['correct_questions'] as num).toInt(),
-      accuracyPercentage: (json['accuracy_percentage'] as num).toDouble(),
-      attemptedQuestions: (json['attempted_questions'] as num).toInt(),
+      attemptedTests: _parseToInt(json['attempted_tests']),
+      totalQuestions: _parseToInt(json['total_questions']),
+      correctQuestions: _parseToInt(json['correct_questions']),
+      accuracyPercentage: _parseToDouble(json['accuracy_percentage']),
+      attemptedQuestions: _parseToInt(json['attempted_questions']),
     );
 
 Map<String, dynamic> _$SubjectScoreToJson(SubjectScore instance) =>

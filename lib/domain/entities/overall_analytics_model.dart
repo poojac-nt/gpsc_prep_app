@@ -12,7 +12,7 @@ class OverAllAnalyticsModel {
   List<Difficulty> questionType;
   @JsonKey(name: "subject_scores")
   List<SubjectScore> subjectScores;
-  @JsonKey(name: "user_accuracy_overall")
+  @JsonKey(name: "user_accuracy_overall", fromJson: _parseToDouble)
   num userAccuracyOverall;
 
   OverAllAnalyticsModel({
@@ -30,17 +30,17 @@ class OverAllAnalyticsModel {
 
 @JsonSerializable()
 class Difficulty {
-  @JsonKey(name: "attempted")
+  @JsonKey(name: "attempted", fromJson: _parseToInt)
   int attempted;
-  @JsonKey(name: "accuracy_pct")
+  @JsonKey(name: "accuracy_pct", fromJson: _parseToDouble)
   double accuracyPct;
-  @JsonKey(name: "correct_count")
+  @JsonKey(name: "correct_count", fromJson: _parseToInt)
   int correctCount;
-  @JsonKey(name: "not_attempted")
+  @JsonKey(name: "not_attempted", fromJson: _parseToInt)
   int notAttempted;
-  @JsonKey(name: "incorrect_count")
+  @JsonKey(name: "incorrect_count", fromJson: _parseToInt)
   int incorrectCount;
-  @JsonKey(name: "total_questions")
+  @JsonKey(name: "total_questions", fromJson: _parseToInt)
   int totalQuestions;
   @JsonKey(name: "difficulty_level")
   DifficultyLevel? difficultyLevel;
@@ -66,19 +66,19 @@ class Difficulty {
 
 @JsonSerializable()
 class SubjectScore {
-  @JsonKey(name: "total_score")
+  @JsonKey(name: "total_score", fromJson: _parseToDouble)
   double totalScore;
   @JsonKey(name: "subject_name")
   String subjectName;
-  @JsonKey(name: "attempted_tests")
+  @JsonKey(name: "attempted_tests", fromJson: _parseToInt)
   int attemptedTests;
-  @JsonKey(name: "total_questions")
+  @JsonKey(name: "total_questions", fromJson: _parseToInt)
   int totalQuestions;
-  @JsonKey(name: "correct_questions")
+  @JsonKey(name: "correct_questions", fromJson: _parseToInt)
   int correctQuestions;
-  @JsonKey(name: "accuracy_percentage")
+  @JsonKey(name: "accuracy_percentage", fromJson: _parseToDouble)
   double accuracyPercentage;
-  @JsonKey(name: "attempted_questions")
+  @JsonKey(name: "attempted_questions", fromJson: _parseToInt)
   int attemptedQuestions;
 
   SubjectScore({
@@ -95,4 +95,18 @@ class SubjectScore {
       _$SubjectScoreFromJson(json);
 
   Map<String, dynamic> toJson() => _$SubjectScoreToJson(this);
+}
+
+double _parseToDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
+}
+
+int _parseToInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
 }

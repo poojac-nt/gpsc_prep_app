@@ -11,6 +11,9 @@ import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:hive/hive.dart';
 
+import '../analytics/analytics_bloc.dart';
+import '../detailed_analytics/detailed_analytics_bloc.dart';
+
 class TestBloc extends Bloc<TestEvent, TestState> {
   final TestRepository _testRepository;
   final LogHelper _log = getIt<LogHelper>();
@@ -67,7 +70,12 @@ class TestBloc extends Bloc<TestEvent, TestState> {
 
       result.fold(
         (failure) => _log.e("🚨 RPC submission failed: ${failure.message}"),
-        (_) => _log.i("✅ Test result and details submitted via RPC."),
+        (_) {
+          _log.i("✅ Test result and details submitted via RPC.");
+          // Clear analytics cache so next time it's opened it fetches fresh data
+          getIt<AnalyticsBloc>().add(ResetAnalyticsEvent());
+          getIt<DetailedAnalyticsBloc>().add(ResetDetailedAnalyticsEvent());
+        },
       );
 
       emit(
