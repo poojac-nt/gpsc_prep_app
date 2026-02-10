@@ -20,6 +20,7 @@ class TestCubitSubmitted {
   final List<bool> answeredStatus;
   final int? userRank;
   final List<DetailedTestResult> batchResults;
+  final List<int>? timePerQuestion;
 
   factory TestCubitSubmitted.initial() => TestCubitSubmitted();
 
@@ -40,6 +41,7 @@ class TestCubitSubmitted {
     this.userRank,
     this.isAnswerCorrect = const [],
     this.batchResults = const [],
+    this.timePerQuestion,
   });
 
   TestCubitSubmitted copyWith({
@@ -58,6 +60,7 @@ class TestCubitSubmitted {
     List<bool>? answeredStatus,
     int? userRank,
     List<DetailedTestResult>? batchResults,
+    List<int>? timePerQuestion,
   }) {
     return TestCubitSubmitted(
       totalQuestions: totalQuestions ?? this.totalQuestions,
@@ -76,6 +79,7 @@ class TestCubitSubmitted {
       answeredStatus: answeredStatus ?? this.answeredStatus,
       userRank: userRank ?? this.userRank,
       batchResults: batchResults ?? this.batchResults,
+      timePerQuestion: timePerQuestion ?? this.timePerQuestion,
     );
   }
 }

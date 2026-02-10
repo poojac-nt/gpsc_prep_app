@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
@@ -125,6 +126,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     testCubitState.isAnswerCorrect,
                     testCubitState.answeredStatus,
                     testCubitState.selectedOption,
+                    testCubitState.batchResults,
                     null,
                     null,
                     null,
@@ -153,6 +155,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     null,
                     null,
                     null,
+                    null,
                     resultState.reviewByDifficulty,
                     resultState.reviewByQuestionType,
                     resultState.reviewBySubject,
@@ -177,6 +180,7 @@ class _ResultScreenState extends State<ResultScreen> {
     dynamic isCorrect,
     dynamic answeredStatus,
     dynamic selectedOption,
+    List<DetailedTestResult>? detailedResults,
     List<TestReviewAnalytics>? reviewByDifficulty,
     List<TestReviewAnalytics>? reviewByQuestionType,
     List<TestReviewAnalytics>? reviewBySubject,

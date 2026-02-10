@@ -32,6 +32,8 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         currentIndex: 0,
         selectedOption: List.generate(questions.length, (_) => null),
         answeredStatus: List.generate(questions.length, (_) => false),
+        timePerQuestion: List.generate(questions.length, (_) => 0),
+        currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
         isQuitTest: _isQuitTest,
         currentLanguage: language,
       ),
@@ -173,11 +175,18 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
 
+    _updateTimeSpent();
+
     if (currentState.currentIndex < currentState.questions.length - 1) {
       final newIndex = currentState.currentIndex + 1;
       _currentNavigatorPage = newIndex ~/ navigatorPageSize;
 
-      emit(currentState.copyWith(currentIndex: newIndex));
+      emit(
+        (state as McqQuestionCubitLoaded).copyWith(
+          currentIndex: newIndex,
+          currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
     }
   }
 
@@ -185,20 +194,53 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
 
+    _updateTimeSpent();
+
     if (currentState.currentIndex > 0) {
       final newIndex = currentState.currentIndex - 1;
       _currentNavigatorPage = newIndex ~/ navigatorPageSize;
 
-      emit(currentState.copyWith(currentIndex: newIndex));
+      emit(
+        (state as McqQuestionCubitLoaded).copyWith(
+          currentIndex: newIndex,
+          currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
     }
   }
 
   void jumpToQuestion(int index) {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
+
+    _updateTimeSpent();
+
     if (index >= 0 && index < currentState.questions.length) {
       _currentNavigatorPage = index ~/ navigatorPageSize;
-      emit(currentState.copyWith(currentIndex: index));
+      emit(
+        (state as McqQuestionCubitLoaded).copyWith(
+          currentIndex: index,
+          currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+    }
+  }
+
+  void _updateTimeSpent() {
+    if (state is! McqQuestionCubitLoaded) return;
+    final currentState = state as McqQuestionCubitLoaded;
+
+    if (currentState.currentQuestionStartTime != null) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final elapsedSeconds =
+          (now - currentState.currentQuestionStartTime!) ~/ 1000;
+
+      final updatedTimePerQuestion = List<int>.from(
+        currentState.timePerQuestion,
+      );
+      updatedTimePerQuestion[currentState.currentIndex] += elapsedSeconds;
+
+      emit(currentState.copyWith(timePerQuestion: updatedTimePerQuestion));
     }
   }
 
@@ -240,6 +282,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
       remainingTimeInSeconds: remainingTimeInSeconds,
       savedAt: DateTime.now().toIso8601String(),
       totalQuestions: currentState.questions.length,
+      timePerQuestion: currentState.timePerQuestion,
     );
 
     await progressRepo.saveProgress(progress);
@@ -268,6 +311,8 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         currentIndex: progress.currentQuestionIndex,
         selectedOption: progress.selectedOptions,
         answeredStatus: progress.answeredStatus,
+        timePerQuestion: progress.timePerQuestion,
+        currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
         currentLanguage: progress.languageCode,
         isReview: false,
       ),

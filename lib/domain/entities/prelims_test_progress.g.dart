@@ -26,13 +26,14 @@ class PrelimsTestProgressAdapter extends TypeAdapter<PrelimsTestProgress> {
       remainingTimeInSeconds: fields[6] as int,
       savedAt: fields[7] as String,
       totalQuestions: fields[8] as int,
+      timePerQuestion: (fields[9] as List).cast<int>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, PrelimsTestProgress obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.userId)
       ..writeByte(1)
@@ -49,6 +50,8 @@ class PrelimsTestProgressAdapter extends TypeAdapter<PrelimsTestProgress> {
       ..write(obj.remainingTimeInSeconds)
       ..writeByte(7)
       ..write(obj.savedAt)
+      ..writeByte(9)
+      ..write(obj.timePerQuestion)
       ..writeByte(8)
       ..write(obj.totalQuestions);
   }

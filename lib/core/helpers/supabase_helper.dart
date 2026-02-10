@@ -342,6 +342,7 @@ class SupabaseHelper {
                   'question_id': e.questionId,
                   'is_correct': e.isCorrect,
                   'selected_option': e.selectedOption,
+                  'time_spent': e.timeSpent,
                 },
               )
               .toList();

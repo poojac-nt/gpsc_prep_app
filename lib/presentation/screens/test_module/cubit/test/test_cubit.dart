@@ -18,6 +18,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
     required List<QuestionLanguageData> questions,
     required List<String?> selectedOption,
     required List<bool> answeredStatus,
+    required List<int> timePerQuestion,
     required List<int> marks,
     required int minSpent,
     required int secSpent,
@@ -43,6 +44,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
       final languageData = questionsModel[i].getLanguageData(languageCode);
       final correctAnswer = languageData.correctAnswer;
       final questionId = questionsModel[i].questionId;
+      final timeSpentOnQuestion = timePerQuestion[i];
 
       bool? isAnswerCorrect;
       if (userAnswer != null) {
@@ -79,6 +81,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
             isCorrect: isAnswerCorrect,
             attemptNo: 1,
             selectedOption: optionIdentifier,
+            timeSpent: timeSpentOnQuestion,
           ),
         );
       }
@@ -100,6 +103,7 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
         score: totalScore,
         timeSpent: timeSpent,
         batchResults: batchResults,
+        timePerQuestion: timePerQuestion,
       ),
     );
   }

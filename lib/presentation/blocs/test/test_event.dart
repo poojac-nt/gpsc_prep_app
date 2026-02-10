@@ -19,6 +19,7 @@ class SubmitTest extends TestEvent {
   final double? score;
   final int? timeTaken;
   final List<DetailedTestResult> batchResults;
+  final List<int>? timePerQuestion;
 
   SubmitTest(
     this.testId,
@@ -32,8 +33,9 @@ class SubmitTest extends TestEvent {
     this.notAttemptedQuestions,
     this.score,
     this.timeTaken,
-    this.batchResults,
-  );
+    this.batchResults, {
+    this.timePerQuestion,
+  });
 }
 
 class InsertTestResultEvent extends TestEvent {}

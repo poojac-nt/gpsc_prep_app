@@ -8,10 +8,10 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
-import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
@@ -115,6 +115,7 @@ class _TestScreenState extends State<TestScreen> {
             testId: widget.dailyTestModel.id,
             selectedOption: questionCubitState.selectedOption,
             answeredStatus: questionCubitState.answeredStatus,
+            timePerQuestion: questionCubitState.timePerQuestion,
             marks: questionBlocState.marks,
             minSpent: state.totalMins,
             secSpent: state.totalSecs,
@@ -303,6 +304,7 @@ class _TestScreenState extends State<TestScreen> {
                   state.score,
                   state.timeSpent,
                   state.batchResults,
+                  timePerQuestion: state.timePerQuestion,
                 ),
               );
               final timerState = context.read<TimerBloc>().state;
@@ -518,8 +520,10 @@ class _TestScreenState extends State<TestScreen> {
                                                                   .mounted) {
                                                                 return;
                                                               }
-                                                              context.pop(); // Close dialog
-                                                              context.pop(); // Close TestScreen and go back to Instructions/List
+                                                              context
+                                                                  .pop(); // Close dialog
+                                                              context
+                                                                  .pop(); // Close TestScreen and go back to Instructions/List
                                                             },
                                                           ),
                                                         ],

@@ -23,13 +23,14 @@ class DetailedTestResultAdapter extends TypeAdapter<DetailedTestResult> {
       isCorrect: fields[3] as bool,
       selectedOption: fields[4] as String?,
       attemptNo: fields[5] as int,
+      timeSpent: fields[6] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, DetailedTestResult obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.userId)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class DetailedTestResultAdapter extends TypeAdapter<DetailedTestResult> {
       ..writeByte(4)
       ..write(obj.selectedOption)
       ..writeByte(5)
-      ..write(obj.attemptNo);
+      ..write(obj.attemptNo)
+      ..writeByte(6)
+      ..write(obj.timeSpent);
   }
 
   @override
@@ -67,6 +70,7 @@ DetailedTestResult _$DetailedTestResultFromJson(Map<String, dynamic> json) =>
       isCorrect: json['is_correct'] as bool,
       selectedOption: json['selected_option'] as String?,
       attemptNo: (json['attempt_no'] as num).toInt(),
+      timeSpent: (json['time_spent'] as num).toInt(),
     );
 
 Map<String, dynamic> _$DetailedTestResultToJson(DetailedTestResult instance) =>
@@ -77,4 +81,5 @@ Map<String, dynamic> _$DetailedTestResultToJson(DetailedTestResult instance) =>
       'is_correct': instance.isCorrect,
       'selected_option': instance.selectedOption,
       'attempt_no': instance.attemptNo,
+      'time_spent': instance.timeSpent,
     };

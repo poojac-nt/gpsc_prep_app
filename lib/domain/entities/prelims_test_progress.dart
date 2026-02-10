@@ -28,6 +28,9 @@ class PrelimsTestProgress extends HiveObject {
   @HiveField(7)
   final String savedAt;
 
+  @HiveField(9)
+  final List<int> timePerQuestion;
+
   @HiveField(8)
   final int totalQuestions;
 
@@ -41,6 +44,7 @@ class PrelimsTestProgress extends HiveObject {
     required this.remainingTimeInSeconds,
     required this.savedAt,
     required this.totalQuestions,
+    required this.timePerQuestion,
   });
 
   bool isExpired({int maxHours = 24}) {
