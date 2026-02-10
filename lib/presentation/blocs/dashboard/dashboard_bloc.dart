@@ -1,8 +1,13 @@
 import 'package:bloc/bloc.dart';
+import 'package:either_dart/either.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_state.dart';
+
+import '../../../core/error/failure.dart';
 
 class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
   final AnalyticsRepository _analyticsRepository;
@@ -21,14 +26,29 @@ class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
   ) async {
     emit(FetchingDashboardAnalytics());
     try {
-      final result = await _analyticsRepository.getDashboardAnalytics();
-      result.fold(
-        (failure) {
-          emit(DashboardAnalyticsFetchedFailed(failure));
-        },
+      final result = await Future.wait([
+        _analyticsRepository.getDashboardAnalytics(),
+        _analyticsRepository.getPrelimsTopper(),
+      ]);
+      final dashboardAnalytics =
+          result[0] as Either<Failure, DashboardAnalytics?>;
+      final leaderboardAnalytics =
+          result[1] as Either<Failure, List<LeaderboardModel>?>;
+      dashboardAnalytics.fold(
+        (failure) => emit(DashboardAnalyticsFetchedFailed(failure)),
         (dashboardAnalytics) {
+          List<LeaderboardModel>? leaderboard;
+          leaderboardAnalytics.fold(
+            (failure) => emit(DashboardAnalyticsFetchedFailed(failure)),
+            (leaderboardAnalytics) {
+              leaderboard = leaderboardAnalytics;
+            },
+          );
           emit(
-            DashboardAnalyticsFetched(dashboardAnalytics: dashboardAnalytics),
+            DashboardAnalyticsFetched(
+              dashboardAnalytics: dashboardAnalytics!,
+              leaderboardData: leaderboard!,
+            ),
           );
         },
       );

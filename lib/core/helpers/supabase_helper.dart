@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
@@ -1063,6 +1064,23 @@ class SupabaseHelper {
     } catch (e, st) {
       _log.e("Error fetching dashboard analytics", error: e, s: st);
       return Left(Failure("Error fetching dashboard analytics"));
+    }
+  }
+
+  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async {
+    try {
+      final result = await supabase.rpc(SupabaseKeys.getPrelimsTopper);
+
+      final toppers =
+          (result as List)
+              .map((e) => LeaderboardModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+      _log.i("Leader Analytics: $toppers");
+      return Right(toppers);
+    } catch (e, st) {
+      _log.e("Error fetching leaderboard analytics", error: e, s: st);
+      return Left(Failure("Error fetching leaderboard analytics"));
     }
   }
 

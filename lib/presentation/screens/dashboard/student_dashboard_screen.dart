@@ -39,48 +39,6 @@ class StudentDashboardScreen extends StatefulWidget {
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   String leaderBoardTestTitle = 'Prelims FLT';
 
-  List<LeaderboardModel> prelimsLeaders = [
-    LeaderboardModel(
-      testType: "Prelims FTL",
-      rank: 1,
-      studentName: "Bansi",
-      totalMarks: 20,
-    ),
-    LeaderboardModel(
-      testType: "Prelims FTL",
-      rank: 2,
-      studentName: "Amisha",
-      totalMarks: 15,
-    ),
-    LeaderboardModel(
-      testType: "Prelims FTL",
-      rank: 3,
-      studentName: "Dhruvi",
-      totalMarks: 10,
-    ),
-  ];
-  List<LeaderboardModel> mainsLeaders = [
-    LeaderboardModel(
-      testType: "Mains FTL",
-      rank: 1,
-      studentName: "Vishwa",
-      totalMarks: 100,
-    ),
-    LeaderboardModel(
-      testType: "Mains FTL",
-      rank: 2,
-      studentName: "Dhrumi",
-      totalMarks: 90,
-    ),
-    LeaderboardModel(
-      testType: "Mains FTL",
-      rank: 3,
-      studentName: "Riya",
-      totalMarks: 80,
-    ),
-  ];
-  late List<LeaderboardModel> leaders = prelimsLeaders;
-
   Color _getRankColor(int rank) {
     switch (rank) {
       case 1:
@@ -285,14 +243,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             20.hGap,
             LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
             10.hGap,
-            // leaderboardSection(),
+            leaderboardSection(state.leaderboardData),
           ],
         ).padAll(20),
       ),
     );
   }
 
-  DashboardContainer leaderboardSection() {
+  DashboardContainer leaderboardSection(List<LeaderboardModel> leaders) {
     return DashboardContainer(
       child: Column(
         children: [
@@ -306,15 +264,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               10.wGap,
               Text("Leaderboard", style: AppTexts.dashboardContainerTitle),
               Spacer(),
-              GestureDetector(
-                onTap: () {},
-                child: Text(
-                  "See all",
-                  style: AppTexts.dashboardSmallTexts.copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () {},
+              //   child: Text(
+              //     "See all",
+              //     style: AppTexts.dashboardSmallTexts.copyWith(
+              //       color: AppColors.primary,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
           10.hGap,
@@ -331,14 +289,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 _buildTabToggle("Prelims FLT", leaderBoardTestTitle, (val) {
                   setState(() {
                     leaderBoardTestTitle = val;
-                    leaders = prelimsLeaders;
+                    leaders = leaders;
                   });
                 }),
                 _buildTabToggle("Mains FLT", leaderBoardTestTitle, (val) {
-                  setState(() {
-                    leaderBoardTestTitle = val;
-                    leaders = mainsLeaders;
-                  });
+                  // setState(() {
+                  //   leaderBoardTestTitle = val;
+                  //   leaders = mainsLeaders;
+                  // });
                 }),
               ],
             ),

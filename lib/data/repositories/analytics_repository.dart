@@ -1,4 +1,5 @@
 import 'package:either_dart/either.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 
@@ -31,4 +32,6 @@ class AnalyticsRepository {
 
   Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async =>
       await _supabase.fetchTrendForUser();
+  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async =>
+      await _supabase.getPrelimsTopper();
 }
