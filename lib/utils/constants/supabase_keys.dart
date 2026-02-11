@@ -6,7 +6,6 @@ abstract class SupabaseKeys {
   static final String getTestQuestionsByTestId =
       'get_test_questions_by_test_id';
   static final String getDescTestQuestionsByTestId = 'get_desc_test_questions';
-  static final String getAttemptedTestStats = 'fetch_attempted_test_stats';
   static final String insertDescWithTest = 'insert_desc_questions_with_tests';
   static final String getQuestionCorrectnessCounts =
       'get_test_question_correctness_counts';
@@ -22,7 +21,7 @@ abstract class SupabaseKeys {
       'get_user_test_result_with_top_score';
   static final String getUserTestReview = 'get_user_test_review';
   static final String getOverAllAnalytics = 'get_combined_analytics';
-  static final String getDashboardAnalytics = 'dashboard_analytics_v3';
+  static final String getDashboardAnalytics = 'dashboard_full_analytics';
   static final String getAccuracyTrend = 'get_accuracy_trends';
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
