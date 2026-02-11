@@ -1,6 +1,9 @@
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
+
+import '../../domain/entities/desc_test_model.dart';
+import '../../domain/entities/detailed_test_result_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
@@ -79,8 +82,17 @@ class DescTestResultScreenArgs {
 class QuestionPreviewScreenArgs {
   final String testName;
   final List<QuestionModel> questions;
+  final TestResultWithTopScoreModel? performanceSummary;
+  final TestModel? testModel;
+  final List<DetailedTestResult>? detailedResults;
 
-  QuestionPreviewScreenArgs({required this.questions, required this.testName});
+  QuestionPreviewScreenArgs({
+    required this.questions,
+    required this.testName,
+    this.performanceSummary,
+    this.testModel,
+    this.detailedResults,
+  });
 }
 
 class PrelimsInstructionScreenArgs {

@@ -327,6 +327,9 @@ final List<GoRoute> appRoutes = [
         QuestionPreviewScreen(
           questions: extra.questions,
           testName: extra.testName,
+          performanceSummary: extra.performanceSummary,
+          testModel: extra.testModel,
+          detailedResults: extra.detailedResults,
         ),
         state,
       );

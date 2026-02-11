@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
@@ -13,13 +14,20 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+
+import '../../../domain/entities/detailed_test_result_model.dart';
 import '../../../domain/entities/question_language_model.dart';
 
 class PdfExportService {
   Future<String> exportQuestionsToPdf(
     List<QuestionModel> questions,
-    String testName,
-  ) async {
+    String testName, {
+    TestResultWithTopScoreModel? performanceSummary,
+    TestType? testType,
+    List<DetailedTestResult>? detailedResults,
+  }) async {
     final log = getIt<LogHelper>();
     final mcqPdfHeader = pw.MemoryImage(
       (await rootBundle.load(
@@ -182,6 +190,8 @@ class PdfExportService {
                   ],
                 ),
               ),
+              if (testType == TestType.prelims && performanceSummary != null)
+                _buildPerformanceSummary(performanceSummary),
               ...questions.asMap().entries.map((entry) {
                 final index = entry.key + 1;
                 final ln = getIt<CacheManager>().userSelectedLanguage();
@@ -251,6 +261,40 @@ class PdfExportService {
                                 ],
                               ),
                             ),
+                            if (detailedResults != null) ...[
+                              () {
+                                final userResult = detailedResults!.firstWhere(
+                                  (r) => r.questionId == q.questionId,
+                                  orElse:
+                                      () => DetailedTestResult(
+                                        userId: 0,
+                                        testId: 0,
+                                        questionId: 0,
+                                        isCorrect: false,
+                                        attemptNo: 0,
+                                        timeSpent: 0,
+                                        selectedOption: null,
+                                      ),
+                                );
+                                if (userResult.selectedOption != null &&
+                                    userResult.selectedOption!.isNotEmpty) {
+                                  return pw.RichText(
+                                    text: pw.TextSpan(
+                                      text: "Your answer: ",
+                                      style: pw.TextStyle(
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                      children: [
+                                        pw.TextSpan(
+                                          text: userResult.selectedOption!,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return pw.SizedBox();
+                              }(),
+                            ],
                             pw.RichText(
                               text: pw.TextSpan(
                                 text: "Difficulty Level: ",
@@ -544,6 +588,82 @@ class PdfExportService {
               return pw.TextSpan();
             }).toList(),
       ),
+    );
+  }
+
+  pw.Widget _buildPerformanceSummary(TestResultWithTopScoreModel performance) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.SizedBox(height: 10.h),
+        pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.grey400),
+          ),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'Performance Summary',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  'Total',
+                  'Attempted',
+                  'Correct',
+                  'Incorrect',
+                  'Skipped',
+                ],
+                data: [
+                  [
+                    performance.totalQuestions.toString(),
+                    performance.attemptedQuestions.toString(),
+                    performance.correctAnswers.toString(),
+                    performance.inCorrectAnswers.toString(),
+                    performance.notAttemptedQuestions.toString(),
+                  ],
+                ],
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                cellAlignment: pw.Alignment.center,
+                columnWidths: {
+                  0: const pw.IntrinsicColumnWidth(),
+                  1: const pw.IntrinsicColumnWidth(),
+                  2: const pw.IntrinsicColumnWidth(),
+                  3: const pw.IntrinsicColumnWidth(),
+                  4: const pw.IntrinsicColumnWidth(),
+                },
+              ),
+              pw.SizedBox(height: 15.h),
+              pw.TableHelper.fromTextArray(
+                headers: ['Rank', 'Score', 'Accuracy', 'Topper\'s Score'],
+                data: [
+                  [
+                    performance.userRank.toString(),
+                    performance.score.toStringAsFixed(1),
+                    "${((performance.correctAnswers / (performance.totalQuestions == 0 ? 1 : performance.totalQuestions)) * 100).toStringAsFixed(0)}%",
+                    performance.topScore.toStringAsFixed(1),
+                  ],
+                ],
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                cellAlignment: pw.Alignment.center,
+                columnWidths: {
+                  0: const pw.IntrinsicColumnWidth(),
+                  1: const pw.IntrinsicColumnWidth(),
+                  2: const pw.IntrinsicColumnWidth(),
+                  3: const pw.IntrinsicColumnWidth(),
+                },
+              ),
+            ],
+          ),
+        ),
+        pw.SizedBox(height: 20),
+      ],
     );
   }
 }

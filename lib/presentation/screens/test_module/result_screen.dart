@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
@@ -130,6 +131,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     null,
                     null,
                     null,
+                    testBlocState.serverResult,
                   );
                 },
               );
@@ -159,6 +161,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     resultState.reviewByDifficulty,
                     resultState.reviewByQuestionType,
                     resultState.reviewBySubject,
+                    resultState.result,
                   );
                 }
                 if (resultState is ResultLoading) {
@@ -184,6 +187,7 @@ class _ResultScreenState extends State<ResultScreen> {
     List<TestReviewAnalytics>? reviewByDifficulty,
     List<TestReviewAnalytics>? reviewByQuestionType,
     List<TestReviewAnalytics>? reviewBySubject,
+    TestResultWithTopScoreModel? performanceSummary,
   ) {
     return SingleChildScrollView(
       child: Column(
@@ -379,15 +383,18 @@ class _ResultScreenState extends State<ResultScreen> {
                       final blocState = context.read<QuestionBloc>().state;
                       context.push(
                         AppRoutes.questionPreviewScreen,
-                        extra: QuestionPreviewScreenArgs(
-                          questions:
-                              blocState is McqQuestionLoaded
-                                  ? blocState.questionsModels
-                                  : [],
-                          testName: widget.testModel.name,
-                        ),
-                      );
-                    },
+                          extra: QuestionPreviewScreenArgs(
+                            questions:
+                                blocState is McqQuestionLoaded
+                                    ? blocState.questionsModels
+                                    : [],
+                            testName: widget.testModel.name,
+                            performanceSummary: performanceSummary,
+                            testModel: widget.testModel,
+                            detailedResults: detailedResults,
+                          ),
+                        );
+                      },
                   ),
                   10.hGap,
                   ActionButton(

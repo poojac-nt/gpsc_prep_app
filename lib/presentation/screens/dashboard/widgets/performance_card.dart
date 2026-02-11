@@ -95,7 +95,7 @@ class PerformanceCard extends StatelessWidget {
                         sectionRadiusMultiplier: 0.05,
                         total: 100,
                         itemOne: accuracy.toInt(),
-                        itemTwo: 100,
+                        itemTwo: 100 - accuracy.toInt(),
                         colorOne: AppColors.primary,
                         colorTwo: Colors.grey.shade300,
                         centerWidget: Column(

@@ -173,24 +173,31 @@ class _OMRScreenState extends State<OMRScreen> {
                                 itemCount: _questionsPerPage,
                                 itemBuilder: (context, index) {
                                   final int globalIndex =
-                                      (_currentPage * _questionsPerPage) + index;
+                                      (_currentPage * _questionsPerPage) +
+                                      index;
                                   // Check if we have valid data for this index
                                   if (globalIndex >=
-                                      questionBlocState.questionsModels.length) {
+                                      questionBlocState
+                                          .questionsModels
+                                          .length) {
                                     return const SizedBox.shrink();
                                   }
 
                                   final displayQuestionNumber = globalIndex + 1;
                                   // Use selectedOption from Cubit
                                   // The list in Cubit corresponds to questions list
-                                  final selectedOption = questionCubitState
-                                      .selectedOption[globalIndex];
+                                  final selectedOption =
+                                      questionCubitState
+                                          .selectedOption[globalIndex];
 
                                   return Container(
-                                    color: index % 2 == 0
-                                        ? Colors.white
-                                        : const Color(0xffFBFCFD),
-                                    padding: EdgeInsets.symmetric(vertical: 6.h),
+                                    color:
+                                        index % 2 == 0
+                                            ? Colors.white
+                                            : const Color(0xffFBFCFD),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 6.h,
+                                    ),
                                     child: Row(
                                       children: [
                                         Expanded(
@@ -250,17 +257,19 @@ class _OMRScreenState extends State<OMRScreen> {
                                   Expanded(
                                     child: ActionButton(
                                       text: "Prev",
-                                      onTap: isFirstPage
-                                          ? () {} // Disable button on the first page
-                                          : () {
-                                              setState(() {
-                                                _currentPage--;
-                                              });
-                                            },
+                                      onTap:
+                                          isFirstPage
+                                              ? () {} // Disable button on the first page
+                                              : () {
+                                                setState(() {
+                                                  _currentPage--;
+                                                });
+                                              },
                                       fontColor: Colors.white,
-                                      backgroundColor: isFirstPage
-                                          ? Colors.grey
-                                          : AppColors.primary,
+                                      backgroundColor:
+                                          isFirstPage
+                                              ? Colors.grey
+                                              : AppColors.primary,
                                     ),
                                   ),
                                   30.wGap,
@@ -289,6 +298,7 @@ class _OMRScreenState extends State<OMRScreen> {
                                                 secSpent: 0,
                                                 languageCode:
                                                     widget.language ?? 'en',
+                                                timePerQuestion: [],
                                               );
                                         } else {
                                           setState(() {
@@ -361,9 +371,10 @@ class _OMRScreenState extends State<OMRScreen> {
                     itemCount: 15, // Dummy count for skeleton
                     itemBuilder: (context, index) {
                       return Container(
-                        color: index % 2 == 0
-                            ? Colors.white
-                            : const Color(0xffFBFCFD),
+                        color:
+                            index % 2 == 0
+                                ? Colors.white
+                                : const Color(0xffFBFCFD),
                         padding: EdgeInsets.symmetric(vertical: 6.h),
                         child: Row(
                           children: [
