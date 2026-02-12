@@ -334,6 +334,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     required List<String?> selectedOption,
     required List<bool?> isCorrect,
     required List<QuestionLanguageData> questions,
+    required List<int> timePerQuestion,
   }) {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
@@ -345,6 +346,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         answeredStatus: answeredStatus,
         selectedOption: selectedOption,
         isCorrect: isCorrect,
+        timePerQuestion: timePerQuestion,
         isReview: true,
       ),
     );

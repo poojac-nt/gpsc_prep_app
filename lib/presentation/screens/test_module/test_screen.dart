@@ -595,33 +595,91 @@ class _TestScreenState extends State<TestScreen> {
                                     final correctAnswer =
                                         question.correctAnswer;
 
+                                    // Redesigned Review Mode Option Card
                                     if (state.isReview) {
-                                      if (isSelected &&
-                                          option == correctAnswer) {
-                                        tileColor = Colors.green;
-                                        // Selected and correct
-                                        textColor = Colors.green.shade700;
-                                      } else if (isSelected &&
-                                          option != correctAnswer) {
-                                        // Selected and wrong
-                                        tileColor = Colors.red;
-                                        textColor = Colors.red.shade700;
-                                      } else if (!isSelected &&
-                                          option == correctAnswer) {
-                                        // Not selected, but correct answer
-                                        tileColor = Colors.green;
-                                        textColor = Colors.green.shade800;
-                                      } else {
-                                        tileColor = Colors.transparent;
-                                        textColor = Colors.black;
+                                      final isCorrect = option == correctAnswer;
+                                      final isWrongSelection =
+                                          isSelected && !isCorrect;
+                                      final isMissedCorrect =
+                                          !isSelected && isCorrect;
+
+                                      Color backgroundColor = Colors.white;
+                                      Color borderColor = Colors.grey.shade300;
+                                      Widget? trailingIcon;
+
+                                      if (isCorrect && isSelected) {
+                                        backgroundColor = Colors.green.shade50;
+                                        borderColor = Colors.green;
+                                        trailingIcon = Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                        );
+                                      } else if (isWrongSelection) {
+                                        backgroundColor = Colors.red.shade50;
+                                        borderColor = Colors.red;
+                                        trailingIcon = Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                        );
+                                      } else if (isMissedCorrect) {
+                                        backgroundColor = Colors.green.shade50;
+                                        borderColor = Colors.green.shade300;
+                                        trailingIcon = Icon(
+                                          Icons.info_outline,
+                                          color: Colors.green,
+                                        );
                                       }
-                                    } else {
-                                      tileColor =
-                                          isSelected
-                                              ? AppColors.primary
-                                              : AppColors.accentColor;
-                                      textColor = Colors.black;
+
+                                      return Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: 6.h,
+                                        ),
+                                        padding: EdgeInsets.all(16.w),
+                                        decoration: BoxDecoration(
+                                          color: backgroundColor,
+                                          borderRadius: BorderRadius.circular(
+                                            12.r,
+                                          ),
+                                          border: Border.all(
+                                            color: borderColor,
+                                            width: 1.5,
+                                          ),
+                                          boxShadow: [
+                                            if (isSelected || isMissedCorrect)
+                                              BoxShadow(
+                                                color: borderColor.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
+                                              ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                option,
+                                                style: TextStyle(
+                                                  fontSize: 15.sp,
+                                                  color: Colors.black87,
+                                                  fontWeight:
+                                                      isSelected || isCorrect
+                                                          ? FontWeight.w600
+                                                          : FontWeight.normal,
+                                                ),
+                                              ),
+                                            ),
+                                            if (trailingIcon != null) ...[
+                                              10.wGap,
+                                              trailingIcon,
+                                            ],
+                                          ],
+                                        ),
+                                      );
                                     }
+
+                                    // Standard mode (RadioGroup remains for selection)
                                     return RadioGroup<String>(
                                       groupValue: selectedOptionText,
                                       onChanged: (value) {
@@ -740,81 +798,85 @@ class _TestScreenState extends State<TestScreen> {
                             ),
                             20.hGap,
                             state.isReview
-                                ? TestModule(
-                                  title: "Explanation",
-                                  cards: [
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Subject: ",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14.sp,
-                                              ),
+                                ? Container(
+                                  padding: EdgeInsets.all(16.w),
+                                  margin: EdgeInsets.symmetric(vertical: 20.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                      color: Colors.blue.shade100,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.lightbulb_outline,
+                                            color: Colors.blue.shade700,
+                                            size: 22.sp,
+                                          ),
+                                          8.wGap,
+                                          Text(
+                                            "Explanation",
+                                            style: TextStyle(
+                                              fontSize: 18.sp,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue.shade900,
                                             ),
-                                            TextSpan(
-                                              text:
-                                                  subjects[state.currentIndex],
-                                              style: TextStyle(fontSize: 14.sp),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Topic: ",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14.sp,
+                                      15.hGap,
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _infoBadge(
+                                            Icons.subject,
+                                            "Subject: ",
+                                            subjects[state.currentIndex],
+                                          ),
+                                          8.hGap,
+                                          _infoBadge(
+                                            Icons.topic,
+                                            "Topic: ",
+                                            topics[state.currentIndex],
+                                          ),
+                                          8.hGap,
+                                          Row(
+                                            children: [
+                                              _infoBadge(
+                                                Icons.speed,
+                                                "Level: ",
+                                                difficultyLevel[state
+                                                        .currentIndex]
+                                                    .level,
                                               ),
-                                            ),
-                                            TextSpan(
-                                              text: topics[state.currentIndex],
-                                              style: TextStyle(fontSize: 14.sp),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Difficulty Level: ",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                              8.wGap,
+                                              _infoBadge(
+                                                Icons.timer,
+                                                "Time: ",
+                                                "${state.timePerQuestion[state.currentIndex]}s",
                                               ),
-                                            ),
-                                            TextSpan(
-                                              text:
-                                                  difficultyLevel[state
-                                                          .currentIndex]
-                                                      .level,
-                                              style: TextStyle(fontSize: 14.sp),
-                                            ),
-                                          ],
-                                        ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child:
-                                          state
-                                              .questions[state.currentIndex]
-                                              .explanation
-                                              .toQuestionWidget(),
-                                    ),
-                                  ],
+                                      20.hGap,
+                                      Divider(color: Colors.blue.shade100),
+                                      15.hGap,
+                                      state
+                                          .questions[state.currentIndex]
+                                          .explanation
+                                          .toQuestionWidget(),
+                                    ],
+                                  ),
                                 )
                                 : SizedBox.shrink(),
                             20.hGap,
@@ -1252,6 +1314,42 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ],
           ),
+    );
+  }
+
+  Widget _infoBadge(IconData icon, String label, String value) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.sp, color: Colors.blue.shade700),
+          6.wGap,
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: label,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                TextSpan(
+                  text: value,
+                  style: TextStyle(fontSize: 12.sp, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

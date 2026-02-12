@@ -128,6 +128,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     testCubitState.answeredStatus,
                     testCubitState.selectedOption,
                     testCubitState.batchResults,
+                    testCubitState.timePerQuestion,
                     null,
                     null,
                     null,
@@ -153,6 +154,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   return _buildSummaryBody(
                     context,
                     data,
+                    null,
                     null,
                     null,
                     null,
@@ -184,6 +186,7 @@ class _ResultScreenState extends State<ResultScreen> {
     dynamic answeredStatus,
     dynamic selectedOption,
     List<DetailedTestResult>? detailedResults,
+    List<int>? timePerQuestion,
     List<TestReviewAnalytics>? reviewByDifficulty,
     List<TestReviewAnalytics>? reviewByQuestionType,
     List<TestReviewAnalytics>? reviewBySubject,
@@ -383,18 +386,18 @@ class _ResultScreenState extends State<ResultScreen> {
                       final blocState = context.read<QuestionBloc>().state;
                       context.push(
                         AppRoutes.questionPreviewScreen,
-                          extra: QuestionPreviewScreenArgs(
-                            questions:
-                                blocState is McqQuestionLoaded
-                                    ? blocState.questionsModels
-                                    : [],
-                            testName: widget.testModel.name,
-                            performanceSummary: performanceSummary,
-                            testModel: widget.testModel,
-                            detailedResults: detailedResults,
-                          ),
-                        );
-                      },
+                        extra: QuestionPreviewScreenArgs(
+                          questions:
+                              blocState is McqQuestionLoaded
+                                  ? blocState.questionsModels
+                                  : [],
+                          testName: widget.testModel.name,
+                          performanceSummary: performanceSummary,
+                          testModel: widget.testModel,
+                          detailedResults: detailedResults,
+                        ),
+                      );
+                    },
                   ),
                   10.hGap,
                   ActionButton(
@@ -406,6 +409,10 @@ class _ResultScreenState extends State<ResultScreen> {
                         isCorrect: isCorrect,
                         answeredStatus: answeredStatus,
                         selectedOption: selectedOption,
+                        timePerQuestion:
+                            timePerQuestion ??
+                            detailedResults?.map((e) => e.timeSpent).toList() ??
+                            List.generate(questions.length, (_) => 0),
                       );
                       context.read<PieChartBloc>().add(
                         FetchPerformanceSummary(testId: widget.testModel.id),
