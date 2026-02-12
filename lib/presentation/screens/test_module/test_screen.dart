@@ -100,6 +100,7 @@ class _TestScreenState extends State<TestScreen> {
     return BlocListener<TimerBloc, TimerState>(
       listener: (context, state) {
         if (state is TimerStopped) {
+          if (widget.isFromResult) return;
           // Get data from QuestionCubit
           final questionCubitState = context.read<QuestionCubit>().state;
           if (questionCubitState is! McqQuestionCubitLoaded) return;
@@ -859,11 +860,14 @@ class _TestScreenState extends State<TestScreen> {
                                                     .level,
                                               ),
                                               8.wGap,
-                                              _infoBadge(
-                                                Icons.timer,
-                                                "Time: ",
-                                                "${state.timePerQuestion[state.currentIndex]}s",
-                                              ),
+                                              state.timePerQuestion.length >
+                                                      state.currentIndex
+                                                  ? _infoBadge(
+                                                    Icons.timer,
+                                                    "Time: ",
+                                                    "${state.timePerQuestion[state.currentIndex]}s",
+                                                  )
+                                                  : SizedBox.shrink(),
                                             ],
                                           ),
                                         ],
