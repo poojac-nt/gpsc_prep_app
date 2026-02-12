@@ -238,6 +238,14 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
       final updatedTimePerQuestion = List<int>.from(
         currentState.timePerQuestion,
       );
+
+      // Ensure the list is long enough
+      if (updatedTimePerQuestion.length <= currentState.currentIndex) {
+        final missingCount =
+            currentState.currentIndex - updatedTimePerQuestion.length + 1;
+        updatedTimePerQuestion.addAll(List.filled(missingCount, 0));
+      }
+
       updatedTimePerQuestion[currentState.currentIndex] += elapsedSeconds;
 
       emit(currentState.copyWith(timePerQuestion: updatedTimePerQuestion));
