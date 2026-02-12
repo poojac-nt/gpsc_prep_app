@@ -44,7 +44,8 @@ class TestCubit extends Cubit<TestCubitSubmitted> {
       final languageData = questionsModel[i].getLanguageData(languageCode);
       final correctAnswer = languageData.correctAnswer;
       final questionId = questionsModel[i].questionId;
-      final timeSpentOnQuestion = timePerQuestion[i];
+      final timeSpentOnQuestion =
+          timePerQuestion.length > i ? timePerQuestion[i] : 0;
 
       bool? isAnswerCorrect;
       if (userAnswer != null) {

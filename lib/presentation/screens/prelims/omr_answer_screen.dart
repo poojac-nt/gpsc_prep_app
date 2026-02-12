@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-
-import '../../../utils/extensions/padding.dart';
-import '../../blocs/question/question_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
+import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../../utils/extensions/padding.dart';
+import '../../blocs/question/question_bloc.dart';
 
 class OMRScreen extends StatefulWidget {
   const OMRScreen({super.key, required this.testModel, this.language});
@@ -156,10 +156,10 @@ class _OMRScreenState extends State<OMRScreen> {
                               flex: 1,
                               child: Center(child: TopLabelRow(text: "D")),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Center(child: TopLabelRow(text: "E")),
-                            ),
+                            // Expanded(
+                            //   flex: 1,
+                            //   child: Center(child: TopLabelRow(text: "E")),
+                            // ),
                           ],
                         ),
                       ),
@@ -214,7 +214,7 @@ class _OMRScreenState extends State<OMRScreen> {
                                             ),
                                           ),
                                         ),
-                                        ...['A', 'B', 'C', 'D', 'E'].map(
+                                        ...['A', 'B', 'C', 'D'].map(
                                           (option) => Expanded(
                                             flex: 1,
                                             child: Center(
