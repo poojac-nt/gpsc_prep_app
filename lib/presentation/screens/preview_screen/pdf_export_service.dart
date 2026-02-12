@@ -263,7 +263,7 @@ class PdfExportService {
                             ),
                             if (detailedResults != null) ...[
                               () {
-                                final userResult = detailedResults!.firstWhere(
+                                final userResult = detailedResults.firstWhere(
                                   (r) => r.questionId == q.questionId,
                                   orElse:
                                       () => DetailedTestResult(

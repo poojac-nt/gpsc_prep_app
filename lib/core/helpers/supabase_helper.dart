@@ -263,12 +263,13 @@ class SupabaseHelper {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
           .select()
-          .filter('test_type', 'in', '(dtmcq,mcq)')
-          .order('id', ascending: false);
+          .inFilter('test_type', ['dtmcq', 'mcq'])
+          .lte('available_at', DateTime.now().toUtc().toIso8601String())
+          .order('available_at', ascending: false);
 
-      var result = response.map((e) => TestModel.fromJson(e)).toList();
+      final result = response.map((e) => TestModel.fromJson(e)).toList();
 
-      _log.i('Total test : ${result.length}');
+      _log.i('Total available tests: ${result.length}');
       return Right(result);
     } catch (e, s) {
       _snackBar.showError('Error fetching tests: ${e.toString()}');
@@ -282,10 +283,11 @@ class SupabaseHelper {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
           .select()
-          .filter('test_type', 'in', '(prelims)')
-          .order('id', ascending: false);
+          .inFilter('test_type', ['prelims'])
+          .lte('available_at', DateTime.now().toUtc().toIso8601String())
+          .order('available_at', ascending: false);
 
-      var result = response.map((e) => TestModel.fromJson(e)).toList();
+      final result = response.map((e) => TestModel.fromJson(e)).toList();
 
       _log.i('Total test : ${result.length}');
       return Right(result);

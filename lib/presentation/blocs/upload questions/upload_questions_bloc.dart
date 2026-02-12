@@ -53,6 +53,7 @@ class UploadQuestionsBloc
       final result = await submitParsedDataToSupabase(
         payload: event.payload,
         isTestUpload: event.isTestUpload,
+        availableAt: event.availableAt,
       );
 
       result.fold(

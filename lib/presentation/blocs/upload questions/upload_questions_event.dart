@@ -16,8 +16,13 @@ class McqParseUploadFile extends UploadQuestionsEvent {
 class McqUploadParsedQuestions extends UploadQuestionsEvent {
   final List<Map<String, dynamic>> payload;
   final bool isTestUpload;
+  final DateTime? availableAt;
 
-  McqUploadParsedQuestions({required this.payload, required this.isTestUpload});
+  McqUploadParsedQuestions({
+    required this.payload,
+    required this.isTestUpload,
+    this.availableAt,
+  });
 }
 
 class DescParseUploadFile extends UploadQuestionsEvent {}

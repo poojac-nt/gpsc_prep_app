@@ -14,6 +14,9 @@ TestModel _$TestModelFromJson(Map<String, dynamic> json) => TestModel(
       testType: $enumDecode(_$TestTypeEnumMap, json['test_type']),
       totalMarks: (json['total_marks'] as num).toInt(),
       omrLink: json['omr_link'] as String?,
+      availableAt: json['available_at'] == null
+          ? null
+          : DateTime.parse(json['available_at'] as String),
     );
 
 Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
@@ -24,6 +27,7 @@ Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'test_type': _$TestTypeEnumMap[instance.testType]!,
       'total_marks': instance.totalMarks,
       'omr_link': instance.omrLink,
+      'available_at': instance.availableAt?.toIso8601String(),
     };
 
 const _$TestTypeEnumMap = {

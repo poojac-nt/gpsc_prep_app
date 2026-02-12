@@ -243,7 +243,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             20.hGap,
             LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
             10.hGap,
-            leaderboardSection(state.leaderboardData),
+            state.leaderboardData.isNotEmpty
+                ? leaderboardSection(state.leaderboardData)
+                : SizedBox.shrink(),
           ],
         ).padAll(20),
       ),
@@ -286,18 +288,18 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildTabToggle("Prelims FLT", leaderBoardTestTitle, (val) {
+                _buildTabToggle("Prelims", leaderBoardTestTitle, (val) {
                   setState(() {
                     leaderBoardTestTitle = val;
                     leaders = leaders;
                   });
                 }),
-                _buildTabToggle("Mains FLT", leaderBoardTestTitle, (val) {
-                  // setState(() {
-                  //   leaderBoardTestTitle = val;
-                  //   leaders = mainsLeaders;
-                  // });
-                }),
+                // _buildTabToggle("Mains", leaderBoardTestTitle, (val) {
+                //   // setState(() {
+                //   //   leaderBoardTestTitle = val;
+                //   //   leaders = mainsLeaders;
+                //   // });
+                // }),
               ],
             ),
           ),

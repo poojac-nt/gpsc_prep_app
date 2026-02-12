@@ -234,8 +234,6 @@ class _ReviewQuestionUploadScreenState
                 }
               },
               builder: (context, state) {
-                final isUploading = state is UploadFileInProgress;
-
                 return Column(
                   children: [
                     _buildNotifyUserRow(),
@@ -497,6 +495,20 @@ class _ReviewQuestionUploadScreenState
                           child: ActionButton(
                             isLoading: isUploading,
                             onTap: () {
+                              DateTime? availableAt;
+                              if (isLater) {
+                                availableAt =
+                                    DateTime(
+                                      selectedDate.year,
+                                      selectedDate.month,
+                                      selectedDate.day,
+                                      selectedTime.hour,
+                                      selectedTime.minute,
+                                    ).toUtc();
+                              } else {
+                                availableAt = DateTime.now().toUtc();
+                              }
+
                               widget.isFromStudyMaterial
                                   ? context.read<StudyMaterialBloc>().add(
                                     UploadStudyMaterialWithTest(
@@ -510,6 +522,7 @@ class _ReviewQuestionUploadScreenState
                                     McqUploadParsedQuestions(
                                       payload: widget.payload,
                                       isTestUpload: widget.isTestUpload,
+                                      availableAt: availableAt,
                                     ),
                                   );
                             },

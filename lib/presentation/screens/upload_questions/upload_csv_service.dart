@@ -296,8 +296,14 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
 Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
   required List<Map<String, dynamic>> payload,
   required bool isTestUpload,
+  DateTime? availableAt,
 }) async {
   try {
+    if (availableAt != null) {
+      for (var item in payload) {
+        item['available_at'] = availableAt.toIso8601String();
+      }
+    }
     final rpcFunctionName =
         isTestUpload
             ? SupabaseKeys.insertMcqWithTest

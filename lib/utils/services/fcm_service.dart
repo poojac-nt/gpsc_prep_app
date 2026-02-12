@@ -17,10 +17,14 @@ class FCMService {
       final fcmToken = await FirebaseMessaging.instance.getToken();
       if (fcmToken != null) {
         await _setFcmToken(fcmToken);
+        await FirebaseMessaging.instance.subscribeToTopic("all_users");
+        print("Subscribed to all_users topic");
       }
 
       FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
         await _setFcmToken(token);
+        await FirebaseMessaging.instance.subscribeToTopic("all_users");
+        print("Subscribed to all_users topic (refreshed)");
       });
 
       FirebaseMessaging.onMessage.listen((payload) {
