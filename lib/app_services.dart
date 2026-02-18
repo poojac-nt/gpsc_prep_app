@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
@@ -123,5 +124,6 @@ class AppServices {
       create: (_) => getIt<DetailedAnalyticsBloc>(),
     ),
     BlocProvider<PrelimsTestBloc>(create: (_) => getIt<PrelimsTestBloc>()),
+    BlocProvider<CourseBloc>(create: (_) => getIt<CourseBloc>()),
   ];
 }

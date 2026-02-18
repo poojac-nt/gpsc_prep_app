@@ -12,11 +12,7 @@ class PaidCourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // TODO: Implement navigation to paid course screen
-        // context.push(AppRoutes.paidCourseScreen);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Paid Course Screen coming soon!")),
-        );
+        context.push(AppRoutes.courseList);
       },
       child: DashboardContainer(
         padding: EdgeInsets.zero,

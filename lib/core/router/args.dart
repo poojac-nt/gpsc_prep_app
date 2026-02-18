@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
@@ -110,4 +111,9 @@ class OMRScreenArgs {
   final String? language;
 
   OMRScreenArgs({required this.testModal, this.language});
+}
+
+class CourseDetailsScreenArgs {
+  final CourseModel courseModel;
+  CourseDetailsScreenArgs({required this.courseModel});
 }

@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/presentation/blocs/add_course/add_course_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -21,12 +21,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   final TextEditingController _courseController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final AddCourseBloc _bloc;
+  late final CourseBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    _bloc = getIt<AddCourseBloc>();
+    _bloc = getIt<CourseBloc>();
   }
 
   @override
@@ -53,7 +53,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _bloc,
-      child: BlocConsumer<AddCourseBloc, AddCourseState>(
+      child: BlocConsumer<CourseBloc, CourseState>(
         listener: (context, state) {
           if (state is AddCourseSuccess) {
             getIt<SnackBarHelper>().showSuccess(
@@ -69,7 +69,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           }
         },
         builder: (context, state) {
-          final isLoading = state is AddCourseLoading;
+          final isLoading = state is CourseLoading;
           return Scaffold(
             appBar: AppBar(
               title: Text(

@@ -19,6 +19,8 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_s
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/omr_answer_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/prelims_mcq_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
@@ -510,6 +512,21 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.addCourse,
     pageBuilder: (context, state) => _slideTransition(AddCourseScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.courseList,
+    pageBuilder:
+        (context, state) => _slideTransition(PaidCourseListScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.courseDetails,
+    pageBuilder: (context, state) {
+      final args = state.extra as CourseDetailsScreenArgs;
+      return _slideTransition(
+        CourseDetailsScreen(courseModel: args.courseModel),
+        state,
+      );
+    },
   ),
 ];
 

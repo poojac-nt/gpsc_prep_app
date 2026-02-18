@@ -33,7 +33,7 @@ import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_b
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/add_course/add_course_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -156,8 +156,8 @@ void setupBlocs() {
   getIt.registerLazySingleton<PrelimsTestBloc>(
     () => PrelimsTestBloc(getIt<TestRepository>()),
   );
-  getIt.registerLazySingleton<AddCourseBloc>(
-    () => AddCourseBloc(getIt<CourseRepository>()),
+  getIt.registerLazySingleton<CourseBloc>(
+    () => CourseBloc(getIt<CourseRepository>()),
   );
 }
 
