@@ -40,6 +40,7 @@ class ReviewQuestionScreenArgs {
   final String? title;
   final String? url;
   final String? language;
+  final int? courseId; // Updated
 
   ReviewQuestionScreenArgs({
     required this.isTestUpload,
@@ -48,6 +49,7 @@ class ReviewQuestionScreenArgs {
     this.title,
     this.url,
     this.language,
+    this.courseId,
   });
 }
 

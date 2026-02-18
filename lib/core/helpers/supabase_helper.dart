@@ -5,7 +5,9 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
@@ -177,6 +179,42 @@ class SupabaseHelper {
       _snackBar.showError('Error Updating User Info: ${e.toString()}');
       _log.e('[Update User] Error: $e', error: e);
       return Left(Failure('Error Updating User Info: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, CourseModel>> createCourses(CoursePayload data) async {
+    try {
+      final jsonData = data.toJson();
+
+      final result =
+          await supabase
+              .from(SupabaseKeys.courseTable)
+              .insert(jsonData)
+              .select()
+              .single();
+      final course = CourseModel.fromJson(result);
+      return Right(course);
+    } catch (e) {
+      _snackBar.showError('Error Creating Course: ${e.toString()}');
+      _log.e('[Create Course] Error: $e', error: e);
+      return Left(Failure('Error Creating Course: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
+    try {
+      final response = await supabase
+          .from(SupabaseKeys.courseTable)
+          .select()
+          .order('name', ascending: true);
+
+      final courses =
+          (response as List).map((e) => CourseModel.fromJson(e)).toList();
+      return Right(courses);
+    } catch (e) {
+      _snackBar.showError('Error fetching courses: ${e.toString()}');
+      _log.e('[Fetch Courses] Error: $e', error: e);
+      return Left(Failure('Error fetching courses: ${e.toString()}'));
     }
   }
 

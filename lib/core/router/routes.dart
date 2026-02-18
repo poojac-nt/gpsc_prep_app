@@ -30,6 +30,7 @@ import 'package:gpsc_prep_app/presentation/screens/study_material/student/studen
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/add_course_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_review_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_question_upload_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
@@ -304,6 +305,7 @@ final List<GoRoute> appRoutes = [
           title: args.title,
           url: args.url,
           language: args.language,
+          courseId: args.courseId,
         ),
         state,
       );
@@ -504,6 +506,10 @@ final List<GoRoute> appRoutes = [
         state,
       );
     },
+  ),
+  GoRoute(
+    path: AppRoutes.addCourse,
+    pageBuilder: (context, state) => _slideTransition(AddCourseScreen(), state),
   ),
 ];
 

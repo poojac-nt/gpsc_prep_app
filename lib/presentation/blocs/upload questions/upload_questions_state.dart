@@ -13,10 +13,12 @@ final class ParseFileInProgress extends UploadQuestionsState {}
 final class McqParseFileSuccess extends UploadQuestionsState {
   final List<Map<String, dynamic>> parsedPayload;
   final bool isTestUpload;
+  final int? courseId;
 
   McqParseFileSuccess({
     required this.parsedPayload,
     required this.isTestUpload,
+    this.courseId,
   });
 }
 
@@ -48,4 +50,18 @@ final class UploadFileFailure extends UploadQuestionsState {
   final String errorMessage;
 
   UploadFileFailure(this.errorMessage);
+}
+
+class CoursesLoading extends UploadQuestionsState {}
+
+class CoursesLoaded extends UploadQuestionsState {
+  final List<CourseModel> courses;
+
+  CoursesLoaded(this.courses);
+}
+
+class CoursesLoadFailure extends UploadQuestionsState {
+  final String errorMessage;
+
+  CoursesLoadFailure(this.errorMessage);
 }

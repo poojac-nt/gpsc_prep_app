@@ -22,6 +22,7 @@ class ReviewQuestionUploadScreen extends StatefulWidget {
   final String? title;
   final String? url;
   final String? language;
+  final int? courseId;
 
   const ReviewQuestionUploadScreen({
     super.key,
@@ -31,6 +32,7 @@ class ReviewQuestionUploadScreen extends StatefulWidget {
     this.title,
     this.url,
     this.language,
+    this.courseId,
   });
 
   @override
@@ -523,6 +525,7 @@ class _ReviewQuestionUploadScreenState
                                       payload: widget.payload,
                                       isTestUpload: widget.isTestUpload,
                                       availableAt: availableAt,
+                                      courseId: widget.courseId,
                                     ),
                                   );
                             },

@@ -25,12 +25,11 @@ class UploadResult {
   });
 }
 
-// ✅ URL Validator
 bool _isValidUrl(String url) {
   try {
     final uri = Uri.parse(url);
     return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
-  } catch (e) {
+  } catch (_) {
     return false;
   }
 }
@@ -68,10 +67,11 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
       final excel = Excel.decodeBytes(bytes);
       final sheet =
           excel.tables.values.isNotEmpty ? excel.tables.values.first : null;
+
       if (sheet == null || sheet.rows.isEmpty) {
-        _log.e('Excel file has no data.');
-        throw Exception('Excel file has no data.');
+        return Left(Failure('Excel file has no data.'));
       }
+
       rows =
           sheet.rows
               .map(
@@ -80,7 +80,7 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
               )
               .toList();
     } else {
-      return Left(Failure('Unsupported file format'));
+      return Left(Failure('Unsupported file format.'));
     }
 
     if (rows.isEmpty) {
@@ -89,100 +89,11 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
 
     final headers =
         rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
+
     final dataRows = rows.skip(1).toList();
+
     if (dataRows.isEmpty) {
       return Left(Failure('No data rows found.'));
-    }
-
-    final descRequiredHeaders = {
-      'sr_no',
-      'language_code',
-      'question_type',
-      'difficulty_level',
-      'subject_name',
-      'topic_name',
-      'question_text',
-      'marks',
-    };
-
-    final otherRequiredHeaders = {
-      'sr_no',
-      'language_code',
-      'question_type',
-      'difficulty_level',
-      'subject_name',
-      'topic_name',
-      'question_text',
-      'option_a',
-      'option_b',
-      'option_c',
-      'option_d',
-      'correct_answer',
-      'explanation',
-      'marks',
-    };
-
-    final firstRowMap = Map.fromIterables(
-      headers,
-      dataRows.first.map((e) => e.toString().trim()),
-    );
-    final firstTestName = firstRowMap['test_name'] ?? '';
-    final firstTestType = firstRowMap['test_type'] ?? '';
-    final firstDuration = firstRowMap['duration'] ?? '';
-    final firstOmrLink = firstRowMap['omr_link'] ?? ''; // ✅ Extract omr_link
-
-    if (isTestUpload) {
-      if (firstTestName.isEmpty ||
-          firstTestType.isEmpty ||
-          firstDuration.isEmpty) {
-        return Left(
-          Failure(
-            'Test upload requires test_name, test_type, and duration in the first row.',
-          ),
-        );
-      }
-
-      // ✅ Fail fast: Validate omr_link for prelims
-      if (firstTestType.toLowerCase() == 'prelims') {
-        if (firstOmrLink.isEmpty) {
-          return Left(Failure('omr link is required for test_type prelims.'));
-        }
-        if (!_isValidUrl(firstOmrLink)) {
-          return Left(
-            Failure(
-              'Invalid omr_link URL: "$firstOmrLink". Must be a valid http/https URL.',
-            ),
-          );
-        }
-      }
-    } else {
-      if ([
-        firstTestName,
-        firstTestType,
-        firstDuration,
-      ].any((e) => e.trim().isNotEmpty)) {
-        return Left(
-          Failure(
-            'You selected Bulk Upload, but test metadata was found. Please use Test Upload instead.',
-          ),
-        );
-      }
-
-      for (var i = 1; i < dataRows.length; i++) {
-        final rowMap = Map.fromIterables(
-          headers,
-          dataRows[i].map((e) => e.toString().trim()),
-        );
-        if ((rowMap['test_name']?.isNotEmpty ?? false) ||
-            (rowMap['test_type']?.isNotEmpty ?? false) ||
-            (rowMap['duration']?.isNotEmpty ?? false)) {
-          return Left(
-            Failure(
-              'Test fields should not appear in any row for bulk upload.',
-            ),
-          );
-        }
-      }
     }
 
     final grouped = <String, Map<String, dynamic>>{};
@@ -196,8 +107,15 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
         (field) => field == null || field.toString().trim().isEmpty,
       );
 
-      if (isEmptyRow && hasStartedProcessing) break;
-      if (isEmptyRow && !hasStartedProcessing) continue;
+      // Skip empty rows before data starts
+      if (!hasStartedProcessing && isEmptyRow) {
+        continue;
+      }
+
+      // Stop processing once trailing empty rows begin
+      if (hasStartedProcessing && isEmptyRow) {
+        break;
+      }
 
       hasStartedProcessing = true;
 
@@ -205,42 +123,14 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
         headers,
         row.map((e) => e.toString().trim()),
       );
+
       final srNo = rowMap['sr_no'] ?? 'unknown';
       final questionType = rowMap['question_type']?.toLowerCase() ?? '';
       final lang = rowMap['language_code'];
 
-      final requiredHeaders =
-          questionType == 'desc' ? descRequiredHeaders : otherRequiredHeaders;
-      for (final key in requiredHeaders) {
-        final value = rowMap[key]?.toString().trim();
-        if (value == null || value.isEmpty) {
-          return Left(
-            Failure('Missing value for "$key" in row $rowIndex (sr_no: $srNo)'),
-          );
-        }
-      }
-
-      if (isTestUpload &&
-          questionType == 'desc' &&
-          firstTestType.toLowerCase() != 'desc') {
-        return Left(
-          Failure(
-            'Skipped question at row $rowIndex (sr_no: $srNo): DESC type must have test_type = desc',
-          ),
-        );
-      }
-
       if (lang == null || lang.isEmpty) {
         return Left(
           Failure('Missing language_code in row $rowIndex (sr_no: $srNo)'),
-        );
-      }
-
-      if (grouped[srNo]?['languages']?[lang] != null) {
-        return Left(
-          Failure(
-            'Duplicate language "$lang" for sr_no "$srNo" at row $rowIndex.',
-          ),
         );
       }
 
@@ -258,25 +148,21 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
               };
 
       grouped.putIfAbsent(srNo, () {
-        final base = {
+        return {
+          "sr_no": int.tryParse(srNo) ?? 0,
           "question_type": questionType,
           "difficulty_level": rowMap['difficulty_level'],
           "subject_name": rowMap['subject_name'],
           "topic_name": rowMap['topic_name'],
           "marks": int.tryParse(rowMap['marks'] ?? '1') ?? 1,
           "languages": <String, dynamic>{},
+          if (isTestUpload) ...{
+            "test_name": rowMap['test_name'],
+            "test_type": rowMap['test_type'],
+            "duration": int.tryParse(rowMap['duration'] ?? '1') ?? 1,
+            "omr_link": rowMap['omr_link'],
+          },
         };
-        if (isTestUpload) {
-          base['test_name'] = firstTestName;
-          base['duration'] = int.tryParse(firstDuration) ?? 1;
-          base['test_type'] = firstTestType;
-
-          // ✅ Add omr_link only for prelims test_type
-          if (firstTestType.toLowerCase() == 'prelims') {
-            base['omr_link'] = firstOmrLink;
-          }
-        }
-        return base;
       });
 
       grouped[srNo]!["languages"][lang] = langData;
@@ -297,32 +183,75 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
   required List<Map<String, dynamic>> payload,
   required bool isTestUpload,
   DateTime? availableAt,
+  int? courseId,
 }) async {
   try {
-    if (availableAt != null) {
-      for (var item in payload) {
-        item['available_at'] = availableAt.toIso8601String();
-      }
+    if (payload.isEmpty) {
+      return Left(Failure('No questions to upload.'));
     }
-    final rpcFunctionName =
-        isTestUpload
-            ? SupabaseKeys.insertMcqWithTest
-            : SupabaseKeys.insertBulkQuestions;
+
+    // ===== BULK QUESTION UPLOAD =====
+    if (!isTestUpload) {
+      final rpcResult = await _supabase.rpc(
+        SupabaseKeys.insertBulkQuestions,
+        params: {'payload': payload},
+      );
+
+      final response = rpcResult as Map<String, dynamic>?;
+
+      if (response == null) {
+        return Left(Failure('Upload failed: No response.'));
+      }
+
+      return Right(
+        UploadResult(
+          successCount: response['inserted'] ?? 0,
+          failCount: response['failed'] ?? 0,
+          duplicateCount: response['skipped_duplicates'] ?? 0,
+        ),
+      );
+    }
+
+    // ===== TEST UPLOAD FLOW =====
+
+    final firstItem = payload.first;
+
+    final testObject = {
+      "name": firstItem['test_name'],
+      "type": firstItem['test_type'],
+      "duration": firstItem['duration'],
+      "available_at": availableAt?.toIso8601String(),
+      "omr_link": firstItem['omr_link'],
+    };
+
+    final questions =
+        payload.map((item) {
+          final question = Map<String, dynamic>.from(item);
+
+          question.remove('test_name');
+          question.remove('test_type');
+          question.remove('duration');
+          question.remove('omr_link');
+
+          return question;
+        }).toList();
+
+    final structuredPayload = {"test": testObject, "questions": questions};
 
     final rpcResult = await _supabase.rpc(
-      rpcFunctionName,
-      params: {'payload': payload},
+      SupabaseKeys.insertMcqWithTest,
+      params: {'p_course_id': courseId, 'payload': structuredPayload},
     );
 
     final response = rpcResult as Map<String, dynamic>?;
+
     if (response == null) {
-      return Left(Failure('Upload failed: No response received.'));
+      return Left(Failure('Upload failed: No response.'));
     }
 
     return Right(
       UploadResult(
-        successCount:
-            response['inserted'] ?? response['inserted_questions'] ?? 0,
+        successCount: response['inserted_questions'] ?? 0,
         failCount: response['failed'] ?? 0,
         duplicateCount: response['skipped_duplicates'] ?? 0,
       ),
