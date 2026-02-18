@@ -28,6 +28,7 @@ import '../../blocs/dashboard/dashboard_bloc_state.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
 import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';
+import 'widgets/paid_course_card.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -138,7 +139,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               totalTest: state.dashboardAnalytics.totalTestsAvailable,
               accuracy: state.dashboardAnalytics.userAllOverAccuracy,
             ),
-            10.hGap,
+            15.hGap,
+            const PaidCourseCard(),
+            15.hGap,
 
             ///Daily test
             Text(
