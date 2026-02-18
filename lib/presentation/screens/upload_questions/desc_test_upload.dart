@@ -192,11 +192,12 @@ parseDescUploadFile() async {
 
 Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
   required List<Map<String, dynamic>> payload,
+  int? courseId,
 }) async {
   try {
     final rpcResult = await _supabase.rpc(
       SupabaseKeys.insertDescWithTest,
-      params: {'payload': payload},
+      params: {'p_course_id': courseId, 'payload': payload},
     );
 
     final response = rpcResult as Map<String, dynamic>?;

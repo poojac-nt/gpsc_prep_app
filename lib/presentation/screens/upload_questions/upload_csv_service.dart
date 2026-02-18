@@ -25,15 +25,6 @@ class UploadResult {
   });
 }
 
-bool _isValidUrl(String url) {
-  try {
-    final uri = Uri.parse(url);
-    return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
-  } catch (_) {
-    return false;
-  }
-}
-
 Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
   required bool isTestUpload,
 }) async {

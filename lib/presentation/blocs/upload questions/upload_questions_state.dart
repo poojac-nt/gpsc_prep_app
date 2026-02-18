@@ -24,8 +24,9 @@ final class McqParseFileSuccess extends UploadQuestionsState {
 
 final class DescParseFileSuccess extends UploadQuestionsState {
   final List<Map<String, dynamic>> parsedPayload;
+  final int? courseId;
 
-  DescParseFileSuccess({required this.parsedPayload});
+  DescParseFileSuccess({required this.parsedPayload, this.courseId});
 }
 
 /// Parsing failed (invalid file, validation error, etc.)

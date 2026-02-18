@@ -85,8 +85,12 @@ class UploadQuestionsBloc
 
       result.fold(
         (failure) => emit(ParseFileFailure(failure.message)),
-        (parsedPayload) =>
-            emit(DescParseFileSuccess(parsedPayload: parsedPayload)),
+        (parsedPayload) => emit(
+          DescParseFileSuccess(
+            parsedPayload: parsedPayload,
+            courseId: event.courseId,
+          ),
+        ),
       );
     } catch (e) {
       emit(ParseFileFailure('Failed to parse file: ${e.toString()}'));
@@ -101,7 +105,10 @@ class UploadQuestionsBloc
     emit(UploadFileInProgress());
 
     try {
-      final result = await submitDescTestToSupabase(payload: event.payload);
+      final result = await submitDescTestToSupabase(
+        payload: event.payload,
+        courseId: event.courseId,
+      );
 
       result.fold(
         (failure) => emit(UploadFileFailure(failure.message)),

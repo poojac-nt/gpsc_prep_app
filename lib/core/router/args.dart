@@ -56,8 +56,9 @@ class ReviewQuestionScreenArgs {
 
 class DescReviewQuestionScreenArgs {
   List<Map<String, dynamic>> payload;
+  final int? courseId;
 
-  DescReviewQuestionScreenArgs({required this.payload});
+  DescReviewQuestionScreenArgs({required this.payload, this.courseId});
 }
 
 class DescTestInstructionScreenArgs {

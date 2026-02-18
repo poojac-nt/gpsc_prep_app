@@ -63,7 +63,10 @@ class _UploadQuestionsState extends State<UploadQuestions> {
           if (state is DescParseFileSuccess) {
             context.push(
               AppRoutes.descReviewQuestion,
-              extra: DescReviewQuestionScreenArgs(payload: state.parsedPayload),
+              extra: DescReviewQuestionScreenArgs(
+                payload: state.parsedPayload,
+                courseId: state.courseId,
+              ),
             );
           }
           if (state is CoursesLoaded) {
@@ -83,6 +86,8 @@ class _UploadQuestionsState extends State<UploadQuestions> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _buildCourseSelection(context),
+                30.hGap,
                 _buildSectionHeader(
                   title: 'MCQ Upload',
                   subtitle: 'Upload questions for Prelims/MCQ tests',
@@ -161,7 +166,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
 
   List<CourseModel> _courses = [];
 
-  Widget _buildMcqUploadSection(BuildContext context, bool isLoading) {
+  Widget _buildCourseSelection(BuildContext context) {
     return ElevatedContainer(
       child: Padding(
         padding: EdgeInsets.all(20.w),
@@ -183,7 +188,6 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                       AppRoutes.addCourse,
                     );
                     if (result != null && result['id'] != null) {
-                      // Refresh logic or simple add if we want optimistic UI
                       uploadQuestionsBloc.add(FetchCoursesRequested());
                     }
                   },
@@ -244,7 +248,19 @@ class _UploadQuestionsState extends State<UploadQuestions> {
               },
               initialValue: _selectedCourse?.id,
             ),
-            24.hGap,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMcqUploadSection(BuildContext context, bool isLoading) {
+    return ElevatedContainer(
+      child: Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
               'Upload Action',
               style: AppTexts.subTitle.copyWith(fontWeight: FontWeight.bold),
@@ -331,7 +347,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                 backgroundColor: AppColors.primary,
                 onTap: () {
                   context.read<UploadQuestionsBloc>().add(
-                    DescParseUploadFile(),
+                    DescParseUploadFile(courseId: _selectedCourse?.id),
                   );
                 },
               ),

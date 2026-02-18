@@ -318,7 +318,10 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       final args = state.extra as DescReviewQuestionScreenArgs;
       return _slideTransition(
-        DescReviewQuestionUploadScreen(payload: args.payload),
+        DescReviewQuestionUploadScreen(
+          payload: args.payload,
+          courseId: args.courseId,
+        ),
         state,
       );
     },

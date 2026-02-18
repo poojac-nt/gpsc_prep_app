@@ -716,6 +716,7 @@ class SupabaseHelper {
       final response = await supabase
           .from(SupabaseKeys.descTests)
           .select()
+          .isFilter('course_id', null)
           .order('id', ascending: false);
       final result = response.map((e) => DescTestModel.fromJson(e)).toList();
       if (result.isEmpty) {

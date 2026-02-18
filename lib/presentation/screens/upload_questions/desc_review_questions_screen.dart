@@ -12,8 +12,13 @@ import 'package:markdown_widget/markdown_widget.dart';
 
 class DescReviewQuestionUploadScreen extends StatelessWidget {
   final List<Map<String, dynamic>> payload;
+  final int? courseId;
 
-  const DescReviewQuestionUploadScreen({super.key, required this.payload});
+  const DescReviewQuestionUploadScreen({
+    super.key,
+    required this.payload,
+    this.courseId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +139,10 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
                           isLoading: isUploading,
                           onTap: () {
                             context.read<UploadQuestionsBloc>().add(
-                              DescUploadParsedQuestions(payload: payload),
+                              DescUploadParsedQuestions(
+                                payload: payload,
+                                courseId: courseId,
+                              ),
                             );
                           },
                           text: 'Confirm & Upload',

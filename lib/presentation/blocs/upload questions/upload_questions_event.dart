@@ -28,13 +28,18 @@ class McqUploadParsedQuestions extends UploadQuestionsEvent {
   });
 }
 
-class DescParseUploadFile extends UploadQuestionsEvent {}
+class DescParseUploadFile extends UploadQuestionsEvent {
+  final int? courseId;
+
+  DescParseUploadFile({this.courseId});
+}
 
 /// Uploads the previously parsed payload to Supabase
 class DescUploadParsedQuestions extends UploadQuestionsEvent {
   final List<Map<String, dynamic>> payload;
+  final int? courseId;
 
-  DescUploadParsedQuestions({required this.payload});
+  DescUploadParsedQuestions({required this.payload, this.courseId});
 }
 
 class FetchCoursesRequested extends UploadQuestionsEvent {}
