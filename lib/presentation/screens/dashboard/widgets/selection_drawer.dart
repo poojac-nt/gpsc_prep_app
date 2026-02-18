@@ -253,15 +253,18 @@ class SelectionDrawer extends StatelessWidget {
                   size: 22.sp,
                 ),
                 16.wGap,
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: textColor ?? Colors.black87,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: textColor ?? Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Spacer(),
                 if (!isLogout)
                   Icon(
                     Icons.arrow_forward_ios_rounded,

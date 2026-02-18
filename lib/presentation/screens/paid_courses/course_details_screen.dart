@@ -420,7 +420,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           Icon(
             Icons.hourglass_empty_rounded,
             size: 48.sp,
-            color: AppColors.primary.withOpacity(0.5),
+            color: AppColors.primary.withAlpha(50),
           ),
           16.hGap,
           Text(

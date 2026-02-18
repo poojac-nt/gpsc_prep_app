@@ -242,7 +242,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                   }
                 });
               },
-              value: _selectedCourse?.id,
+              initialValue: _selectedCourse?.id,
             ),
             24.hGap,
             Text(

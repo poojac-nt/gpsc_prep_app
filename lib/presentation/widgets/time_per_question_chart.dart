@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart'; // Wait, I might need this for AppColors or similar if I decide to use them later, but let's remove it for now if linter says so.
 
 class TimePerQuestionChart extends StatelessWidget {
   final List<DetailedTestResult> results;

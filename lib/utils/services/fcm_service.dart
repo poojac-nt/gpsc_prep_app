@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import '../../core/helpers/supabase_helper.dart';
 
 class FCMService {
@@ -18,13 +19,13 @@ class FCMService {
       if (fcmToken != null) {
         await _setFcmToken(fcmToken);
         await FirebaseMessaging.instance.subscribeToTopic("all_users");
-        print("Subscribed to all_users topic");
+        debugPrint("Subscribed to all_users topic");
       }
 
       FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
         await _setFcmToken(token);
         await FirebaseMessaging.instance.subscribeToTopic("all_users");
-        print("Subscribed to all_users topic (refreshed)");
+        debugPrint("Subscribed to all_users topic (refreshed)");
       });
 
       FirebaseMessaging.onMessage.listen((payload) {

@@ -163,13 +163,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ),
                 ),
                 20.wGap,
-                StartTestCard(
-                  color: Color(0xff6366F2),
-                  title: "Daily Test",
-                  subTitle: "Written Tests",
-                  buttonTextColor: Color(0xff6366F2),
-                  buttonBgColor: Colors.white,
-                  onTap: () => context.push(AppRoutes.answerWriting),
+                Expanded(
+                  child: StartTestCard(
+                    color: Color(0xff6366F2),
+                    title: "Daily Test",
+                    subTitle: "Written Tests",
+                    buttonTextColor: Color(0xff6366F2),
+                    buttonBgColor: Colors.white,
+                    onTap: () => context.push(AppRoutes.answerWriting),
+                  ),
                 ),
               ],
             ),
