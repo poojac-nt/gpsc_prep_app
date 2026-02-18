@@ -67,12 +67,6 @@ class _DescriptiveTestInstructionScreenState
       ],
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              context.pushReplacement(AppRoutes.answerWriting);
-            },
-          ),
           title: Text(
             widget.descTestModel?.name ??
                 _fetchedTestModel?.name ??
