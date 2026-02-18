@@ -4,8 +4,8 @@ import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
@@ -319,6 +319,7 @@ class SupabaseHelper {
           .from(SupabaseKeys.testsTable)
           .select()
           .inFilter('test_type', ['prelims'])
+          .isFilter('course_id', null)
           .lte('available_at', DateTime.now().toUtc().toIso8601String())
           .order('available_at', ascending: false);
 

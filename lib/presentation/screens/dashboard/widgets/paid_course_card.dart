@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
 import 'dashboard_container.dart';
@@ -31,7 +32,7 @@ class PaidCourseCard extends StatelessWidget {
                 width: 100.w,
                 height: 100.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withAlpha(10),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -43,7 +44,7 @@ class PaidCourseCard extends StatelessWidget {
                 width: 80.w,
                 height: 80.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withAlpha(5),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -58,7 +59,7 @@ class PaidCourseCard extends StatelessWidget {
                     width: 50.w,
                     height: 50.w,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withAlpha(20),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
@@ -86,7 +87,7 @@ class PaidCourseCard extends StatelessWidget {
                         Text(
                           "Unlock expert-curated content to boost your preparation.",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withAlpha(90),
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w500,
                           ),

@@ -309,7 +309,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withAlpha(10),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(icon, color: AppColors.primary, size: 20.sp),

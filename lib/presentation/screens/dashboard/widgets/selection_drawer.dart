@@ -149,12 +149,12 @@ class SelectionDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.2),
+                color: AppColors.primary.withAlpha(20),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withAlpha(10),
                   blurRadius: 10,
                   offset: Offset(0, 4),
                 ),
@@ -200,7 +200,7 @@ class SelectionDrawer extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withAlpha(10),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
@@ -233,8 +233,7 @@ class SelectionDrawer extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r),
-        color:
-            isLogout ? Colors.redAccent.withOpacity(0.05) : Colors.transparent,
+        color: isLogout ? Colors.redAccent.withAlpha(5) : Colors.transparent,
       ),
       child: Material(
         color: Colors.transparent,
@@ -250,7 +249,7 @@ class SelectionDrawer extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: iconColor ?? AppColors.primary.withOpacity(0.8),
+                  color: iconColor ?? AppColors.primary.withAlpha(80),
                   size: 22.sp,
                 ),
                 16.wGap,
@@ -297,7 +296,7 @@ class SelectionDrawer extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: Colors.redAccent.withOpacity(0.1),
+                    color: Colors.redAccent.withAlpha(10),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

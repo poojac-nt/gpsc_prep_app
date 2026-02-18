@@ -6,7 +6,6 @@ import '../../../../utils/app_constants.dart';
 import '../../../../utils/extensions/padding.dart';
 import '../../../widgets/pie_chart.dart';
 import 'dashboard_container.dart';
-import 'icon_container.dart';
 
 class PerformanceCard extends StatelessWidget {
   final double accuracy;
@@ -172,7 +171,7 @@ class TotalTestCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withAlpha(30),
                       blurRadius: 8.r,
                       offset: Offset(0, 4.h),
                     ),

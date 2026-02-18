@@ -85,7 +85,7 @@ class PaidCourseListCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withAlpha(4),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
