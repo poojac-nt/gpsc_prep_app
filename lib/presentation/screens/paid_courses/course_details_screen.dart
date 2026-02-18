@@ -172,8 +172,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     },
                   ),
                   32.hGap,
-
-                  // Test Series List
                   Text(
                     "Test Series",
                     style: TextStyle(
@@ -183,26 +181,29 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     ),
                   ),
                   16.hGap,
-                  _buildTestItem(
-                    index: "01",
-                    title: "Indian Polity & Governance",
-                    details: "12 Tests • 2 hours each",
-                    isLocked: false,
-                  ),
-                  12.hGap,
-                  _buildTestItem(
-                    index: "02",
-                    title: "Indian Economy & Planning",
-                    details: "15 Tests • 2 hours each",
-                    isLocked: true,
-                  ),
-                  12.hGap,
-                  _buildTestItem(
-                    index: "03",
-                    title: "Modern Indian History",
-                    details: "10 Tests • 2 hours each",
-                    isLocked: true,
-                  ),
+                  if (widget.courseModel.courseTests.isEmpty)
+                    _buildEmptyState()
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: widget.courseModel.courseTests.length,
+                      itemBuilder: (context, index) {
+                        final test = widget.courseModel.courseTests[index];
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: _buildTestItem(
+                            index: '${index + 1}',
+                            title: test.name,
+                            details:
+                                "${test.noQuestions} Questions • ${test.duration} Minutes",
+                            isLocked: false,
+                          ),
+                        );
+                      },
+                    ),
+
+                  // Test Series List
                 ],
               ),
             ),
@@ -400,6 +401,46 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               color: Colors.grey.shade400,
               size: 16.sp,
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC), // Slate 50
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.hourglass_empty_rounded,
+            size: 48.sp,
+            color: AppColors.primary.withOpacity(0.5),
+          ),
+          16.hGap,
+          Text(
+            "Tests Coming Soon",
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          8.hGap,
+          Text(
+            "We are preparing high-quality tests for this course. Stay tuned!",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey.shade600,
+              height: 1.5,
+            ),
+          ),
         ],
       ),
     );

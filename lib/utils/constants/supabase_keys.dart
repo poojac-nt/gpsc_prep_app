@@ -30,6 +30,7 @@ abstract class SupabaseKeys {
   static final String getUserTestReviewBySubject =
       'get_test_subject_wise_analytics';
   static final String getPrelimsTopper = 'get_top_3_prelims_users';
+  static final String getCoursesWithTests = 'get_courses_with_tests';
 
   ///table
   static final String usersTable = 'users';

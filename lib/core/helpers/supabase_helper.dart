@@ -203,10 +203,7 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
     try {
-      final response = await supabase
-          .from(SupabaseKeys.courseTable)
-          .select()
-          .order('name', ascending: true);
+      final response = await supabase.rpc(SupabaseKeys.getCoursesWithTests);
 
       final courses =
           (response as List).map((e) => CourseModel.fromJson(e)).toList();
