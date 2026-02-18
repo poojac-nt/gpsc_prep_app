@@ -61,9 +61,10 @@ class DescReviewQuestionScreenArgs {
 }
 
 class DescTestInstructionScreenArgs {
-  final DescTestModel dailyTestModel;
+  final DescTestModel? dailyTestModel;
+  final int? testId;
 
-  DescTestInstructionScreenArgs({required this.dailyTestModel});
+  DescTestInstructionScreenArgs({this.dailyTestModel, this.testId});
 }
 
 class DescTestScreenArgs {

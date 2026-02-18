@@ -379,7 +379,10 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as DescTestInstructionScreenArgs;
 
       return _slideTransition(
-        DescriptiveTestInstructionScreen(descTestModel: args.dailyTestModel),
+        DescriptiveTestInstructionScreen(
+          descTestModel: args.dailyTestModel,
+          testId: args.testId,
+        ),
         state,
       );
     },

@@ -7,18 +7,36 @@ part of 'course_model.dart';
 // **************************************************************************
 
 CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => CourseModel(
-      id: (json['course_id'] as num).toInt(),
-      name: json['course_name'] as String,
-      description: json['course_description'] as String,
-      courseTests: (json['tests'] as List<dynamic>)
-          .map((e) => TestModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String,
+      description: json['description'] as String,
+      tests: CourseTestsModel.fromJson(json['tests'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
     <String, dynamic>{
-      'course_id': instance.id,
-      'course_name': instance.name,
-      'course_description': instance.description,
-      'tests': instance.courseTests,
+      'id': instance.id,
+      'name': instance.name,
+      'description': instance.description,
+      'tests': instance.tests,
+    };
+
+CourseTestsModel _$CourseTestsModelFromJson(Map<String, dynamic> json) =>
+    CourseTestsModel(
+      mcq: (json['mcq'] as List<dynamic>?)
+          ?.map((e) => TestModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      prelims: (json['prelims'] as List<dynamic>?)
+          ?.map((e) => TestModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      descriptive: (json['descriptive'] as List<dynamic>?)
+          ?.map((e) => DescTestModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$CourseTestsModelToJson(CourseTestsModel instance) =>
+    <String, dynamic>{
+      'mcq': instance.mcq,
+      'prelims': instance.prelims,
+      'descriptive': instance.descriptive,
     };

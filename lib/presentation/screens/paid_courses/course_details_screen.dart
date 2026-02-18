@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -84,9 +88,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                       12.wGap,
                       Expanded(
                         child: _buildHighlightCard(
-                          icon: Icons.support_agent_outlined,
-                          title: "Mentor Support",
-                          subtitle: "1:1 dedicated guidance",
+                          icon: Icons.bar_chart_rounded,
+                          title: "Real Time Rank",
+                          subtitle: "Outperform your peers",
                         ),
                       ),
                     ],
@@ -181,27 +185,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     ),
                   ),
                   16.hGap,
-                  if (widget.courseModel.courseTests.isEmpty)
-                    _buildEmptyState()
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: widget.courseModel.courseTests.length,
-                      itemBuilder: (context, index) {
-                        final test = widget.courseModel.courseTests[index];
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: 12.h),
-                          child: _buildTestItem(
-                            index: '${index + 1}',
-                            title: test.name,
-                            details:
-                                "${test.noQuestions} Questions • ${test.duration} Minutes",
-                            isLocked: false,
-                          ),
-                        );
-                      },
-                    ),
+                  _buildAllTests(),
 
                   // Test Series List
                 ],
@@ -337,11 +321,129 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  Widget _buildTestItem({
+  bool _hasNoTests() {
+    final t = widget.courseModel.tests;
+    return (t.mcq == null || t.mcq!.isEmpty) &&
+        (t.prelims == null || t.prelims!.isEmpty) &&
+        (t.descriptive == null || t.descriptive!.isEmpty);
+  }
+
+  Widget _buildAllTests() {
+    if (_hasNoTests()) return _buildEmptyState();
+
+    final tests = widget.courseModel.tests;
+    final List<Widget> items = [];
+    int counter = 1;
+
+    for (final test in tests.mcq ?? []) {
+      items.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: _buildTestItem(test: test, index: '$counter'),
+        ),
+      );
+      counter++;
+    }
+
+    for (final test in tests.prelims ?? []) {
+      items.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: _buildTestItem(test: test, index: '$counter'),
+        ),
+      );
+      counter++;
+    }
+
+    for (final test in tests.descriptive ?? []) {
+      items.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: _buildDescTestItem(test: test, index: '$counter'),
+        ),
+      );
+      counter++;
+    }
+
+    return Column(children: items);
+  }
+
+  void _navigateToInstruction(TestModel test) {
+    switch (test.testType) {
+      case TestType.mcq:
+        context.push(
+          AppRoutes.mcqTestInstructionScreen,
+          extra: TestInstructionScreenArgs(testId: test.id),
+        );
+        break;
+      case TestType.prelims:
+        context.push(
+          AppRoutes.prelimsInstructionsScreen,
+          extra: PrelimsInstructionScreenArgs(testId: test.id),
+        );
+        break;
+      case TestType.desc:
+        context.push(
+          AppRoutes.descriptiveTestInstructionScreen,
+          extra: DescTestInstructionScreenArgs(testId: test.id),
+        );
+        break;
+    }
+  }
+
+  Widget _buildTestItem({required TestModel test, required String index}) {
+    final bool isPrelims = test.testType == TestType.prelims;
+    final Color badgeColor =
+        isPrelims ? const Color(0xFF059669) : AppColors.primary;
+    final String badgeLabel = isPrelims ? 'Prelims' : 'MCQ';
+    final String details =
+        "${test.noQuestions} Questions • ${test.duration} Minutes";
+
+    return InkWell(
+      onTap: () => _navigateToInstruction(test),
+      borderRadius: BorderRadius.circular(12.r),
+      child: _testItemContainer(
+        index: index,
+        name: test.name,
+        details: details,
+        badgeLabel: badgeLabel,
+        badgeColor: badgeColor,
+      ),
+    );
+  }
+
+  Widget _buildDescTestItem({
+    required DescTestModel test,
     required String index,
-    required String title,
+  }) {
+    const Color badgeColor = Color(0xFF7C3AED);
+    const String badgeLabel = 'Descriptive';
+    final String details = "${test.noQuestions} Questions";
+
+    return InkWell(
+      onTap: () {
+        context.push(
+          AppRoutes.descriptiveTestInstructionScreen,
+          extra: DescTestInstructionScreenArgs(testId: test.id),
+        );
+      },
+      borderRadius: BorderRadius.circular(12.r),
+      child: _testItemContainer(
+        index: index,
+        name: test.name,
+        details: details,
+        badgeLabel: badgeLabel,
+        badgeColor: badgeColor,
+      ),
+    );
+  }
+
+  Widget _testItemContainer({
+    required String index,
+    required String name,
     required String details,
-    required bool isLocked,
+    required String badgeLabel,
+    required Color badgeColor,
   }) {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -375,7 +477,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  name,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
@@ -383,24 +485,44 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   ),
                 ),
                 4.hGap,
-                Text(
-                  details,
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    color: const Color(0xFF64748B),
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        badgeLabel,
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.bold,
+                          color: badgeColor,
+                        ),
+                      ),
+                    ),
+                    6.wGap,
+                    Text(
+                      details,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          if (isLocked)
-            Icon(Icons.lock_rounded, color: Colors.grey.shade400, size: 20.sp)
-          else
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.grey.shade400,
-              size: 16.sp,
-            ),
+          Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: Colors.grey.shade400,
+            size: 16.sp,
+          ),
         ],
       ),
     );
