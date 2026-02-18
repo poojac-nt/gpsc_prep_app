@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
+
   final CourseModel courseModel;
 
   @override
@@ -52,27 +51,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title Area
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                    child: Text(
-                      "PREMIUM",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ),
-                  12.hGap,
                   Text(
                     widget.courseModel.name,
                     style: TextStyle(
@@ -230,83 +208,83 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ),
           ),
 
-          // Bottom Bar
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: SafeArea(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Total Price",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      4.hGap,
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            "Free",
-                            style: TextStyle(
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.w900,
-                              color: const Color(0xFF111827),
-                            ),
-                          ),
-                          8.wGap,
-                          Text(
-                            "₹500",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade400,
-                              decoration: TextDecoration.lineThrough,
-                              decorationColor: Colors.grey.shade400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 48.w,
-                        vertical: 14.h,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      "Buy Now",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // // Bottom Bar
+          // Container(
+          //   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          //   decoration: BoxDecoration(
+          //     color: Colors.white,
+          //     border: Border(top: BorderSide(color: Colors.grey.shade200)),
+          //   ),
+          //   child: SafeArea(
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //       children: [
+          //         Column(
+          //           mainAxisSize: MainAxisSize.min,
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             Text(
+          //               "Total Price",
+          //               style: TextStyle(
+          //                 fontSize: 10.sp,
+          //                 color: Colors.grey.shade600,
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //             ),
+          //             4.hGap,
+          //             Row(
+          //               crossAxisAlignment: CrossAxisAlignment.baseline,
+          //               textBaseline: TextBaseline.alphabetic,
+          //               children: [
+          //                 Text(
+          //                   "Free",
+          //                   style: TextStyle(
+          //                     fontSize: 22.sp,
+          //                     fontWeight: FontWeight.w900,
+          //                     color: const Color(0xFF111827),
+          //                   ),
+          //                 ),
+          //                 8.wGap,
+          //                 Text(
+          //                   "₹500",
+          //                   style: TextStyle(
+          //                     fontSize: 12.sp,
+          //                     fontWeight: FontWeight.w500,
+          //                     color: Colors.grey.shade400,
+          //                     decoration: TextDecoration.lineThrough,
+          //                     decorationColor: Colors.grey.shade400,
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           ],
+          //         ),
+          //         ElevatedButton(
+          //           onPressed: () {},
+          //           style: ElevatedButton.styleFrom(
+          //             backgroundColor: AppColors.primary,
+          //             foregroundColor: Colors.white,
+          //             elevation: 0,
+          //             padding: EdgeInsets.symmetric(
+          //               horizontal: 48.w,
+          //               vertical: 14.h,
+          //             ),
+          //             shape: RoundedRectangleBorder(
+          //               borderRadius: BorderRadius.circular(8.r),
+          //             ),
+          //           ),
+          //           child: Text(
+          //             "Buy Now",
+          //             style: TextStyle(
+          //               fontSize: 14.sp,
+          //               fontWeight: FontWeight.bold,
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

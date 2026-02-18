@@ -94,26 +94,6 @@ class PaidCourseListCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Premium Tag
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4.r),
-            ),
-            child: Text(
-              "PREMIUM",
-              style: TextStyle(
-                color: AppColors.primary,
-                fontSize: 10.sp,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-          ),
-          12.hGap,
-
-          // Title
           Text(
             courseModel.name,
             style: TextStyle(
@@ -131,30 +111,30 @@ class PaidCourseListCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "ENROLLMENT FEE",
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF9CA3AF), // Gray 400
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  4.hGap,
-                  Text(
-                    "Free",
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w900,
-                      color: const Color(0xFF111827), // Gray 900
-                    ),
-                  ),
-                ],
-              ),
-              65.wGap,
+              // Column(
+              //   crossAxisAlignment: CrossAxisAlignment.start,
+              //   children: [
+              //     Text(
+              //       "ENROLLMENT FEE",
+              //       style: TextStyle(
+              //         fontSize: 10.sp,
+              //         fontWeight: FontWeight.bold,
+              //         color: const Color(0xFF9CA3AF), // Gray 400
+              //         letterSpacing: 0.5,
+              //       ),
+              //     ),
+              //     4.hGap,
+              //     Text(
+              //       "Free",
+              //       style: TextStyle(
+              //         fontSize: 18.sp,
+              //         fontWeight: FontWeight.w900,
+              //         color: const Color(0xFF111827), // Gray 900
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // 65.wGap,
               Expanded(
                 child: ActionButton(
                   text: "Explore Course",
