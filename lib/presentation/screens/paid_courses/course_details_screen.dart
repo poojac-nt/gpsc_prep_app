@@ -113,16 +113,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         Expanded(
                           child: _buildHighlightCard(
                             icon: Icons.analytics_outlined,
-                            title: "Detailed Analytics",
-                            subtitle: "Track every weak point",
+                            title: "Serious Aspirants Only",
+                            subtitle: "Outperform your peers",
                           ),
                         ),
                         12.wGap,
                         Expanded(
                           child: _buildHighlightCard(
                             icon: Icons.bar_chart_rounded,
-                            title: "Real Time Rank",
-                            subtitle: "Outperform your peers",
+                            title: "Real Exam Simulation",
+                            subtitle: "Compete. Analyze. Improve.",
                           ),
                         ),
                       ],
