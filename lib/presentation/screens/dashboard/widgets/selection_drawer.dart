@@ -48,13 +48,6 @@ class SelectionDrawer extends StatelessWidget {
                       ),
                       _buildMenuItem(
                         context,
-                        icon: Icons.assignment_outlined,
-                        title: 'Prelims',
-                        onTap:
-                            () => context.push(AppRoutes.prelimsMcqTestScreen),
-                      ),
-                      _buildMenuItem(
-                        context,
                         icon: Icons.description,
                         title: 'Descriptive Tests',
                         onTap: () => context.push(AppRoutes.answerWriting),
@@ -200,7 +193,7 @@ class SelectionDrawer extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(10),
+                    color: AppColors.primary.withAlpha(30),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
@@ -249,7 +242,7 @@ class SelectionDrawer extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: iconColor ?? AppColors.primary.withAlpha(80),
+                  color: iconColor ?? AppColors.primary.withAlpha(200),
                   size: 22.sp,
                 ),
                 16.wGap,

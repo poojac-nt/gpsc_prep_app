@@ -168,84 +168,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     color: Color(0xff6366F2),
                     title: "Daily Test",
                     subTitle: "Written Tests",
-                    buttonTextColor: Color(0xff6366F2),
-                    buttonBgColor: Colors.white,
+                    buttonTextColor: Colors.white,
+                    buttonBgColor: Color(0xff6366F2),
                     onTap: () => context.push(AppRoutes.answerWriting),
                   ),
                 ),
               ],
             ),
             10.hGap,
-            Text(
-              "Prelims Tests".toUpperCase(),
-              style: TextStyle(
-                color: AppColors.gray500,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            10.hGap,
-            ClipRRect(
-              borderRadius: AppBorders.dashboardBorderRadius,
-              child: Stack(
-                children: [
-                  DashboardContainer(
-                    child: Column(
-                      children: [
-                        IconContainer(
-                          icon: Icons.edit_note,
-                          color: Color(0xff4A6CF7),
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        7.hGap,
-                        Column(
-                          children: [
-                            Text("Prelims Tests", style: AppTexts.title),
-                            5.hGap,
-                            Text(
-                              "Objective practice tests",
-                              textAlign: TextAlign.center,
-                              style: AppTexts.subTitle,
-                            ),
-                          ],
-                        ),
-                        15.hGap,
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xff4A6CF7),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.r),
-                              ),
-                            ),
-                            onPressed: () {
-                              context.push(AppRoutes.prelimsMcqTestScreen);
-                            },
-                            child: Text(
-                              "Start Test",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    top: 0.h,
-                    right: 0.w,
-                    child: SizedBox(
-                      width: 120.w,
-                      height: 120.h,
-                      child: CustomPaint(
-                        painter: CirclePainter(color: Color(0xff4A6CF7)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            20.hGap,
             LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
             10.hGap,
             state.leaderboardData.isNotEmpty
