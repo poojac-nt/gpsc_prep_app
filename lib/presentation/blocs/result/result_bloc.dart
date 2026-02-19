@@ -88,7 +88,7 @@ class ResultBloc extends Bloc<ResultEvent, ResultState> {
       );
       emit(
         ResultDataSuccess(
-          result: data!,
+          result: data,
           reviewByDifficulty: reviews,
           reviewByQuestionType: reviewsByQuestionType,
           reviewBySubject: reviewsBySubject,

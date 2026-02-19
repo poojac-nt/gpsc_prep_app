@@ -53,9 +53,7 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   void initState() {
     super.initState();
-    if (!widget.isFromTestScreen) {
-      context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
-    }
+    context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
   }
 
   @override
@@ -93,46 +91,64 @@ class _ResultScreenState extends State<ResultScreen> {
             if (testBlocState is TestSubmitted && widget.isFromTestScreen) {
               return BlocBuilder<TestCubit, TestCubitSubmitted>(
                 builder: (context, testCubitState) {
-                  final serverResult = testBlocState.serverResult;
-                  final data = _TestResultData(
-                    correct:
-                        serverResult?.correctAnswers ??
-                        testCubitState.correctAnswers ??
-                        0,
-                    incorrect:
-                        serverResult?.inCorrectAnswers ??
-                        testCubitState.inCorrectAnswers ??
-                        0,
-                    skipped:
-                        serverResult?.notAttemptedQuestions ??
-                        testCubitState.notAttemptedQuestions ??
-                        0,
-                    attempted:
-                        serverResult?.attemptedQuestions ??
-                        testCubitState.attemptedQuestions ??
-                        0,
-                    total:
-                        serverResult?.totalQuestions ??
-                        testCubitState.totalQuestions ??
-                        0,
-                    score: serverResult?.score ?? testCubitState.score ?? 0.0,
-                    userRank:
-                        serverResult?.userRank ?? testCubitState.userRank ?? 0,
-                    topScore: serverResult?.topScore ?? 0.0,
-                  );
-                  return _buildSummaryBody(
-                    context,
-                    data,
-                    testCubitState.questions,
-                    testCubitState.isAnswerCorrect,
-                    testCubitState.answeredStatus,
-                    testCubitState.selectedOption,
-                    testCubitState.batchResults,
-                    testCubitState.timePerQuestion,
-                    null,
-                    null,
-                    null,
-                    testBlocState.serverResult,
+                  return BlocBuilder<ResultBloc, ResultState>(
+                    builder: (context, resultState) {
+                      final serverResult = testBlocState.serverResult;
+                      final data = _TestResultData(
+                        correct:
+                            serverResult?.correctAnswers ??
+                            testCubitState.correctAnswers ??
+                            0,
+                        incorrect:
+                            serverResult?.inCorrectAnswers ??
+                            testCubitState.inCorrectAnswers ??
+                            0,
+                        skipped:
+                            serverResult?.notAttemptedQuestions ??
+                            testCubitState.notAttemptedQuestions ??
+                            0,
+                        attempted:
+                            serverResult?.attemptedQuestions ??
+                            testCubitState.attemptedQuestions ??
+                            0,
+                        total:
+                            serverResult?.totalQuestions ??
+                            testCubitState.totalQuestions ??
+                            0,
+                        score:
+                            serverResult?.score ?? testCubitState.score ?? 0.0,
+                        userRank:
+                            serverResult?.userRank ??
+                            testCubitState.userRank ??
+                            0,
+                        topScore: serverResult?.topScore ?? 0.0,
+                      );
+
+                      List<TestReviewAnalytics>? reviewByDifficulty;
+                      List<TestReviewAnalytics>? reviewByQuestionType;
+                      List<TestReviewAnalytics>? reviewBySubject;
+
+                      if (resultState is ResultDataSuccess) {
+                        reviewByDifficulty = resultState.reviewByDifficulty;
+                        reviewByQuestionType = resultState.reviewByQuestionType;
+                        reviewBySubject = resultState.reviewBySubject;
+                      }
+
+                      return _buildSummaryBody(
+                        context,
+                        data,
+                        testCubitState.questions,
+                        testCubitState.isAnswerCorrect,
+                        testCubitState.answeredStatus,
+                        testCubitState.selectedOption,
+                        testCubitState.batchResults,
+                        testCubitState.timePerQuestion,
+                        reviewByDifficulty,
+                        reviewByQuestionType,
+                        reviewBySubject,
+                        testBlocState.serverResult,
+                      );
+                    },
                   );
                 },
               );
@@ -142,14 +158,14 @@ class _ResultScreenState extends State<ResultScreen> {
                 if (resultState is ResultDataSuccess) {
                   final result = resultState.result;
                   final data = _TestResultData(
-                    correct: result.correctAnswers,
-                    incorrect: result.inCorrectAnswers,
-                    skipped: result.notAttemptedQuestions,
-                    attempted: result.attemptedQuestions,
-                    total: result.totalQuestions,
-                    score: result.score,
-                    topScore: result.topScore,
-                    userRank: result.userRank,
+                    correct: result?.correctAnswers ?? 0,
+                    incorrect: result?.inCorrectAnswers ?? 0,
+                    skipped: result?.notAttemptedQuestions ?? 0,
+                    attempted: result?.attemptedQuestions ?? 0,
+                    total: result?.totalQuestions ?? 0,
+                    score: result?.score ?? 0.0,
+                    topScore: result?.topScore ?? 0.0,
+                    userRank: result?.userRank ?? 0,
                   );
                   return _buildSummaryBody(
                     context,
