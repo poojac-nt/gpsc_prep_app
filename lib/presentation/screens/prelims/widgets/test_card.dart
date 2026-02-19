@@ -9,19 +9,17 @@ import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../../../core/router/args.dart';
 
-class PrelimsTestCard extends StatelessWidget {
+class TestCard extends StatelessWidget {
   final bool isAttempted;
   final String? lastAttemptedDate;
   final TestModel testModel;
   final bool isEligibleForRetest;
-  final bool hasProgress;
 
-  const PrelimsTestCard({
+  const TestCard({
     super.key,
     required this.testModel,
     this.isAttempted = false,
     this.isEligibleForRetest = false,
-    this.hasProgress = false,
     this.lastAttemptedDate,
   });
 
@@ -32,7 +30,7 @@ class PrelimsTestCard extends StatelessWidget {
       fontSize: 20.sp,
       testModel: testModel,
       showShareButton: true,
-      testType: TestType.prelims,
+      testType: TestType.mcq,
       cards: [
         // Metadata: Questions and Duration
         Row(
@@ -58,26 +56,6 @@ class PrelimsTestCard extends StatelessWidget {
                 color: AppColors.gray500,
               ),
             ),
-            if (hasProgress && !isAttempted) ...[
-              const Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(4.r),
-                  border: Border.all(color: AppColors.primary, width: 0.5),
-                ),
-                child: Text(
-                  'RESUME',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
         8.hGap,
@@ -104,8 +82,8 @@ class PrelimsTestCard extends StatelessWidget {
                   label: "Retest",
                   onTap: () {
                     context.push(
-                      AppRoutes.prelimsInstructionsScreen,
-                      extra: PrelimsInstructionScreenArgs(
+                      AppRoutes.mcqTestInstructionScreen,
+                      extra: TestInstructionScreenArgs(
                         testModal: testModel,
                         testId: testModel.id,
                       ),

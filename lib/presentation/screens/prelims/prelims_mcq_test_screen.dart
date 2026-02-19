@@ -8,7 +8,7 @@ import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
-import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/prelims_test_card.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -127,11 +127,10 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
                               },
                       child: Padding(
                         padding: EdgeInsets.only(bottom: 15.h),
-                        child: PrelimsTestCard(
+                        child: TestCard(
                           testModel: test,
                           isAttempted: hasResult,
                           lastAttemptedDate: lastAttemptedDate,
-                          hasProgress: hasProgress,
                           isEligibleForRetest: isEligibleForRetest,
                         ),
                       ),

@@ -7,11 +7,13 @@ import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class MCQTestScreen extends StatefulWidget {
@@ -148,64 +150,25 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
               testAttemptState != null &&
               testAttemptState.attemptsDone == 1 &&
               testAttemptState.canRetry;
-
+          final submittedAt =
+              formatDate(testAttemptState?.lastAttemptAt) ?? 'N/A';
           return Column(
             children: [
-              TestModule(
-                showShareButton: true,
-                testModel: test,
-                title: "Daily Tests",
-                subtitle: "Subject-based Daily Practice",
-                prefixIcon: Icons.calendar_today_outlined,
-                cards: [
-                  TestTile(
-                    title: test.name,
-                    subtitle:
-                        "${test.noQuestions} Questions · ${test.duration} min",
-                    onTap: () {
-                      if (hasAttempted) {
-                        context.push(
-                          AppRoutes.resultScreen,
-                          extra: ResultScreenArgs(
-                            isFromTest: false,
-                            testModal: test,
-                          ),
-                        );
-                      } else {
-                        context.push(
-                          AppRoutes.mcqTestInstructionScreen,
-                          extra: TestInstructionScreenArgs(testModal: test),
-                        );
-                      }
-                    },
-                    hasResult: hasAttempted,
-                    widgets:
-                        canShowRetestButton
-                            ? [
-                              Column(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      AppIcons.retestIcon,
-                                      color: AppColors.primary,
-                                    ),
-                                    onPressed: () {
-                                      context.push(
-                                        AppRoutes.mcqTestInstructionScreen,
-                                        extra: TestInstructionScreenArgs(
-                                          testModal: test,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const Text("Retest"),
-                                ],
-                              ),
-                              10.wGap,
-                            ]
-                            : [],
-                  ).padSymmetric(vertical: 6.h),
-                ],
+              GestureDetector(
+                onTap: () {
+                  if (!hasAttempted) {
+                    context.push(
+                      AppRoutes.mcqTestInstructionScreen,
+                      extra: TestInstructionScreenArgs(testModal: test),
+                    );
+                  }
+                },
+                child: TestCard(
+                  testModel: test,
+                  isEligibleForRetest: canShowRetestButton,
+                  isAttempted: hasAttempted,
+                  lastAttemptedDate: submittedAt,
+                ),
               ),
               10.hGap,
             ],
@@ -213,6 +176,17 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         },
       ),
     );
+  }
+
+  String? formatDate(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return null;
+
+    try {
+      final dateTime = DateTime.parse(isoString);
+      return DateFormat('yyyy-MM-dd').format(dateTime);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Skeleton for loading state
