@@ -27,6 +27,7 @@ import 'package:intl/intl.dart';
 
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
+import '../../widgets/test_status_dialog.dart';
 
 class MCQTestInstructionScreen extends StatefulWidget {
   const MCQTestInstructionScreen({super.key, this.dailyTestModel, this.testId});
@@ -283,53 +284,66 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     }
 
     final supabaseHelper = getIt<SupabaseHelper>();
-    try {
-      final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
-        testId: dailyTestModel.id,
+
+    final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
+      testId: dailyTestModel.id,
+    );
+
+    // Handle Left (Supabase error)
+    if (testResult.isLeft) {
+      getIt<LogHelper>().e(
+        "Error fetching test result: ${testResult.left.message}",
       );
-      final result = testResult.right;
-      if (result == null) {
-        _startTest(dailyTestModel);
-        return;
-      }
-      final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
-      if (isEligibleForRetest) {
-        _startTest(dailyTestModel);
-      } else {
-        showAlreadyGivenTestDialog(result);
-      }
-    } catch (error) {
-      getIt<LogHelper>().e("Error fetching test result: $error");
+      return;
+    }
+
+    final result = testResult.right;
+
+    // No attempts yet — start fresh
+    if (result == null) {
+      _startTest(dailyTestModel);
+      return;
+    }
+
+    // Used both attempts — hard block
+    if (result.attemptNo! >= 2) {
+      showAlreadyGivenTestDialog(result, isLimitReached: true);
+      return;
+    }
+
+    // First attempt done — check 12hr cooldown
+    final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
+    if (isEligibleForRetest) {
+      _startTest(dailyTestModel);
+    } else {
+      showAlreadyGivenTestDialog(result, isLimitReached: false);
     }
   }
 
-  void showAlreadyGivenTestDialog(TestResultModel testResult) {
+  void showAlreadyGivenTestDialog(
+    TestResultModel testResult, {
+    required bool isLimitReached,
+  }) {
     String createdAtStr = testResult.createdAt!;
     String formattedDate = DateFormat(
-      'dd MMM yyyy, hh:mm a',
+      'dd-MM-yyyy',
     ).format(createdAtStr.toLocalDateTime());
 
-    int hoursPassed = createdAtStr.hoursPassedSince();
     int hoursRemaining = createdAtStr.hoursRemaining(12);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Test Status"),
-          content: Text(
-            "You have already given the test.\n\n"
-            "Last attempt: $formattedDate\n"
-            "Hours passed: $hoursPassed\n"
-            "You can attempt again in $hoursRemaining hour(s).",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
+        return TestStatusDialog(
+          title: isLimitReached ? "Attempts Completed" : "Test Cooldown",
+          message:
+              isLimitReached
+                  ? "You have completed both of your attempts for this test."
+                  : "You have already attempted this test once.",
+          lastAttemptDate: formattedDate,
+          hoursRemaining: isLimitReached ? null : hoursRemaining,
+          isLimitReached: isLimitReached,
         );
       },
     );

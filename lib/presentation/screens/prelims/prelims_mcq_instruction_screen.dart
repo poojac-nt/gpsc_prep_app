@@ -26,6 +26,7 @@ import 'package:intl/intl.dart';
 
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
+import '../../widgets/test_status_dialog.dart';
 
 class PrelimsMcqInstructionScreen extends StatefulWidget {
   const PrelimsMcqInstructionScreen({super.key, this.testModel, this.testId});
@@ -455,40 +456,38 @@ class _PrelimsMcqInstructionScreenState
       if (isEligibleForRetest) {
         _startTest(dailyTestModel);
       } else {
-        showAlreadyGivenTestDialog(result);
+        bool isLimitReached = result.attemptNo! >= 2;
+        showAlreadyGivenTestDialog(result, isLimitReached: isLimitReached);
       }
     } catch (error) {
       getIt<LogHelper>().e("Error fetching test result: $error");
     }
   }
 
-  void showAlreadyGivenTestDialog(TestResultModel testResult) {
+  void showAlreadyGivenTestDialog(
+    TestResultModel testResult, {
+    required bool isLimitReached,
+  }) {
     String createdAtStr = testResult.createdAt!;
     String formattedDate = DateFormat(
-      'dd MMM yyyy, hh:mm a',
+      'dd-MM-yyyy',
     ).format(createdAtStr.toLocalDateTime());
 
-    int hoursPassed = createdAtStr.hoursPassedSince();
     int hoursRemaining = createdAtStr.hoursRemaining(12);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Test Status"),
-          content: Text(
-            "You have already given the test.\n\n"
-            "Last attempt: $formattedDate\n"
-            "Hours passed: $hoursPassed\n"
-            "You can attempt again in $hoursRemaining hour(s).",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
+        return TestStatusDialog(
+          title: isLimitReached ? "Attempts Completed" : "Test Cooldown",
+          message:
+              isLimitReached
+                  ? "You have completed both of your attempts for this test."
+                  : "You have already attempted this test once.",
+          lastAttemptDate: formattedDate,
+          hoursRemaining: isLimitReached ? null : hoursRemaining,
+          isLimitReached: isLimitReached,
         );
       },
     );

@@ -494,7 +494,9 @@ class SupabaseHelper {
               .select()
               .eq('user_id', _cache.user!.id!)
               .eq('test_id', testId)
-              .maybeSingle(); // Use maybeSingle for optional single result
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle(); // now safe even if 2 rows exist in DB
 
       if (response == null) {
         return Right(null); // No result yet
