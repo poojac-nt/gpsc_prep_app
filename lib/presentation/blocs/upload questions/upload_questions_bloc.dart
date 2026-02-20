@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_test_upload.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
 import 'package:meta/meta.dart';
@@ -8,7 +10,10 @@ part 'upload_questions_state.dart';
 
 class UploadQuestionsBloc
     extends Bloc<UploadQuestionsEvent, UploadQuestionsState> {
-  UploadQuestionsBloc() : super(UploadQuestionsInitial()) {
+  final CourseRepository _courseRepository;
+
+  UploadQuestionsBloc(this._courseRepository)
+    : super(UploadQuestionsInitial()) {
     on<ResetUploadState>((event, emit) {
       emit(UploadQuestionsInitial()); // or your initial state
     });
@@ -16,6 +21,7 @@ class UploadQuestionsBloc
     on<McqUploadParsedQuestions>(_onMcqUploadParsedQuestions);
     on<DescParseUploadFile>(_onDescParseUploadFile);
     on<DescUploadParsedQuestions>(_onDescUploadParsedQuestions);
+    on<FetchCoursesRequested>(_onFetchCoursesRequested);
   }
 
   /// Handles parsing of the file (CSV/XLSX)
@@ -26,20 +32,18 @@ class UploadQuestionsBloc
     emit(ParseFileInProgress());
 
     try {
-      final parsedPayload = await parseUploadFile(
-        isTestUpload: event.isTestUpload,
-      );
+      final result = await parseUploadFile(isTestUpload: event.isTestUpload);
 
-      if (parsedPayload == null) {
-        emit(ParseFileFailure('Parsing returned null. Please check the file.'));
-      } else {
-        emit(
+      result.fold(
+        (failure) => emit(ParseFileFailure(failure.message)),
+        (parsedPayload) => emit(
           McqParseFileSuccess(
             parsedPayload: parsedPayload,
             isTestUpload: event.isTestUpload,
+            courseId: event.courseId,
           ),
-        );
-      }
+        ),
+      );
     } catch (e) {
       emit(ParseFileFailure('Failed to parse file: ${e.toString()}'));
     }
@@ -56,37 +60,16 @@ class UploadQuestionsBloc
       final result = await submitParsedDataToSupabase(
         payload: event.payload,
         isTestUpload: event.isTestUpload,
+        availableAt: event.availableAt,
+        courseId: event.courseId,
       );
 
-      // 🚨 Handle null response case
-      if (result == null) {
-        // Since it's a known case for Daily Test uploads, check flags if needed
-        if (event.isTestUpload) {
-          emit(
-            UploadFileFailure(
-              'A daily test has already been uploaded today. Only one allowed per day.',
-            ),
-          );
-        } else {
-          emit(UploadFileFailure('❌ Upload failed: No response received.'));
-        }
-        return;
-      }
-
-      emit(UploadFileSuccess(result));
+      result.fold(
+        (failure) => emit(UploadFileFailure(failure.message)),
+        (successResult) => emit(UploadFileSuccess(successResult)),
+      );
     } catch (e) {
-      final errorMessage = e.toString();
-      if (errorMessage.contains(
-        'A Daily test has already been created today',
-      )) {
-        emit(
-          UploadFileFailure(
-            'A daily test has already been uploaded today. Only one allowed per day.',
-          ),
-        );
-      } else {
-        emit(UploadFileFailure('❌ Upload failed: $errorMessage'));
-      }
+      emit(UploadFileFailure('❌ Upload failed: ${e.toString()}'));
     }
   }
 
@@ -98,13 +81,17 @@ class UploadQuestionsBloc
     emit(ParseFileInProgress());
 
     try {
-      final parsedPayload = await parseDescUploadFile();
+      final result = await parseDescUploadFile();
 
-      if (parsedPayload == null) {
-        emit(ParseFileFailure('Parsing returned null. Please check the file.'));
-      } else {
-        emit(DescParseFileSuccess(parsedPayload: parsedPayload));
-      }
+      result.fold(
+        (failure) => emit(ParseFileFailure(failure.message)),
+        (parsedPayload) => emit(
+          DescParseFileSuccess(
+            parsedPayload: parsedPayload,
+            courseId: event.courseId,
+          ),
+        ),
+      );
     } catch (e) {
       emit(ParseFileFailure('Failed to parse file: ${e.toString()}'));
     }
@@ -118,27 +105,29 @@ class UploadQuestionsBloc
     emit(UploadFileInProgress());
 
     try {
-      final result = await submitDescTestToSupabase(payload: event.payload);
+      final result = await submitDescTestToSupabase(
+        payload: event.payload,
+        courseId: event.courseId,
+      );
 
-      // 🚨 Handle null response case
-      if (result == null) {
-        emit(UploadFileFailure('❌ Upload failed: No response received.'));
-      }
-
-      emit(UploadFileSuccess(result!));
+      result.fold(
+        (failure) => emit(UploadFileFailure(failure.message)),
+        (successResult) => emit(UploadFileSuccess(successResult)),
+      );
     } catch (e) {
-      final errorMessage = e.toString();
-      if (errorMessage.contains(
-        'A Daily test has already been created today',
-      )) {
-        emit(
-          UploadFileFailure(
-            'A daily test has already been uploaded today. Only one allowed per day.',
-          ),
-        );
-      } else {
-        emit(UploadFileFailure('❌ Upload failed: $errorMessage'));
-      }
+      emit(UploadFileFailure('❌ Upload failed: ${e.toString()}'));
     }
+  }
+
+  Future<void> _onFetchCoursesRequested(
+    FetchCoursesRequested event,
+    Emitter<UploadQuestionsState> emit,
+  ) async {
+    emit(CoursesLoading());
+    final result = await _courseRepository.fetchCourses();
+    result.fold(
+      (failure) => emit(CoursesLoadFailure(failure.message)),
+      (courses) => emit(CoursesLoaded(courses)),
+    );
   }
 }

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
@@ -18,6 +23,7 @@ import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_c
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_indicator.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/widgets/question_navigator_btn.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/presentation/widgets/bar_chart.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_alertdialog.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
@@ -26,9 +32,10 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/extensions/question_markdown.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../domain/entities/daily_test_model.dart';
+import '../../../domain/entities/test_model.dart';
 import '../../blocs/pie_chart/pie_chart_bloc.dart';
 import '../../blocs/pie_chart/pie_chart_state.dart';
 import '../../blocs/timer/timer_bloc.dart';
@@ -41,11 +48,13 @@ class TestScreen extends StatefulWidget {
     this.isFromResult = false,
     required this.language,
     required this.dailyTestModel,
+    this.hasPrelimsProgress = false,
   });
 
   final bool isFromResult;
   final String? language;
-  final DailyTestModel dailyTestModel;
+  final TestModel dailyTestModel;
+  final bool hasPrelimsProgress;
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -62,6 +71,7 @@ class _TestScreenState extends State<TestScreen> {
     if (widget.isFromResult) {
       bloc.add(TimerStop());
     } else {
+      bloc.add(TimerReset());
       context.read<QuestionBloc>().add(
         LoadMcqQuestion(widget.dailyTestModel.id, widget.language),
       );
@@ -77,11 +87,20 @@ class _TestScreenState extends State<TestScreen> {
     return timeSpent;
   }
 
+  bool isQuestionNotAttempted(PieChartResultSuccess state, int questionId) {
+    final attemptedStats = state.attemptedCounts.firstWhere(
+      (e) => e.questionId == questionId,
+    );
+
+    return attemptedStats.attemptedCount == 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<TimerBloc, TimerState>(
       listener: (context, state) {
         if (state is TimerStopped) {
+          if (widget.isFromResult) return;
           // Get data from QuestionCubit
           final questionCubitState = context.read<QuestionCubit>().state;
           if (questionCubitState is! McqQuestionCubitLoaded) return;
@@ -97,6 +116,7 @@ class _TestScreenState extends State<TestScreen> {
             testId: widget.dailyTestModel.id,
             selectedOption: questionCubitState.selectedOption,
             answeredStatus: questionCubitState.answeredStatus,
+            timePerQuestion: questionCubitState.timePerQuestion,
             marks: questionBlocState.marks,
             minSpent: state.totalMins,
             secSpent: state.totalSecs,
@@ -116,6 +136,95 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ),
             actions: [
+              // Language selector (only show during active test, not in review mode)
+              if (!widget.isFromResult)
+                BlocBuilder<QuestionCubit, QuestionCubitState>(
+                  builder: (context, questionState) {
+                    if (questionState is! McqQuestionCubitLoaded) {
+                      return SizedBox.shrink();
+                    }
+
+                    // Determine available languages from question models
+                    final availableLanguages = <String>[];
+                    if (questionState.questionModel.isNotEmpty) {
+                      final firstQuestion = questionState.questionModel.first;
+                      availableLanguages.add(
+                        'en',
+                      ); // English is always available
+                      if (firstQuestion.questionHi != null) {
+                        availableLanguages.add('hi');
+                      }
+                      if (firstQuestion.questionGj != null) {
+                        availableLanguages.add('gj');
+                      }
+                    }
+
+                    // Only show if more than one language is available
+                    if (availableLanguages.length <= 1) {
+                      return SizedBox.shrink();
+                    }
+
+                    // Get current language character
+                    String getLanguageChar(String lang) {
+                      switch (lang) {
+                        case 'en':
+                          return 'A';
+                        case 'hi':
+                          return 'अ';
+                        case 'gj':
+                          return 'અ';
+                        default:
+                          return 'A';
+                      }
+                    }
+
+                    // Get next language in the cycle
+                    void switchToNextLanguage() {
+                      final currentIndex = availableLanguages.indexOf(
+                        questionState.currentLanguage,
+                      );
+                      final nextIndex =
+                          (currentIndex + 1) % availableLanguages.length;
+                      final nextLanguage = availableLanguages[nextIndex];
+                      context.read<QuestionCubit>().switchLanguage(
+                        nextLanguage,
+                      );
+                    }
+
+                    return IconButton(
+                      onPressed: switchToNextLanguage,
+                      icon: Text(
+                        getLanguageChar(questionState.currentLanguage),
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      tooltip:
+                          'Switch Language (${availableLanguages.map((l) {
+                            switch (l) {
+                              case 'en':
+                                return 'English';
+                              case 'hi':
+                                return 'हिंदी';
+                              case 'gj':
+                                return 'ગુજરાતી';
+                              default:
+                                return '';
+                            }
+                          }).join(', ')})',
+                    );
+                  },
+                ),
+
+              // Show pause button ONLY for Prelims tests
+              if (!widget.isFromResult && _isPrelimsTest())
+                IconButton(
+                  icon: const Icon(Icons.pause_circle_outline),
+                  onPressed: () => _handlePause(context),
+                  tooltip: "Pause Test",
+                ),
+
               widget.isFromResult
                   ? TextButton(
                     onPressed: () {
@@ -139,31 +248,43 @@ class _TestScreenState extends State<TestScreen> {
                       borderRadius: BorderRadius.circular(20.r),
                       border: Border.all(color: Colors.black),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.timer_outlined, size: 18.sp),
-                        5.wGap,
-                        BlocBuilder<TimerBloc, TimerState>(
-                          builder: (context, state) {
-                            if (state is TimerRunning) {
-                              return SizedBox(
-                                width: 43.w,
-                                child: Text(
-                                  "${state.remainingMinutes.toString().padLeft(2, '0')}:${state.remainingSeconds.toString().padLeft(2, '0')}",
-                                ),
-                              );
-                            }
-                            if (state is TimerStopped) {
-                              getIt<LogHelper>().w(state.totalMins.toString());
-                              getIt<LogHelper>().w(state.totalSecs.toString());
-                              return SizedBox.shrink();
-                            }
-                            return Text('00:00');
-                          },
-                        ),
-                      ],
+                    child: IntrinsicWidth(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.timer_outlined, size: 18.sp),
+                          5.wGap,
+                          BlocBuilder<TimerBloc, TimerState>(
+                            builder: (context, state) {
+                              if (state is TimerRunning) {
+                                return Text(
+                                  formatRemainingTime(
+                                    remainingMinutes: state.remainingMinutes,
+                                    remainingSeconds: state.remainingSeconds,
+                                  ),
+                                  style: TextStyle(
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures(),
+                                      // FIXED WIDTH DIGITS
+                                    ],
+                                  ),
+                                );
+                              }
+                              if (state is TimerStopped) {
+                                getIt<LogHelper>().w(
+                                  state.totalMins.toString(),
+                                );
+                                getIt<LogHelper>().w(
+                                  state.totalSecs.toString(),
+                                );
+                                return SizedBox.shrink();
+                              }
+                              return Text('00:00');
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ).padSymmetric(horizontal: 10.w),
             ],
@@ -183,6 +304,8 @@ class _TestScreenState extends State<TestScreen> {
                   state.notAttemptedQuestions,
                   state.score,
                   state.timeSpent,
+                  state.batchResults,
+                  timePerQuestion: state.timePerQuestion,
                 ),
               );
               final timerState = context.read<TimerBloc>().state;
@@ -194,12 +317,14 @@ class _TestScreenState extends State<TestScreen> {
                   questionCubitState.isQuitTest) {
                 context.go(AppRoutes.studentDashboard);
               } else {
-                AdService().showInterstitialAd();
+                Environment.isDevelopment
+                    ? null
+                    : AdService().showInterstitialAd();
                 context.pushReplacement(
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    dailyTestModel: widget.dailyTestModel,
+                    testModal: widget.dailyTestModel,
                   ),
                 );
               }
@@ -213,14 +338,57 @@ class _TestScreenState extends State<TestScreen> {
                     context.read<QuestionCubit>().initialize(
                       state.questions,
                       state.questionsModels,
+                      widget.language!,
                     );
                   } else {
                     context.read<QuestionCubit>()
                       ..reset()
-                      ..initialize(state.questions, state.questionsModels);
+                      ..initialize(
+                        state.questions,
+                        state.questionsModels,
+                        widget.language!,
+                      );
+
+                    // If this a Prelims test with saved progress, load it
+                    if (widget.hasPrelimsProgress) {
+                      final userId = getIt<CacheManager>().getUserId();
+                      final testId = widget.dailyTestModel.id;
+                      final loaded = context
+                          .read<QuestionCubit>()
+                          .loadPrelimsProgress(userId, testId);
+
+                      if (loaded) {
+                        final progress = getIt<PrelimsProgressRepository>()
+                            .getProgress(userId, testId);
+                        if (progress != null) {
+                          context.read<TimerBloc>().add(
+                            TimerStartWithRemaining(
+                              progress.remainingTimeInSeconds,
+                            ),
+                          );
+
+                          if (_isPrelimsTest()) {
+                            getIt<TestRepository>().updateUserTestStatus(
+                              testId: widget.dailyTestModel.id,
+                              status: 'in_progress',
+                            );
+                          }
+                          return; // Skip normal TimerStart
+                        }
+                      }
+                    }
+
+                    // Normal start
                     context.read<TimerBloc>().add(
                       TimerStart(testDuration: widget.dailyTestModel.duration),
                     );
+
+                    if (_isPrelimsTest()) {
+                      getIt<TestRepository>().updateUserTestStatus(
+                        testId: widget.dailyTestModel.id,
+                        status: 'in_progress',
+                      );
+                    }
                   }
                 }
               },
@@ -243,6 +411,9 @@ class _TestScreenState extends State<TestScreen> {
                       final question = state.questions[currentIndex];
 
                       final selectedAnswer = state.selectedOption[currentIndex];
+                      final visibleIndexes = context
+                          .read<QuestionCubit>()
+                          .visibleQuestionIndexes(state.questions.length);
                       return SingleChildScrollView(
                         controller: scrollController,
                         child: Column(
@@ -320,11 +491,40 @@ class _TestScreenState extends State<TestScreen> {
                                                                             .white,
                                                                   ),
                                                             ),
-                                                            onPressed: () {
-                                                              context.go(
-                                                                AppRoutes
-                                                                    .studentDashboard,
-                                                              ); // Close dialog
+                                                            onPressed: () async {
+                                                              if (_isPrelimsTest()) {
+                                                                final testId =
+                                                                    widget
+                                                                        .dailyTestModel
+                                                                        .id;
+                                                                final userId =
+                                                                    getIt<
+                                                                          CacheManager
+                                                                        >()
+                                                                        .getUserId();
+                                                                await getIt<
+                                                                      PrelimsProgressRepository
+                                                                    >()
+                                                                    .deleteProgress(
+                                                                      userId,
+                                                                      testId,
+                                                                    );
+                                                                await getIt<
+                                                                      TestRepository
+                                                                    >()
+                                                                    .deleteUserTest(
+                                                                      testId:
+                                                                          testId,
+                                                                    );
+                                                              }
+                                                              if (!context
+                                                                  .mounted) {
+                                                                return;
+                                                              }
+                                                              context
+                                                                  .pop(); // Close dialog
+                                                              context
+                                                                  .pop(); // Close TestScreen and go back to Instructions/List
                                                             },
                                                           ),
                                                         ],
@@ -368,42 +568,121 @@ class _TestScreenState extends State<TestScreen> {
                                   physics: NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     final option = state.options[index];
-                                    final isSelected = selectedAnswer == option;
+
+                                    // Convert stored identifier to actual option text
+                                    String? selectedOptionText;
+                                    if (selectedAnswer != null) {
+                                      switch (selectedAnswer.toUpperCase()) {
+                                        case 'A':
+                                          selectedOptionText = question.optA;
+                                          break;
+                                        case 'B':
+                                          selectedOptionText = question.optB;
+                                          break;
+                                        case 'C':
+                                          selectedOptionText = question.optC;
+                                          break;
+                                        case 'D':
+                                          selectedOptionText = question.optD;
+                                          break;
+                                      }
+                                    }
+
+                                    final isSelected =
+                                        selectedOptionText == option;
                                     Color? tileColor;
                                     Color? textColor;
 
                                     final correctAnswer =
                                         question.correctAnswer;
 
+                                    // Redesigned Review Mode Option Card
                                     if (state.isReview) {
-                                      if (isSelected &&
-                                          option == correctAnswer) {
-                                        tileColor = Colors.green;
-                                        // Selected and correct
-                                        textColor = Colors.green.shade700;
-                                      } else if (isSelected &&
-                                          option != correctAnswer) {
-                                        // Selected and wrong
-                                        tileColor = Colors.red;
-                                        textColor = Colors.red.shade700;
-                                      } else if (!isSelected &&
-                                          option == correctAnswer) {
-                                        // Not selected, but correct answer
-                                        tileColor = Colors.green;
-                                        textColor = Colors.green.shade800;
-                                      } else {
-                                        tileColor = Colors.transparent;
-                                        textColor = Colors.black;
+                                      final isCorrect = option == correctAnswer;
+                                      final isWrongSelection =
+                                          isSelected && !isCorrect;
+                                      final isMissedCorrect =
+                                          !isSelected && isCorrect;
+
+                                      Color backgroundColor = Colors.white;
+                                      Color borderColor = Colors.grey.shade300;
+                                      Widget? trailingIcon;
+
+                                      if (isCorrect && isSelected) {
+                                        backgroundColor = Colors.green.shade50;
+                                        borderColor = Colors.green;
+                                        trailingIcon = Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                        );
+                                      } else if (isWrongSelection) {
+                                        backgroundColor = Colors.red.shade50;
+                                        borderColor = Colors.red;
+                                        trailingIcon = Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                        );
+                                      } else if (isMissedCorrect) {
+                                        backgroundColor = Colors.green.shade50;
+                                        borderColor = Colors.green.shade300;
+                                        trailingIcon = Icon(
+                                          Icons.info_outline,
+                                          color: Colors.green,
+                                        );
                                       }
-                                    } else {
-                                      tileColor =
-                                          isSelected
-                                              ? AppColors.primary
-                                              : AppColors.accentColor;
-                                      textColor = Colors.black;
+
+                                      return Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: 6.h,
+                                        ),
+                                        padding: EdgeInsets.all(16.w),
+                                        decoration: BoxDecoration(
+                                          color: backgroundColor,
+                                          borderRadius: BorderRadius.circular(
+                                            12.r,
+                                          ),
+                                          border: Border.all(
+                                            color: borderColor,
+                                            width: 1.5,
+                                          ),
+                                          boxShadow: [
+                                            if (isSelected || isMissedCorrect)
+                                              BoxShadow(
+                                                color: borderColor.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                blurRadius: 4,
+                                                offset: Offset(0, 2),
+                                              ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                option,
+                                                style: TextStyle(
+                                                  fontSize: 15.sp,
+                                                  color: Colors.black87,
+                                                  fontWeight:
+                                                      isSelected || isCorrect
+                                                          ? FontWeight.w600
+                                                          : FontWeight.normal,
+                                                ),
+                                              ),
+                                            ),
+                                            if (trailingIcon != null) ...[
+                                              10.wGap,
+                                              trailingIcon,
+                                            ],
+                                          ],
+                                        ),
+                                      );
                                     }
+
+                                    // Standard mode (RadioGroup remains for selection)
                                     return RadioGroup<String>(
-                                      groupValue: selectedAnswer,
+                                      groupValue: selectedOptionText,
                                       onChanged: (value) {
                                         state.isReview
                                             ? null
@@ -520,81 +799,88 @@ class _TestScreenState extends State<TestScreen> {
                             ),
                             20.hGap,
                             state.isReview
-                                ? TestModule(
-                                  title: "Explanation",
-                                  cards: [
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Subject: ",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14.sp,
-                                              ),
+                                ? Container(
+                                  padding: EdgeInsets.all(16.w),
+                                  margin: EdgeInsets.symmetric(vertical: 20.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                      color: Colors.blue.shade100,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.lightbulb_outline,
+                                            color: Colors.blue.shade700,
+                                            size: 22.sp,
+                                          ),
+                                          8.wGap,
+                                          Text(
+                                            "Explanation",
+                                            style: TextStyle(
+                                              fontSize: 18.sp,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue.shade900,
                                             ),
-                                            TextSpan(
-                                              text:
-                                                  subjects[state.currentIndex],
-                                              style: TextStyle(fontSize: 14.sp),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Topic: ",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14.sp,
+                                      15.hGap,
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _infoBadge(
+                                            Icons.subject,
+                                            "Subject: ",
+                                            subjects[state.currentIndex],
+                                          ),
+                                          8.hGap,
+                                          _infoBadge(
+                                            Icons.topic,
+                                            "Topic: ",
+                                            topics[state.currentIndex],
+                                          ),
+                                          8.hGap,
+                                          Row(
+                                            children: [
+                                              _infoBadge(
+                                                Icons.speed,
+                                                "Level: ",
+                                                difficultyLevel[state
+                                                        .currentIndex]
+                                                    .level,
                                               ),
-                                            ),
-                                            TextSpan(
-                                              text: topics[state.currentIndex],
-                                              style: TextStyle(fontSize: 14.sp),
-                                            ),
-                                          ],
-                                        ),
+                                              8.wGap,
+                                              state.timePerQuestion.length >
+                                                      state.currentIndex
+                                                  ? _infoBadge(
+                                                    Icons.timer,
+                                                    "Time: ",
+                                                    "${state.timePerQuestion[state.currentIndex]}s",
+                                                  )
+                                                  : SizedBox.shrink(),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Difficulty Level: ",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text:
-                                                  difficultyLevel[state
-                                                          .currentIndex]
-                                                      .level,
-                                              style: TextStyle(fontSize: 14.sp),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 6.w),
-                                      child:
-                                          state
-                                              .questions[state.currentIndex]
-                                              .explanation
-                                              .toQuestionWidget(),
-                                    ),
-                                  ],
+                                      20.hGap,
+                                      Divider(color: Colors.blue.shade100),
+                                      15.hGap,
+                                      state
+                                          .questions[state.currentIndex]
+                                          .explanation
+                                          .toQuestionWidget(),
+                                    ],
+                                  ),
                                 )
                                 : SizedBox.shrink(),
                             20.hGap,
@@ -602,7 +888,15 @@ class _TestScreenState extends State<TestScreen> {
                               BlocBuilder<PieChartBloc, PieChartState>(
                                 builder: (context, correctState) {
                                   if (correctState
-                                          is CorrectnessCountsSuccess &&
+                                      is PerformanceSummaryLoading) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  if (correctState is PieChartResultFailure) {
+                                    return Center(
+                                      child: Text(correctState.message.message),
+                                    );
+                                  }
+                                  if (correctState is PieChartResultSuccess &&
                                       state.currentIndex >= 0 &&
                                       state.currentIndex <
                                           state.questions.length) {
@@ -611,26 +905,12 @@ class _TestScreenState extends State<TestScreen> {
                                             .questionModel[state.currentIndex]
                                             .questionId;
 
-                                    // ✅ Safe lookup with fallback
-                                    final stats = correctState.questionStats
-                                        .firstWhere(
-                                          (entry) =>
-                                              entry['question_id'] ==
-                                              questionId,
-                                          orElse:
-                                              () => {
-                                                'question_id': questionId,
-                                                'correct_count': 0,
-                                                'incorrect_count': 0,
-                                              },
+                                    final isNotAttempted =
+                                        isQuestionNotAttempted(
+                                          correctState,
+                                          questionId,
                                         );
-
-                                    final correct = stats['correct_count'] ?? 0;
-                                    final incorrect =
-                                        stats['incorrect_count'] ?? 0;
-
-                                    // ✅ If not attempted → only show message
-                                    if (correct == 0 && incorrect == 0) {
+                                    if (isNotAttempted) {
                                       return ElevatedContainer(
                                         child: Text(
                                           'Question is not attempted by anyone yet',
@@ -640,12 +920,56 @@ class _TestScreenState extends State<TestScreen> {
                                         ),
                                       );
                                     }
-
                                     // ✅ Otherwise → show pie chart
-                                    return QuestionPieChart(
-                                      correct: correct,
-                                      incorrect: incorrect,
-                                      height: 200,
+                                    return Column(
+                                      children: [
+                                        _buildPieCharts(
+                                          correctState,
+                                          questionId,
+                                        ),
+                                        20.hGap,
+                                        BlocBuilder<
+                                          BarChartBloc,
+                                          BarChartState
+                                        >(
+                                          builder: (context, barState) {
+                                            if (barState
+                                                is OptionMatrixLoading) {
+                                              return const SizedBox.shrink(); // or skeleton
+                                            }
+
+                                            if (barState
+                                                is OptionMatrixResultFailure) {
+                                              return ElevatedContainer(
+                                                child: Text(
+                                                  'Unable to load option statistics',
+                                                  style: AppTexts.heading
+                                                      .copyWith(
+                                                        fontSize: 14.sp,
+                                                      ),
+                                                ),
+                                              );
+                                            }
+
+                                            if (barState
+                                                is OptionMatrixSuccess) {
+                                              final questionId =
+                                                  state
+                                                      .questionModel[state
+                                                          .currentIndex]
+                                                      .questionId;
+
+                                              return McqVerticalBarChart(
+                                                questionId: questionId,
+                                                optionStats:
+                                                    barState.questionStats,
+                                              );
+                                            }
+
+                                            return const SizedBox.shrink();
+                                          },
+                                        ),
+                                      ],
                                     );
                                   }
                                   return const SizedBox.shrink();
@@ -656,57 +980,56 @@ class _TestScreenState extends State<TestScreen> {
                             TestModule(
                               title: "Question Navigator",
                               cards: [
+                                10.hGap,
                                 Wrap(
-                                  children: List.generate(state.questions.length, (
-                                    index,
-                                  ) {
-                                    return Padding(
-                                      padding: EdgeInsets.only(right: 5.w),
-                                      child: QuestionNavigatorButton(
-                                        text: "${index + 1}",
-                                        backgroundColor:
-                                            state.currentIndex == index
-                                                ? Colors.grey
-                                                : state.answeredStatus[index]
-                                                ? state.isReview
-                                                    ? state.isCorrect![index] ==
-                                                            false
-                                                        ? Colors.red
-                                                        : Colors.green
-                                                    : Colors.black
-                                                : Colors.white,
-                                        fontColor:
-                                            state.currentIndex == index
-                                                ? Colors.black
-                                                : state.answeredStatus[index]
-                                                ? Colors.white
-                                                : Colors.black,
-                                        borderColor:
-                                            state.currentIndex == index
-                                                ? Colors.grey
-                                                : state.answeredStatus[index]
-                                                ? state.isReview
-                                                    ? state.isCorrect![index] ==
-                                                            false
-                                                        ? Colors.red
-                                                        : Colors.green
-                                                    : Colors.black
-                                                : Colors.black,
-                                        onTap: () {
-                                          scrollController.animateTo(
-                                            0.0,
-                                            duration: Duration(
-                                              milliseconds: 500,
-                                            ),
-                                            curve: Curves.easeOut,
-                                          );
-                                          context
-                                              .read<QuestionCubit>()
-                                              .jumpToQuestion(index);
-                                        },
-                                      ),
-                                    );
-                                  }),
+                                  spacing: 6.w,
+                                  runSpacing: 6.h,
+                                  children:
+                                      visibleIndexes.map((index) {
+                                        return QuestionNavigatorButton(
+                                          text: '${index + 1}',
+                                          backgroundColor:
+                                              state.currentIndex == index
+                                                  ? Colors.grey
+                                                  : state.answeredStatus[index]
+                                                  ? state.isReview
+                                                      ? state.isCorrect![index] ==
+                                                              false
+                                                          ? Colors.red
+                                                          : Colors.green
+                                                      : Colors.black
+                                                  : Colors.white,
+                                          fontColor:
+                                              state.currentIndex == index
+                                                  ? Colors.black
+                                                  : state.answeredStatus[index]
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                          borderColor:
+                                              state.currentIndex == index
+                                                  ? Colors.grey
+                                                  : state.answeredStatus[index]
+                                                  ? state.isReview
+                                                      ? state.isCorrect![index] ==
+                                                              false
+                                                          ? Colors.red
+                                                          : Colors.green
+                                                      : Colors.black
+                                                  : Colors.black,
+                                          onTap: () {
+                                            scrollController.animateTo(
+                                              0.0,
+                                              duration: Duration(
+                                                milliseconds: 500,
+                                              ),
+                                              curve: Curves.easeOut,
+                                            );
+                                            context
+                                                .read<QuestionCubit>()
+                                                .jumpToQuestion(index);
+                                          },
+                                        );
+                                      }).toList(),
                                 ),
                                 10.hGap,
                                 QuestionIndicator(
@@ -747,6 +1070,26 @@ class _TestScreenState extends State<TestScreen> {
         ),
       ),
     );
+  }
+
+  String formatRemainingTime({
+    required int remainingMinutes,
+    required int remainingSeconds,
+  }) {
+    final totalSeconds = (remainingMinutes * 60) + remainingSeconds;
+
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    } else {
+      return '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    }
   }
 
   Padding _buildWhenLoading() {
@@ -871,7 +1214,7 @@ class _TestScreenState extends State<TestScreen> {
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
                     isFromTest: true,
-                    dailyTestModel: widget.dailyTestModel,
+                    testModal: widget.dailyTestModel,
                   ),
                 );
               },
@@ -879,6 +1222,138 @@ class _TestScreenState extends State<TestScreen> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildPieCharts(PieChartResultSuccess state, int questionId) {
+    final stats = state.correctnessCounts.firstWhere(
+      (e) => e['question_id'] == questionId,
+      orElse: () => {'correct_count': 0, 'incorrect_count': 0},
+    );
+
+    final attemptedStats = state.attemptedCounts.firstWhere(
+      (e) => e.questionId == questionId,
+    );
+
+    return TestModule(
+      title: "Performance Summary",
+      cards: [
+        Row(
+          children: [
+            Expanded(
+              child: CustomPieChart(
+                total: stats['correct_count'] + stats['incorrect_count'],
+                itemOne: stats['correct_count'],
+                itemTwo: stats['incorrect_count'],
+                colorOne: Colors.green,
+                colorTwo: Colors.red,
+                labelOne: 'Correct',
+                labelTwo: 'Incorrect',
+              ),
+            ),
+            10.wGap,
+            Expanded(
+              child: CustomPieChart(
+                total: attemptedStats.totalUsers,
+                itemOne: attemptedStats.attemptedCount,
+                itemTwo: attemptedStats.notAttemptedCount,
+                colorOne: Colors.blue,
+                colorTwo: Colors.grey,
+                labelOne: 'Attempted',
+                labelTwo: 'Not Attempted',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Helper method to identify Prelims test
+  bool _isPrelimsTest() {
+    return widget.dailyTestModel.testType == TestType.prelims;
+  }
+
+  // Handle test pause
+  Future<void> _handlePause(BuildContext context) async {
+    final timerBloc = context.read<TimerBloc>();
+    final questionCubit = context.read<QuestionCubit>();
+    final userId = getIt<CacheManager>().getUserId();
+
+    final remainingTime = timerBloc.getRemainingSeconds();
+
+    await questionCubit.savePrelimsProgress(
+      userId: userId,
+      testId: widget.dailyTestModel.id,
+      languageCode: widget.language!,
+      remainingTimeInSeconds: remainingTime,
+    );
+
+    if (_isPrelimsTest()) {
+      await getIt<TestRepository>().updateUserTestStatus(
+        testId: widget.dailyTestModel.id,
+        status: 'paused',
+      );
+    }
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text("Test Paused"),
+            content: const Text(
+              "Progress saved. Resume from the test list.\n\n"
+              "Note: Progress expires in 24 hours.",
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _infoBadge(IconData icon, String label, String value) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.sp, color: Colors.blue.shade700),
+          6.wGap,
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: label,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                TextSpan(
+                  text: value,
+                  style: TextStyle(fontSize: 12.sp, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

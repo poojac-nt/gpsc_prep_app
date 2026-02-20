@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ActionButton extends StatelessWidget {
@@ -12,6 +13,7 @@ class ActionButton extends StatelessWidget {
     this.isLoading = false,
     this.fontColor = Colors.white,
     this.padding = const EdgeInsets.all(10),
+    this.icon,
   });
 
   final String text;
@@ -20,6 +22,7 @@ class ActionButton extends StatelessWidget {
   final Color backgroundColor;
   final bool isLoading;
   final EdgeInsets padding;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +43,26 @@ class ActionButton extends StatelessWidget {
               // ),
             ),
           ),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: fontColor,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w800,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: fontColor, size: 18.sp),
+                8.wGap,
+              ],
+              Flexible(
+                child: Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: fontColor,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

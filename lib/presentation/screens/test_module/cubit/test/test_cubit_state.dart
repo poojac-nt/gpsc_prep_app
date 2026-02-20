@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 
 import '../../../../../domain/entities/question_language_model.dart';
@@ -14,8 +15,12 @@ class TestCubitSubmitted {
   final List<String?> selectedOption;
   final List<bool?> isAnswerCorrect;
   final double? score;
+  final double? topScore;
   final int? timeSpent;
   final List<bool> answeredStatus;
+  final int? userRank;
+  final List<DetailedTestResult> batchResults;
+  final List<int>? timePerQuestion;
 
   factory TestCubitSubmitted.initial() => TestCubitSubmitted();
 
@@ -32,7 +37,11 @@ class TestCubitSubmitted {
     this.isReview = false,
     this.timeSpent,
     this.score,
+    this.topScore,
+    this.userRank,
     this.isAnswerCorrect = const [],
+    this.batchResults = const [],
+    this.timePerQuestion,
   });
 
   TestCubitSubmitted copyWith({
@@ -49,6 +58,9 @@ class TestCubitSubmitted {
     double? score,
     int? timeSpent,
     List<bool>? answeredStatus,
+    int? userRank,
+    List<DetailedTestResult>? batchResults,
+    List<int>? timePerQuestion,
   }) {
     return TestCubitSubmitted(
       totalQuestions: totalQuestions ?? this.totalQuestions,
@@ -65,6 +77,9 @@ class TestCubitSubmitted {
       score: score ?? this.score,
       timeSpent: timeSpent ?? this.timeSpent,
       answeredStatus: answeredStatus ?? this.answeredStatus,
+      userRank: userRank ?? this.userRank,
+      batchResults: batchResults ?? this.batchResults,
+      timePerQuestion: timePerQuestion ?? this.timePerQuestion,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
@@ -12,16 +13,22 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
@@ -52,6 +59,15 @@ class AppServices {
       ),
     );
     await MobileAds.instance.initialize();
+
+    // Initialize Local Notifications
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    await FlutterLocalNotificationsPlugin().initialize(
+      settings: initializationSettings,
+    );
 
     await ScreenUtil.ensureScreenSize();
 
@@ -101,5 +117,13 @@ class AppServices {
     BlocProvider<FetchSingleTestBloc>(
       create: (_) => getIt<FetchSingleTestBloc>(),
     ),
+    BlocProvider<BarChartBloc>(create: (_) => getIt<BarChartBloc>()),
+    BlocProvider<ResultBloc>(create: (_) => getIt<ResultBloc>()),
+    BlocProvider<AnalyticsBloc>(create: (_) => getIt<AnalyticsBloc>()),
+    BlocProvider<DetailedAnalyticsBloc>(
+      create: (_) => getIt<DetailedAnalyticsBloc>(),
+    ),
+    BlocProvider<PrelimsTestBloc>(create: (_) => getIt<PrelimsTestBloc>()),
+    BlocProvider<CourseBloc>(create: (_) => getIt<CourseBloc>()),
   ];
 }

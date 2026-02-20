@@ -1,0 +1,40 @@
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'test_model.g.dart';
+
+@JsonSerializable()
+class TestModel {
+  @JsonKey(name: "id")
+  int id;
+  @JsonKey(name: "name")
+  String name;
+  @JsonKey(name: "duration")
+  int duration;
+  @JsonKey(name: "no_questions")
+  int noQuestions;
+  @JsonKey(name: "test_type")
+  TestType testType;
+  @JsonKey(name: "total_marks")
+  int totalMarks;
+  @JsonKey(name: "omr_link")
+  String? omrLink;
+  @JsonKey(name: "available_at")
+  DateTime? availableAt;
+
+  TestModel({
+    required this.id,
+    required this.name,
+    required this.duration,
+    required this.noQuestions,
+    required this.testType,
+    required this.totalMarks,
+    this.omrLink,
+    this.availableAt,
+  });
+
+  factory TestModel.fromJson(Map<String, dynamic> json) =>
+      _$TestModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TestModelToJson(this);
+}

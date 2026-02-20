@@ -70,6 +70,7 @@
                     android:path="/openMaterial"
                     android:scheme="https" />
             </intent-filter>
+            <!-- Password Reset Deep Link -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

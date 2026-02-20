@@ -155,7 +155,7 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
               child: Text('Failed to load questions: ${state.failure.message}'),
             );
           }
-          return Center(child: Text('No Questions Available'));
+          return SizedBox.shrink();
         },
       ),
     );

@@ -16,6 +16,9 @@ final class McqQuestionCubitLoaded extends QuestionCubitState {
   final List<bool> answeredStatus;
   final List<bool?>? isCorrect;
   final bool isQuitTest;
+  final String currentLanguage;
+  final List<int> timePerQuestion;
+  final int? currentQuestionStartTime;
 
   McqQuestionCubitLoaded({
     required this.questionModel,
@@ -24,8 +27,11 @@ final class McqQuestionCubitLoaded extends QuestionCubitState {
     this.isReview = false,
     required this.answeredStatus,
     required this.selectedOption,
+    required this.timePerQuestion,
+    this.currentQuestionStartTime,
     this.isCorrect,
     this.isQuitTest = false,
+    required this.currentLanguage,
   });
 
   double get progress =>
@@ -39,8 +45,11 @@ final class McqQuestionCubitLoaded extends QuestionCubitState {
     List<QuestionLanguageData>? questions,
     int? currentIndex,
     List<bool>? answeredStatus,
-    List<bool?>? isCorrect,
     List<String?>? selectedOption,
+    List<bool?>? isCorrect,
+    List<int>? timePerQuestion,
+    int? currentQuestionStartTime,
+    String? currentLanguage,
     bool? isReview,
     bool? isQuitTest,
   }) {
@@ -50,9 +59,13 @@ final class McqQuestionCubitLoaded extends QuestionCubitState {
       isReview: isReview ?? this.isReview,
       answeredStatus: answeredStatus ?? this.answeredStatus,
       selectedOption: selectedOption ?? this.selectedOption,
+      timePerQuestion: timePerQuestion ?? this.timePerQuestion,
+      currentQuestionStartTime:
+          currentQuestionStartTime ?? this.currentQuestionStartTime,
       isCorrect: isCorrect ?? this.isCorrect,
       isQuitTest: isQuitTest ?? this.isQuitTest,
       questionModel: questionModel,
+      currentLanguage: currentLanguage ?? this.currentLanguage,
     );
   }
 }

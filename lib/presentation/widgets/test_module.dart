@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -23,12 +23,13 @@ class TestModule extends StatelessWidget {
     this.iconColor = Colors.black,
     this.prefixIcon,
     this.cards = const <Widget>[],
-    this.isDesc = false,
+    this.testType = TestType.mcq,
+    this.trailing,
   });
 
   final String title;
   final String? subtitle;
-  final DailyTestModel? testModel;
+  final TestModel? testModel;
   final DescTestModel? descTestModel;
   final double? iconSize;
   final double? fontSize;
@@ -36,7 +37,8 @@ class TestModule extends StatelessWidget {
   final bool showShareButton;
   final IconData? prefixIcon;
   final List<Widget> cards;
-  final bool isDesc;
+  final TestType testType;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -61,37 +63,40 @@ class TestModule extends StatelessWidget {
                   ),
                 ),
               ),
-              showShareButton
-                  ? IconButton(
-                    tooltip: "Share Test",
-                    icon: const Icon(AppIcons.shareTest),
-                    onPressed: () {
-                      _handleShare(context, isDesc);
-                    },
-                  )
-                  : SizedBox.shrink(),
+              if (showShareButton)
+                IconButton(
+                  tooltip: "Share Test",
+                  icon: const Icon(AppIcons.shareTest),
+                  onPressed: () {
+                    _handleShare(context, testType);
+                  },
+                )
+              else if (trailing != null)
+                trailing!,
             ],
           ),
-          Text(subtitle ?? '', style: AppTexts.subTitle),
-          if (subtitle != null) 10.hGap,
+          if (subtitle != null && subtitle!.isNotEmpty) ...[
+            Text(subtitle ?? '', style: AppTexts.subTitle),
+            10.hGap,
+          ],
           ...cards,
         ],
       ),
     );
   }
 
-  Future<void> _handleShare(BuildContext context, bool isDesc) async {
+  Future<void> _handleShare(BuildContext context, TestType testType) async {
     try {
       final shareableUrl = DeepLinkGenerator.generateShareableUrl(
-        testId: isDesc ? descTestModel!.id : testModel!.id,
-        testType: isDesc ? TestType.desc : TestType.mcq,
+        testId: testType == TestType.desc ? descTestModel!.id : testModel!.id,
+        testType: testType,
       );
 
       final uri = Uri.parse(shareableUrl);
       await SharePlus.instance.share(
         ShareParams(
           text:
-              "Check out this ${isDesc ? descTestModel!.name : testModel!.name} Test! 🚀\n$uri",
+              "Check out this ${testType == TestType.desc ? descTestModel!.name : testModel!.name} Test! 🚀\n$uri",
           subject: 'GPSC Prep Test Share',
         ),
       );

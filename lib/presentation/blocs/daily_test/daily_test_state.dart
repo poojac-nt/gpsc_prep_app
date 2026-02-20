@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 
 import '../../../core/error/failure.dart';
-import '../../../domain/entities/daily_test_model.dart';
 import '../../../domain/entities/result_model.dart';
+import '../../../domain/entities/test_model.dart';
 
 @immutable
 sealed class DailyTestState {}
@@ -12,8 +13,8 @@ final class DailyTestInitial extends DailyTestState {}
 class DailyTestFetching extends DailyTestState {}
 
 class DailyTestFetched extends DailyTestState {
-  final List<DailyTestModel> dailyTestModel;
-  final Map<int, TestResultModel> testResults;
+  final List<TestModel> dailyTestModel;
+  final Map<int, TestAttemptState> testResults;
 
   DailyTestFetched(this.dailyTestModel, this.testResults);
 }

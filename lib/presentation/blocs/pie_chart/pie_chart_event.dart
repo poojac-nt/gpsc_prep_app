@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 @immutable
 sealed class PieChartEvent {}
 
-class FetchCorrectnessCountsEvent extends PieChartEvent {
+class FetchPerformanceSummary extends PieChartEvent {
   final int testId;
 
-  FetchCorrectnessCountsEvent({required this.testId});
+  FetchPerformanceSummary({required this.testId});
 }

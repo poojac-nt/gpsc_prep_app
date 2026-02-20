@@ -49,7 +49,6 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       },
       (tests) async {
         if (tests.isEmpty) {
-          _log.e("No descriptive tests available at the moment.");
           emit(
             DailyDescTestFetchFailed(
               Failure('No tests available at the moment'),

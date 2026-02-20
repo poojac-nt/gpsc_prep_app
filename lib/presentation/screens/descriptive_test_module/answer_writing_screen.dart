@@ -10,13 +10,16 @@ import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../domain/entities/desc_test_model.dart';
+import '../../../domain/entities/test_model.dart';
 import '../../widgets/bordered_container.dart';
 
 class AnswerWritingScreen extends StatefulWidget {
@@ -69,102 +72,95 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 itemBuilder: (context, index) {
                   final test = descTests[index];
                   final hasAnswer = state.answersMap.containsKey(test.id);
-                  return TestModule(
-                    title: "Daily Practice",
-                    subtitle: "Subject based Daily test",
-                    prefixIcon: Icons.calendar_today_outlined,
-                    isDesc: true,
-                    descTestModel: descTests[index],
-                    showShareButton: true,
-                    cards: [
-                      TestTile(
-                        title: descTests[index].name,
-                        onTap: () {
-                          if (hasAnswer) {
-                            showDialog(
-                              context: context,
-                              builder:
-                                  (context) => AlertDialog(
-                                    title: Text(
-                                      "Answer Already Submitted",
-                                      style: AppTexts.titleTextStyle,
-                                    ),
-                                    content: Text(
-                                      "If you submit again, your previous answer will be overwritten.",
-                                      style: AppTexts.subTitle,
-                                    ),
-                                    actions: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          IntrinsicWidth(
-                                            child: ActionButton(
-                                              text: "Cancel",
-                                              onTap: () {
-                                                context.pop(); // close dialog
-                                              },
-                                            ),
-                                          ),
-                                          10.wGap,
-                                          IntrinsicWidth(
-                                            child: ActionButton(
-                                              text: "Submit Again",
-                                              onTap: () {
-                                                context
-                                                    .pop(); // close dialog first
-                                                context.push(
-                                                  AppRoutes
-                                                      .descriptiveTestInstructionScreen,
-                                                  extra:
-                                                      DescTestInstructionScreenArgs(
-                                                        dailyTestModel:
-                                                            descTests[index],
-                                                      ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
+                  return GestureDetector(
+                    onTap: () {
+                      if (hasAnswer) {
+                        showDialog(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                title: Text(
+                                  "Answer Already Submitted",
+                                  style: AppTexts.titleTextStyle,
+                                ),
+                                content: Text(
+                                  "If you submit again, your previous answer will be overwritten.",
+                                  style: AppTexts.subTitle,
+                                ),
+                                actions: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IntrinsicWidth(
+                                        child: ActionButton(
+                                          text: "Cancel",
+                                          onTap: () {
+                                            context.pop(); // close dialog
+                                          },
+                                        ),
+                                      ),
+                                      10.wGap,
+                                      IntrinsicWidth(
+                                        child: ActionButton(
+                                          text: "Submit Again",
+                                          onTap: () {
+                                            context.pop(); // close dialog first
+                                            context.push(
+                                              AppRoutes
+                                                  .descriptiveTestInstructionScreen,
+                                              extra:
+                                                  DescTestInstructionScreenArgs(
+                                                    dailyTestModel: test,
+                                                  ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ],
                                   ),
-                            );
-                          } else {
-                            context.push(
-                              AppRoutes.descriptiveTestInstructionScreen,
-                              extra: DescTestInstructionScreenArgs(
-                                dailyTestModel: descTests[index],
+                                ],
                               ),
-                            );
-                          }
-                        },
-                        widgets: [
-                          if (isAnswerUnlocked(descTests[index].createdAt))
-                            Column(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    context.push(
-                                      AppRoutes.descAnswerScreen,
-                                      extra: descTests[index],
-                                    );
-                                  },
-                                  icon: Icon(
-                                    AppIcons.descAnsIcon,
-                                    size: 25.sp,
-                                    color: AppColors.primary,
+                        );
+                      } else {
+                        context.push(
+                          AppRoutes.descriptiveTestInstructionScreen,
+                          extra: DescTestInstructionScreenArgs(
+                            dailyTestModel: test,
+                          ),
+                        );
+                      }
+                    },
+                    child: TestCard(
+                      descTestModel: test,
+                      showFooter: false,
+                      trailing:
+                          isAnswerUnlocked(test.createdAt)
+                              ? Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      context.push(
+                                        AppRoutes.descAnswerScreen,
+                                        extra: test,
+                                      );
+                                    },
+                                    icon: Icon(
+                                      AppIcons.descAnsIcon,
+                                      size: 25.sp,
+                                      color: AppColors.primary,
+                                    ),
+                                    tooltip: "Answer Module",
                                   ),
-                                  tooltip: "Answer Module",
-                                ),
-                                Text("Answer Module"),
-                              ],
-                            ),
-                          10.wGap,
-                        ],
-                      ),
-                    ],
-                  ).padSymmetric(vertical: 6.h);
+                                  Text(
+                                    "Answer Module",
+                                    style: TextStyle(fontSize: 10.sp),
+                                  ),
+                                ],
+                              )
+                              : null,
+                    ).padSymmetric(vertical: 6.h),
+                  );
                 },
               ),
               // 10.hGap,
@@ -216,50 +212,36 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
               10.hGap,
 
               /// Daily Tests Section
-              TestModule(
-                title: "Daily Tests",
-                subtitle: "Subject-based Daily Practice",
-                prefixIcon: Icons.calendar_today_outlined,
-                cards: List.generate(
-                  3,
-                  (index) => TestTile(
-                    title: "Loading Test $index",
-                    subtitle: "00 Questions · 0 min",
-                    onTap: () {},
-                  ).padSymmetric(vertical: 6.h),
+              ...List.generate(
+                3,
+                (index) => Column(
+                  children: [
+                    TestCard(
+                      descTestModel: DescTestModel(
+                        id: 0,
+                        name: "Loading Test",
+                        totalMarks: 0,
+                        noQuestions: 0,
+                        createdAt: DateTime.now().toIso8601String(),
+                      ),
+                      showFooter: false,
+                    ),
+                    10.hGap,
+                  ],
                 ),
               ),
-              10.hGap,
 
               /// Mock Tests Section
-              TestModule(
-                title: "Mock Tests",
-                subtitle: "Full Length Practice Exams",
-                prefixIcon: Icons.description_outlined,
-                cards: [
-                  TestTile(
-                    title: "GPSC Mock Test #1",
-                    subtitle: "100 Questions · 2 hours",
-                    widgets: [
-                      Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.accentColor,
-                            width: 1,
-                          ),
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Icon(
-                          Icons.file_download_outlined,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                    onTap: () {},
-                  ),
-                ],
+              TestCard(
+                testModel: TestModel(
+                  id: 0,
+                  name: "GPSC Mock Test",
+                  duration: 0,
+                  noQuestions: 0,
+                  testType: TestType.mcq,
+                  totalMarks: 0,
+                ),
+                showFooter: false,
               ),
               10.hGap,
 

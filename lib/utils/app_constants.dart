@@ -5,6 +5,28 @@ abstract class AppColors {
   static Color primary = Color(0xff3b82f6);
   static Color scaffoldColor = Color(0xfff7f8f9);
   static Color accentColor = Colors.grey.shade300;
+
+  // Analytics Colors
+  static const Color analyticsBg = Color(0xFFF8F9FB);
+  static const Color gray500 = Color(0xFF6B7280);
+  static const Color gray400 = Color(0xFF9CA3AF);
+  static const Color gray100 = Color(0xFFF3F4F6);
+  static const Color gray200 = Color(0xFFE5E7EB);
+  static const Color gray700 = Color(0xFF4B5563);
+  static const Color gray900 = Color(0xFF111827);
+
+  // Difficulty Level Colors
+  static const Color green500 = Color(0xFF10B981);
+  static const Color green100 = Color(0xFFD1FAE5);
+  static const Color green800 = Color(0xFF065F46);
+
+  static const Color orange500 = Color(0xFFF59E0B);
+  static const Color orange100 = Color(0xFFFEF3C7);
+  static const Color orange800 = Color(0xFF92400E);
+
+  static const Color red500 = Color(0xFFEF4444);
+  static const Color red100 = Color(0xFFFEE2E2);
+  static const Color red800 = Color(0xFF991B1B);
 }
 
 abstract class AppThemeData {
@@ -39,10 +61,12 @@ abstract class AppThemeData {
 abstract class AppPaddings {
   static double defaultPadding = 12;
   static double appPaddingInt = 10;
+  static double dashboardContainerPadding = 25;
 }
 
 abstract class AppBorders {
   static BorderRadius borderRadius = BorderRadius.circular(8.r);
+  static BorderRadius dashboardBorderRadius = BorderRadius.circular(25.r);
 }
 
 abstract class AppTexts {
@@ -67,6 +91,20 @@ abstract class AppTexts {
   static TextStyle titleTextStyle = TextStyle(
     fontSize: 20.sp,
     fontVariations: [FontVariation.weight(800)],
+  );
+  static TextStyle dashboardContainerTitle = TextStyle(
+    color: Colors.black,
+    fontSize: 18.sp,
+    fontWeight: FontWeight.bold,
+  );
+  static TextStyle dashboardSmallTexts = TextStyle(
+    color: Colors.black54,
+    fontSize: 12.sp,
+    fontWeight: FontWeight.bold,
+  );
+  static TextStyle dashboardMediumTitle = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 16.sp,
   );
 }
 
@@ -97,6 +135,19 @@ abstract class AppRoutes {
   static const String studyMaterial = '/studyMaterial';
   static const String requestResetPassword = '/requestResetPassword';
   static const String resetPassword = '/resetPassword';
+  static const String analyticsScreen = '/analyticsScreen';
+  static const String allSubjectsAnalyticsScreen =
+      '/allSubjectsAnalyticsScreen';
+  static const String allDifficultyAnalyticsScreen =
+      '/allDifficultyAnalyticsScreen';
+  static const String allQuestionTypesAnalyticsScreen =
+      '/allQuestionTypesAnalyticsScreen';
+  static const String omrScreen = '/omrScreen';
+  static const String prelimsMcqTestScreen = '/fullLengthMcqTestScreen';
+  static const String prelimsInstructionsScreen = '/prelimsInstructionsScreen';
+  static const String addCourse = '/addCourse';
+  static const String courseList = '/courseList';
+  static const String courseDetails = '/courseDetails';
 }
 
 class AdUnitIds {

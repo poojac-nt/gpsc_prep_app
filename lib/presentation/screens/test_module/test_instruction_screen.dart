@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
@@ -19,15 +22,17 @@ import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:intl/intl.dart';
 
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
+import '../../widgets/test_status_dialog.dart';
 
 class MCQTestInstructionScreen extends StatefulWidget {
   const MCQTestInstructionScreen({super.key, this.dailyTestModel, this.testId});
 
-  final DailyTestModel? dailyTestModel;
+  final TestModel? dailyTestModel;
   final int? testId;
 
   @override
@@ -38,9 +43,10 @@ class MCQTestInstructionScreen extends StatefulWidget {
 class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
   String selectedLanguage = 'en';
   late Set<String> availableLanguagesButton = {'en'};
-  DailyTestModel? _fetchedTestModel;
+  TestModel? _fetchedTestModel;
   late bool isFromId;
   bool _noTestDetected = false;
+  bool _hasProgress = false;
 
   final Map<String, String> _languageLabels = {
     'en': 'English',
@@ -64,6 +70,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
         FetchSingleTestFromId(widget.testId!),
       );
     }
+    _checkProgress();
     fetchAvailableLanguages();
     selectedLanguage =
         availableLanguagesButton.contains('en')
@@ -81,6 +88,19 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     setState(() {
       availableLanguagesButton = availableLanguages;
     });
+  }
+
+  Future<void> _checkProgress() async {
+    final testId = widget.testId ?? widget.dailyTestModel?.id;
+    if (testId == null) return;
+
+    final progressRepo = getIt<PrelimsProgressRepository>();
+    final userId = getIt<CacheManager>().getUserId();
+    final savedProgress = progressRepo.getProgress(userId, testId);
+
+    if (savedProgress != null && !savedProgress.isExpired()) {
+      setState(() => _hasProgress = true);
+    }
   }
 
   @override
@@ -137,7 +157,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
 
   Widget buildScaffoldWithModel(
     BuildContext context,
-    DailyTestModel dailyTestModel,
+    TestModel dailyTestModel,
   ) {
     return Scaffold(
       appBar: AppBar(
@@ -185,7 +205,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
             ),
             15.hGap,
             ActionButton(
-              text: "Start Test",
+              text: _hasProgress ? "Resume Test" : "Start Test",
               onTap: () => _handleTestStart(dailyTestModel),
             ),
           ],
@@ -199,8 +219,8 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       context.pop();
       debugPrint("Test Id is Null");
     } else {
-      debugPrint("Going to Dashboard");
-      context.pushReplacement(AppRoutes.studentDashboard);
+      debugPrint("Going Back");
+      context.pop();
     }
   }
 
@@ -249,67 +269,156 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     );
   }
 
-  Future<void> _handleTestStart(DailyTestModel dailyTestModel) async {
-    final supabaseHelper = getIt<SupabaseHelper>();
-    try {
-      final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
-        testId: dailyTestModel.id,
-      );
-      final result = testResult.right;
-      if (result == null) {
-        _startTest(dailyTestModel);
+  Future<void> _handleTestStart(TestModel dailyTestModel) async {
+    // Only check for progress for Prelims tests
+    if (dailyTestModel.testType == TestType.prelims) {
+      final progressRepo = getIt<PrelimsProgressRepository>();
+      final userId = getIt<CacheManager>().getUserId();
+
+      // Check for saved progress FIRST
+      final savedProgress = progressRepo.getProgress(userId, dailyTestModel.id);
+      if (savedProgress != null && !savedProgress.isExpired()) {
+        _showResumeDialog(dailyTestModel, savedProgress);
         return;
       }
-      final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
-      if (isEligibleForRetest) {
-        _startTest(dailyTestModel);
-      } else {
-        showAlreadyGivenTestDialog(result);
-      }
-    } catch (error) {
-      getIt<LogHelper>().e("Error fetching test result: $error");
+    }
+
+    final supabaseHelper = getIt<SupabaseHelper>();
+
+    final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
+      testId: dailyTestModel.id,
+    );
+
+    // Handle Left (Supabase error)
+    if (testResult.isLeft) {
+      getIt<LogHelper>().e(
+        "Error fetching test result: ${testResult.left.message}",
+      );
+      return;
+    }
+
+    final result = testResult.right;
+
+    // No attempts yet — start fresh
+    if (result == null) {
+      _startTest(dailyTestModel);
+      return;
+    }
+
+    // Used both attempts — hard block
+    if (result.attemptNo! >= 2) {
+      showAlreadyGivenTestDialog(result, isLimitReached: true);
+      return;
+    }
+
+    // First attempt done — check 12hr cooldown
+    final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
+    if (isEligibleForRetest) {
+      _startTest(dailyTestModel);
+    } else {
+      showAlreadyGivenTestDialog(result, isLimitReached: false);
     }
   }
 
-  void showAlreadyGivenTestDialog(TestResultModel testResult) {
+  void showAlreadyGivenTestDialog(
+    TestResultModel testResult, {
+    required bool isLimitReached,
+  }) {
     String createdAtStr = testResult.createdAt!;
     String formattedDate = DateFormat(
-      'dd MMM yyyy, hh:mm a',
+      'dd-MM-yyyy',
     ).format(createdAtStr.toLocalDateTime());
 
-    int hoursPassed = createdAtStr.hoursPassedSince();
     int hoursRemaining = createdAtStr.hoursRemaining(12);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Test Status"),
-          content: Text(
-            "You have already given the test.\n\n"
-            "Last attempt: $formattedDate\n"
-            "Hours passed: $hoursPassed\n"
-            "You can attempt again in $hoursRemaining hour(s).",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
+        return TestStatusDialog(
+          title: isLimitReached ? "Attempts Completed" : "Test Cooldown",
+          message:
+              isLimitReached
+                  ? "You have completed both of your attempts for this test."
+                  : "You have already attempted this test once.",
+          lastAttemptDate: formattedDate,
+          hoursRemaining: isLimitReached ? null : hoursRemaining,
+          isLimitReached: isLimitReached,
         );
       },
     );
   }
 
-  void _startTest(DailyTestModel dailyTestModel) {
+  void _startTest(TestModel dailyTestModel) {
     context.pushReplacement(
       AppRoutes.testScreen,
       extra: TestScreenArgs(
         isFromResult: false,
         language: selectedLanguage,
-        dailyTestModel: dailyTestModel,
+        testModal: dailyTestModel,
+        hasPrelimsProgress: false, // Starting fresh
+      ),
+    );
+  }
+
+  void _showResumeDialog(TestModel test, PrelimsTestProgress progress) {
+    final answered = progress.answeredStatus.where((a) => a).length;
+    final mins = progress.remainingTimeInSeconds ~/ 60;
+    final secs = progress.remainingTimeInSeconds % 60;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Resume Test?"),
+            content: Text(
+              "You have an incomplete test:\n\n"
+              "• Answered: $answered/${progress.totalQuestions}\n"
+              "• Question: ${progress.currentQuestionIndex + 1}\n"
+              "• Time left: ${mins}m ${secs}s\n\n"
+              "Resume or start fresh?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  final userId = getIt<CacheManager>().getUserId();
+                  await getIt<PrelimsProgressRepository>().deleteProgress(
+                    userId,
+                    test.id,
+                  );
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  _startTest(test);
+                },
+                child: const Text("Start Fresh"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _resumeTest(test, progress);
+                },
+                child: const Text(
+                  "Resume",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _resumeTest(TestModel test, PrelimsTestProgress progress) {
+    context.pushReplacement(
+      AppRoutes.testScreen,
+      extra: TestScreenArgs(
+        isFromResult: false,
+        language: progress.languageCode,
+        testModal: test,
+        hasPrelimsProgress: true, // Resuming from progress
       ),
     );
   }

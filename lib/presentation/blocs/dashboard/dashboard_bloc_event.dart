@@ -5,4 +5,4 @@ sealed class DashboardBlocEvent {}
 
 class DashBoardInitial extends DashboardBlocEvent {}
 
-class FetchAttemptedTests extends DashboardBlocEvent {}
+class FetchDashboardAnalytics extends DashboardBlocEvent {}

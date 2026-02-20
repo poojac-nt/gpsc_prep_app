@@ -1,0 +1,33 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'leaderboard_model.g.dart';
+
+@JsonSerializable()
+class LeaderboardModel {
+  @JsonKey(name: 'test_type')
+  final String testType;
+
+  final int rank;
+
+  @JsonKey(name: 'student_name')
+  final String studentName;
+
+  @JsonKey(name: 'total_marks')
+  final int totalMarks;
+
+  @JsonKey(name: 'profile_picture')
+  final String? profilePicture;
+
+  LeaderboardModel({
+    required this.testType,
+    required this.rank,
+    required this.studentName,
+    required this.totalMarks,
+    this.profilePicture,
+  });
+
+  factory LeaderboardModel.fromJson(Map<String, dynamic> json) =>
+      _$LeaderboardModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$LeaderboardModelToJson(this);
+}

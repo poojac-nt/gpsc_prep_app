@@ -36,6 +36,9 @@ class TestResultModel {
   @JsonKey(name: "created_at")
   @HiveField(9)
   String? createdAt;
+  @JsonKey(name: "attempt_no")
+  @HiveField(10)
+  int? attemptNo;
 
   TestResultModel({
     required this.userId,
@@ -48,6 +51,7 @@ class TestResultModel {
     required this.score,
     required this.timeTaken,
     this.createdAt,
+    this.attemptNo,
   });
 
   /// ✅ copyWith method

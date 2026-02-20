@@ -7,11 +7,13 @@ import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class MCQTestScreen extends StatefulWidget {
@@ -25,67 +27,70 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
   void initState() {
     super.initState();
-    final currentState = context.read<DailyTestBloc>().state;
-    if (currentState is! DailyTestFetched) {
-      context.read<DailyTestBloc>().add(FetchTests());
-    }
+    context.read<DailyTestBloc>().add(FetchTests());
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
-          centerTitle: false,
-          bottom: TabBar(
-            tabAlignment: TabAlignment.center,
-            padding: EdgeInsets.zero,
-            isScrollable: true,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: Colors.black54,
-            labelStyle: AppTexts.titleTextStyle.copyWith(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, value) {
+        if (didPop) return;
+        context.go(AppRoutes.studentDashboard);
+      },
+      child: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text("MCQ Tests", style: AppTexts.titleTextStyle),
+            centerTitle: false,
+            bottom: TabBar(
+              tabAlignment: TabAlignment.center,
+              padding: EdgeInsets.zero,
+              isScrollable: true,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: Colors.black54,
+              labelStyle: AppTexts.titleTextStyle.copyWith(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: AppTexts.titleTextStyle.copyWith(
+                fontWeight: FontWeight.w500,
+                fontSize: 14.sp,
+              ),
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(width: 3, color: AppColors.primary),
+              ),
+              indicatorSize: TabBarIndicatorSize.label,
+              labelPadding: EdgeInsets.symmetric(
+                horizontal: 20.w,
+                vertical: 10.h,
+              ),
+              tabs: const [
+                Tab(text: "All Subjects"),
+                Tab(text: "Current Affairs"),
+                Tab(text: "Math"),
+              ],
             ),
-            unselectedLabelStyle: AppTexts.titleTextStyle.copyWith(
-              fontWeight: FontWeight.w500,
-              fontSize: 14.sp,
-            ),
-            indicator: UnderlineTabIndicator(
-              borderSide: BorderSide(width: 3, color: AppColors.primary),
-              insets: EdgeInsets.symmetric(horizontal: 16.w),
-            ),
-            indicatorSize: TabBarIndicatorSize.label,
-            labelPadding: EdgeInsets.symmetric(
-              horizontal: 18.w,
-              vertical: 10.h,
-            ),
-            tabs: const [
-              Tab(text: "All Subjects"),
-              Tab(text: "Current Affairs"),
-              Tab(text: "Math"),
-            ],
           ),
-        ),
-        body: BlocConsumer<DailyTestBloc, DailyTestState>(
-          listener: (context, state) {},
-          builder: (context, state) {
-            if (state is DailyTestFetching) {
-              return _buildWhenLoading();
-            } else if (state is DailyTestFetched) {
-              final tests = state.dailyTestModel;
-              return TabBarView(
-                children: [
-                  _buildFilteredList(tests, null, state), // all subjects
-                  _buildFilteredList(tests, "Current Affairs", state),
-                  _buildFilteredList(tests, "Math", state),
-                ],
-              );
-            }
-            return Container();
-          },
+          body: BlocConsumer<DailyTestBloc, DailyTestState>(
+            listener: (context, state) {},
+            builder: (context, state) {
+              if (state is DailyTestFetching) {
+                return _buildWhenLoading();
+              } else if (state is DailyTestFetched) {
+                final tests = state.dailyTestModel;
+                return TabBarView(
+                  children: [
+                    _buildFilteredList(tests, null, state), // all subjects
+                    _buildFilteredList(tests, "Current Affairs", state),
+                    _buildFilteredList(tests, "Math", state),
+                  ],
+                );
+              }
+              return Container();
+            },
+          ),
         ),
       ),
     );
@@ -107,8 +112,24 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                 .toList();
 
     if (filtered.isEmpty) {
-      return Center(
-        child: Text("No tests available for ${filter ?? "All Subjects"}"),
+      return RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          return context.read<DailyTestBloc>().add(FetchTests());
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: 0.8.sh,
+              child: Center(
+                child: Text(
+                  "No tests available for ${filter ?? "All Subjects"}",
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -122,85 +143,32 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         itemCount: filtered.length,
         itemBuilder: (context, index) {
           final test = filtered[index];
-          final testResult = state.testResults[test.id];
-          final hasResult = testResult != null;
-
-          // Default values
-          DateTime? submittedAt;
-          bool isEligibleForRetest = false;
-
-          if (hasResult) {
-            final createdAtString = testResult.createdAt;
-            if (createdAtString != null && createdAtString.isNotEmpty) {
-              try {
-                submittedAt = DateTime.parse(createdAtString);
-                isEligibleForRetest =
-                    DateTime.now().difference(submittedAt).inHours >= 12;
-              } catch (e) {
-                // ignore parse error
-              }
-            }
-          }
-
+          final testAttemptState = state.testResults[test.id];
+          final hasAttempted =
+              testAttemptState != null && testAttemptState.attemptsDone > 0;
+          final canShowRetestButton =
+              testAttemptState != null &&
+              testAttemptState.attemptsDone == 1 &&
+              testAttemptState.canRetry;
+          final submittedAt =
+              formatDate(testAttemptState?.lastAttemptAt) ?? 'N/A';
           return Column(
             children: [
-              TestModule(
-                showShareButton: true,
-                testModel: test,
-                title: "Daily Tests",
-                subtitle: "Subject-based Daily Practice",
-                prefixIcon: Icons.calendar_today_outlined,
-                cards: [
-                  TestTile(
-                    title: test.name,
-                    subtitle:
-                        "${test.noQuestions} Questions · ${test.duration} min",
-                    onTap: () {
-                      if (hasResult) {
-                        context.pushReplacement(
-                          AppRoutes.resultScreen,
-                          extra: ResultScreenArgs(
-                            isFromTest: false,
-                            dailyTestModel: test,
-                          ),
-                        );
-                      } else {
-                        context.pushReplacementNamed(
-                          AppRoutes.mcqTestInstructionScreen,
-                          extra: TestInstructionScreenArgs(
-                            dailyTestModel: test,
-                          ),
-                        );
-                      }
-                    },
-                    hasResult: hasResult,
-                    widgets:
-                        hasResult && isEligibleForRetest
-                            ? [
-                              Column(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      AppIcons.retestIcon,
-                                      color: AppColors.primary,
-                                    ),
-                                    onPressed: () {
-                                      context.pushReplacement(
-                                        AppRoutes.mcqTestInstructionScreen,
-                                        extra: TestInstructionScreenArgs(
-                                          dailyTestModel: test,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  Text("Retest"),
-                                ],
-                              ),
-                              10.wGap,
-                            ]
-                            : [],
-                  ).padSymmetric(vertical: 6.h),
-                ],
+              GestureDetector(
+                onTap: () {
+                  if (!hasAttempted) {
+                    context.push(
+                      AppRoutes.mcqTestInstructionScreen,
+                      extra: TestInstructionScreenArgs(testModal: test),
+                    );
+                  }
+                },
+                child: TestCard(
+                  testModel: test,
+                  isEligibleForRetest: canShowRetestButton,
+                  isAttempted: hasAttempted,
+                  lastAttemptedDate: submittedAt,
+                ),
               ),
               10.hGap,
             ],
@@ -210,13 +178,25 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
     );
   }
 
+  String? formatDate(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return null;
+
+    try {
+      final dateTime = DateTime.parse(isoString);
+      return DateFormat('yyyy-MM-dd').format(dateTime);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Skeleton for loading state
-  Padding _buildWhenLoading() {
+  Widget _buildWhenLoading() {
     return Padding(
       padding: EdgeInsets.all(AppPaddings.appPaddingInt),
       child: Skeletonizer(
         enabled: true,
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
               Row(

@@ -623,7 +623,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       child: ActionButton(
                         text: hasAnswers ? "Discard" : "Leave",
                         onTap: () {
-                          context.go(AppRoutes.studentDashboard);
+                          Navigator.of(context).pop(true);
                         },
                         backgroundColor: Colors.red,
                       ),

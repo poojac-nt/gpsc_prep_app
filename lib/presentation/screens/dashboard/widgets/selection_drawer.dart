@@ -24,167 +24,249 @@ class SelectionDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(20.r),
+          bottomRight: Radius.circular(20.r),
+        ),
+      ),
       child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 40.r,
-                    height: 40.r,
-                    child: ClipOval(
-                      child:
-                          user?.profilePicture != null &&
-                                  user!.profilePicture!.isNotEmpty
-                              ? CachedNetworkImage(
-                                imageUrl: user!.profilePicture!,
-                                fit: BoxFit.cover,
-                                errorWidget:
-                                    (context, url, error) => Icon(
-                                      Icons.error,
-                                      color: AppColors.primary,
-                                    ),
-                              )
-                              : Container(
-                                color: Colors.grey.shade200,
-                                child: Icon(
-                                  Icons.person,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                    ),
-                  ),
-                  10.wGap,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user!.name,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+                child: Column(
+                  children: [
+                    if (isStudent) ...[
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.content_paste_rounded,
+                        title: 'MCQ Tests',
+                        onTap: () => context.push(AppRoutes.mcqTestScreen),
                       ),
-                      3.hGap,
-                      Text("UPSC aspirant"),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.description,
+                        title: 'Descriptive Tests',
+                        onTap: () => context.push(AppRoutes.answerWriting),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.analytics_outlined,
+                        title: 'Analytics',
+                        onTap: () => context.push(AppRoutes.analyticsScreen),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.person,
+                        title: 'Profile',
+                        onTap: () => context.push(AppRoutes.profile),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.file_download_outlined,
+                        title: 'Study Material',
+                        onTap: () => context.push(AppRoutes.languageSelection),
+                      ),
                     ],
+                    if (!isStudent) ...[
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.file_upload_outlined,
+                        title: 'Upload Test',
+                        onTap: () => context.push(AppRoutes.addQuestionScreen),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.library_add_outlined,
+                        title: 'Add Course',
+                        onTap: () => context.push(AppRoutes.addCourse),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.file_upload_outlined,
+                        title: 'Upload Study Material',
+                        onTap:
+                            () => context.push(AppRoutes.uploadStudyMaterial),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.logout,
+                    title: 'Logout',
+                    iconColor: Colors.redAccent,
+                    textColor: Colors.redAccent,
+                    onTap: () => showLogoutDialog(context),
+                    isLogout: true,
+                  ),
+                  10.hGap,
+                  Text(
+                    "Version: ${getIt<CacheManager>().getAppVersion()}",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey.shade400,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
-              5.hGap,
-              Divider(
-                thickness: 1,
-                indent: 0,
-                endIndent: 0,
-                color: Colors.grey,
-              ),
-              // isStudent
-              //     ? commonWidget(
-              //       () {
-              //         context.pop();
-              //         context.go(AppRoutes.studentDashboard);
-              //       },
-              //       Icons.dashboard,
-              //       'Dashboard',
-              //     )
-              //     : SizedBox.shrink(),
-              isStudent
-                  ? commonWidget(
-                    () {
-                      context.pop();
-                      context.push(AppRoutes.mcqTestScreen);
-                    },
-                    Icons.content_paste_rounded,
-                    'MCQ Tests',
-                  )
-                  : SizedBox.shrink(),
-              isStudent
-                  ? commonWidget(
-                    () {
-                      context.pop();
-                      context.push(AppRoutes.answerWriting);
-                    },
-                    Icons.description,
-                    'Descriptive Tests',
-                  )
-                  : SizedBox.shrink(),
-
-              isStudent
-                  ? commonWidget(
-                    () {
-                      context.pop();
-                      context.push(AppRoutes.profile);
-                    },
-                    Icons.person,
-                    'Profile',
-                  )
-                  : SizedBox.shrink(),
-              isStudent
-                  ? SizedBox.shrink()
-                  : commonWidget(
-                    () {
-                      context.pop();
-                      context.push(AppRoutes.addQuestionScreen);
-                    },
-                    Icons.file_upload_outlined,
-                    'Upload Test',
-                  ),
-              isStudent
-                  ? SizedBox.shrink()
-                  : commonWidget(
-                    () {
-                      context.pop();
-                      context.push(AppRoutes.uploadStudyMaterial);
-                    },
-                    Icons.file_upload_outlined,
-                    'Upload Study Material',
-                  ),
-              isStudent
-                  ? commonWidget(
-                    () {
-                      context.pop();
-                      context.push(AppRoutes.languageSelection);
-                    },
-                    Icons.file_download_outlined,
-                    'Study Material',
-                  )
-                  : SizedBox.shrink(),
-              commonWidget(
-                () => showLogoutDialog(context),
-                Icons.logout,
-                iconColor: Colors.red,
-                'Logout',
-              ),
-              Spacer(),
-              Text(
-                "Version: ${getIt<CacheManager>().getAppVersion()}",
-                style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget commonWidget(
-    VoidCallback onTap,
-    IconData icon,
-    String title, {
-    Color iconColor = Colors.black,
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50.r,
+            height: 50.r,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.primary.withAlpha(20),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withAlpha(10),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child:
+                  user?.profilePicture != null &&
+                          user!.profilePicture!.isNotEmpty
+                      ? CachedNetworkImage(
+                        imageUrl: user!.profilePicture!,
+                        fit: BoxFit.cover,
+                        errorWidget:
+                            (context, url, error) =>
+                                Icon(Icons.error, color: AppColors.primary),
+                      )
+                      : Container(
+                        color: Colors.grey.shade50,
+                        child: Icon(
+                          Icons.person,
+                          color: AppColors.primary,
+                          size: 28.sp,
+                        ),
+                      ),
+            ),
+          ),
+          16.wGap,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user?.name ?? 'User',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                4.hGap,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(30),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    "UPSC Aspirant",
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Color? textColor,
+    bool isLogout = false,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 10.w),
-        child: Row(
-          children: [
-            Icon(icon, color: iconColor),
-            5.wGap,
-            Text(title, style: TextStyle(fontSize: 16.sp)),
-          ],
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.r),
+        color: isLogout ? Colors.redAccent.withAlpha(5) : Colors.transparent,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (!isLogout) Navigator.pop(context);
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(12.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: iconColor ?? AppColors.primary.withAlpha(200),
+                  size: 22.sp,
+                ),
+                16.wGap,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: textColor ?? Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (!isLogout)
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14.sp,
+                    color: Colors.grey.shade300,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -193,92 +275,102 @@ class SelectionDrawer extends StatelessWidget {
   void showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, // prevent accidental dismiss
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(24.r),
           ),
-          elevation: 12,
+          elevation: 0,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-            child: IntrinsicHeight(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Icon
-                  Align(
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.logout,
-                      size: 48,
-                      color: Colors.redAccent,
-                    ),
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withAlpha(10),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 20),
-
-                  // Title
-                  Text(
-                    "Logout",
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    size: 32.sp,
+                    color: Colors.redAccent,
                   ),
-                  const SizedBox(height: 12),
-
-                  // Message
-                  Text(
-                    "Are you sure you want to logout?",
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                ),
+                16.hGap,
+                Text(
+                  "Log Out",
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 24),
-
-                  // Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                8.hGap,
+                Text(
+                  "Are you sure you want to log out of your account?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                  ),
+                ),
+                24.hGap,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            side: BorderSide(color: Colors.grey.shade200),
                           ),
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(color: Colors.black),
+                        ),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    12.wGap,
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          context.read<AuthBloc>().add(LogOutRequested());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            context.read<AuthBloc>().add(LogOutRequested());
-                          },
-                          child: const Text("Logout"),
+                        ),
+                        child: Text(
+                          "Log Out",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         );

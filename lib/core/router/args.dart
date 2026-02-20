@@ -1,31 +1,37 @@
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
+
+import '../../domain/entities/desc_test_model.dart';
+import '../../domain/entities/detailed_test_result_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
-  final DailyTestModel dailyTestModel;
+  final TestModel testModal;
   final String? language;
+  final bool hasPrelimsProgress; // NEW: Indicates if should load saved progress
 
   TestScreenArgs({
     required this.isFromResult,
-    required this.dailyTestModel,
+    required this.testModal,
     this.language,
+    this.hasPrelimsProgress = false,
   });
 }
 
 class ResultScreenArgs {
   final bool isFromTest;
-  final DailyTestModel dailyTestModel;
+  final TestModel testModal;
 
-  ResultScreenArgs({required this.isFromTest, required this.dailyTestModel});
+  ResultScreenArgs({required this.isFromTest, required this.testModal});
 }
 
 class TestInstructionScreenArgs {
   final int? testId;
-  final DailyTestModel? dailyTestModel;
+  final TestModel? testModal;
 
-  TestInstructionScreenArgs({this.testId, this.dailyTestModel});
+  TestInstructionScreenArgs({this.testId, this.testModal});
 }
 
 class ReviewQuestionScreenArgs {
@@ -35,6 +41,7 @@ class ReviewQuestionScreenArgs {
   final String? title;
   final String? url;
   final String? language;
+  final int? courseId; // Updated
 
   ReviewQuestionScreenArgs({
     required this.isTestUpload,
@@ -43,19 +50,22 @@ class ReviewQuestionScreenArgs {
     this.title,
     this.url,
     this.language,
+    this.courseId,
   });
 }
 
 class DescReviewQuestionScreenArgs {
   List<Map<String, dynamic>> payload;
+  final int? courseId;
 
-  DescReviewQuestionScreenArgs({required this.payload});
+  DescReviewQuestionScreenArgs({required this.payload, this.courseId});
 }
 
 class DescTestInstructionScreenArgs {
-  final DescTestModel dailyTestModel;
+  final DescTestModel? dailyTestModel;
+  final int? testId;
 
-  DescTestInstructionScreenArgs({required this.dailyTestModel});
+  DescTestInstructionScreenArgs({this.dailyTestModel, this.testId});
 }
 
 class DescTestScreenArgs {
@@ -77,6 +87,35 @@ class DescTestResultScreenArgs {
 class QuestionPreviewScreenArgs {
   final String testName;
   final List<QuestionModel> questions;
+  final TestResultWithTopScoreModel? performanceSummary;
+  final TestModel? testModel;
+  final List<DetailedTestResult>? detailedResults;
 
-  QuestionPreviewScreenArgs({required this.questions, required this.testName});
+  QuestionPreviewScreenArgs({
+    required this.questions,
+    required this.testName,
+    this.performanceSummary,
+    this.testModel,
+    this.detailedResults,
+  });
+}
+
+class PrelimsInstructionScreenArgs {
+  final int? testId;
+  final TestModel? testModal;
+  final bool? hasProgress;
+
+  PrelimsInstructionScreenArgs({this.testId, this.testModal, this.hasProgress});
+}
+
+class OMRScreenArgs {
+  final TestModel testModal;
+  final String? language;
+
+  OMRScreenArgs({required this.testModal, this.language});
+}
+
+class CourseDetailsScreenArgs {
+  final CourseModel courseModel;
+  CourseDetailsScreenArgs({required this.courseModel});
 }

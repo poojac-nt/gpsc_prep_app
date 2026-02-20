@@ -1,83 +1,98 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
-class QuestionPieChart extends StatelessWidget {
-  final int height;
+class CustomPieChart extends StatelessWidget {
+  final double height;
+  final int total;
+  final int itemOne;
+  final int itemTwo;
+  final Color colorOne;
+  final Color colorTwo;
+  final String? labelOne;
+  final String? labelTwo;
+  final bool isLabelVisible;
+  final double centerSpaceValue;
+  final double sectionRadiusMultiplier;
+  final Widget? centerWidget;
 
-  final int correct;
-  final int incorrect;
-
-  const QuestionPieChart({
+  const CustomPieChart({
     super.key,
-
-    this.height = 200,
-    required this.correct,
-    required this.incorrect,
+    required this.total,
+    this.height = 180,
+    required this.itemOne,
+    required this.itemTwo,
+    required this.colorOne,
+    required this.colorTwo,
+    this.labelOne,
+    this.labelTwo,
+    this.centerWidget,
+    this.isLabelVisible = true,
+    this.centerSpaceValue = 5,
+    this.sectionRadiusMultiplier = 0.11,
   });
 
   @override
   Widget build(BuildContext context) {
-    final total = correct + incorrect;
-    final centerSpace = height / 3;
-    final sectionRadius = height * 0.2; // 40% of height
+    final centerSpace = height.h / centerSpaceValue;
+    final sectionRadius = height.h * sectionRadiusMultiplier;
 
-    return TestModule(
-      title: "Performance Breakdown",
-      cards: [
+    if (total == 0) {
+      return SizedBox(
+        height: height.h,
+        child: const Center(child: Text("No Data")),
+      );
+    }
+
+    return Column(
+      children: [
         SizedBox(
-          height: height.h,
-          width: double.maxFinite,
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 3,
-              centerSpaceRadius: centerSpace,
-              borderData: FlBorderData(show: false),
-              sections: [
-                PieChartSectionData(
-                  value: correct.toDouble(),
-                  showTitle: false,
-                  // remove text inside chart
-                  color: Colors.green,
-                  radius: sectionRadius.sp,
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
+          height: height.h * 0.7,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: centerSpace,
+                  startDegreeOffset: -90,
+                  borderData: FlBorderData(show: false),
+                  sections: [
+                    PieChartSectionData(
+                      value: itemOne.toDouble(),
+                      showTitle: false,
+                      color: colorOne,
+                      radius: sectionRadius.sp,
+                    ),
+                    PieChartSectionData(
+                      value: itemTwo.toDouble(),
+                      showTitle: false,
+                      color: colorTwo,
+                      radius: sectionRadius.sp,
+                    ),
+                  ],
                 ),
-                PieChartSectionData(
-                  value: incorrect.toDouble(),
-                  showTitle: false,
-                  // remove text inside chart
-                  color: Colors.red,
-                  radius: sectionRadius.sp,
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
+              ),
+              if (centerWidget != null)
+                Center(
+                  child: FittedBox(fit: BoxFit.scaleDown, child: centerWidget!),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
-        20.hGap,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildLegendItem(
-              color: Colors.green,
-              text: 'Correct: ${(correct / total * 100).toStringAsFixed(1)}%',
-            ),
-            SizedBox(width: 20.w),
-            _buildLegendItem(
-              color: Colors.red,
-              text:
-                  'Incorrect: ${(incorrect / total * 100).toStringAsFixed(1)}%',
-            ),
-          ],
-        ),
+        if (isLabelVisible) ...[
+          15.hGap,
+          _buildLegendItem(
+            color: colorOne,
+            text: '$labelOne (${(itemOne / total * 100).toStringAsFixed(0)}%)',
+          ),
+          8.hGap,
+          _buildLegendItem(
+            color: colorTwo,
+            text: '$labelTwo (${(itemTwo / total * 100).toStringAsFixed(0)}%)',
+          ),
+        ],
       ],
     );
   }
@@ -91,7 +106,13 @@ class QuestionPieChart extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         10.wGap,
-        Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

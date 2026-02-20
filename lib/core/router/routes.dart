@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_difficulty_analytics_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_question_types_analytics_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_subjects_analytics_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/analytics_screen/analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
@@ -10,6 +19,10 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_s
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_list_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/omr_answer_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/prelims/prelims_mcq_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/questions_preview_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/registration_screen/registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/splash_screen/splash_screen.dart';
@@ -19,6 +32,7 @@ import 'package:gpsc_prep_app/presentation/screens/study_material/student/studen
 import 'package:gpsc_prep_app/presentation/screens/test_module/result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_instruction_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/upload_questions/add_course_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_review_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_question_upload_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
@@ -27,6 +41,7 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
+import '../../presentation/screens/prelims/prelims_mcq_test_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 
@@ -90,6 +105,10 @@ final List<GoRoute> appRoutes = [
           router.push(
             '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$id',
           );
+        } else if (type == 'prelims') {
+          router.push(
+            '/studentDashboard/fullLengthMcqTestScreen/prelimsInstructionsScreen/$id',
+          );
         } else {
           router.pushReplacement('/error?message=Unknown+test+type');
         }
@@ -113,7 +132,32 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) => _slideTransition(StudentDashboardScreen(), state),
     routes: [
-      // MCQ Test Instruction Route
+      // DESC Test Instruction Route
+      GoRoute(
+        path: 'descriptiveTestScreen',
+        pageBuilder: (context, state) => _slideTransition(Container(), state),
+        // Placeholder if needed
+        routes: [
+          GoRoute(
+            path: 'descriptiveTestInstructionScreen/:testId',
+            pageBuilder: (context, state) {
+              final testIdParam = state.pathParameters['testId'];
+              final testId = int.tryParse(testIdParam ?? '');
+              // If you pass extra args, handle them here
+              if (testId == null) {
+                return _slideTransition(
+                  const ErrorScreen(message: 'Invalid Test ID'),
+                  state,
+                );
+              }
+              return _slideTransition(
+                DescriptiveTestInstructionScreen(testId: testId),
+                state,
+              );
+            },
+          ),
+        ],
+      ),
       GoRoute(
         path: 'mcqTestScreen',
         pageBuilder:
@@ -140,32 +184,6 @@ final List<GoRoute> appRoutes = [
 
               return _slideTransition(
                 MCQTestInstructionScreen(testId: finalTestId),
-                state,
-              );
-            },
-          ),
-        ],
-      ),
-      // DESC Test Instruction Route
-      GoRoute(
-        path: 'descriptiveTestScreen',
-        pageBuilder: (context, state) => _slideTransition(Container(), state),
-        // Placeholder if needed
-        routes: [
-          GoRoute(
-            path: 'descriptiveTestInstructionScreen/:testId',
-            pageBuilder: (context, state) {
-              final testIdParam = state.pathParameters['testId'];
-              final testId = int.tryParse(testIdParam ?? '');
-              // If you pass extra args, handle them here
-              if (testId == null) {
-                return _slideTransition(
-                  const ErrorScreen(message: 'Invalid Test ID'),
-                  state,
-                );
-              }
-              return _slideTransition(
-                DescriptiveTestInstructionScreen(testId: testId),
                 state,
               );
             },
@@ -206,7 +224,7 @@ final List<GoRoute> appRoutes = [
     builder: (context, state) {
       final args = state.extra as TestInstructionScreenArgs?;
       return MCQTestInstructionScreen(
-        dailyTestModel: args?.dailyTestModel,
+        dailyTestModel: args?.testModal,
         testId: args?.testId,
       );
     },
@@ -220,8 +238,9 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         TestScreen(
           isFromResult: args.isFromResult,
-          dailyTestModel: args.dailyTestModel,
+          dailyTestModel: args.testModal,
           language: args.language,
+          hasPrelimsProgress: args.hasPrelimsProgress, // Pass the flag
         ),
         state,
       );
@@ -234,7 +253,7 @@ final List<GoRoute> appRoutes = [
       return _slideTransition(
         ResultScreen(
           isFromTestScreen: args.isFromTest,
-          dailyTestModel: args.dailyTestModel,
+          testModel: args.testModal,
         ),
         state,
       );
@@ -257,6 +276,7 @@ final List<GoRoute> appRoutes = [
           title: args.title,
           url: args.url,
           language: args.language,
+          courseId: args.courseId,
         ),
         state,
       );
@@ -267,7 +287,10 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       final args = state.extra as DescReviewQuestionScreenArgs;
       return _slideTransition(
-        DescReviewQuestionUploadScreen(payload: args.payload),
+        DescReviewQuestionUploadScreen(
+          payload: args.payload,
+          courseId: args.courseId,
+        ),
         state,
       );
     },
@@ -280,6 +303,9 @@ final List<GoRoute> appRoutes = [
         QuestionPreviewScreen(
           questions: extra.questions,
           testName: extra.testName,
+          performanceSummary: extra.performanceSummary,
+          testModel: extra.testModel,
+          detailedResults: extra.detailedResults,
         ),
         state,
       );
@@ -325,7 +351,10 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as DescTestInstructionScreenArgs;
 
       return _slideTransition(
-        DescriptiveTestInstructionScreen(descTestModel: args.dailyTestModel),
+        DescriptiveTestInstructionScreen(
+          descTestModel: args.dailyTestModel,
+          testId: args.testId,
+        ),
         state,
       );
     },
@@ -365,6 +394,113 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.resetPassword,
     pageBuilder: (context, state) {
       return _slideTransition(ResetPasswordScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.analyticsScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(AnalyticsScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allSubjectsAnalyticsScreen,
+    pageBuilder: (context, state) {
+      final params = state.extra as List<SubjectScore>;
+      return _slideTransition(
+        BlocProvider(
+          create:
+              (context) => DetailedAnalyticsBloc(
+                repository: getIt<AnalyticsRepository>(),
+                initialSubjects: params,
+              ),
+          child: AllSubjectsAnalyticsScreen(subjectsData: params),
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allDifficultyAnalyticsScreen,
+    pageBuilder: (context, state) {
+      final params = state.extra as List<Difficulty>;
+      return _slideTransition(
+        BlocProvider(
+          create:
+              (context) => DetailedAnalyticsBloc(
+                repository: getIt<AnalyticsRepository>(),
+                initialDifficulty: params,
+              ),
+          child: AllDifficultyAnalyticsScreen(difficultyData: params),
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allQuestionTypesAnalyticsScreen,
+    pageBuilder: (context, state) {
+      final params = state.extra as List<Difficulty>;
+      return _slideTransition(
+        BlocProvider(
+          create:
+              (context) => DetailedAnalyticsBloc(
+                repository: getIt<AnalyticsRepository>(),
+                initialQuestionTypes: params,
+              ),
+          child: AllQuestionTypesAnalyticsScreen(questionTypesData: params),
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.omrScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as OMRScreenArgs;
+      return _slideTransition(
+        OMRScreen(testModel: args.testModal, language: args.language),
+        state,
+      );
+    },
+  ),
+
+  // RESTORED ROOT LEVEL ROUTES FOR COMPATIBILITY
+  GoRoute(
+    path: AppRoutes.prelimsMcqTestScreen,
+    pageBuilder: (context, state) {
+      return _slideTransition(PrelimsMcqTestScreen(), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.prelimsInstructionsScreen,
+    pageBuilder: (context, state) {
+      final args = state.extra as PrelimsInstructionScreenArgs?;
+      return _slideTransition(
+        PrelimsMcqInstructionScreen(
+          testId: args?.testId,
+          testModel: args?.testModal,
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.addCourse,
+    pageBuilder: (context, state) => _slideTransition(AddCourseScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.courseList,
+    pageBuilder:
+        (context, state) => _slideTransition(PaidCourseListScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.courseDetails,
+    pageBuilder: (context, state) {
+      final args = state.extra as CourseDetailsScreenArgs;
+      return _slideTransition(
+        CourseDetailsScreen(courseModel: args.courseModel),
+        state,
+      );
     },
   ),
 ];

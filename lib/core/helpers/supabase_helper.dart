@@ -4,15 +4,26 @@ import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
-import 'package:gpsc_prep_app/domain/entities/daily_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
+import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
+import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
@@ -171,12 +182,44 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, CourseModel>> createCourses(CoursePayload data) async {
+    try {
+      final jsonData = data.toJson();
+
+      final result =
+          await supabase
+              .from(SupabaseKeys.courseTable)
+              .insert(jsonData)
+              .select()
+              .single();
+      final course = CourseModel.fromJson(result);
+      return Right(course);
+    } catch (e) {
+      _snackBar.showError('Error Creating Course: ${e.toString()}');
+      _log.e('[Create Course] Error: $e', error: e);
+      return Left(Failure('Error Creating Course: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
+    try {
+      final response = await supabase.rpc(SupabaseKeys.getCoursesWithTests);
+
+      final courses =
+          (response as List).map((e) => CourseModel.fromJson(e)).toList();
+      return Right(courses);
+    } catch (e) {
+      _snackBar.showError('Error fetching courses: ${e.toString()}');
+      _log.e('[Fetch Courses] Error: $e', error: e);
+      return Left(Failure('Error fetching courses: ${e.toString()}'));
+    }
+  }
+
   ///Delete User from both public and auth tables
   Future<bool> deleteUser() async {
     try {
       final session = supabase.auth.currentSession;
       final token = session?.accessToken;
-      final userId = session?.user.id;
       if (session == null) {
         throw Exception("User not logged in");
       }
@@ -209,12 +252,9 @@ class SupabaseHelper {
         params: {'p_test_id': testId},
       );
 
-      _log.i(response.toString());
+      _log.i("Questions Fetched for the testId $testId: ${response.length}");
 
       final questions = response.map((e) => QuestionModel.fromJson(e)).toList();
-
-      _log.i(questions.toString());
-
       return Right(questions);
     } catch (e, stackTrace) {
       _snackBar.showError('Error fetching test questions: ${e.toString()}');
@@ -253,15 +293,37 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DailyTestModel>>> fetchDailyMcqTests() async {
+  Future<Either<Failure, List<TestModel>>> fetchDailyMcqTests() async {
     try {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
           .select()
-          .filter('test_type', 'in', '(dtmcq,mcq)')
-          .order('id', ascending: false);
+          .inFilter('test_type', ['dtmcq', 'mcq'])
+          .lte('available_at', DateTime.now().toUtc().toIso8601String())
+          .order('available_at', ascending: false);
 
-      var result = response.map((e) => DailyTestModel.fromJson(e)).toList();
+      final result = response.map((e) => TestModel.fromJson(e)).toList();
+
+      _log.i('Total available tests: ${result.length}');
+      return Right(result);
+    } catch (e, s) {
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      _log.e('Error in fetching test: $e', s: s);
+      return Left(Failure("Error fetching test : ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, List<TestModel>>> fetchPrelimsTests() async {
+    try {
+      final response = await supabase
+          .from(SupabaseKeys.testsTable)
+          .select()
+          .inFilter('test_type', ['prelims'])
+          .isFilter('course_id', null)
+          .lte('available_at', DateTime.now().toUtc().toIso8601String())
+          .order('available_at', ascending: false);
+
+      final result = response.map((e) => TestModel.fromJson(e)).toList();
 
       _log.i('Total test : ${result.length}');
       return Right(result);
@@ -276,27 +338,6 @@ class SupabaseHelper {
     TestResultModel test,
   ) async {
     try {
-      // Step 1: Check if result already exists for this user and test
-      final existingResult =
-          await supabase
-              .from(SupabaseKeys.testResultsTable)
-              .select()
-              .eq('user_id', test.userId)
-              .eq('test_id', test.testId)
-              .maybeSingle(); // returns null if not found
-
-      if (existingResult != null) {
-        // Step 2: Delete existing result
-        final deleteResponse = await supabase
-            .from(SupabaseKeys.testResultsTable)
-            .delete()
-            .eq('user_id', test.userId)
-            .eq('test_id', test.testId);
-
-        _log.i('Existing test result deleted: $deleteResponse');
-      }
-
-      // Step 3: Insert the new result
       final response =
           await supabase
               .from(SupabaseKeys.testResultsTable)
@@ -326,6 +367,122 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, TestResultWithTopScoreModel>>
+  submitTestResultWithDetails({
+    required TestResultModel test,
+    required List<DetailedTestResult> detailedResults,
+  }) async {
+    try {
+      final payload =
+          detailedResults
+              .map(
+                (e) => {
+                  'question_id': e.questionId,
+                  'is_correct': e.isCorrect,
+                  'selected_option': e.selectedOption,
+                  'time_spent': e.timeSpent,
+                },
+              )
+              .toList();
+
+      final response = await supabase.rpc(
+        SupabaseKeys.submitTestAttempt,
+        params: {
+          'p_user_id': test.userId,
+          'p_test_id': test.testId,
+          'p_score': test.score,
+          'p_correct_answers': test.correctAnswers,
+          'p_incorrect_answers': test.inCorrectAnswers,
+          'p_attempted_questions': test.attemptedQuestions,
+          'p_not_attempted_questions': test.notAttemptedQuestions,
+          'p_time_taken': test.timeTaken,
+          'p_total_questions': test.totalQuestions,
+          'p_details': payload,
+        },
+      );
+
+      _log.i('RPC response: $response');
+
+      // Cast response to Map<String, dynamic>
+      final data = response as Map<String, dynamic>;
+      final model = TestResultWithTopScoreModel.fromJson(data);
+
+      _snackBar.showSuccess('Test Result Submitted Successfully');
+
+      return Right(model);
+    } catch (e) {
+      _snackBar.showError('Error submitting test result: ${e.toString()}');
+      _log.e('Error submitting test result: $e');
+      return Left(Failure("RPC submit failed: ${e.toString()}"));
+    }
+  }
+
+  Future<Either<Failure, void>> upsertUserTest({
+    required int testId,
+    required String status,
+  }) async {
+    try {
+      assert(status == 'in_progress' || status == 'paused');
+
+      // Check if row already exists
+      final existing =
+          await supabase
+              .from(SupabaseKeys.userTests)
+              .select('id, started_at')
+              .eq('user_id', _cache.user!.id!)
+              .eq('test_id', testId)
+              .maybeSingle();
+
+      if (existing == null) {
+        // 🔹 First start
+        await supabase.from(SupabaseKeys.userTests).insert({
+          'user_id': _cache.user!.id!,
+          'test_id': testId,
+          'status': status,
+          'started_at': DateTime.now().toUtc().toIso8601String(),
+          'last_reminder_sent_at': null,
+        });
+      } else {
+        // 🔹 Pause / Resume
+        final updatePayload = {
+          'status': status,
+          if (status == 'paused') 'last_reminder_sent_at': null,
+        };
+
+        await supabase
+            .from(SupabaseKeys.userTests)
+            .update(updatePayload)
+            .eq('user_id', _cache.user!.id!)
+            .eq('test_id', testId);
+      }
+
+      _log.i('User test updated: test=$testId status=$status');
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating test status');
+      _log.e('Error updating user test: $e');
+      return Left(
+        Failure('Error inserting or updating user test: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, void>> deleteUserTest({required int testId}) async {
+    try {
+      await supabase
+          .from(SupabaseKeys.userTests)
+          .delete()
+          .eq('user_id', _cache.user!.id!)
+          .eq('test_id', testId);
+
+      _log.i('User test progress deleted: test=$testId');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error deleting user test progress: $e');
+      return Left(Failure('Error deleting user test: ${e.toString()}'));
+    }
+  }
+
   ///Fetch Daily Test Results
   Future<Either<Failure, TestResultModel?>> fetchResultForSingleMcqTest({
     required int testId,
@@ -337,7 +494,9 @@ class SupabaseHelper {
               .select()
               .eq('user_id', _cache.user!.id!)
               .eq('test_id', testId)
-              .maybeSingle(); // Use maybeSingle for optional single result
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle(); // now safe even if 2 rows exist in DB
 
       if (response == null) {
         return Right(null); // No result yet
@@ -351,6 +510,33 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, TestResultWithTopScoreModel?>>
+  getUserTestResultWithTopScore({required int testId}) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestResultWithTopScore,
+        params: {'p_user_id': _cache.user!.id, 'p_test_id': testId},
+      );
+
+      // Supabase RPC always returns a List
+      if (response == null || response.isEmpty) {
+        return Right(null);
+      }
+
+      final model = TestResultWithTopScoreModel.fromJson(
+        response.first as Map<String, dynamic>,
+      );
+
+      _log.i("Result with top score: ${response.toString()}");
+      return Right(model);
+    } catch (e) {
+      _snackBar.showError('Error fetching result with Top score: $e');
+      return Left(
+        Failure("Error fetching result with Top Score: ${e.toString()}"),
+      );
+    }
+  }
+
   Future<Either<Failure, List<TestResultModel>>> fetchAllTestResults() async {
     try {
       final response = await supabase
@@ -360,6 +546,82 @@ class SupabaseHelper {
 
       final results =
           (response as List).map((e) => TestResultModel.fromJson(e)).toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, TestAttemptState>> fetchTestAttemptState(
+    int testId,
+  ) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getTestAttemptState,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results = TestAttemptState.fromJson(response);
+      _log.i('Fetched TestAttemptState: $results');
+      return Right(results);
+    } catch (e) {
+      _log.e('Error fetching TestAttemptState: $e');
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<TestReviewAnalytics>>> fetchUserTestReview({
+    required int testId,
+  }) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestReview,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results =
+          (response as List)
+              .map((e) => TestReviewAnalytics.fromDifficultyJson(e))
+              .toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<TestReviewAnalytics>>>
+  fetchUserTestReviewByQuestionType({required int testId}) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestReviewByQuestionType,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results =
+          (response as List)
+              .map((e) => TestReviewAnalytics.fromQuestionTypeJson(e))
+              .toList();
+
+      return Right(results);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  Future<Either<Failure, List<TestReviewAnalytics>>>
+  fetchUserTestReviewBySubject({required int testId}) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getUserTestReviewBySubject,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results =
+          (response as List)
+              .map((e) => TestReviewAnalytics.fromSubjectJson(e))
+              .toList();
 
       return Right(results);
     } catch (e) {
@@ -456,6 +718,7 @@ class SupabaseHelper {
       final response = await supabase
           .from(SupabaseKeys.descTests)
           .select()
+          .isFilter('course_id', null)
           .order('id', ascending: false);
       final result = response.map((e) => DescTestModel.fromJson(e)).toList();
       if (result.isEmpty) {
@@ -469,32 +732,7 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, Map<String, dynamic>>> fetchAttemptedAllTests() async {
-    try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getAttemptedTestStats,
-        params: {'user_id': _cache.user!.id},
-      );
-
-      final data = response as Map<String, dynamic>;
-      final attemptedTests = data['attempted_tests'];
-      final averageScore = data['average_score'];
-
-      _log.i('Attempted Tests: $attemptedTests Average Score: $averageScore');
-
-      return Right({
-        'attempted_tests': attemptedTests,
-        'average_score': averageScore.toDouble(),
-      });
-    } catch (e) {
-      _log.e('Error in fetching attempted tests: $e');
-      return Left(Failure("Error in fetching attempted tests"));
-    }
-  }
-
-  Future<Either<Failure, DailyTestModel>> fetchSingleTestFromId(
-    int testId,
-  ) async {
+  Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async {
     try {
       final response =
           await supabase
@@ -503,7 +741,7 @@ class SupabaseHelper {
               .eq('id', testId)
               .single();
 
-      var result = DailyTestModel.fromJson(response);
+      var result = TestModel.fromJson(response);
 
       _log.i('Link test : $result');
       return Right(result);
@@ -636,7 +874,7 @@ class SupabaseHelper {
         return Right(data);
       } else {
         _log.w('No question correctness data found for test ID: $testId');
-        return Left(Failure("No data found for test ID $testId"));
+        return Left(Failure("No one has attempted this question"));
       }
     } catch (e) {
       _log.e('Error fetching question correctness for test ID $testId: $e');
@@ -644,24 +882,32 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, void>> insertTestDetailedResult({
-    required DetailedTestResult detailedTestResult,
+  Future<Either<Failure, List<OptionMatrixModel>>> fetchOptionMatrixForTest({
+    required int testId,
   }) async {
     try {
-      final result = await supabase
-          .from(SupabaseKeys.testDetailedResults)
-          .upsert({
-            'user_id': detailedTestResult.userId,
-            'test_id': detailedTestResult.testId,
-            'question_id': detailedTestResult.questionId,
-            'is_correct': detailedTestResult.isCorrect,
-          });
+      final result = await supabase.rpc(
+        SupabaseKeys.getOptionMatrixForTest,
+        params: {'p_test_id': testId},
+      );
 
-      _log.i('Inserted test detailed result: $result');
-      return const Right(null);
+      final List<OptionMatrixModel> optionMatrix =
+          (result as List<dynamic>)
+              .map(
+                (e) => OptionMatrixModel.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList();
+
+      _log.i(
+        'Fetched option matrix for test $testId: ${optionMatrix.length} entries',
+      );
+      return Right(optionMatrix);
     } catch (e) {
-      _log.e('Error inserting test detailed result: $e');
-      return Left(Failure("Error inserting test detailed result"));
+      _log.e('Error fetching option matrix for test $testId : $e');
+
+      return Left(Failure('Error fetching option matrix for test $testId'));
     }
   }
 
@@ -775,6 +1021,108 @@ class SupabaseHelper {
     } catch (e) {
       _log.e("Error fetching study material: $e");
       return Left(Failure("Error fetching study materials"));
+    }
+  }
+
+  Future<Either<Failure, List<AttemptedQuestionStat>>>
+  fetchAttemptedQuestionStats(int testId) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getAttemptedQuestionStats,
+        params: {'p_test_id': testId},
+      );
+
+      final stats = AttemptedQuestionStat.fromRpcResponse(result);
+
+      _log.i("Attempted Question Stats length: ${stats.first.attemptedCount}");
+
+      return Right(stats);
+    } catch (e, st) {
+      _log.e("Error fetching attempted question stats", error: e, s: st);
+      return Left(Failure("Error fetching attempted question stats"));
+    }
+  }
+
+  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics({
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    final userId = _cache.getUserId();
+
+    try {
+      final params = <String, dynamic>{'p_user_id': userId};
+
+      if (from != null && to != null) {
+        params['p_from'] = from.toUtc().toIso8601String();
+        params['p_to'] = to.toUtc().toIso8601String();
+      }
+
+      final result = await supabase.rpc(
+        SupabaseKeys.getOverAllAnalytics,
+        params: params,
+      );
+      _log.i(
+        "Overall Analytics fetched successfully for date range.from $from to $to",
+      );
+      return Right(OverAllAnalyticsModel.fromJson(result));
+    } catch (e) {
+      _log.e("Error fetching Overall analytics", error: e);
+      return Left(Failure('Error fetching Overall analytics'));
+    }
+  }
+
+  Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async {
+    final userId = _cache.getUserId();
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getAccuracyTrend,
+        params: {'p_user_id': userId},
+      );
+
+      final stats = TrendResultModel.fromRpcResponse(result);
+
+      _log.i(
+        "Weekly: ${stats.weekly.length}, Monthly: ${stats.monthly.length}",
+      );
+
+      return Right(stats);
+    } catch (e) {
+      _log.e("Error fetching Accuracy Trend", error: e);
+      return Left(Failure("Error fetching Accuracy Trend"));
+    }
+  }
+
+  Future<Either<Failure, DashboardAnalytics>> getDashboardAnalytics() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getDashboardAnalytics,
+        params: {'p_user_id': _cache.user!.id},
+      );
+      final analytics = DashboardAnalytics.fromJson(
+        result.first as Map<String, dynamic>,
+      );
+      _log.i("Dashboard Analytics: $analytics");
+      return Right(analytics);
+    } catch (e, st) {
+      _log.e("Error fetching dashboard analytics", error: e, s: st);
+      return Left(Failure("Error fetching dashboard analytics"));
+    }
+  }
+
+  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async {
+    try {
+      final result = await supabase.rpc(SupabaseKeys.getPrelimsTopper);
+
+      final toppers =
+          (result as List)
+              .map((e) => LeaderboardModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+      _log.i("Leader Analytics: $toppers");
+      return Right(toppers);
+    } catch (e, st) {
+      _log.e("Error fetching leaderboard analytics", error: e, s: st);
+      return Left(Failure("Error fetching leaderboard analytics"));
     }
   }
 

@@ -6,14 +6,18 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
 import 'package:gpsc_prep_app/presentation/screens/preview_screen/pdf_export_service.dart';
 import 'package:gpsc_prep_app/utils/helper_methods/pdf_download_from_link.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:meta/meta.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
+
+import '../../../domain/entities/desc_question_model.dart';
+import '../../../domain/entities/detailed_test_result_model.dart';
 
 part 'download_pdf_event.dart';
 part 'download_pdf_state.dart';
@@ -26,6 +30,7 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
     on<ExportQuestionsToPdfEvent>(_onExportQuestionsToPdf);
     on<DownloadStudyMaterial>(_downloadStudyMaterial);
     on<DownloadDescTestPdf>(_downloadDescTestPdf);
+    on<DownloadPrelimsOmr>(_downloadPrelimsOmr);
   }
 
   Future<void> _onExportQuestionsToPdf(
@@ -45,6 +50,9 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
       final result = await PdfExportService().exportQuestionsToPdf(
         event.questions,
         event.testName,
+        performanceSummary: event.performanceSummary,
+        testType: event.testType,
+        detailedResults: event.detailedResults,
       );
       if (result.isEmpty) {
         _log.e("Failed to generate PDF");
@@ -104,6 +112,28 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
 
   Future<void> _downloadStudyMaterial(
     DownloadStudyMaterial event,
+    Emitter<DownLoadPdfState> emit,
+  ) async {
+    emit(DownLoadPdfStarted());
+    final result = await downloadAndOpenPdf(
+      normalUrl: event.url,
+      filename: event.filename,
+    );
+    result.fold(
+      (failure) {
+        emit(PdfDownloadFailure(failure));
+      },
+      (_) {
+        _snackBar.showSuccess(
+          "PDF downloaded successfully into Downloads under StarICS folder",
+        );
+        emit(PdfDownloadSuccess(result.right));
+      },
+    );
+  }
+
+  Future<void> _downloadPrelimsOmr(
+    DownloadPrelimsOmr event,
     Emitter<DownLoadPdfState> emit,
   ) async {
     emit(DownLoadPdfStarted());
