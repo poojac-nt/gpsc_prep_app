@@ -199,7 +199,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 size: 25.sp,
               ),
               10.wGap,
-              Text("Leaderboard", style: AppTexts.dashboardContainerTitle),
+              Text(
+                "Prelims Leaderboard",
+                style: AppTexts.dashboardContainerTitle,
+              ),
               Spacer(),
               // GestureDetector(
               //   onTap: () {},
@@ -213,32 +216,32 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ],
           ),
           10.hGap,
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.r),
-              color: Colors.grey.shade200,
-              border: Border.all(color: Colors.black26, width: 0.2),
-            ),
-            padding: EdgeInsets.symmetric(vertical: 5.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildTabToggle("Prelims", leaderBoardTestTitle, (val) {
-                  setState(() {
-                    leaderBoardTestTitle = val;
-                    leaders = leaders;
-                  });
-                }),
-                // _buildTabToggle("Mains", leaderBoardTestTitle, (val) {
-                //   // setState(() {
-                //   //   leaderBoardTestTitle = val;
-                //   //   leaders = mainsLeaders;
-                //   // });
-                // }),
-              ],
-            ),
-          ),
-          5.hGap,
+          // Container(
+          //   decoration: BoxDecoration(
+          //     borderRadius: BorderRadius.circular(10.r),
+          //     color: Colors.grey.shade200,
+          //     border: Border.all(color: Colors.black26, width: 0.2),
+          //   ),
+          //   padding: EdgeInsets.symmetric(vertical: 5.h),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //     children: [
+          //       _buildTabToggle("Prelims", leaderBoardTestTitle, (val) {
+          //         setState(() {
+          //           leaderBoardTestTitle = val;
+          //           leaders = leaders;
+          //         });
+          //       }),
+          //       // _buildTabToggle("Mains", leaderBoardTestTitle, (val) {
+          //       //   // setState(() {
+          //       //   //   leaderBoardTestTitle = val;
+          //       //   //   leaders = mainsLeaders;
+          //       //   // });
+          //       // }),
+          //     ],
+          //   ),
+          // ),
+          // 5.hGap,
           Divider(color: Colors.grey, thickness: 0.7),
           ListView.builder(
             itemCount: leaders.length,

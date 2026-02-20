@@ -124,16 +124,6 @@ class _ResultScreenState extends State<ResultScreen> {
                         topScore: serverResult?.topScore ?? 0.0,
                       );
 
-                      List<TestReviewAnalytics>? reviewByDifficulty;
-                      List<TestReviewAnalytics>? reviewByQuestionType;
-                      List<TestReviewAnalytics>? reviewBySubject;
-
-                      if (resultState is ResultDataSuccess) {
-                        reviewByDifficulty = resultState.reviewByDifficulty;
-                        reviewByQuestionType = resultState.reviewByQuestionType;
-                        reviewBySubject = resultState.reviewBySubject;
-                      }
-
                       return _buildSummaryBody(
                         context,
                         data,
@@ -143,9 +133,9 @@ class _ResultScreenState extends State<ResultScreen> {
                         testCubitState.selectedOption,
                         testCubitState.batchResults,
                         testCubitState.timePerQuestion,
-                        reviewByDifficulty,
-                        reviewByQuestionType,
-                        reviewBySubject,
+                        testBlocState.serverResult!.difficultyWiseReview,
+                        testBlocState.serverResult!.questionTypeReview,
+                        testBlocState.serverResult!.subjectWiseReview,
                         testBlocState.serverResult,
                       );
                     },
@@ -176,9 +166,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     null,
                     null,
                     null,
-                    resultState.reviewByDifficulty,
-                    resultState.reviewByQuestionType,
-                    resultState.reviewBySubject,
+                    resultState.result!.difficultyWiseReview,
+                    resultState.result!.questionTypeReview,
+                    resultState.result!.subjectWiseReview,
                     resultState.result,
                   );
                 }

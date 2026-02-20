@@ -17,18 +17,13 @@ abstract class SupabaseKeys {
   static final String getOptionMatrixForTest = 'get_test_question_option_stats';
   static final String getAttemptedQuestionStats =
       'get_test_question_attempts_summary_v2';
-  static final String getUserTestResultWithTopScore =
-      'get_user_test_result_with_top_score';
-  static final String getUserTestReview = 'get_user_test_review';
+  static final String getTestAttemptWithAnalytics =
+      'get_test_attempt_with_analytics';
   static final String getOverAllAnalytics = 'get_combined_analytics';
   static final String getDashboardAnalytics = 'dashboard_full_analytics';
   static final String getAccuracyTrend = 'get_accuracy_trends';
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
-  static final String getUserTestReviewByQuestionType =
-      'get_test_question_type_analysis';
-  static final String getUserTestReviewBySubject =
-      'get_test_subject_wise_analytics';
   static final String getPrelimsTopper = 'get_top_3_prelims_users';
   static final String getCoursesWithTests = 'fetch_courses_with_tests';
 

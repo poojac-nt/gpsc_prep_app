@@ -20,7 +20,14 @@ TestResultWithTopScoreModel _$TestResultWithTopScoreModelFromJson(
       timeTaken: (json['time_taken'] as num).toInt(),
       topScore: TestResultWithTopScoreModel._toDouble(json['top_score']),
       userRank: (json['user_rank'] as num).toInt(),
-      createdAt: json['created_at'] as String?,
+      subjectWiseReview: TestResultWithTopScoreModel._subjectWiseReviewFromJson(
+          json['subject_wise_review']),
+      questionTypeReview:
+          TestResultWithTopScoreModel._questionTypeReviewFromJson(
+              json['question_type_review']),
+      difficultyWiseReview:
+          TestResultWithTopScoreModel._difficultyWiseReviewFromJson(
+              json['difficulty_wise_review']),
     );
 
 Map<String, dynamic> _$TestResultWithTopScoreModelToJson(
@@ -35,7 +42,9 @@ Map<String, dynamic> _$TestResultWithTopScoreModelToJson(
       'not_attempted_questions': instance.notAttemptedQuestions,
       'score': instance.score,
       'time_taken': instance.timeTaken,
-      'created_at': instance.createdAt,
       'top_score': instance.topScore,
       'user_rank': instance.userRank,
+      'subject_wise_review': instance.subjectWiseReview,
+      'question_type_review': instance.questionTypeReview,
+      'difficulty_wise_review': instance.difficultyWiseReview,
     };

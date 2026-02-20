@@ -13,7 +13,6 @@ import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
-import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
@@ -514,18 +513,13 @@ class SupabaseHelper {
   getUserTestResultWithTopScore({required int testId}) async {
     try {
       final response = await supabase.rpc(
-        SupabaseKeys.getUserTestResultWithTopScore,
+        SupabaseKeys.getTestAttemptWithAnalytics,
         params: {'p_user_id': _cache.user!.id, 'p_test_id': testId},
       );
 
-      // Supabase RPC always returns a List
-      if (response == null || response.isEmpty) {
-        return Right(null);
-      }
-
-      final model = TestResultWithTopScoreModel.fromJson(
-        response.first as Map<String, dynamic>,
-      );
+      // Cast response to Map<String, dynamic>
+      final data = response as Map<String, dynamic>;
+      final model = TestResultWithTopScoreModel.fromJson(data);
 
       _log.i("Result with top score: ${response.toString()}");
       return Right(model);
@@ -567,64 +561,6 @@ class SupabaseHelper {
       return Right(results);
     } catch (e) {
       _log.e('Error fetching TestAttemptState: $e');
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  Future<Either<Failure, List<TestReviewAnalytics>>> fetchUserTestReview({
-    required int testId,
-  }) async {
-    try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getUserTestReview,
-        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
-      );
-
-      final results =
-          (response as List)
-              .map((e) => TestReviewAnalytics.fromDifficultyJson(e))
-              .toList();
-
-      return Right(results);
-    } catch (e) {
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  Future<Either<Failure, List<TestReviewAnalytics>>>
-  fetchUserTestReviewByQuestionType({required int testId}) async {
-    try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getUserTestReviewByQuestionType,
-        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
-      );
-
-      final results =
-          (response as List)
-              .map((e) => TestReviewAnalytics.fromQuestionTypeJson(e))
-              .toList();
-
-      return Right(results);
-    } catch (e) {
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  Future<Either<Failure, List<TestReviewAnalytics>>>
-  fetchUserTestReviewBySubject({required int testId}) async {
-    try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getUserTestReviewBySubject,
-        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
-      );
-
-      final results =
-          (response as List)
-              .map((e) => TestReviewAnalytics.fromSubjectJson(e))
-              .toList();
-
-      return Right(results);
-    } catch (e) {
       return Left(Failure(e.toString()));
     }
   }
