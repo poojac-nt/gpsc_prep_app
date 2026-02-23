@@ -25,7 +25,12 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<DailyTestBloc>().add(FetchTests());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = context.read<DailyTestBloc>().state;
+      if (state is! DailyTestFetched) {
+        context.read<DailyTestBloc>().add(FetchTests());
+      }
+    });
   }
 
   @override
@@ -96,18 +101,30 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
 
   /// Build filtered list for each tab
   Widget _buildFilteredList(
-    List tests,
+    List<TestModel> tests,
     String? filter,
     DailyTestFetched state,
   ) {
-    final filtered =
+    final List<TestModel> filtered =
         filter == null
-            ? tests
+            ? List<TestModel>.from(tests)
             : tests
                 .where(
                   (t) => t.name.toLowerCase().contains(filter.toLowerCase()),
                 )
                 .toList();
+
+    // Sort: descending available_at, then descending created_at
+    filtered.sort((TestModel a, TestModel b) {
+      final aAvail = a.availableAt ?? DateTime(0);
+      final bAvail = b.availableAt ?? DateTime(0);
+      final availCompare = bAvail.compareTo(aAvail);
+      if (availCompare != 0) return availCompare;
+
+      final aCreated = a.createdAt ?? DateTime(0);
+      final bCreated = b.createdAt ?? DateTime(0);
+      return bCreated.compareTo(aCreated);
+    });
 
     if (filtered.isEmpty) {
       return RefreshIndicator(

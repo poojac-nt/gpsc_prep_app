@@ -104,6 +104,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               enabled: !isLoading,
                               decoration: InputDecoration(
                                 labelText: 'Course Name',
+                                floatingLabelStyle: TextStyle(
+                                  color: AppColors.primary,
+                                ),
                                 hintText:
                                     'Enter course name (e.g., GPSC Class 1-2)',
                                 border: OutlineInputBorder(
@@ -139,6 +142,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               maxLines: 3,
                               decoration: InputDecoration(
                                 labelText: 'Description',
+                                floatingLabelStyle: TextStyle(
+                                  color: AppColors.primary,
+                                ),
                                 hintText: 'Enter course description (optional)',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.r),

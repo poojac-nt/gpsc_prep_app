@@ -3,7 +3,7 @@ import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 
 import '../../../core/error/failure.dart';
 import '../../../domain/entities/result_model.dart';
-import '../../../domain/entities/test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 @immutable
 sealed class DailyTestState {}

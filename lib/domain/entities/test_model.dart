@@ -21,6 +21,8 @@ class TestModel {
   String? omrLink;
   @JsonKey(name: "available_at")
   DateTime? availableAt;
+  @JsonKey(name: "created_at")
+  DateTime? createdAt;
 
   TestModel({
     required this.id,
@@ -31,6 +33,7 @@ class TestModel {
     required this.totalMarks,
     this.omrLink,
     this.availableAt,
+    this.createdAt,
   });
 
   factory TestModel.fromJson(Map<String, dynamic> json) =>

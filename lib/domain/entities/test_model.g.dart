@@ -17,6 +17,9 @@ TestModel _$TestModelFromJson(Map<String, dynamic> json) => TestModel(
       availableAt: json['available_at'] == null
           ? null
           : DateTime.parse(json['available_at'] as String),
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
     );
 
 Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
@@ -28,6 +31,7 @@ Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'total_marks': instance.totalMarks,
       'omr_link': instance.omrLink,
       'available_at': instance.availableAt?.toIso8601String(),
+      'created_at': instance.createdAt?.toIso8601String(),
     };
 
 const _$TestTypeEnumMap = {

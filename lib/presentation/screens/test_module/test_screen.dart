@@ -1334,22 +1334,26 @@ class _TestScreenState extends State<TestScreen> {
         children: [
           Icon(icon, size: 14.sp, color: Colors.blue.shade700),
           6.wGap,
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: label,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade700,
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: label,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade700,
+                    ),
                   ),
-                ),
-                TextSpan(
-                  text: value,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.black87),
-                ),
-              ],
+                  TextSpan(
+                    text: value,
+                    style: TextStyle(fontSize: 12.sp, color: Colors.black87),
+                  ),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

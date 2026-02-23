@@ -299,7 +299,8 @@ class SupabaseHelper {
           .select()
           .inFilter('test_type', ['dtmcq', 'mcq'])
           .lte('available_at', DateTime.now().toUtc().toIso8601String())
-          .order('available_at', ascending: false);
+          .order('available_at', ascending: false)
+          .order('created_at', ascending: false);
 
       final result = response.map((e) => TestModel.fromJson(e)).toList();
 
