@@ -14,7 +14,7 @@ TestAttemptState _$TestAttemptStateFromJson(Map<String, dynamic> json) =>
       cooldownHours: (json['cooldown_hours'] as num).toInt(),
       canRetry: json['can_retry'] as bool,
       retryAvailableAt: json['retry_available_at'] as String?,
-      lastAttemptAt: json['last_attempt_at'] as String,
+      lastAttemptAt: json['last_attempt_at'] as String?,
     );
 
 Map<String, dynamic> _$TestAttemptStateToJson(TestAttemptState instance) =>

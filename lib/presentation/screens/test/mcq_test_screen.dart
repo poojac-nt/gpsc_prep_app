@@ -3,16 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/icons/icons.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -199,86 +197,89 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [Text('Available Tests', style: AppTexts.heading)],
-              ),
               10.hGap,
-              TestModule(
-                title: "Daily Tests",
-                subtitle: "Subject-based Daily Practice",
-                prefixIcon: Icons.calendar_today_outlined,
-                cards: List.generate(
-                  3,
-                  (index) => TestTile(
-                    title: "Loading Test $index",
-                    subtitle: "00 Questions · 0 min",
-                    onTap: () {},
-                  ).padSymmetric(vertical: 6.h),
+              TestCard(
+                testModel: TestModel(
+                  id: 1,
+                  name: "name",
+                  duration: 120,
+                  noQuestions: 3,
+                  testType: TestType.mcq,
+                  totalMarks: 20,
                 ),
+                isEligibleForRetest: true,
+                isAttempted: false,
+                lastAttemptedDate: 'submittedAt',
               ),
               10.hGap,
-              TestModule(
-                title: "Mock Tests",
-                subtitle: "Full Length Practice Exams",
-                prefixIcon: Icons.description_outlined,
-                cards: [
-                  TestTile(
-                    title: "GPSC Mock Test #1",
-                    subtitle: "100 Questions · 2 hours",
-                    widgets: [
-                      Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.accentColor,
-                            width: 1,
-                          ),
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Icon(
-                          Icons.file_download_outlined,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                    onTap: () {},
-                  ),
-                ],
+              TestCard(
+                testModel: TestModel(
+                  id: 1,
+                  name: "name",
+                  duration: 120,
+                  noQuestions: 3,
+                  testType: TestType.mcq,
+                  totalMarks: 20,
+                ),
+                isEligibleForRetest: true,
+                isAttempted: false,
+                lastAttemptedDate: 'submittedAt',
               ),
               10.hGap,
-              TestModule(
-                title: 'Offline Mode',
-                subtitle: 'Download tests for offline Practice',
-                prefixIcon: Icons.file_download_outlined,
-                cards: [
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_download_outlined),
-                        10.wGap,
-                        Text('Download PDF Test', style: AppTexts.title),
-                      ],
-                    ),
-                  ),
-                  10.hGap,
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_upload_outlined),
-                        10.wGap,
-                        Text('Upload Answers', style: AppTexts.title),
-                      ],
-                    ),
-                  ),
-                ],
+              TestCard(
+                testModel: TestModel(
+                  id: 1,
+                  name: "name",
+                  duration: 120,
+                  noQuestions: 3,
+                  testType: TestType.mcq,
+                  totalMarks: 20,
+                ),
+                isEligibleForRetest: true,
+                isAttempted: false,
+                lastAttemptedDate: 'submittedAt',
+              ),
+              10.hGap,
+              TestCard(
+                testModel: TestModel(
+                  id: 1,
+                  name: "name",
+                  duration: 120,
+                  noQuestions: 3,
+                  testType: TestType.mcq,
+                  totalMarks: 20,
+                ),
+                isEligibleForRetest: true,
+                isAttempted: false,
+                lastAttemptedDate: 'submittedAt',
+              ),
+              10.hGap,
+              TestCard(
+                testModel: TestModel(
+                  id: 1,
+                  name: "name",
+                  duration: 120,
+                  noQuestions: 3,
+                  testType: TestType.mcq,
+                  totalMarks: 20,
+                ),
+                isEligibleForRetest: true,
+                isAttempted: false,
+                lastAttemptedDate: 'submittedAt',
+              ),
+              10.hGap,
+              TestCard(
+                testModel: TestModel(
+                  id: 1,
+                  name: "name",
+                  duration: 120,
+                  noQuestions: 3,
+                  testType: TestType.mcq,
+                  totalMarks: 20,
+                ),
+                isEligibleForRetest: true,
+                isAttempted: false,
+                lastAttemptedDate: 'submittedAt',
               ),
             ],
           ).padAll(AppPaddings.appPaddingInt),

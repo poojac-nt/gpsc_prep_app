@@ -17,7 +17,7 @@ class TestAttemptState {
   @JsonKey(name: "retry_available_at")
   String? retryAvailableAt;
   @JsonKey(name: "last_attempt_at")
-  String lastAttemptAt;
+  String? lastAttemptAt;
 
   TestAttemptState({
     required this.attemptsDone,
@@ -26,7 +26,7 @@ class TestAttemptState {
     required this.cooldownHours,
     required this.canRetry,
     this.retryAvailableAt,
-    required this.lastAttemptAt,
+    this.lastAttemptAt,
   });
 
   factory TestAttemptState.fromJson(Map<String, dynamic> json) =>
