@@ -132,18 +132,37 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         onRefresh: () async {
           return context.read<DailyTestBloc>().add(FetchTests());
         },
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            SizedBox(
-              height: 0.8.sh,
-              child: Center(
-                child: Text(
-                  "No tests available for ${filter ?? "All Subjects"}",
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            if (!state.hasReachedMax &&
+                !state.isFetchingMore &&
+                scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              context.read<DailyTestBloc>().add(LoadMoreTests());
+            }
+            return true;
+          },
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(
+                height: 0.8.sh,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "No tests available for ${filter ?? "All Subjects"}",
+                      ),
+                      if (!state.hasReachedMax && state.isFetchingMore) ...[
+                        10.hGap,
+                        const CircularProgressIndicator(),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -153,42 +172,58 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
       onRefresh: () async {
         return context.read<DailyTestBloc>().add(FetchTests());
       },
-      child: ListView.builder(
-        padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-        itemCount: filtered.length,
-        itemBuilder: (context, index) {
-          final test = filtered[index];
-          final testAttemptState = state.testResults[test.id];
-          final hasAttempted =
-              testAttemptState != null && testAttemptState.attemptsDone > 0;
-          final canShowRetestButton =
-              testAttemptState != null &&
-              testAttemptState.attemptsDone == 1 &&
-              testAttemptState.canRetry;
-          final submittedAt =
-              formatDate(testAttemptState?.lastAttemptAt) ?? 'N/A';
-          return Column(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  if (!hasAttempted) {
-                    context.push(
-                      AppRoutes.mcqTestInstructionScreen,
-                      extra: TestInstructionScreenArgs(testModal: test),
-                    );
-                  }
-                },
-                child: TestCard(
-                  testModel: test,
-                  isEligibleForRetest: canShowRetestButton,
-                  isAttempted: hasAttempted,
-                  lastAttemptedDate: submittedAt,
-                ),
-              ),
-              10.hGap,
-            ],
-          );
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollInfo) {
+          if (!state.hasReachedMax &&
+              !state.isFetchingMore &&
+              scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+            context.read<DailyTestBloc>().add(LoadMoreTests());
+          }
+          return true;
         },
+        child: ListView.builder(
+          padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+          itemCount: filtered.length + (state.isFetchingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == filtered.length) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.h),
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+            final test = filtered[index];
+            final testAttemptState = state.testResults[test.id];
+            final hasAttempted =
+                testAttemptState != null && testAttemptState.attemptsDone > 0;
+            final canShowRetestButton =
+                testAttemptState != null &&
+                testAttemptState.attemptsDone == 1 &&
+                testAttemptState.canRetry;
+            final submittedAt =
+                formatDate(testAttemptState?.lastAttemptAt) ?? 'N/A';
+            return Column(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (!hasAttempted) {
+                      context.push(
+                        AppRoutes.mcqTestInstructionScreen,
+                        extra: TestInstructionScreenArgs(testModal: test),
+                      );
+                    }
+                  },
+                  child: TestCard(
+                    testModel: test,
+                    isEligibleForRetest: canShowRetestButton,
+                    isAttempted: hasAttempted,
+                    lastAttemptedDate: submittedAt,
+                  ),
+                ),
+                10.hGap,
+              ],
+            );
+          },
+        ),
       ),
     );
   }

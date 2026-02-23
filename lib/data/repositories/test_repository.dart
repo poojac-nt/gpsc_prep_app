@@ -20,8 +20,10 @@ class TestRepository {
 
   TestRepository(this._supabase);
 
-  Future<Either<Failure, List<TestModel>>> fetchDailyTest() async =>
-      await _supabase.fetchDailyMcqTests();
+  Future<Either<Failure, List<TestModel>>> fetchDailyTest({
+    int offset = 0,
+    int limit = 20,
+  }) async => await _supabase.fetchDailyMcqTests(offset: offset, limit: limit);
 
   Future<Either<Failure, List<QuestionModel>>> fetchMcqTestQuestions(
     int testID,

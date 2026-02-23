@@ -292,7 +292,10 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<TestModel>>> fetchDailyMcqTests() async {
+  Future<Either<Failure, List<TestModel>>> fetchDailyMcqTests({
+    int offset = 0,
+    int limit = 20,
+  }) async {
     try {
       final response = await supabase
           .from(SupabaseKeys.testsTable)
@@ -300,11 +303,12 @@ class SupabaseHelper {
           .inFilter('test_type', ['dtmcq', 'mcq'])
           .lte('available_at', DateTime.now().toUtc().toIso8601String())
           .order('available_at', ascending: false)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
 
       final result = response.map((e) => TestModel.fromJson(e)).toList();
 
-      _log.i('Total available tests: ${result.length}');
+      _log.i('Fetched tests: ${result.length} (offset: $offset)');
       return Right(result);
     } catch (e, s) {
       _snackBar.showError('Error fetching tests: ${e.toString()}');
