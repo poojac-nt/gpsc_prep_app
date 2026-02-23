@@ -50,11 +50,7 @@ class _AllSubjectsAnalyticsScreenState
   Widget build(BuildContext context) {
     return BlocBuilder<DetailedAnalyticsBloc, DetailedAnalyticsState>(
       builder: (context, state) {
-        // Use state data if available, otherwise fallback to widget data
-        final data =
-            state.subjectData.isNotEmpty
-                ? state.subjectData
-                : widget.subjectsData;
+        final data = state.subjectData;
         final isLoading = state.isLoading;
 
         return Scaffold(

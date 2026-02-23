@@ -60,7 +60,7 @@ class _AllDifficultyAnalyticsScreenState
             ),
           ),
           body:
-              isLoading
+              isLoading && data.isEmpty
                   ? Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
                     child: Column(
@@ -82,7 +82,7 @@ class _AllDifficultyAnalyticsScreenState
                           },
                         ),
                         24.hGap,
-                        if (data.isEmpty)
+                        if (data.isEmpty && !isLoading)
                           EmptyStateUi()
                         else ...[
                           Padding(

@@ -38,7 +38,20 @@ class AnalyticsDateRangePicker extends StatelessWidget {
     );
 
     if (picked != null && picked != selectedRange) {
-      onRangeSelected(picked);
+      final adjustedEnd = DateTime(
+        picked.end.year,
+        picked.end.month,
+        picked.end.day,
+        23,
+        59,
+        59,
+        999,
+      );
+      final adjustedRange = DateTimeRange(
+        start: picked.start,
+        end: adjustedEnd,
+      );
+      onRangeSelected(adjustedRange);
     }
   }
 
