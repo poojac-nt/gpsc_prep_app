@@ -40,6 +40,9 @@ class QuestionModel {
   @JsonKey(name: "topic_name")
   final String topicName;
 
+  @JsonKey(name: "question_order")
+  final int? questionOrder;
+
   QuestionModel({
     required this.questionId,
     required this.questionType,
@@ -52,6 +55,7 @@ class QuestionModel {
     required this.questionHash,
     required this.subjectName,
     required this.topicName,
+    this.questionOrder,
   });
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) =>
