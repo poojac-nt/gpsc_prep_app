@@ -15,6 +15,10 @@ UserPayload _$UserPayloadFromJson(Map<String, dynamic> json) => UserPayload(
       address: json['address'] as String?,
       number: (json['number'] as num?)?.toInt(),
       profilePicture: json['profile_picture'] as String?,
+      subjectExpertise: (json['subject_expertise'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      bio: json['bio'] as String?,
     );
 
 Map<String, dynamic> _$UserPayloadToJson(UserPayload instance) {
@@ -34,5 +38,7 @@ Map<String, dynamic> _$UserPayloadToJson(UserPayload instance) {
   writeNotNull('address', instance.address);
   writeNotNull('number', instance.number);
   writeNotNull('profile_picture', instance.profilePicture);
+  writeNotNull('subject_expertise', instance.subjectExpertise);
+  writeNotNull('bio', instance.bio);
   return val;
 }

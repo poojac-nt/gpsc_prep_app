@@ -94,7 +94,8 @@ class TestRepository {
   Future<Either<Failure, void>> updateUserTestStatus({
     required int testId,
     required String status,
-  }) async => await _supabase.upsertUserTest(testId: testId, status: status);
+  }) async =>
+      await _supabase.updateUserTestStatus(testId: testId, status: status);
 
   Future<Either<Failure, void>> deleteUserTest({required int testId}) async =>
       await _supabase.deleteUserTest(testId: testId);

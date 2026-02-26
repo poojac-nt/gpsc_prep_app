@@ -287,7 +287,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
 
   bool isAnswerUnlocked(String createdAtString) {
     try {
-      final createdAtUtc = DateTime.parse(createdAtString);
+      final createdAtUtc = DateTime.parse(createdAtString).toUtc();
       final unlockTimeUtc = DateTime.utc(
         createdAtUtc.year,
         createdAtUtc.month,
@@ -297,11 +297,12 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
       );
 
       final nowUtc = DateTime.now().toUtc();
+
       return nowUtc.isAfter(unlockTimeUtc);
     } catch (e) {
       getIt<LogHelper>().e("Error parsing createdAt: $e");
       getIt<SnackBarHelper>().showError("Error parsing createdAt: $e");
-      return false; // Default to locked if parsing fails
+      return false;
     }
   }
 }

@@ -2,8 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
@@ -30,6 +30,7 @@ import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart'
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
@@ -82,7 +83,8 @@ class AppServices {
 
     final cacheManager = getIt<CacheManager>();
     final UserModel? user = await cacheManager.getInitUser();
-    AppRouter.init(user != null);
+    final authBloc = getIt<AuthBloc>();
+    AppRouter.init(user != null, authBloc);
 
     final supabase = getIt<SupabaseHelper>().supabase;
     supabase.auth.onAuthStateChange.listen((data) {
@@ -125,5 +127,6 @@ class AppServices {
     ),
     BlocProvider<PrelimsTestBloc>(create: (_) => getIt<PrelimsTestBloc>()),
     BlocProvider<CourseBloc>(create: (_) => getIt<CourseBloc>()),
+    BlocProvider<SubjectBloc>(create: (_) => getIt<SubjectBloc>()),
   ];
 }

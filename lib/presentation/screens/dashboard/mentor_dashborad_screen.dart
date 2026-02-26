@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/selection_drawer.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/stats_widget.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
-import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
+import 'package:gpsc_prep_app/presentation/widgets/mentor_assignment_tile.dart';
+import 'package:gpsc_prep_app/presentation/widgets/mentor_progress_card.dart';
+import 'package:gpsc_prep_app/presentation/widgets/mentor_stat_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
@@ -15,161 +14,220 @@ class MentorDashboardScreen extends StatefulWidget {
   State<MentorDashboardScreen> createState() => _MentorDashboardScreenState();
 }
 
-class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
+class _MentorDashboardScreenState extends State<MentorDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FB),
       drawer: SelectionDrawer(),
-      drawerEdgeDragWidth: 150,
-      appBar: AppBar(title: Text('Dashboard', style: AppTexts.titleTextStyle)),
-      body: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 15.h,
-                  ),
-                  child: StatsWidget(
-                    text: 'Pending Reviews ',
-                    num: '24',
-                    icon: Icons.error_outline_outlined,
-                    iconColor: Colors.orange,
-                  ),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: Builder(
+          builder:
+              (context) => IconButton(
+                icon: Icon(
+                  Icons.menu_rounded,
+                  color: const Color(0xFF4F46E5),
+                  size: 28.sp,
                 ),
+                onPressed: () => Scaffold.of(context).openDrawer(),
               ),
-              10.wGap,
-              Expanded(
-                child: ElevatedContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 15.h,
-                  ),
-                  child: StatsWidget(
-                    text: 'Completed Today',
-                    num: '78%',
-                    icon: Icons.check_circle_outline,
-                    iconColor: Colors.green,
-                  ),
-                ),
-              ),
-            ],
+        ),
+        title: Text(
+          'Dashboard',
+          style: AppTexts.titleTextStyle.copyWith(fontSize: 20.sp),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: const Color(0xFF64748B),
+              size: 24.sp,
+            ),
+            onPressed: () {},
           ),
-          10.hGap,
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 15.h,
+          12.wGap,
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Welcome Header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome, Mentor',
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1E293B),
+                    ),
                   ),
-                  child: StatsWidget(
-                    text: 'Average Score',
-                    num: '12 days',
-                    icon: Icons.description_outlined,
-                    iconColor: Colors.blueAccent,
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Here is your evaluation progress for today.',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
-                ),
+                ],
               ),
-              10.wGap,
-              Expanded(
-                child: ElevatedContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 15.h,
+            ),
+
+            // Stat Cards Row
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: MentorStatCard(
+                      icon: Icons.description_outlined,
+                      title: 'Assigned Papers',
+                      value: '45',
+                      trendText: '+5% vs last week',
+                      iconColor: const Color(0xFF4F46E5),
+                      iconBackgroundColor: const Color(0xFFEEF2FF),
+                    ),
                   ),
-                  child: StatsWidget(
-                    text: 'Total Students',
-                    num: '+15%',
-                    icon: Icons.person_outline,
-                    iconColor: Colors.purple,
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: MentorStatCard(
+                      icon: Icons.assignment_late_outlined,
+                      title: 'Pending',
+                      value: '12',
+                      trendText: '+2% daily increase',
+                      trendColor: const Color(0xFFF59E0B),
+                      iconColor: const Color(0xFFF59E0B),
+                      iconBackgroundColor: const Color(0xFFFFF7ED),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-          10.hGap,
-          ElevatedContainer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Student Submissions',
-                  style: AppTexts.titleTextStyle.copyWith(fontSize: 16.sp),
-                ),
-                Text(
-                  'Review and evaluate descriptive test submissions',
-                  style: TextStyle(fontSize: 10.sp),
-                ),
-                5.hGap,
-                BorderedContainer(
-                  padding: EdgeInsets.all(10),
-                  child: Row(
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Progress Card
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: const MentorProgressCard(
+                title: 'Completed Reviews',
+                value: '33',
+                progress: 0.73,
+                footerText: '73% of weekly goal achieved',
+              ),
+            ),
+
+            SizedBox(height: 32.h),
+
+            // Subject Tabs
+            TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              labelColor: const Color(0xFF4F46E5),
+              unselectedLabelColor: const Color(0xFF94A3B8),
+              indicatorColor: const Color(0xFF4F46E5),
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              tabs: const [
+                Tab(text: 'History'),
+                Tab(text: 'Geography'),
+                Tab(text: 'Polity'),
+                Tab(text: 'Ethics'),
+              ],
+            ),
+
+            SizedBox(height: 24.h),
+
+            // Assignments Section
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                children: [
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'John Doe',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text('STU001'),
-                          Text(
-                            "Economics Essay Test",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Row(
-                            children: const [Text('2024-12-20'), Text('14:30')],
-                          ),
-                          const Text('3 questions • 50 marks'),
-                        ],
+                      Text(
+                        'Current Assignments',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF1E293B),
+                        ),
                       ),
-                      Expanded(
-                        child: Container(
-                          color: Colors.black,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(5.sp),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(20.sp),
-                                ),
-                                child: Text(
-                                  "Pending",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              IntrinsicWidth(
-                                child: ActionButton(
-                                  text: 'Evaluate',
-                                  onTap: () {},
-                                ),
-                              ),
-                            ],
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          'View All',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF4F46E5),
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  SizedBox(height: 12.h),
+                  MentorAssignmentTile(
+                    studentName: 'John Doe',
+                    testTitle: 'Modern India Mock #4',
+                    status: 'Pending',
+                    date: 'Oct 24, 2023',
+                    actionText: 'Start Checking',
+                    onActionTap: () {},
+                  ),
+                  MentorAssignmentTile(
+                    studentName: 'Amara Singh',
+                    testTitle: 'Ancient History Quiz',
+                    status: 'In Progress',
+                    date: 'Oct 25, 2023',
+                    actionText: 'Resume',
+                    onActionTap: () {},
+                  ),
+                  MentorAssignmentTile(
+                    studentName: 'Mark Knight',
+                    testTitle: 'World War II Essay',
+                    status: 'Evaluated',
+                    date: 'Oct 22, 2023',
+                    actionText: 'View Results',
+                    onActionTap: () {},
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ).padAll(AppPaddings.defaultPadding),
+            SizedBox(height: 40.h),
+          ],
+        ),
+      ),
     );
   }
 }

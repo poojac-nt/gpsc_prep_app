@@ -40,6 +40,7 @@ abstract class SupabaseKeys {
   static final String studyMaterial = 'study_material';
   static final String userTests = 'user_tests';
   static final String courseTable = 'courses';
+  static final String subjects = 'subjects';
 
   ///columns
   static final String email = 'user_email';

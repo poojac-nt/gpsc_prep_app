@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -14,11 +15,13 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
@@ -42,6 +45,10 @@ class SupabaseHelper {
 
   SupabaseHelper(this._log, this._snackBar, this._cache);
 
+  /// ===========================================================================
+  /// AUTHENTICATION
+  /// ===========================================================================
+
   Future<bool> doesUserExist(String email) async {
     final response = await supabase
         .from(SupabaseKeys.usersTable)
@@ -51,6 +58,14 @@ class SupabaseHelper {
       return false;
     }
     return true;
+  }
+
+  Future<bool> checkUserExist(String email) async {
+    final response = await supabase.rpc(
+      SupabaseKeys.checkUserExist,
+      params: {"user_email": email},
+    );
+    return response;
   }
 
   ///Login Method
@@ -87,10 +102,8 @@ class SupabaseHelper {
   }
 
   ///New User Create Method
-  Future<Either<Failure, UserModel>> createUser(UserPayload data) async {
+  Future<Either<Failure, UserModel>> createStudent(UserPayload data) async {
     try {
-      final jsonData = data.toJson();
-      _log.d('[insertUser] Payload: $jsonData');
       final existingUser =
           await supabase
               .from(SupabaseKeys.usersTable)
@@ -128,20 +141,84 @@ class SupabaseHelper {
                 'auth_id': userId,
                 'profile_picture': data.profilePicture,
               })
-              .select('*')
+              .select()
               .single();
       _log.i('[UserCreated] Response: $insertResponse');
       _snackBar.showSuccess('User Created Successfully as ${data.name}');
       final userModel = UserModel.fromJson(insertResponse);
       return Right(userModel);
     } catch (e) {
-      _snackBar.showError('Error Creating New User: $e');
-      _log.e('[createUser] Error: $e');
-      return Left(Failure('Error Creating New User $e'));
+      _snackBar.showError('Error Creating New Student: $e');
+      _log.e('[createStudent] Error: $e');
+      return Left(Failure('Error Creating Student: $e'));
     }
   }
 
-  ///Update User Information Method
+  Future<Either<Failure, MentorModel>> createMentorByAdmin(
+    UserPayload data,
+  ) async {
+    try {
+      if (data.subjectExpertise == null || data.subjectExpertise!.isEmpty) {
+        _log.e('Mentor creation failed: No subjects provided');
+        return Left(Failure('Mentor must have at least one subject'));
+      }
+
+      final response = await supabase.functions.invoke(
+        'create-mentor',
+        body: {
+          'full_name': data.name,
+          'email': data.email,
+          'bio': data.bio,
+          'subject_expertise': data.subjectExpertise,
+          'password': data.password,
+        },
+      );
+
+      if (response.status >= 400) {
+        final errorData = response.data;
+        return Left(
+          Failure(
+            errorData is Map
+                ? errorData['error'] ?? 'Error creating mentor'
+                : errorData.toString(),
+          ),
+        );
+      }
+
+      // ✅ Properly cast the response
+      final result = response.data as Map<String, dynamic>;
+      debugPrint(result['user']['role'].runtimeType.toString());
+      debugPrint(result['user']['role'].toString());
+      final userModel = UserModel.fromJson(
+        result['user'] as Map<String, dynamic>,
+      );
+
+      final subjects =
+          (result['subjects'] as List<dynamic>)
+              .map((e) => SubjectModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+      return Right(MentorModel(user: userModel, subjects: subjects));
+    } catch (e, st) {
+      _log.e('Exception in createMentorByAdmin: $e\n$st', error: e);
+      return Left(Failure('Error Creating Mentor: $e'));
+    }
+  }
+
+  Future<void> requestResetPassword(String email) async {
+    await supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: "starics://password-reset",
+    );
+  }
+
+  Future<void> resetPassword(String password) async {
+    supabase.auth.updateUser(UserAttributes(password: password));
+  }
+
+  /// ===========================================================================
+  /// USER MANAGEMENT
+  /// ===========================================================================
 
   Future<Either<Failure, UserModel>> updateUserInfo(UserPayload data) async {
     try {
@@ -181,6 +258,74 @@ class SupabaseHelper {
     }
   }
 
+  Future<bool> deleteUser() async {
+    try {
+      final session = supabase.auth.currentSession;
+      final token = session?.accessToken;
+      if (session == null) {
+        throw Exception("User not logged in");
+      }
+      final response = await supabase.functions.invoke(
+        'delete_user',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.status == 200) {
+        _snackBar.showSuccess("User deleted successfully");
+        return true;
+      }
+      throw Exception(response.data['error']);
+    } catch (e) {
+      _log.e("Delete user error: $e");
+      _snackBar.showError("Error deleting user");
+      return false;
+    }
+  }
+
+  Future<void> updateOrInsertFcmToken(String fcmToken) async {
+    try {
+      final userId = supabase.auth.currentSession?.user.id;
+
+      if (userId != null) {
+        final response =
+            await supabase
+                .from(SupabaseKeys.usersTable)
+                .update({SupabaseKeys.fcmToken: fcmToken})
+                .eq(SupabaseKeys.authId, userId)
+                .select();
+        _log.i('FCM token upsert response: $response');
+      } else {
+        _log.e('No authenticated user found.');
+      }
+    } catch (e) {
+      _log.e('Exception in updateOrInsertFcmToken: $e');
+    }
+  }
+
+  /// ===========================================================================
+  /// Subjects
+  /// ===========================================================================
+
+  Future<Either<Failure, List<SubjectModel>>> fetchSubjects() async {
+    try {
+      final result = await supabase.from(SupabaseKeys.subjects).select('*');
+      final subjects =
+          (result as List).map((e) => SubjectModel.fromJson(e)).toList();
+      return Right(subjects);
+    } catch (e) {
+      _snackBar.showError('Error Fetching Subjects: ${e.toString()}');
+      _log.e('Error Fetching Subjects: $e', error: e);
+      return Left(Failure('Error Fetching Subjects: ${e.toString()}'));
+    }
+  }
+
+  /// ===========================================================================
+  /// COURSES
+  /// ===========================================================================
+
   Future<Either<Failure, CourseModel>> createCourses(CoursePayload data) async {
     try {
       final jsonData = data.toJson();
@@ -214,33 +359,9 @@ class SupabaseHelper {
     }
   }
 
-  ///Delete User from both public and auth tables
-  Future<bool> deleteUser() async {
-    try {
-      final session = supabase.auth.currentSession;
-      final token = session?.accessToken;
-      if (session == null) {
-        throw Exception("User not logged in");
-      }
-      final response = await supabase.functions.invoke(
-        'delete_user',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.status == 200) {
-        _snackBar.showSuccess("User deleted successfully");
-        return true;
-      }
-      throw Exception(response.data['error']);
-    } catch (e) {
-      _log.e("Delete user error: $e");
-      _snackBar.showError("Error deleting user");
-      return false;
-    }
-  }
+  /// ===========================================================================
+  /// TESTS (MCQ)
+  /// ===========================================================================
 
   Future<Either<Failure, List<QuestionModel>>> fetchMCQTestQuestions(
     int testId,
@@ -254,33 +375,6 @@ class SupabaseHelper {
       _log.i("Questions Fetched for the testId $testId: ${response.length}");
 
       final questions = response.map((e) => QuestionModel.fromJson(e)).toList();
-      return Right(questions);
-    } catch (e, stackTrace) {
-      _snackBar.showError('Error fetching test questions: ${e.toString()}');
-      _log.e(
-        "Fetch Error: $e"
-        "\nStackTrace: $stackTrace",
-      );
-      return Left(Failure(e.toString()));
-    }
-  }
-
-  Future<Either<Failure, List<DescQuestionModel>>> fetchDescTestQuestions(
-    int testId,
-  ) async {
-    try {
-      final List<Map<String, dynamic>> response = await supabase.rpc(
-        SupabaseKeys.getDescTestQuestionsByTestId,
-        params: {'p_desc_test_id': testId},
-      );
-
-      _log.i(response.toString());
-
-      final questions =
-          response.map((e) => DescQuestionModel.fromJson(e)).toList();
-
-      _log.i(questions.toString());
-
       return Right(questions);
     } catch (e, stackTrace) {
       _snackBar.showError('Error fetching test questions: ${e.toString()}');
@@ -421,73 +515,6 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, void>> upsertUserTest({
-    required int testId,
-    required String status,
-  }) async {
-    try {
-      assert(status == 'in_progress' || status == 'paused');
-
-      // Check if row already exists
-      final existing =
-          await supabase
-              .from(SupabaseKeys.userTests)
-              .select('id, started_at')
-              .eq('user_id', _cache.user!.id!)
-              .eq('test_id', testId)
-              .maybeSingle();
-
-      if (existing == null) {
-        // 🔹 First start
-        await supabase.from(SupabaseKeys.userTests).insert({
-          'user_id': _cache.user!.id!,
-          'test_id': testId,
-          'status': status,
-          'started_at': DateTime.now().toUtc().toIso8601String(),
-          'last_reminder_sent_at': null,
-        });
-      } else {
-        // 🔹 Pause / Resume
-        final updatePayload = {
-          'status': status,
-          if (status == 'paused') 'last_reminder_sent_at': null,
-        };
-
-        await supabase
-            .from(SupabaseKeys.userTests)
-            .update(updatePayload)
-            .eq('user_id', _cache.user!.id!)
-            .eq('test_id', testId);
-      }
-
-      _log.i('User test updated: test=$testId status=$status');
-      return const Right(null);
-    } catch (e) {
-      _snackBar.showError('Error updating test status');
-      _log.e('Error updating user test: $e');
-      return Left(
-        Failure('Error inserting or updating user test: ${e.toString()}'),
-      );
-    }
-  }
-
-  Future<Either<Failure, void>> deleteUserTest({required int testId}) async {
-    try {
-      await supabase
-          .from(SupabaseKeys.userTests)
-          .delete()
-          .eq('user_id', _cache.user!.id!)
-          .eq('test_id', testId);
-
-      _log.i('User test progress deleted: test=$testId');
-      return const Right(null);
-    } catch (e) {
-      _log.e('Error deleting user test progress: $e');
-      return Left(Failure('Error deleting user test: ${e.toString()}'));
-    }
-  }
-
-  ///Fetch Daily Test Results
   Future<Either<Failure, TestResultModel?>> fetchResultForSingleMcqTest({
     required int testId,
   }) async {
@@ -552,105 +579,54 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, TestAttemptState>> fetchTestAttemptState(
+  Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.testsTable)
+              .select()
+              .eq('id', testId)
+              .single();
+
+      var result = TestModel.fromJson(response);
+
+      _log.i('Link test : $result');
+      return Right(result);
+    } catch (e, s) {
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      _log.e('Error in fetching test: $e', s: s);
+      return Left(Failure("Error fetching test : ${e.toString()}"));
+    }
+  }
+
+  /// ===========================================================================
+  /// TESTS (DESCRIPTIVE)
+  /// ===========================================================================
+
+  Future<Either<Failure, List<DescQuestionModel>>> fetchDescTestQuestions(
     int testId,
   ) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getTestAttemptState,
-        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      final List<Map<String, dynamic>> response = await supabase.rpc(
+        SupabaseKeys.getDescTestQuestionsByTestId,
+        params: {'p_desc_test_id': testId},
       );
 
-      final results = TestAttemptState.fromJson(response);
-      _log.i('Fetched TestAttemptState: $results');
-      return Right(results);
-    } catch (e) {
-      _log.e('Error fetching TestAttemptState: $e');
+      _log.i(response.toString());
+
+      final questions =
+          response.map((e) => DescQuestionModel.fromJson(e)).toList();
+
+      _log.i(questions.toString());
+
+      return Right(questions);
+    } catch (e, stackTrace) {
+      _snackBar.showError('Error fetching test questions: ${e.toString()}');
+      _log.e(
+        "Fetch Error: $e"
+        "\nStackTrace: $stackTrace",
+      );
       return Left(Failure(e.toString()));
-    }
-  }
-
-  Future<void> updateOrInsertFcmToken(String fcmToken) async {
-    try {
-      final userId = supabase.auth.currentSession?.user.id;
-
-      if (userId != null) {
-        final response =
-            await supabase
-                .from(SupabaseKeys.usersTable)
-                .update({SupabaseKeys.fcmToken: fcmToken})
-                .eq(SupabaseKeys.authId, userId)
-                .select();
-        _log.i('FCM token upsert response: $response');
-      } else {
-        _log.e('No authenticated user found.');
-      }
-    } catch (e) {
-      _log.e('Exception in updateOrInsertFcmToken: $e');
-    }
-  }
-
-  Future<AppVersionStatus> appVersionCheck() async {
-    try {
-      // Get current app version string (e.g., "1.0.0")
-      final info = await PackageInfo.fromPlatform();
-      final currentVersionStr = info.version;
-      _cache.setAppVersion(currentVersionStr);
-      _log.i('Current app version: $currentVersionStr');
-
-      // Determine platform-specific key
-      final platformKey =
-          Platform.isAndroid
-              ? 'min_android_version'
-              : Platform.isIOS
-              ? 'min_ios_version'
-              : null;
-
-      if (platformKey == null) {
-        _log.e('Unsupported platform for version check.');
-        _snackBar.showError('Unsupported platform for version check.');
-        return AppVersionStatus.upToDate;
-      }
-
-      // Fetch version requirement from Supabase
-      final response =
-          await supabase
-              .from(SupabaseKeys.config)
-              .select()
-              .eq("key", platformKey)
-              .single();
-
-      _log.i('Config response: $response');
-      if (response.isEmpty) {
-        _snackBar.showError('🚫 No config entry found for "$platformKey"');
-        _log.e('🚫 No config entry found for "$platformKey"');
-        return AppVersionStatus.upToDate; // Fail open
-      }
-
-      final requiredVersionStr = response["value"] as String?;
-      if (requiredVersionStr == null || requiredVersionStr.isEmpty) {
-        _snackBar.showError(
-          '⚠️ Empty or missing version string for "$platformKey"',
-        );
-        _log.e('⚠️ Empty or missing version string for "$platformKey"');
-        return AppVersionStatus.upToDate;
-      }
-
-      _log.i('Required version: $requiredVersionStr');
-
-      // Compare versions using semantic versioning
-      final currentVersion = Version.parse(currentVersionStr);
-      final requiredVersion = Version.parse(requiredVersionStr);
-
-      if (currentVersion < requiredVersion) {
-        _log.w('App needs update: $currentVersionStr < $requiredVersionStr');
-        return AppVersionStatus.needsUpdate;
-      }
-
-      return AppVersionStatus.upToDate;
-    } catch (e) {
-      _log.e('❌ Error in appVersionCheck: $e');
-      return AppVersionStatus.upToDate; // Changed to fail open for better UX
     }
   }
 
@@ -670,26 +646,6 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('Error in fetching test: $e');
       return Left(Failure("Error in Fetching test"));
-    }
-  }
-
-  Future<Either<Failure, TestModel>> fetchSingleTestFromId(int testId) async {
-    try {
-      final response =
-          await supabase
-              .from(SupabaseKeys.testsTable)
-              .select()
-              .eq('id', testId)
-              .single();
-
-      var result = TestModel.fromJson(response);
-
-      _log.i('Link test : $result');
-      return Right(result);
-    } catch (e, s) {
-      _snackBar.showError('Error fetching tests: ${e.toString()}');
-      _log.e('Error in fetching test: $e', s: s);
-      return Left(Failure("Error fetching test : ${e.toString()}"));
     }
   }
 
@@ -794,6 +750,98 @@ class SupabaseHelper {
     }
   }
 
+  /// ===========================================================================
+  /// TEST PROGRESS
+  /// ===========================================================================
+
+  Future<Either<Failure, void>> updateUserTestStatus({
+    required int testId,
+    required String status,
+  }) async {
+    try {
+      assert(status == 'in_progress' || status == 'paused');
+
+      // Check if row already exists
+      final existing =
+          await supabase
+              .from(SupabaseKeys.userTests)
+              .select('id, started_at')
+              .eq('user_id', _cache.user!.id!)
+              .eq('test_id', testId)
+              .maybeSingle();
+
+      if (existing == null) {
+        // 🔹 First start
+        await supabase.from(SupabaseKeys.userTests).insert({
+          'user_id': _cache.user!.id!,
+          'test_id': testId,
+          'status': status,
+          'started_at': DateTime.now().toUtc().toIso8601String(),
+          'last_reminder_sent_at': null,
+        });
+      } else {
+        // 🔹 Pause / Resume
+        final updatePayload = {
+          'status': status,
+          if (status == 'paused') 'last_reminder_sent_at': null,
+        };
+
+        await supabase
+            .from(SupabaseKeys.userTests)
+            .update(updatePayload)
+            .eq('user_id', _cache.user!.id!)
+            .eq('test_id', testId);
+      }
+
+      _log.i('User test updated: test=$testId status=$status');
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating test status');
+      _log.e('Error updating user test: $e');
+      return Left(
+        Failure('Error inserting or updating user test: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, void>> deleteUserTest({required int testId}) async {
+    try {
+      await supabase
+          .from(SupabaseKeys.userTests)
+          .delete()
+          .eq('user_id', _cache.user!.id!)
+          .eq('test_id', testId);
+
+      _log.i('User test progress deleted: test=$testId');
+      return const Right(null);
+    } catch (e) {
+      _log.e('Error deleting user test progress: $e');
+      return Left(Failure('Error deleting user test: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, TestAttemptState>> fetchTestAttemptState(
+    int testId,
+  ) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getTestAttemptState,
+        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+      );
+
+      final results = TestAttemptState.fromJson(response);
+      _log.i('Fetched TestAttemptState: $results');
+      return Right(results);
+    } catch (e) {
+      _log.e('Error fetching TestAttemptState: $e');
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  /// ===========================================================================
+  /// ANALYTICS & REPORTS
+  /// ===========================================================================
+
   Future<Either<Failure, List<Map<String, dynamic>>>>
   fetchTestQuestionCorrectness(int testId) async {
     try {
@@ -851,6 +899,112 @@ class SupabaseHelper {
       return Left(Failure('Error fetching option matrix for test $testId'));
     }
   }
+
+  Future<Either<Failure, List<AttemptedQuestionStat>>>
+  fetchAttemptedQuestionStats(int testId) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getAttemptedQuestionStats,
+        params: {'p_test_id': testId},
+      );
+
+      final stats = AttemptedQuestionStat.fromRpcResponse(result);
+
+      _log.i("Attempted Question Stats length: ${stats.first.attemptedCount}");
+
+      return Right(stats);
+    } catch (e, st) {
+      _log.e("Error fetching attempted question stats", error: e, s: st);
+      return Left(Failure("Error fetching attempted question stats"));
+    }
+  }
+
+  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics({
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    final userId = _cache.getUserId();
+
+    try {
+      final params = <String, dynamic>{'p_user_id': userId};
+
+      if (from != null && to != null) {
+        params['p_from'] = from.toUtc().toIso8601String();
+        params['p_to'] = to.toUtc().toIso8601String();
+      }
+
+      final result = await supabase.rpc(
+        SupabaseKeys.getOverAllAnalytics,
+        params: params,
+      );
+      _log.i(
+        "Overall Analytics fetched successfully for date range.from $from to $to",
+      );
+      return Right(OverAllAnalyticsModel.fromJson(result));
+    } catch (e) {
+      _log.e("Error fetching Overall analytics", error: e);
+      return Left(Failure('Error fetching Overall analytics'));
+    }
+  }
+
+  Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async {
+    final userId = _cache.getUserId();
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getAccuracyTrend,
+        params: {'p_user_id': userId},
+      );
+
+      final stats = TrendResultModel.fromRpcResponse(result);
+
+      _log.i(
+        "Weekly: ${stats.weekly.length}, Monthly: ${stats.monthly.length}",
+      );
+
+      return Right(stats);
+    } catch (e) {
+      _log.e("Error fetching Accuracy Trend", error: e);
+      return Left(Failure("Error fetching Accuracy Trend"));
+    }
+  }
+
+  Future<Either<Failure, DashboardAnalytics>> getDashboardAnalytics() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getDashboardAnalytics,
+        params: {'p_user_id': _cache.user!.id},
+      );
+      final analytics = DashboardAnalytics.fromJson(
+        result.first as Map<String, dynamic>,
+      );
+      _log.i("Dashboard Analytics: $analytics");
+      return Right(analytics);
+    } catch (e, st) {
+      _log.e("Error fetching dashboard analytics", error: e, s: st);
+      return Left(Failure("Error fetching dashboard analytics"));
+    }
+  }
+
+  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async {
+    try {
+      final result = await supabase.rpc(SupabaseKeys.getPrelimsTopper);
+
+      final toppers =
+          (result as List)
+              .map((e) => LeaderboardModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+      _log.i("Leader Analytics: $toppers");
+      return Right(toppers);
+    } catch (e, st) {
+      _log.e("Error fetching leaderboard analytics", error: e, s: st);
+      return Left(Failure("Error fetching leaderboard analytics"));
+    }
+  }
+
+  /// ===========================================================================
+  /// STUDY MATERIALS
+  /// ===========================================================================
 
   Future<Either<Failure, List<TestWithoutMaterial>>>
   fetchTestsWithoutStudyMaterial({required LanguageEnum language}) async {
@@ -965,124 +1119,70 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<AttemptedQuestionStat>>>
-  fetchAttemptedQuestionStats(int testId) async {
+  ///===========================================================================
+  /// APP CONFIGURATION
+  /// ===========================================================================
+  Future<AppVersionStatus> appVersionCheck() async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getAttemptedQuestionStats,
-        params: {'p_test_id': testId},
-      );
+      // Get current app version string (e.g., "1.0.0")
+      final info = await PackageInfo.fromPlatform();
+      final currentVersionStr = info.version;
+      _cache.setAppVersion(currentVersionStr);
+      _log.i('Current app version: $currentVersionStr');
 
-      final stats = AttemptedQuestionStat.fromRpcResponse(result);
+      // Determine platform-specific key
+      final platformKey =
+          Platform.isAndroid
+              ? 'min_android_version'
+              : Platform.isIOS
+              ? 'min_ios_version'
+              : null;
 
-      _log.i("Attempted Question Stats length: ${stats.first.attemptedCount}");
-
-      return Right(stats);
-    } catch (e, st) {
-      _log.e("Error fetching attempted question stats", error: e, s: st);
-      return Left(Failure("Error fetching attempted question stats"));
-    }
-  }
-
-  Future<Either<Failure, OverAllAnalyticsModel>> fetchOverAllAnalytics({
-    DateTime? from,
-    DateTime? to,
-  }) async {
-    final userId = _cache.getUserId();
-
-    try {
-      final params = <String, dynamic>{'p_user_id': userId};
-
-      if (from != null && to != null) {
-        params['p_from'] = from.toUtc().toIso8601String();
-        params['p_to'] = to.toUtc().toIso8601String();
+      if (platformKey == null) {
+        _log.e('Unsupported platform for version check.');
+        _snackBar.showError('Unsupported platform for version check.');
+        return AppVersionStatus.upToDate;
       }
 
-      final result = await supabase.rpc(
-        SupabaseKeys.getOverAllAnalytics,
-        params: params,
-      );
-      _log.i(
-        "Overall Analytics fetched successfully for date range.from $from to $to",
-      );
-      return Right(OverAllAnalyticsModel.fromJson(result));
+      // Fetch version requirement from Supabase
+      final response =
+          await supabase
+              .from(SupabaseKeys.config)
+              .select()
+              .eq("key", platformKey)
+              .single();
+
+      _log.i('Config response: $response');
+      if (response.isEmpty) {
+        _snackBar.showError('🚫 No config entry found for "$platformKey"');
+        _log.e('🚫 No config entry found for "$platformKey"');
+        return AppVersionStatus.upToDate; // Fail open
+      }
+
+      final requiredVersionStr = response["value"] as String?;
+      if (requiredVersionStr == null || requiredVersionStr.isEmpty) {
+        _snackBar.showError(
+          '⚠️ Empty or missing version string for "$platformKey"',
+        );
+        _log.e('⚠️ Empty or missing version string for "$platformKey"');
+        return AppVersionStatus.upToDate;
+      }
+
+      _log.i('Required version: $requiredVersionStr');
+
+      // Compare versions using semantic versioning
+      final currentVersion = Version.parse(currentVersionStr);
+      final requiredVersion = Version.parse(requiredVersionStr);
+
+      if (currentVersion < requiredVersion) {
+        _log.w('App needs update: $currentVersionStr < $requiredVersionStr');
+        return AppVersionStatus.needsUpdate;
+      }
+
+      return AppVersionStatus.upToDate;
     } catch (e) {
-      _log.e("Error fetching Overall analytics", error: e);
-      return Left(Failure('Error fetching Overall analytics'));
+      _log.e('❌ Error in appVersionCheck: $e');
+      return AppVersionStatus.upToDate; // Changed to fail open for better UX
     }
-  }
-
-  Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async {
-    final userId = _cache.getUserId();
-    try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getAccuracyTrend,
-        params: {'p_user_id': userId},
-      );
-
-      final stats = TrendResultModel.fromRpcResponse(result);
-
-      _log.i(
-        "Weekly: ${stats.weekly.length}, Monthly: ${stats.monthly.length}",
-      );
-
-      return Right(stats);
-    } catch (e) {
-      _log.e("Error fetching Accuracy Trend", error: e);
-      return Left(Failure("Error fetching Accuracy Trend"));
-    }
-  }
-
-  Future<Either<Failure, DashboardAnalytics>> getDashboardAnalytics() async {
-    try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getDashboardAnalytics,
-        params: {'p_user_id': _cache.user!.id},
-      );
-      final analytics = DashboardAnalytics.fromJson(
-        result.first as Map<String, dynamic>,
-      );
-      _log.i("Dashboard Analytics: $analytics");
-      return Right(analytics);
-    } catch (e, st) {
-      _log.e("Error fetching dashboard analytics", error: e, s: st);
-      return Left(Failure("Error fetching dashboard analytics"));
-    }
-  }
-
-  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async {
-    try {
-      final result = await supabase.rpc(SupabaseKeys.getPrelimsTopper);
-
-      final toppers =
-          (result as List)
-              .map((e) => LeaderboardModel.fromJson(e as Map<String, dynamic>))
-              .toList();
-
-      _log.i("Leader Analytics: $toppers");
-      return Right(toppers);
-    } catch (e, st) {
-      _log.e("Error fetching leaderboard analytics", error: e, s: st);
-      return Left(Failure("Error fetching leaderboard analytics"));
-    }
-  }
-
-  Future<void> requestResetPassword(String email) async {
-    await supabase.auth.resetPasswordForEmail(
-      email,
-      redirectTo: "starics://password-reset",
-    );
-  }
-
-  Future<bool> checkUserExist(String email) async {
-    final response = await supabase.rpc(
-      SupabaseKeys.checkUserExist,
-      params: {"user_email": email},
-    );
-    return response;
-  }
-
-  Future<void> resetPassword(String password) async {
-    supabase.auth.updateUser(UserAttributes(password: password));
   }
 }

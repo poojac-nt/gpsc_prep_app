@@ -12,12 +12,14 @@ import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_question
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_subjects_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/mentor_evaluation_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_list_screen.dart';
@@ -127,6 +129,11 @@ final List<GoRoute> appRoutes = [
         (context, state) => _slideTransition(RegistrationScreen(), state),
   ),
   GoRoute(
+    path: AppRoutes.mentorRegistration,
+    pageBuilder:
+        (context, state) => _slideTransition(MentorRegistrationScreen(), state),
+  ),
+  GoRoute(
     // AppRoutes.studentDashboard is '/studentDashboard'
     path: AppRoutes.studentDashboard,
     pageBuilder:
@@ -196,6 +203,12 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.mentorDashboard,
     pageBuilder:
         (context, state) => _slideTransition(MentorDashboardScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.mentorEvaluation,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const MentorEvaluationScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.login,

@@ -44,7 +44,10 @@ class TestCard extends StatelessWidget {
       testModel: testModel,
       descTestModel: descTestModel,
       showShareButton: true,
-      testType: descTestModel != null ? TestType.desc : (testModel?.testType ?? TestType.mcq),
+      testType:
+          descTestModel != null
+              ? TestType.desc
+              : (testModel?.testType ?? TestType.mcq),
       trailing: trailing,
       cards: [
         // Metadata: Questions and Duration/Marks

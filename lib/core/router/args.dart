@@ -119,3 +119,12 @@ class CourseDetailsScreenArgs {
   final CourseModel courseModel;
   CourseDetailsScreenArgs({required this.courseModel});
 }
+
+class MentorEvaluationScreenArgs {
+  // Placeholder fields for future backend integration
+  final int? studentId;
+  final int? testId;
+  final int? submissionId;
+
+  MentorEvaluationScreenArgs({this.studentId, this.testId, this.submissionId});
+}

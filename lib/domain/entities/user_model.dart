@@ -30,6 +30,8 @@ class UserModel {
 
   @JsonKey(name: 'profile_picture')
   final String? profilePicture;
+  @JsonKey(name: 'bio')
+  final String? bio;
 
   UserModel({
     this.id,
@@ -40,6 +42,7 @@ class UserModel {
     this.address,
     this.number,
     this.profilePicture,
+    this.bio,
   });
 
   /// Copy constructor
@@ -71,12 +74,24 @@ class UserModel {
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 }
 
-class UserRoleConverter implements JsonConverter<UserRole, String> {
+class UserRoleConverter implements JsonConverter<UserRole, dynamic> {
   const UserRoleConverter();
 
   @override
-  UserRole fromJson(String json) => UserRole.fromString(json);
+  UserRole fromJson(dynamic json) {
+    if (json is String) {
+      return UserRole.fromString(json);
+    }
+
+    if (json is Map<String, dynamic>) {
+      // Extract the actual value safely
+      final value = json.values.first;
+      return UserRole.fromString(value.toString());
+    }
+
+    throw Exception('Invalid role format: $json');
+  }
 
   @override
-  String toJson(UserRole role) => role.role;
+  dynamic toJson(UserRole role) => role.role;
 }

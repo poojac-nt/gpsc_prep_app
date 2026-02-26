@@ -71,7 +71,7 @@ class SelectionDrawer extends StatelessWidget {
                         onTap: () => context.push(AppRoutes.languageSelection),
                       ),
                     ],
-                    if (!isStudent) ...[
+                    if (isAdmin) ...[
                       _buildMenuItem(
                         context,
                         icon: Icons.file_upload_outlined,
@@ -90,6 +90,26 @@ class SelectionDrawer extends StatelessWidget {
                         title: 'Upload Study Material',
                         onTap:
                             () => context.push(AppRoutes.uploadStudyMaterial),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.person_add_outlined,
+                        title: 'Register Mentor',
+                        onTap: () => context.push(AppRoutes.mentorRegistration),
+                      ),
+                    ],
+                    if (isMentor) ...[
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.file_upload_outlined,
+                        title: 'Mentor Dashboard',
+                        onTap: () => context.push(AppRoutes.mentorDashboard),
+                      ),
+                      _buildMenuItem(
+                        context,
+                        icon: Icons.file_upload_outlined,
+                        title: 'Mentor Evaluation',
+                        onTap: () => context.push(AppRoutes.mentorEvaluation),
                       ),
                     ],
                   ],
@@ -197,7 +217,7 @@ class SelectionDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
-                    "UPSC Aspirant",
+                    "Account Type: ${cache.getUserRole()?.name.toUpperCase() ?? ''}",
                     style: TextStyle(
                       fontSize: 10.sp,
                       color: AppColors.primary,

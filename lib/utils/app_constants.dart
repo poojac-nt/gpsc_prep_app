@@ -148,6 +148,8 @@ abstract class AppRoutes {
   static const String addCourse = '/addCourse';
   static const String courseList = '/courseList';
   static const String courseDetails = '/courseDetails';
+  static const String mentorRegistration = '/mentorRegistration';
+  static const String mentorEvaluation = '/mentorEvaluation';
 }
 
 class AdUnitIds {

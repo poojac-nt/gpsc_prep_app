@@ -9,6 +9,13 @@ class CreateUserRequested extends AuthEvent {
   CreateUserRequested(this.userPayload);
 }
 
+class CreateMentorRequested extends AuthEvent {
+  final UserPayload userPayload;
+  final File? profileImage;
+
+  CreateMentorRequested(this.userPayload, {this.profileImage});
+}
+
 class LoginRequested extends AuthEvent {
   final String email;
   final String password;
