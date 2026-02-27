@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
@@ -17,6 +18,8 @@ import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_s
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answer_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/mentor_evaluation_screen.dart';
@@ -353,6 +356,35 @@ final List<GoRoute> appRoutes = [
       final descTestModel = state.extra as DescTestModel;
       return _slideTransition(
         DescriptiveAnswersScreen(descTestModel: descTestModel),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.descAnswerDetail,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>;
+      final question = extra['question'] as DescQuestionModel;
+      final index = extra['index'] as int;
+      return _slideTransition(
+        DescriptiveAnswerDetailScreen(question: question, index: index),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.peerReviewAnswer,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>;
+      final question = extra['question'] as DescQuestionModel;
+      final index = extra['index'] as int;
+      final userName = extra['userName'] as String;
+      return _slideTransition(
+        PeerReviewAnswerScreen(
+          question: question,
+          index: index,
+          userName: userName,
+        ),
         state,
       );
     },

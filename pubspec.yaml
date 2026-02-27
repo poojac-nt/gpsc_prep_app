@@ -73,6 +73,7 @@ dependencies:
   pub_semver: ^2.2.0
   meta: ^1.17.0
   flutter_local_notifications: ^20.0.0
+  flutter_pdfview: ^1.4.4
 
 
 dev_dependencies:

@@ -130,6 +130,8 @@ abstract class AppRoutes {
       '/descriptiveTestInstructionScreen';
   static const String descReviewQuestion = '/descReviewQuestion';
   static const String descAnswerScreen = '/descAnswerScreen';
+  static const String descAnswerDetail = '/descAnswerDetail';
+  static const String peerReviewAnswer = '/peerReviewAnswer';
   static const String uploadStudyMaterial = '/uploadStudyMaterial';
   static const String languageSelection = '/languageSelection';
   static const String studyMaterial = '/studyMaterial';
