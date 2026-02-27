@@ -124,7 +124,7 @@ class _TestScreenState extends State<TestScreen> {
         }
       },
       child: PopScope(
-        canPop: false,
+        canPop: widget.isFromResult,
         child: Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,

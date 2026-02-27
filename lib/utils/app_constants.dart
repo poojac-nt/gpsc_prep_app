@@ -152,6 +152,8 @@ abstract class AppRoutes {
   static const String courseDetails = '/courseDetails';
   static const String mentorRegistration = '/mentorRegistration';
   static const String mentorEvaluation = '/mentorEvaluation';
+  static const String mentorAssign = '/mentorAssign';
+  static const String adminDashboard = '/adminDashboard';
 }
 
 class AdUnitIds {

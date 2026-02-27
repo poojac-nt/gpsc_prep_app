@@ -91,7 +91,10 @@ class AppServices {
       final event = data.event;
       final currentLocation =
           AppRouter.router.routerDelegate.currentConfiguration.uri.toString();
-      if (event == AuthChangeEvent.passwordRecovery &&
+
+      if (event == AuthChangeEvent.signedOut) {
+        AppRouter.router.go(AppRoutes.login);
+      } else if (event == AuthChangeEvent.passwordRecovery &&
           currentLocation != AppRoutes.resetPassword) {
         AppRouter.router.go(AppRoutes.resetPassword);
       }

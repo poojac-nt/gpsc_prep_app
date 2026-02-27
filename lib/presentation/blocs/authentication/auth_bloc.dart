@@ -176,8 +176,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
+      _cache.clearUser(); // Clear cache FIRST
       await _supabase.auth.signOut();
-      _cache.clearUser();
       getIt<DashboardBloc>().add(DashBoardInitial());
       getIt<AnalyticsBloc>().add(ResetAnalyticsEvent());
       getIt<DetailedAnalyticsBloc>().add(ResetDetailedAnalyticsEvent());
