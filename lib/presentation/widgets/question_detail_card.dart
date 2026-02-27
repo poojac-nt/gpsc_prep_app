@@ -7,7 +7,6 @@ import 'package:markdown_widget/markdown_widget.dart';
 class QuestionDetailCard extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
-  final String? timeLeft;
   final int commentCount;
   final String selectedLanguage;
 
@@ -15,7 +14,6 @@ class QuestionDetailCard extends StatefulWidget {
     super.key,
     required this.question,
     required this.index,
-    this.timeLeft,
     this.commentCount = 0,
     this.selectedLanguage = 'en',
   });
@@ -48,7 +46,7 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withAlpha(4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -123,23 +121,6 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
           ],
         ],
       ),
-    );
-  }
-
-  Widget _buildIconText(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.black38, size: 18.sp),
-        SizedBox(width: 6.w),
-        Text(
-          text,
-          style: TextStyle(
-            color: Colors.black45,
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }

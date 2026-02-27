@@ -1,19 +1,27 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/common/pdf_viewer_screen.dart';
-import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
+import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 class PeerReviewAnswerScreen extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
   final String userName;
+  final int answerId;
 
   const PeerReviewAnswerScreen({
     super.key,
     required this.question,
     required this.index,
     required this.userName,
+    required this.answerId,
   });
 
   @override
@@ -23,13 +31,15 @@ class PeerReviewAnswerScreen extends StatefulWidget {
 class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
   late final TextEditingController _feedbackController;
   int _wordCount = 0;
-  String _currentLanguage = 'en';
 
   @override
   void initState() {
     super.initState();
     _feedbackController = TextEditingController();
     _feedbackController.addListener(_updateWordCount);
+    context.read<DetailedPeerReviewBloc>().add(
+      FetchDetailedPeerReview(answerId: widget.answerId),
+    );
   }
 
   @override
@@ -51,37 +61,6 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
     final words = text.split(RegExp(r'\s+'));
     setState(() {
       _wordCount = words.length;
-    });
-  }
-
-  List<String> get _availableLanguages {
-    final langs = <String>['en'];
-    if (widget.question.questionHi != null) langs.add('hi');
-    if (widget.question.questionGj != null) langs.add('gj');
-    return langs;
-  }
-
-  String _getLanguageChar(String lang) {
-    switch (lang) {
-      case 'en':
-        return 'A';
-      case 'hi':
-        return 'अ';
-      case 'gj':
-        return 'અ';
-      default:
-        return 'A';
-    }
-  }
-
-  void _switchToNextLanguage() {
-    final langs = _availableLanguages;
-    if (langs.length <= 1) return;
-
-    final currentIndex = langs.indexOf(_currentLanguage);
-    final nextIndex = (currentIndex + 1) % langs.length;
-    setState(() {
-      _currentLanguage = langs[nextIndex];
     });
   }
 
@@ -116,43 +95,70 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: _switchToNextLanguage,
-            child: Text(
-              _getLanguageChar(_currentLanguage),
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  QuestionDetailCard(
-                    question: widget.question,
-                    index: widget.index,
-                    selectedLanguage: _currentLanguage,
-                  ),
-                  _buildSubmittedAnswerSection(),
-                  _buildCommentsSection(),
-                  SizedBox(height: 20.h),
-                ],
-              ),
+      body: BlocBuilder<DetailedPeerReviewBloc, DetailedPeerReviewState>(
+        builder: (context, state) {
+          if (state is DetailedPeerReviewLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is DetailedPeerReviewError) {
+            return Center(child: Text(state.message));
+          } else if (state is DetailedPeerReviewLoaded) {
+            return _buildContent(state.detail);
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Widget _buildContent(DetailedPeerReviewModel detail) {
+    // Resolve dynamic jsonb answer: could be a plain String or a ["url"] List
+    String answer = '';
+    final raw = detail.answer;
+    if (raw is List && raw.isNotEmpty) {
+      answer = raw.first.toString();
+    } else if (raw is String) {
+      answer = raw;
+    }
+
+    String answerType = 'text';
+    if (answer.startsWith('http')) {
+      final lower = answer.toLowerCase();
+      if (lower.contains('.pdf')) {
+        answerType = 'pdf';
+      } else if (lower.contains('.jpg') ||
+          lower.contains('.jpeg') ||
+          lower.contains('.png') ||
+          lower.contains('.webp')) {
+        answerType = 'image';
+      }
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(AppPaddings.appPaddingInt),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSubmittedAnswerSection(answer, answerType),
+                _buildCommentsSection(detail.comments),
+              ],
             ),
           ),
-          _buildFeedbackInput(),
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppPaddings.appPaddingInt,
+            0,
+            AppPaddings.appPaddingInt,
+            AppPaddings.appPaddingInt,
+          ),
+          child: _buildFeedbackInput(),
+        ),
+      ],
     );
   }
 
@@ -202,38 +208,12 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
     );
   }
 
-  // ── Dummy answer data ──
-  // answerType can be: 'text', 'image', 'pdf'
-  static const String _dummyAnswerType =
-      'pdf'; // Change to test different types
-
-  static const String _dummyPdfUrl =
-      'https://fwsghwropuovskeqyawb.supabase.co/storage/v1/object/public/answers/answers/98_1287_42_1764567419022_28%20Nov%202025.pdf';
-
-  static const String _dummyImageUrl =
-      'https://fwsghwropuovskeqyawb.supabase.co/storage/v1/object/public/answers/answers/70_753_164_1761490399381_IMG_20251026_202214.jpg';
-
-  static const String _dummyTextAnswer = '''
-## Gujarat's Administrative Structure
-
-Gujarat follows a **three-tier administrative structure**:
-
-1. **State Level** – Headed by the Governor and the Chief Minister with the Council of Ministers.
-2. **District Level** – Each of the 33 districts is headed by a District Collector (IAS officer).
-3. **Local Level** – Comprises Municipal Corporations, Municipalities, and Panchayati Raj institutions.
-
-### Key Points:
-- The **Gujarat Panchayats Act, 1993** governs the local self-government bodies.
-- Urban governance is managed through **8 Municipal Corporations** and **162 Municipalities**.
-- The state has a **unicameral legislature** with 182 seats in the Vidhan Sabha.
-
-> The decentralization of power ensures participatory governance at the grassroots level, which is essential for effective public administration.
-''';
-
-  Widget _buildSubmittedAnswerSection() {
+  Widget _buildSubmittedAnswerSection(String answer, String answerType) {
     return Container(
-      width: double.infinity,
-      color: const Color(0xFFF1F5F9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
       padding: EdgeInsets.symmetric(vertical: 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,28 +231,28 @@ Gujarat follows a **three-tier administrative structure**:
             ),
           ),
           SizedBox(height: 16.h),
-          _buildAnswerContent(),
+          _buildAnswerContent(answer, answerType),
         ],
       ),
     );
   }
 
-  Widget _buildAnswerContent() {
-    switch (_dummyAnswerType) {
+  Widget _buildAnswerContent(String answer, String answerType) {
+    switch (answerType) {
       case 'pdf':
-        return _buildPdfAnswerCard();
+        return _buildPdfAnswerCard(answer);
       case 'image':
-        return _buildImageAnswerCard();
+        return _buildImageAnswerCard(answer);
       case 'text':
       default:
-        return _buildTextAnswerCard();
+        return _buildTextAnswerCard(answer);
     }
   }
 
-  Widget _buildPdfAnswerCard() {
+  Widget _buildPdfAnswerCard(String pdfUrl) {
     return Center(
       child: GestureDetector(
-        onTap: () => _handlePdfTap(context, _dummyPdfUrl),
+        onTap: () => _handlePdfTap(context, pdfUrl),
         child: Container(
           width: 335.w,
           height: 120.h,
@@ -307,10 +287,10 @@ Gujarat follows a **three-tier administrative structure**:
     );
   }
 
-  Widget _buildImageAnswerCard() {
+  Widget _buildImageAnswerCard(String imageUrl) {
     return Center(
       child: GestureDetector(
-        onTap: () => _showFullScreenImage(context, _dummyImageUrl),
+        onTap: () => _showFullScreenImage(context, imageUrl),
         child: Container(
           width: 335.w,
           height: 400.h,
@@ -330,7 +310,7 @@ Gujarat follows a **three-tier administrative structure**:
             child: Stack(
               children: [
                 Image.network(
-                  _dummyImageUrl,
+                  imageUrl,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
@@ -365,7 +345,7 @@ Gujarat follows a **three-tier administrative structure**:
     );
   }
 
-  Widget _buildTextAnswerCard() {
+  Widget _buildTextAnswerCard(String text) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Container(
@@ -376,7 +356,7 @@ Gujarat follows a **three-tier administrative structure**:
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withAlpha(10),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -394,7 +374,7 @@ Gujarat follows a **three-tier administrative structure**:
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'Text Answer',
+                  'Full Answer Text',
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
@@ -404,12 +384,13 @@ Gujarat follows a **three-tier administrative structure**:
               ],
             ),
             Divider(height: 24.h, color: const Color(0xFFE2E8F0)),
-            Text(
-              _dummyTextAnswer.trim(),
+            SelectableText(
+              text.trim(),
               style: TextStyle(
                 fontSize: 14.sp,
                 height: 1.6,
                 color: const Color(0xFF334155),
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
@@ -418,38 +399,14 @@ Gujarat follows a **three-tier administrative structure**:
     );
   }
 
-  Widget _buildCommentsSection() {
-    final List<Map<String, String>> dummyComments = [
-      {
-        'user': 'Rohan Sharma',
-        'time': '2h ago',
-        'comment':
-            'The introduction is quite compelling but could be structured better with more focus on the post-war economic impact.',
-        'avatar': 'https://i.pravatar.cc/150?u=rohan',
-      },
-      {
-        'user': 'Sneha Patel',
-        'time': '5h ago',
-        'comment':
-            'Good use of examples, but the conclusion feels a bit rushed. Try to summarize the key points more effectively.',
-        'avatar': 'https://i.pravatar.cc/150?u=sneha',
-      },
-      {
-        'user': 'Amit Verma',
-        'time': '1d ago',
-        'comment':
-            'Great analysis! I specifically liked the part where you mentioned the strategic bases. Keep it up!',
-        'avatar': 'https://i.pravatar.cc/150?u=amit',
-      },
-    ];
-
+  Widget _buildCommentsSection(List<Comment> comments) {
     return Padding(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(10.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'PEER REVIEWS (3)',
+            'PEER REVIEWS (${comments.length})',
             style: TextStyle(
               color: const Color(0xFF94A3B8),
               fontSize: 12.sp,
@@ -458,137 +415,209 @@ Gujarat follows a **three-tier administrative structure**:
             ),
           ),
           SizedBox(height: 16.h),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: dummyComments.length,
-            separatorBuilder: (context, index) => SizedBox(height: 20.h),
-            itemBuilder: (context, index) {
-              final comment = dummyComments[index];
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 18.r,
-                    backgroundImage: NetworkImage(comment['avatar']!),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              comment['user']!,
-                              style: TextStyle(
-                                color: const Color(0xFF1E293B),
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            Text(
-                              comment['time']!,
-                              style: TextStyle(
-                                color: Colors.black26,
-                                fontSize: 11.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          comment['comment']!,
-                          style: TextStyle(
-                            color: const Color(0xFF475569),
-                            fontSize: 13.sp,
-                            height: 1.4,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+          if (comments.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.h),
+                child: Text(
+                  'No reviews yet. Be the first to review!',
+                  style: TextStyle(color: Colors.black45, fontSize: 13.sp),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: comments.length,
+              separatorBuilder: (context, index) => SizedBox(height: 20.h),
+              itemBuilder: (context, index) {
+                final comment = comments[index];
+                return _buildCommentTile(comment);
+              },
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildFeedbackInput() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        border: Border(top: BorderSide(color: Colors.grey.shade100)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(16.r),
+  Widget _buildCommentTile(Comment comment) {
+    // Generate initials from reviewer name
+    final parts = comment.reviewerName.trim().split(RegExp(r'\s+'));
+    final initials =
+        parts.length >= 2
+            ? (parts[0][0] + parts[1][0]).toUpperCase()
+            : parts[0][0].toUpperCase();
+
+    final colors = [
+      const Color(0xFF1E293B),
+      const Color(0xFF8B5CF6),
+      const Color(0xFF0F172A),
+      const Color(0xFFF43F5E),
+      const Color(0xFF10B981),
+      const Color(0xFF3B82F6),
+      const Color(0xFFF59E0B),
+      const Color(0xFF6366F1),
+    ];
+    final avatarColor =
+        colors[comment.reviewerName.hashCode.abs() % colors.length];
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 18.r,
+          backgroundColor: avatarColor,
+          child: Text(
+            initials,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _feedbackController,
-                    minLines: 1,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      hintText: 'Write a critique or feedback...',
-                      hintStyle: TextStyle(
-                        color: Colors.black38,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      border: InputBorder.none,
-                      isDense: true,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    comment.reviewerName,
+                    style: TextStyle(
+                      color: const Color(0xFF1E293B),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
-                    borderRadius: BorderRadius.circular(10.r),
+                  SizedBox(width: 8.w),
+                  Text(
+                    comment.timeSinceCommentText,
+                    style: TextStyle(
+                      color: Colors.black26,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  child: Icon(Icons.send, color: Colors.white, size: 20.sp),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Spacer(),
+                ],
+              ),
+              SizedBox(height: 4.h),
               Text(
-                '$_wordCount/100 words',
+                comment.comment,
                 style: TextStyle(
-                  color: _wordCount > 100 ? Colors.red : Colors.black26,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF475569),
+                  fontSize: 13.sp,
+                  height: 1.4,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedbackInput() {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.7),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
+            ],
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _feedbackController,
+                        minLines: 1,
+                        maxLines: 5,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: const Color(0xFF1E293B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Write a critique or feedback...',
+                          hintStyle: TextStyle(
+                            color: Colors.black38,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    ActionButton(
+                      onTap: () {
+                        // TODO: Hook up comment submission
+                      },
+                      width: 40.w,
+                      height: 40.h,
+                      padding: EdgeInsets.zero,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10.r),
+                      icon: Icons.send,
+                      fontColor: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Be respectful and constructive',
+                    style: TextStyle(
+                      color: Colors.black45,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    '$_wordCount/100 words',
+                    style: TextStyle(
+                      color: _wordCount > 100 ? Colors.red : Colors.black26,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

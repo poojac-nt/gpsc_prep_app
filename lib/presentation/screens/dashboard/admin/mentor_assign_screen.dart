@@ -431,10 +431,6 @@ class _MentorAssignScreenState extends State<MentorAssignScreen>
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final selections =
-                isDoubleReview ? _doubleSelections : _singleSelections;
-            final selectedIndices = selections[studentIndex] ?? [];
-
             return Container(
               padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
               child: Column(
@@ -689,6 +685,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent => 60.h;
+
   @override
   double get maxExtent => 60.h;
 

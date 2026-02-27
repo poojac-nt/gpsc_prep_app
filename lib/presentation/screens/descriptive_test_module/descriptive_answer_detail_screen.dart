@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/peer_submission_tile.dart';
 import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -9,11 +13,13 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 class DescriptiveAnswerDetailScreen extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
+  final int testId;
 
   const DescriptiveAnswerDetailScreen({
     super.key,
     required this.question,
     required this.index,
+    required this.testId,
   });
 
   @override
@@ -24,6 +30,14 @@ class DescriptiveAnswerDetailScreen extends StatefulWidget {
 class _DescriptiveAnswerDetailScreenState
     extends State<DescriptiveAnswerDetailScreen> {
   String _currentLanguage = 'en';
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<PeerReviewBloc>().add(
+      FetchPeerReviews(testId: widget.testId, questionId: widget.question.id),
+    );
+  }
 
   List<String> get _availableLanguages {
     final langs = <String>['en'];
@@ -58,8 +72,6 @@ class _DescriptiveAnswerDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final availableLangsCount = _availableLanguages.length;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
@@ -98,7 +110,6 @@ class _DescriptiveAnswerDetailScreenState
             QuestionDetailCard(
               question: widget.question,
               index: widget.index,
-              timeLeft: '2 days left',
               commentCount: 16,
               selectedLanguage: _currentLanguage,
             ),
@@ -131,55 +142,88 @@ class _DescriptiveAnswerDetailScreenState
   }
 
   Widget _buildPeerSubmissionsList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      itemCount: 4,
-      separatorBuilder: (context, index) => SizedBox(height: 16.h),
-      itemBuilder: (context, index) {
-        final dummyUsers = [
-          'Amit Mishra',
-          'Nimitha Paliyal',
-          'Dhirendra',
-          'Khushi Kour',
-        ];
-        final dummyStates = ['Top Contributor', 'New User', 'Member', 'Expert'];
-        final dummyInitials = ['AM', 'NP', 'DH', 'KK'];
-        final dummyColors = [
-          const Color(0xFF1E293B),
-          const Color(0xFF8B5CF6),
-          const Color(0xFF0F172A),
-          const Color(0xFFF43F5E),
-        ];
-
-        return PeerSubmissionTile(
-          userName: dummyUsers[index % 4],
-          userInitial: dummyInitials[index % 4],
-          userStatus: index % 2 == 0 ? dummyStates[index % 4] : null,
-          timeAgo: '${index + 1}y ago',
-          reviewCount: index + 1,
-          previewText:
-              index == 0
-                  ? 'The decline of British power was multifaceted. My answer focuses on the impact of World War II...'
-                  : 'I tried to link the INA trials with the mutiny directly. Is my conclusion strong enough?',
-          isFeatured: index == 0,
-          previewImageUrl:
-              index % 3 == 0
-                  ? 'https://via.placeholder.com/150x80/E2E8F0/64748B?text=Answer+Sheet'
-                  : null,
-          baseColor: dummyColors[index % 4],
-          onReviewPressed: () {
-            context.push(
-              AppRoutes.peerReviewAnswer,
-              extra: {
-                'question': widget.question,
-                'index': widget.index,
-                'userName': dummyUsers[index % 4],
-              },
+    return BlocBuilder<PeerReviewBloc, PeerReviewState>(
+      builder: (context, state) {
+        if (state is PeerReviewLoading) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (state is PeerReviewError) {
+          return Center(child: Text(state.message));
+        } else if (state is PeerReviewLoaded) {
+          final peerReviews = state.peerReviews;
+          if (peerReviews.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text('No peer submissions yet.'),
+              ),
             );
-          },
-        );
+          }
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            itemCount: peerReviews.length,
+            separatorBuilder: (context, index) => SizedBox(height: 16.h),
+            itemBuilder: (context, index) {
+              final review = peerReviews[index];
+
+              // Resolve dynamic jsonb answer
+              String answerType = 'text';
+              String? answerText;
+              String? previewImageUrl;
+
+              final raw = review.answer;
+              String resolvedAnswer = '';
+              if (raw is List && raw.isNotEmpty) {
+                resolvedAnswer = raw.first.toString();
+              } else if (raw is String) {
+                resolvedAnswer = raw;
+              }
+
+              if (resolvedAnswer.startsWith('http')) {
+                final lower = resolvedAnswer.toLowerCase();
+                if (lower.contains('.pdf')) {
+                  answerType = 'pdf';
+                } else if (lower.contains('.jpg') ||
+                    lower.contains('.jpeg') ||
+                    lower.contains('.png') ||
+                    lower.contains('.webp')) {
+                  answerType = 'image';
+                  previewImageUrl = resolvedAnswer;
+                }
+              } else if (resolvedAnswer.isNotEmpty) {
+                answerText = resolvedAnswer;
+              }
+              final isMe = review.userId == getIt<CacheManager>().getUserId();
+              return PeerSubmissionTile(
+                userName: review.fullName,
+                isMe: isMe,
+                answerSubmittedAgo: review.timeSinceLatestComment,
+                latestComment: review.latestComment,
+                answerType: answerType,
+                answerText: answerText,
+                previewImageUrl: previewImageUrl,
+                onReviewPressed: () {
+                  context.push(
+                    AppRoutes.peerReviewAnswer,
+                    extra: {
+                      'question': widget.question,
+                      'index': widget.index,
+                      'userName': review.fullName,
+                      'answerId': review.answerId,
+                    },
+                  );
+                },
+              );
+            },
+          );
+        }
+        return const SizedBox.shrink();
       },
     );
   }

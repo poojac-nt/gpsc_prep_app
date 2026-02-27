@@ -485,42 +485,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 }
 
-Widget _buildTabToggle(
-  String label,
-  String currentValue,
-  Function(String) onTap,
-) {
-  bool isSelected = currentValue == label;
-  return GestureDetector(
-    onTap: () => onTap(label),
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 33.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow:
-            isSelected
-                ? [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(25),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-                : [],
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.bold,
-          color: isSelected ? Colors.white : Colors.grey[500],
-        ),
-      ),
-    ),
-  );
-}
-
 class StartTestCard extends StatelessWidget {
   final Color color;
   final String buttonText;

@@ -54,7 +54,11 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
                   onTap: () {
                     context.push(
                       AppRoutes.descAnswerDetail,
-                      extra: {'question': question, 'index': index},
+                      extra: {
+                        'question': question,
+                        'index': index,
+                        'testId': widget.descTestModel.id,
+                      },
                     );
                   },
                 );

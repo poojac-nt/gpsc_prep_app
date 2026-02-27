@@ -368,8 +368,13 @@ final List<GoRoute> appRoutes = [
       final extra = state.extra as Map<String, dynamic>;
       final question = extra['question'] as DescQuestionModel;
       final index = extra['index'] as int;
+      final testId = extra['testId'] as int;
       return _slideTransition(
-        DescriptiveAnswerDetailScreen(question: question, index: index),
+        DescriptiveAnswerDetailScreen(
+          question: question,
+          index: index,
+          testId: testId,
+        ),
         state,
       );
     },
@@ -381,11 +386,13 @@ final List<GoRoute> appRoutes = [
       final question = extra['question'] as DescQuestionModel;
       final index = extra['index'] as int;
       final userName = extra['userName'] as String;
+      final answerId = extra['answerId'] as int;
       return _slideTransition(
         PeerReviewAnswerScreen(
           question: question,
           index: index,
           userName: userName,
+          answerId: answerId,
         ),
         state,
       );
@@ -552,11 +559,14 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.mentorAssign,
-    pageBuilder: (context, state) => _slideTransition(const MentorAssignScreen(), state),
+    pageBuilder:
+        (context, state) => _slideTransition(const MentorAssignScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.adminDashboard,
-    pageBuilder: (context, state) => _slideTransition(const AdminDashboardScreen(), state),
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const AdminDashboardScreen(), state),
   ),
 ];
 

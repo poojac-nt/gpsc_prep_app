@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/study_material_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/subject_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/peer_review_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
@@ -26,15 +27,17 @@ import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_ana
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -100,6 +103,9 @@ void setupRepositories() {
   getIt.registerLazySingleton<SubjectRepository>(
     () => SubjectRepository(getIt<SupabaseHelper>()),
   );
+  getIt.registerLazySingleton<PeerReviewRepository>(
+    () => PeerReviewRepository(getIt<SupabaseHelper>()),
+  );
 }
 
 void setupBlocs() {
@@ -150,7 +156,7 @@ void setupBlocs() {
     () => BarChartBloc(getIt<TestRepository>()),
   );
   getIt.registerLazySingleton<ResultBloc>(
-    () => ResultBloc(getIt<TestRepository>(), getIt<SnackBarHelper>()),
+    () => ResultBloc(getIt<TestRepository>()),
   );
   getIt.registerLazySingleton<AnalyticsBloc>(
     () => AnalyticsBloc(getIt<AnalyticsRepository>()),
@@ -166,6 +172,12 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<SubjectBloc>(
     () => SubjectBloc(getIt<SubjectRepository>()),
+  );
+  getIt.registerLazySingleton<PeerReviewBloc>(
+    () => PeerReviewBloc(getIt<PeerReviewRepository>()),
+  );
+  getIt.registerLazySingleton<DetailedPeerReviewBloc>(
+    () => DetailedPeerReviewBloc(getIt<PeerReviewRepository>()),
   );
 }
 

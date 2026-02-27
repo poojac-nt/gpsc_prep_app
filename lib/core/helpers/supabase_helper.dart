@@ -13,11 +13,13 @@ import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/domain/entities/peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
@@ -187,8 +189,6 @@ class SupabaseHelper {
 
       // ✅ Properly cast the response
       final result = response.data as Map<String, dynamic>;
-      debugPrint(result['user']['role'].runtimeType.toString());
-      debugPrint(result['user']['role'].toString());
       final userModel = UserModel.fromJson(
         result['user'] as Map<String, dynamic>,
       );
@@ -1183,6 +1183,69 @@ class SupabaseHelper {
     } catch (e) {
       _log.e('❌ Error in appVersionCheck: $e');
       return AppVersionStatus.upToDate; // Changed to fail open for better UX
+    }
+  }
+
+  /// ===========================================================================
+  /// Peer Review
+  /// ===========================================================================
+
+  Future<Either<Failure, List<PeerReviewModel>>> peerReview({
+    required int testId,
+    required int questionId,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.peerReview,
+        params: {'p_test_id': testId, 'p_question_id': questionId},
+      );
+      final reviews =
+          (result as List)
+              .map((e) => PeerReviewModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+      _log.i(
+        "Peer Review fetched successfully for testId $testId and questionId $questionId",
+      );
+      debugPrint("Peer Review Result: ${reviews.first.latestComment}");
+      return Right(reviews);
+    } catch (e) {
+      _log.e(
+        "Error fetching Peer Review for testId $testId and questionId $questionId: $e",
+      );
+      return Left(
+        Failure(
+          "Error fetching Peer Review for testId $testId and questionId $questionId: ${e.toString()}",
+        ),
+      );
+    }
+  }
+
+  Future<Either<Failure, DetailedPeerReviewModel>> detailedPeerReview({
+    required int answerId,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.detailedPeerReviewPerUser,
+        params: {'p_answer_id': answerId},
+      );
+      final list = result as List<dynamic>;
+      if (list.isEmpty) {
+        return Left(Failure('No answer found for answerId $answerId'));
+      }
+      final reviews = DetailedPeerReviewModel.fromJson(
+        list.first as Map<String, dynamic>,
+      );
+      _log.i(
+        "Detailed Peer Review fetched successfully for answerId $answerId",
+      );
+      return Right(reviews);
+    } catch (e) {
+      _log.e("Error fetching Detailed Peer Review for answerId $answerId: $e");
+      return Left(
+        Failure(
+          "Error fetching Detailed Peer Review for answerId $answerId: ${e.toString()}",
+        ),
+      );
     }
   }
 }

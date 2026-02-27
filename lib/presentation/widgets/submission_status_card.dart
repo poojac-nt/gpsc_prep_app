@@ -23,9 +23,9 @@ class SubmissionStatusCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: baseColor.withOpacity(0.08),
+        color: baseColor.withAlpha(8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: baseColor.withOpacity(0.1)),
+        border: Border.all(color: baseColor.withAlpha(10)),
       ),
       child: Row(
         children: [
@@ -73,7 +73,7 @@ class SubmissionStatusCard extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  side: BorderSide(color: baseColor.withOpacity(0.1)),
+                  side: BorderSide(color: baseColor.withAlpha(10)),
                 ),
               ),
               child: Text(
