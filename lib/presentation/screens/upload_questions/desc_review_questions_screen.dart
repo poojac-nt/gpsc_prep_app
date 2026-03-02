@@ -36,7 +36,7 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
         body: BlocConsumer<UploadQuestionsBloc, UploadQuestionsState>(
           listener: (context, state) {
             if (state is UploadFileSuccess) {
-              context.pushReplacement(AppRoutes.studentDashboard);
+              context.go(AppRoutes.adminDashboard);
               getIt<SnackBarHelper>().showSuccess(
                 '✅ Uploaded: ${state.result.successCount}, '
                 'Duplicates: ${state.result.duplicateCount}, '

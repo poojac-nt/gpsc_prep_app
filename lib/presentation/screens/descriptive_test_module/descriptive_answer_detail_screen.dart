@@ -10,6 +10,9 @@ import 'package:gpsc_prep_app/presentation/widgets/peer_submission_tile.dart';
 import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
+import '../../blocs/peer_review/submit_peer_review_bloc.dart';
+import '../../blocs/peer_review/submit_peer_review_state.dart';
+
 class DescriptiveAnswerDetailScreen extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
@@ -104,19 +107,35 @@ class _DescriptiveAnswerDetailScreenState
         ],
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            QuestionDetailCard(
-              question: widget.question,
-              index: widget.index,
-              commentCount: 16,
-              selectedLanguage: _currentLanguage,
-            ),
-            _buildPeerSubmissionsHeader(),
-            _buildPeerSubmissionsList(),
-            SizedBox(height: 30.h),
-          ],
+      body: BlocListener<SubmitPeerReviewBloc, SubmitPeerReviewState>(
+        listener: (context, state) {
+          if (state is SubmitPeerReviewSuccess) {
+            context.read<PeerReviewBloc>().add(
+              FetchPeerReviews(
+                testId: widget.testId,
+                questionId: widget.question.id,
+              ),
+            );
+            // Reset state to avoid repeated refreshing if this screen rebuilds
+            context.read<SubmitPeerReviewBloc>().add(
+              ResetSubmitPeerReviewState(),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              QuestionDetailCard(
+                question: widget.question,
+                index: widget.index,
+                commentCount: 16,
+                selectedLanguage: _currentLanguage,
+              ),
+              _buildPeerSubmissionsHeader(),
+              _buildPeerSubmissionsList(),
+              SizedBox(height: 30.h),
+            ],
+          ),
         ),
       ),
     );

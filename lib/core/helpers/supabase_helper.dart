@@ -1206,7 +1206,7 @@ class SupabaseHelper {
       _log.i(
         "Peer Review fetched successfully for testId $testId and questionId $questionId",
       );
-      debugPrint("Peer Review Result: ${reviews.first.latestComment}");
+      // debugPrint("Peer Review Result: ${reviews.first.latestComment}");
       return Right(reviews);
     } catch (e) {
       _log.e(
@@ -1263,7 +1263,8 @@ class SupabaseHelper {
           'p_comment': comment,
         },
       );
-      final commentModel = Comment.fromJson(result);
+      final commentJson = (result as List).first as Map<String, dynamic>;
+      final commentModel = Comment.fromJson(commentJson);
       _log.i(
         "Peer Review comment inserted successfully for answerId $answerId by reviewerId $reviewerId",
       );
