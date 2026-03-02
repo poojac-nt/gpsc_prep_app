@@ -24,4 +24,16 @@ class PeerReviewRepository {
   }) async {
     return await _supabaseHelper.detailedPeerReview(answerId: answerId);
   }
+
+  Future<Either<Failure, Comment>> insertPeerReview({
+    required int answerId,
+    required int reviewerId,
+    required String comment,
+  }) async {
+    return await _supabaseHelper.insertPeerReview(
+      answerId: answerId,
+      reviewerId: reviewerId,
+      comment: comment,
+    );
+  }
 }

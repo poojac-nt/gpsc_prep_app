@@ -27,6 +27,7 @@ import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_blo
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
@@ -136,6 +137,9 @@ class AppServices {
     BlocProvider<PeerReviewBloc>(create: (_) => getIt<PeerReviewBloc>()),
     BlocProvider<DetailedPeerReviewBloc>(
       create: (_) => getIt<DetailedPeerReviewBloc>(),
+    ),
+    BlocProvider<SubmitPeerReviewBloc>(
+      create: (_) => getIt<SubmitPeerReviewBloc>(),
     ),
   ];
 }

@@ -1248,4 +1248,36 @@ class SupabaseHelper {
       );
     }
   }
+
+  Future<Either<Failure, Comment>> insertPeerReview({
+    required int answerId,
+    required int reviewerId,
+    required String comment,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.insertPeerReview,
+        params: {
+          'p_answer_id': answerId,
+          'p_reviewer_id': reviewerId,
+          'p_comment': comment,
+        },
+      );
+      final commentModel = Comment.fromJson(result);
+      _log.i(
+        "Peer Review comment inserted successfully for answerId $answerId by reviewerId $reviewerId",
+      );
+
+      return Right(commentModel);
+    } catch (e) {
+      _log.e(
+        "Error inserting Peer Review comment for answerId $answerId by reviewerId $reviewerId: $e",
+      );
+      return Left(
+        Failure(
+          "Error inserting Peer Review comment for answerId $answerId by reviewerId $reviewerId: ${e.toString()}",
+        ),
+      );
+    }
+  }
 }

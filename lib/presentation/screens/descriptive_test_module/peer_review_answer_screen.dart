@@ -3,9 +3,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/common/pdf_viewer_screen.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -97,17 +102,39 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
         ),
         centerTitle: true,
       ),
-      body: BlocBuilder<DetailedPeerReviewBloc, DetailedPeerReviewState>(
-        builder: (context, state) {
-          if (state is DetailedPeerReviewLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is DetailedPeerReviewError) {
-            return Center(child: Text(state.message));
-          } else if (state is DetailedPeerReviewLoaded) {
-            return _buildContent(state.detail);
-          }
-          return const SizedBox.shrink();
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<SubmitPeerReviewBloc, SubmitPeerReviewState>(
+            listener: (context, state) {
+              if (state is SubmitPeerReviewSuccess) {
+                _feedbackController.clear();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Your review has been posted!')),
+                );
+                // Refresh data
+                context.read<DetailedPeerReviewBloc>().add(
+                  FetchDetailedPeerReview(answerId: widget.answerId),
+                );
+              } else if (state is SubmitPeerReviewError) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<DetailedPeerReviewBloc, DetailedPeerReviewState>(
+          builder: (context, state) {
+            if (state is DetailedPeerReviewLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is DetailedPeerReviewError) {
+              return Center(child: Text(state.message));
+            } else if (state is DetailedPeerReviewLoaded) {
+              return _buildContent(state.detail);
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -156,7 +183,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
             AppPaddings.appPaddingInt,
             AppPaddings.appPaddingInt,
           ),
-          child: _buildFeedbackInput(),
+          child: _buildFeedbackInput(detail),
         ),
       ],
     );
@@ -520,105 +547,124 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
     );
   }
 
-  Widget _buildFeedbackInput() {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.7),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 20,
-                offset: const Offset(0, -5),
-              ),
-            ],
-            border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.black.withValues(alpha: 0.05),
+  Widget _buildFeedbackInput(DetailedPeerReviewModel detail) {
+    return BlocBuilder<SubmitPeerReviewBloc, SubmitPeerReviewState>(
+      builder: (context, state) {
+        final isSubmitting = state is SubmitPeerReviewLoading;
+
+        return ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.7),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
                   ),
+                ],
+                border: Border(
+                  top: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _feedbackController,
-                        minLines: 1,
-                        maxLines: 5,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: Colors.black.withValues(alpha: 0.05),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _feedbackController,
+                            minLines: 1,
+                            maxLines: 5,
+                            enabled: !isSubmitting,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: const Color(0xFF1E293B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Write a critique or feedback...',
+                              hintStyle: TextStyle(
+                                color: Colors.black38,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        ActionButton(
+                          onTap: () {
+                            final comment = _feedbackController.text.trim();
+                            if (comment.isEmpty || _wordCount > 100) return;
+
+                            final reviewerId =
+                                getIt<CacheManager>().getUserId();
+                            context.read<SubmitPeerReviewBloc>().add(
+                              SubmitPeerReview(
+                                answerId: detail.answerId,
+                                reviewerId: reviewerId,
+                                comment: comment,
+                              ),
+                            );
+                          },
+                          width: 40.w,
+                          height: 40.h,
+                          padding: EdgeInsets.zero,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(10.r),
+                          icon:
+                              isSubmitting ? Icons.hourglass_empty : Icons.send,
+                          fontColor: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Be respectful and constructive',
                         style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0xFF1E293B),
+                          color: Colors.black45,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.w500,
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'Write a critique or feedback...',
-                          hintStyle: TextStyle(
-                            color: Colors.black38,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
+                      ),
+                      Text(
+                        '$_wordCount/100 words',
+                        style: TextStyle(
+                          color: _wordCount > 100 ? Colors.red : Colors.black26,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                    ActionButton(
-                      onTap: () {
-                        // TODO: Hook up comment submission
-                      },
-                      width: 40.w,
-                      height: 40.h,
-                      padding: EdgeInsets.zero,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(10.r),
-                      icon: Icons.send,
-                      fontColor: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 12.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Be respectful and constructive',
-                    style: TextStyle(
-                      color: Colors.black45,
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    '$_wordCount/100 words',
-                    style: TextStyle(
-                      color: _wordCount > 100 ? Colors.red : Colors.black26,
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
