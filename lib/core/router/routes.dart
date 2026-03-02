@@ -16,6 +16,7 @@ import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
@@ -567,6 +568,16 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) =>
             _slideTransition(const AdminDashboardScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.assignMentorDetail,
+    pageBuilder: (context, state) {
+      final testName = state.extra as String? ?? "Advanced Physics Midterm";
+      return _slideTransition(
+        AssignMentorDetailScreen(testName: testName),
+        state,
+      );
+    },
   ),
 ];
 
