@@ -8,8 +8,10 @@ class CoursePayload {
   final String name;
   @JsonKey(name: "description")
   final String? description;
+  @JsonKey(name: "test_type")
+  final String testType;
 
-  CoursePayload({required this.name, this.description});
+  CoursePayload({required this.name, this.description, required this.testType});
 
   Map<String, dynamic> toJson() => _$CoursePayloadToJson(this);
 }

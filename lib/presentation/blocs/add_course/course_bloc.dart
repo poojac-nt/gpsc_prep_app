@@ -20,7 +20,11 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
   ) async {
     emit(CourseLoading());
     final result = await _courseRepository.createCourse(
-      CoursePayload(name: event.name, description: event.description),
+      CoursePayload(
+        name: event.name,
+        description: event.description,
+        testType: event.testType,
+      ),
     );
 
     result.fold(

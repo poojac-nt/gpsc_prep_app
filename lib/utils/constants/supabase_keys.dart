@@ -29,6 +29,7 @@ abstract class SupabaseKeys {
   static final String peerReview = 'get_question_peer_submission';
   static final String detailedPeerReviewPerUser = 'get_answer_with_comments';
   static final String insertPeerReview = 'insert_peer_review';
+  static final String submitDescTest = 'submit_descriptive_test';
 
   ///table
   static final String usersTable = 'users';

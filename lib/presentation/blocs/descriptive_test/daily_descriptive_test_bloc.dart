@@ -41,7 +41,9 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     emit(DailyDescTestFetching());
 
     // 1. Fetch all descriptive tests
-    final testsResult = await _testRepository.fetchDailyDescTest();
+    final testsResult = await _testRepository.fetchDailyDescTest(
+      courseId: event.courseId,
+    );
 
     await testsResult.fold(
       (failure) async {

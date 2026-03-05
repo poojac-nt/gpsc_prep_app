@@ -12,15 +12,18 @@ class CourseModel {
   String name;
   @JsonKey(name: "description")
   String description;
+  @JsonKey(name: "test_type")
+  String? testType;
 
   @JsonKey(name: "tests")
-  final CourseTestsModel tests;
+  final CourseTestsModel? tests;
 
   CourseModel({
     required this.id,
     required this.name,
     required this.description,
-    required this.tests,
+    this.testType,
+    this.tests,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) =>
@@ -31,16 +34,13 @@ class CourseModel {
 
 @JsonSerializable()
 class CourseTestsModel {
-  @JsonKey(name: "mcq")
-  final List<TestModel>? mcq;
-
   @JsonKey(name: "prelims")
   final List<TestModel>? prelims;
 
   @JsonKey(name: "descriptive")
   final List<DescTestModel>? descriptive;
 
-  CourseTestsModel({this.mcq, this.prelims, this.descriptive});
+  CourseTestsModel({this.prelims, this.descriptive});
 
   factory CourseTestsModel.fromJson(Map<String, dynamic> json) =>
       _$CourseTestsModelFromJson(json);

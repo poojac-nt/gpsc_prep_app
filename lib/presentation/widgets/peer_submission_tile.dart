@@ -48,13 +48,13 @@ class PeerSubmissionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  radius: 24.r,
+                  radius: 20.r,
                   backgroundColor: _getAvatarColor(),
                   child: Text(
                     _getInitials(userName),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14.sp,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),

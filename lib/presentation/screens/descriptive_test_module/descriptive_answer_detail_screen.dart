@@ -85,7 +85,7 @@ class _DescriptiveAnswerDetailScreenState
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Question Q.${widget.index + 1}',
+          'Question ${widget.index + 1}',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18.sp,

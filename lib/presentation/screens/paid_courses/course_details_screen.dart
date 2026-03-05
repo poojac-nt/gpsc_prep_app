@@ -11,6 +11,11 @@ import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -29,12 +34,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   void initState() {
     super.initState();
     _fetchAttemptStates();
+    context.read<DailyDescTestBloc>().add(
+      FetchAllTests(courseId: widget.courseModel.id),
+    );
   }
 
   Future<void> _fetchAttemptStates() async {
     final testRepo = getIt<TestRepository>();
     final tests = widget.courseModel.tests;
-    final allMcqPrelims = [...?tests.mcq, ...?tests.prelims];
+    final allMcqPrelims = [...?tests?.prelims];
 
     final Map<int, TestAttemptState> states = {};
     for (final test in allMcqPrelims) {
@@ -356,8 +364,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   bool _hasNoTests() {
     final t = widget.courseModel.tests;
-    return (t.mcq == null || t.mcq!.isEmpty) &&
-        (t.prelims == null || t.prelims!.isEmpty) &&
+    if (t == null) return true;
+    return (t.prelims == null || t.prelims!.isEmpty) &&
         (t.descriptive == null || t.descriptive!.isEmpty);
   }
 
@@ -368,7 +376,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final List<Widget> items = [];
     int counter = 1;
 
-    for (final test in tests.mcq ?? []) {
+    for (final test in tests?.prelims ?? []) {
       items.add(
         Padding(
           padding: EdgeInsets.only(bottom: 12.h),
@@ -378,57 +386,51 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       counter++;
     }
 
-    for (final test in tests.prelims ?? []) {
+    final descriptiveTests = tests?.descriptive ?? [];
+    if (descriptiveTests.isNotEmpty) {
       items.add(
-        Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: _buildTestItem(test: test, index: '$counter'),
-        ),
-      );
-      counter++;
-    }
+        BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
+          builder: (context, state) {
+            final List<Widget> descItems = [];
+            final bool isFetching = state is DailyDescTestFetching;
+            final Map<int, dynamic> answersMap =
+                (state is DailyDescTestFetched) ? state.answersMap : {};
 
-    for (final test in tests.descriptive ?? []) {
-      items.add(
-        Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: _buildDescTestItem(test: test, index: '$counter'),
+            for (final test in descriptiveTests) {
+              final hasAnswer = answersMap.containsKey(test.id);
+              descItems.add(
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: _buildDescTestItem(
+                    test: test,
+                    index: '${counter++}',
+                    hasAnswer: hasAnswer,
+                    isLoading: isFetching,
+                  ),
+                ),
+              );
+            }
+            return Column(children: descItems);
+          },
         ),
       );
-      counter++;
     }
 
     return Column(children: items);
   }
 
   Future<void> _navigateToInstruction(TestModel test) async {
-    switch (test.testType) {
-      case TestType.mcq:
-        await context.push(
-          AppRoutes.mcqTestInstructionScreen,
-          extra: TestInstructionScreenArgs(testId: test.id),
-        );
-        break;
-      case TestType.prelims:
-        await context.push(
-          AppRoutes.prelimsInstructionsScreen,
-          extra: PrelimsInstructionScreenArgs(testId: test.id),
-        );
-        break;
-      case TestType.desc:
-        await context.push(
-          AppRoutes.descriptiveTestInstructionScreen,
-          extra: DescTestInstructionScreenArgs(testId: test.id),
-        );
-        break;
-    }
+    await context.push(
+      AppRoutes.prelimsInstructionsScreen,
+      extra: PrelimsInstructionScreenArgs(testId: test.id),
+    );
   }
 
   Widget _buildTestItem({required TestModel test, required String index}) {
     final bool isPrelims = test.testType == TestType.prelims;
     final Color badgeColor =
         isPrelims ? const Color(0xFF059669) : AppColors.primary;
-    final String badgeLabel = isPrelims ? 'Prelims' : 'MCQ';
+    final String badgeLabel = 'Prelims';
     final String details =
         "${test.noQuestions} Questions • ${test.duration} Minutes";
 
@@ -548,16 +550,37 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Widget _buildDescTestItem({
     required DescTestModel test,
     required String index,
+    required bool hasAnswer,
+    bool isLoading = false,
   }) {
     const Color badgeColor = Color(0xFF7C3AED);
     const String badgeLabel = 'Descriptive';
     final String details = "${test.noQuestions} Questions";
 
+    Widget? statusWidget;
+    if (hasAnswer) {
+      statusWidget = _buildStatusBadge(
+        icon: Icons.check_circle_rounded,
+        label: 'Completed',
+        color: const Color(0xFF059669),
+      );
+    }
+
     return InkWell(
       onTap: () async {
+        if (isLoading) return;
+        if (hasAnswer) {
+          getIt<SnackBarHelper>().showSuccess(
+            "Descriptive test already attempted!",
+          );
+          return;
+        }
         await context.push(
           AppRoutes.descriptiveTestInstructionScreen,
-          extra: DescTestInstructionScreenArgs(testId: test.id),
+          extra: DescTestInstructionScreenArgs(
+            testId: test.id,
+            courseId: widget.courseModel.id,
+          ),
         );
         _fetchAttemptStates();
       },
@@ -568,6 +591,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         details: details,
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
+        statusWidget: statusWidget,
       ),
     );
   }

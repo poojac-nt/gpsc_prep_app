@@ -75,60 +75,17 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                   return GestureDetector(
                     onTap: () {
                       if (hasAnswer) {
-                        showDialog(
-                          context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: Text(
-                                  "Answer Already Submitted",
-                                  style: AppTexts.titleTextStyle,
-                                ),
-                                content: Text(
-                                  "If you submit again, your previous answer will be overwritten.",
-                                  style: AppTexts.subTitle,
-                                ),
-                                actions: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IntrinsicWidth(
-                                        child: ActionButton(
-                                          text: "Cancel",
-                                          onTap: () {
-                                            context.pop(); // close dialog
-                                          },
-                                        ),
-                                      ),
-                                      10.wGap,
-                                      IntrinsicWidth(
-                                        child: ActionButton(
-                                          text: "Submit Again",
-                                          onTap: () {
-                                            context.pop(); // close dialog first
-                                            context.push(
-                                              AppRoutes
-                                                  .descriptiveTestInstructionScreen,
-                                              extra:
-                                                  DescTestInstructionScreenArgs(
-                                                    dailyTestModel: test,
-                                                  ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                        getIt<SnackBarHelper>().showSuccess(
+                          "This test has already been attempted!",
                         );
-                      } else {
-                        context.push(
-                          AppRoutes.descriptiveTestInstructionScreen,
-                          extra: DescTestInstructionScreenArgs(
-                            dailyTestModel: test,
-                          ),
-                        );
+                        return;
                       }
+                      context.push(
+                        AppRoutes.descriptiveTestInstructionScreen,
+                        extra: DescTestInstructionScreenArgs(
+                          dailyTestModel: test,
+                        ),
+                      );
                     },
                     child: TestCard(
                       descTestModel: test,

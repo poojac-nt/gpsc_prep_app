@@ -20,6 +20,7 @@ class AddCourseScreen extends StatefulWidget {
 class _AddCourseScreenState extends State<AddCourseScreen> {
   final TextEditingController _courseController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  String _selectedTestType = 'Prelims'; // Default value
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final CourseBloc _bloc;
 
@@ -44,6 +45,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         AddCourseRequested(
           name: courseName,
           description: description.isNotEmpty ? description : null,
+          testType: _selectedTestType.toLowerCase(),
         ),
       );
     }
@@ -166,6 +168,58 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                 ),
                                 alignLabelWithHint: true,
                               ),
+                            ),
+                            16.hGap,
+                            DropdownButtonFormField<String>(
+                              value: _selectedTestType,
+                              onChanged:
+                                  isLoading
+                                      ? null
+                                      : (value) {
+                                        if (value != null) {
+                                          setState(() {
+                                            _selectedTestType = value;
+                                          });
+                                        }
+                                      },
+                              decoration: InputDecoration(
+                                labelText: 'Test Type',
+                                floatingLabelStyle: TextStyle(
+                                  color: AppColors.primary,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 12.h,
+                                ),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'Prelims',
+                                  child: Text('Prelims'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Mains',
+                                  child: Text('Mains'),
+                                ),
+                              ],
                             ),
                             24.hGap,
                             SizedBox(

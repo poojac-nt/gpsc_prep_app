@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
@@ -347,10 +346,12 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
     try {
-      final response = await supabase.rpc(SupabaseKeys.getCoursesWithTests);
+      final rpcResponse = await supabase.rpc(SupabaseKeys.getCoursesWithTests);
 
-      final courses =
-          (response as List).map((e) => CourseModel.fromJson(e)).toList();
+      final List<dynamic> courseList = rpcResponse as List;
+
+      final courses = courseList.map((e) => CourseModel.fromJson(e)).toList();
+
       return Right(courses);
     } catch (e) {
       _snackBar.showError('Error fetching courses: ${e.toString()}');
@@ -630,13 +631,19 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests() async {
+  Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests({
+    int? courseId,
+  }) async {
     try {
-      final response = await supabase
-          .from(SupabaseKeys.descTests)
-          .select()
-          .isFilter('course_id', null)
-          .order('id', ascending: false);
+      final query = supabase.from(SupabaseKeys.descTests).select();
+
+      if (courseId != null) {
+        query.eq('course_id', courseId);
+      } else {
+        query.isFilter('course_id', null);
+      }
+
+      final response = await query.order('id', ascending: false);
       final result = response.map((e) => DescTestModel.fromJson(e)).toList();
       if (result.isEmpty) {
         _log.w('No descriptive tests found');
@@ -669,23 +676,47 @@ class SupabaseHelper {
     }
   }
 
+  // Future<Either<Failure, String>> submitDescriptiveTest(
+  //   int testId,
+  //   Map<int, dynamic> answers,
+  // ) async {
+  //   try {
+  //     await supabase
+  //         .from(SupabaseKeys.descTestResult)
+  //         .upsert(
+  //           answers.entries.map((e) {
+  //             return {
+  //               'user_id': _cache.user!.id,
+  //               'test_id': testId,
+  //               'question_id': e.key,
+  //               'answer': e.value, // could be text or pdf url
+  //             };
+  //           }).toList(),
+  //         );
+  //
+  //     return Right("Test submitted successfully!");
+  //   } catch (e) {
+  //     return Left(Failure(e.toString()));
+  //   }
+  // }
+
   Future<Either<Failure, String>> submitDescriptiveTest(
     int testId,
     Map<int, dynamic> answers,
   ) async {
     try {
-      await supabase
-          .from(SupabaseKeys.descTestResult)
-          .upsert(
-            answers.entries.map((e) {
-              return {
-                'user_id': _cache.user!.id,
-                'test_id': testId,
-                'question_id': e.key,
-                'answer': e.value, // could be text or pdf url
-              };
-            }).toList(),
-          );
+      final formattedAnswers =
+          answers.entries
+              .map((e) => {'question_id': e.key, 'answer': e.value})
+              .toList();
+      await supabase.rpc(
+        SupabaseKeys.submitDescTest,
+        params: {
+          'p_user_id': _cache.user!.id!,
+          'p_test_id': testId,
+          'p_answers': formattedAnswers,
+        },
+      );
 
       return Right("Test submitted successfully!");
     } catch (e) {

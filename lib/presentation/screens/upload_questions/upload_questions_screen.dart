@@ -81,6 +81,10 @@ class _UploadQuestionsState extends State<UploadQuestions> {
         builder: (context, state) {
           final isLoading =
               state is ParseFileInProgress || state is CoursesLoading;
+          final testType = _selectedCourse?.testType?.toString().toLowerCase();
+
+          final isMains = testType == 'mains';
+          final isPrelims = testType == 'prelims';
           return SingleChildScrollView(
             padding: EdgeInsets.all(AppPaddings.defaultPadding),
             child: Column(
@@ -94,7 +98,13 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                   icon: Icons.checklist_rtl_rounded,
                 ),
                 20.hGap,
-                _buildMcqUploadSection(context, isLoading),
+                Opacity(
+                  opacity: isMains ? 0.5 : 1.0,
+                  child: AbsorbPointer(
+                    absorbing: isMains,
+                    child: _buildMcqUploadSection(context, isLoading),
+                  ),
+                ),
                 40.hGap,
                 _buildSectionHeader(
                   title: 'Descriptive Upload',
@@ -102,7 +112,13 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                   icon: Icons.description_outlined,
                 ),
                 20.hGap,
-                _buildDescUploadSection(context, isLoading),
+                Opacity(
+                  opacity: isPrelims ? 0.5 : 1.0,
+                  child: AbsorbPointer(
+                    absorbing: isPrelims,
+                    child: _buildDescUploadSection(context, isLoading),
+                  ),
+                ),
               ],
             ),
           );
