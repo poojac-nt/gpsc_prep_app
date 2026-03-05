@@ -65,8 +65,26 @@ class DescTestInstructionScreenArgs {
   final DescTestModel? dailyTestModel;
   final int? testId;
   final int? courseId;
+  final bool isFromCourse;
 
-  DescTestInstructionScreenArgs({this.dailyTestModel, this.testId, this.courseId});
+  DescTestInstructionScreenArgs({
+    this.dailyTestModel,
+    this.testId,
+    this.courseId,
+    this.isFromCourse = false,
+  });
+}
+
+class DescFullQuestionsScreenArgs {
+  final int testId;
+  final String testName;
+  final int? courseId;
+
+  DescFullQuestionsScreenArgs({
+    required this.testId,
+    required this.testName,
+    this.courseId,
+  });
 }
 
 class DescTestScreenArgs {
@@ -118,6 +136,7 @@ class OMRScreenArgs {
 
 class CourseDetailsScreenArgs {
   final CourseModel courseModel;
+
   CourseDetailsScreenArgs({required this.courseModel});
 }
 
@@ -128,4 +147,10 @@ class MentorEvaluationScreenArgs {
   final int? submissionId;
 
   MentorEvaluationScreenArgs({this.studentId, this.testId, this.submissionId});
+}
+
+class AssessmentTypeSelectionScreenArgs {
+  final CourseModel courseModel;
+
+  AssessmentTypeSelectionScreenArgs({required this.courseModel});
 }

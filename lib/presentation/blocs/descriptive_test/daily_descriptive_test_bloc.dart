@@ -26,6 +26,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     on<AddFilesAnswer>(_addFilesAnswer);
     on<RemoveAnswer>(_removeAnswer);
     on<SubmitDescTest>(_submitDescTest);
+    on<SubmitDescriptiveTestSinglePdf>(_submitDescriptiveTestSinglePdf);
     on<ResetDescTestState>((event, emit) {
       _answers.clear();
       _fileCache.clear();
@@ -222,5 +223,27 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       _log.e("Error submitting descriptive test: $e");
       emit(DescTestSubmitFailed(Failure(e.toString())));
     }
+  }
+
+  Future<void> _submitDescriptiveTestSinglePdf(
+    SubmitDescriptiveTestSinglePdf event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    emit(DescTestSubmit());
+    final result = await _testRepository.submitDescriptiveTestPdf(
+      testId: event.testId,
+      file: event.file,
+    );
+
+    result.fold(
+      (failure) {
+        _log.e("Failed to submit descriptive test PDF: $failure");
+        emit(DescTestSubmitFailed(failure));
+      },
+      (_) {
+        emit(DescTestSubmitSuccess("Test submitted successfully!"));
+        _log.i("Descriptive test PDF submitted successfully");
+      },
+    );
   }
 }

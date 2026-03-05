@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
 
 import '../../../utils/app_constants.dart';
 
@@ -21,11 +19,13 @@ class DescriptiveTestInstructionScreen extends StatefulWidget {
   final DescTestModel? descTestModel;
   final int? testId;
   final int? courseId;
+  final bool isFromCourse;
 
   const DescriptiveTestInstructionScreen({
     super.key,
     this.descTestModel,
     this.testId,
+    this.isFromCourse = false,
     this.courseId,
   });
 
@@ -55,24 +55,20 @@ class _DescriptiveTestInstructionScreenState
         LoadDescQuestion(widget.descTestModel!.id, "en"),
       );
     }
-    context.read<DailyDescTestBloc>().add(FetchAllTests(courseId: widget.courseId));
+    context.read<DailyDescTestBloc>().add(FetchAllTests());
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<FetchSingleTestBloc, FetchSingleTestState>(
-          listenWhen: (_, state) => state is SingleDescTestFetched,
-          listener: (_, state) {
-            if (state is SingleDescTestFetched) {
-              setState(() {
-                _fetchedTestModel = state.descModel;
-              });
-            }
-          },
-        ),
-      ],
+    return BlocListener<FetchSingleTestBloc, FetchSingleTestState>(
+      listenWhen: (_, state) => state is SingleDescTestFetched,
+      listener: (_, state) {
+        if (state is SingleDescTestFetched) {
+          setState(() {
+            _fetchedTestModel = state.descModel;
+          });
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text(
@@ -110,39 +106,26 @@ class _DescriptiveTestInstructionScreenState
 
     if (model == null) return _loadingScreen();
 
-    return BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
-      builder: (context, descState) {
-        final Map<int, dynamic> answersMap =
-            (descState is DailyDescTestFetched) ? descState.answersMap : {};
-        final bool isAttempted = answersMap.containsKey(model.id);
-
-        return ListView.separated(
-          itemBuilder: (context, index) {
-            final q = state.questionsModels[index].questionEn;
-            return QuestionTile(
-              index: index,
-              questionText: q.questionTxt,
-              onTap: () {
-                if (isAttempted) {
-                  getIt<SnackBarHelper>().showSuccess(
-                    "This test has already been attempted!",
-                  );
-                  return;
-                }
-                context.push(
-                  AppRoutes.descriptiveTestScreen,
-                  extra: DescTestScreenArgs(
-                    dailyTestModel: model,
-                    initialIndex: index,
-                  ),
-                );
-              },
+    return ListView.separated(
+      padding: EdgeInsets.all(20.h),
+      itemBuilder: (context, index) {
+        final q = state.questionsModels[index].questionEn;
+        return QuestionTile(
+          index: index,
+          questionText: q.questionTxt,
+          onTap: () {
+            context.push(
+              AppRoutes.descriptiveTestScreen,
+              extra: DescTestScreenArgs(
+                dailyTestModel: model,
+                initialIndex: index,
+              ),
             );
           },
-          separatorBuilder: (context, index) => 2.hGap,
-          itemCount: state.questionsModels.length,
         );
       },
+      separatorBuilder: (context, index) => 2.hGap,
+      itemCount: state.questionsModels.length,
     );
   }
 }

@@ -28,6 +28,7 @@ DescQuestionModel _$DescQuestionModelFromJson(Map<String, dynamic> json) =>
       subjectName: json['subject_name'] as String,
       topicName: json['topic_name'] as String,
       pages: (json['pages'] as num?)?.toInt(),
+      questionOrder: (json['question_order'] as num).toInt(),
     );
 
 Map<String, dynamic> _$DescQuestionModelToJson(DescQuestionModel instance) =>
@@ -45,4 +46,5 @@ Map<String, dynamic> _$DescQuestionModelToJson(DescQuestionModel instance) =>
       'subject_name': instance.subjectName,
       'topic_name': instance.topicName,
       'pages': instance.pages,
+      'question_order': instance.questionOrder,
     };

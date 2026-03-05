@@ -22,11 +22,13 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_full_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answer_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/mentor_evaluation_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/paid_courses/assessment_type_selection_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/omr_answer_screen.dart';
@@ -169,6 +171,7 @@ final List<GoRoute> appRoutes = [
                   testId: args?.testId ?? testId,
                   descTestModel: args?.dailyTestModel,
                   courseId: args?.courseId,
+                  isFromCourse: args?.isFromCourse ?? false,
                 ),
                 state,
               );
@@ -415,12 +418,26 @@ final List<GoRoute> appRoutes = [
           descTestModel: args.dailyTestModel,
           testId: args.testId,
           courseId: args.courseId,
+          isFromCourse: args.isFromCourse,
         ),
         state,
       );
     },
   ),
-
+  GoRoute(
+    path: AppRoutes.descFullQuestions,
+    pageBuilder: (context, state) {
+      final args = state.extra as DescFullQuestionsScreenArgs;
+      return _slideTransition(
+        DescFullQuestionsScreen(
+          testId: args.testId,
+          testName: args.testName,
+          courseId: args.courseId,
+        ),
+        state,
+      );
+    },
+  ),
   GoRoute(
     path: AppRoutes.uploadStudyMaterial,
     pageBuilder: (context, state) {
@@ -584,6 +601,12 @@ final List<GoRoute> appRoutes = [
         state,
       );
     },
+  ),
+  GoRoute(
+    path: AppRoutes.assessmentTypeSelection,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const AssessmentTypeSelectionScreen(), state),
   ),
 ];
 

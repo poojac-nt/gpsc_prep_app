@@ -45,4 +45,11 @@ class AddFilesAnswer extends DailyDescTestEvent {
   AddFilesAnswer({required this.questionId, required this.files});
 }
 
+class SubmitDescriptiveTestSinglePdf extends DailyDescTestEvent {
+  final int testId;
+  final File file;
+
+  SubmitDescriptiveTestSinglePdf({required this.testId, required this.file});
+}
+
 class ResetDescTestState extends DailyDescTestEvent {}

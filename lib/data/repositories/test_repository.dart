@@ -83,6 +83,12 @@ class TestRepository {
     questionId: questionId,
   );
 
+  Future<Either<Failure, void>> submitDescriptiveTestPdf({
+    required int testId,
+    required File file,
+  }) async =>
+      await _supabase.submitDescriptiveTestPdf(testId: testId, file: file);
+
   Future<Either<Failure, List<OptionMatrixModel>>> optionMatrixForQuestion({
     required int testId,
   }) {

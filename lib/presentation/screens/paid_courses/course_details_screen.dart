@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
@@ -8,14 +9,12 @@ import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -42,10 +41,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _fetchAttemptStates() async {
     final testRepo = getIt<TestRepository>();
     final tests = widget.courseModel.tests;
-    final allMcqPrelims = [...?tests?.prelims];
+    final allPrelims = [...?tests?.prelims];
 
     final Map<int, TestAttemptState> states = {};
-    for (final test in allMcqPrelims) {
+    for (final test in allPrelims) {
       final result = await testRepo.fetchTestAttemptState(test.id);
       result.fold((_) {}, (state) => states[test.id] = state);
     }
@@ -233,84 +232,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ),
             ),
           ),
-
-          // // Bottom Bar
-          // Container(
-          //   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          //   decoration: BoxDecoration(
-          //     color: Colors.white,
-          //     border: Border(top: BorderSide(color: Colors.grey.shade200)),
-          //   ),
-          //   child: SafeArea(
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //       children: [
-          //         Column(
-          //           mainAxisSize: MainAxisSize.min,
-          //           crossAxisAlignment: CrossAxisAlignment.start,
-          //           children: [
-          //             Text(
-          //               "Total Price",
-          //               style: TextStyle(
-          //                 fontSize: 10.sp,
-          //                 color: Colors.grey.shade600,
-          //                 fontWeight: FontWeight.bold,
-          //               ),
-          //             ),
-          //             4.hGap,
-          //             Row(
-          //               crossAxisAlignment: CrossAxisAlignment.baseline,
-          //               textBaseline: TextBaseline.alphabetic,
-          //               children: [
-          //                 Text(
-          //                   "Free",
-          //                   style: TextStyle(
-          //                     fontSize: 22.sp,
-          //                     fontWeight: FontWeight.w900,
-          //                     color: const Color(0xFF111827),
-          //                   ),
-          //                 ),
-          //                 8.wGap,
-          //                 Text(
-          //                   "₹500",
-          //                   style: TextStyle(
-          //                     fontSize: 12.sp,
-          //                     fontWeight: FontWeight.w500,
-          //                     color: Colors.grey.shade400,
-          //                     decoration: TextDecoration.lineThrough,
-          //                     decorationColor: Colors.grey.shade400,
-          //                   ),
-          //                 ),
-          //               ],
-          //             ),
-          //           ],
-          //         ),
-          //         ElevatedButton(
-          //           onPressed: () {},
-          //           style: ElevatedButton.styleFrom(
-          //             backgroundColor: AppColors.primary,
-          //             foregroundColor: Colors.white,
-          //             elevation: 0,
-          //             padding: EdgeInsets.symmetric(
-          //               horizontal: 48.w,
-          //               vertical: 14.h,
-          //             ),
-          //             shape: RoundedRectangleBorder(
-          //               borderRadius: BorderRadius.circular(8.r),
-          //             ),
-          //           ),
-          //           child: Text(
-          //             "Buy Now",
-          //             style: TextStyle(
-          //               fontSize: 14.sp,
-          //               fontWeight: FontWeight.bold,
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
+          _bottomBar(),
         ],
       ),
     );
@@ -423,6 +345,98 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     await context.push(
       AppRoutes.prelimsInstructionsScreen,
       extra: PrelimsInstructionScreenArgs(testId: test.id),
+    );
+  }
+
+  // // Bottom Bar
+  Widget _bottomBar() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Total Price",
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                4.hGap,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      "Free",
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    8.wGap,
+                    Text(
+                      "₹500",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade400,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: Colors.grey.shade400,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final hasDescriptive =
+                    widget.courseModel.tests?.descriptive != null &&
+                    widget.courseModel.tests!.descriptive!.isNotEmpty;
+
+                if (hasDescriptive) {
+                  context.push(
+                    AppRoutes.assessmentTypeSelection,
+                    extra: AssessmentTypeSelectionScreenArgs(
+                      courseModel: widget.courseModel,
+                    ),
+                  );
+                } else {
+                  // Standard flow
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Proceeding to checkout...")),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: EdgeInsets.symmetric(horizontal: 48.w, vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: Text(
+                "Buy Now",
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -568,21 +582,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return InkWell(
       onTap: () async {
-        if (isLoading) return;
-        if (hasAnswer) {
-          getIt<SnackBarHelper>().showSuccess(
-            "Descriptive test already attempted!",
-          );
-          return;
-        }
         await context.push(
-          AppRoutes.descriptiveTestInstructionScreen,
-          extra: DescTestInstructionScreenArgs(
+          AppRoutes.descFullQuestions,
+          extra: DescFullQuestionsScreenArgs(
             testId: test.id,
+            testName: test.name,
             courseId: widget.courseModel.id,
           ),
         );
-        _fetchAttemptStates();
+        // Refresh submission status after returning
+        context.read<DailyDescTestBloc>().add(
+          FetchAllTests(courseId: widget.courseModel.id),
+        );
       },
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(

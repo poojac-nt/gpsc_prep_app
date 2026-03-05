@@ -120,27 +120,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                   );
                 },
               ),
-              // 10.hGap,
-              // TestModule(
-              //   title: 'My Submissions',
-              //   subtitle: 'Track your Submitted Answers',
-              //   prefixIcon: Icons.file_upload_outlined,
-              //   cards: [
-              //     ActionButton(text: 'View All Submissions', onTap: () {}),
-              //     5.hGap,
-              //     Row(
-              //       mainAxisAlignment: MainAxisAlignment.center,
-              //       children: [
-              //         Column(
-              //           children: [
-              //             Text('5 Pending Reviews'),
-              //             Text('12 Reviewed'),
-              //           ],
-              //         ),
-              //       ],
-              //     ),
-              //   ],
-              // ),
             );
           }
           return Container();

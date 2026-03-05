@@ -132,6 +132,7 @@ abstract class AppRoutes {
   static const String descAnswerScreen = '/descAnswerScreen';
   static const String descAnswerDetail = '/descAnswerDetail';
   static const String peerReviewAnswer = '/peerReviewAnswer';
+  static const String descFullQuestions = '/descFullQuestions';
   static const String uploadStudyMaterial = '/uploadStudyMaterial';
   static const String languageSelection = '/languageSelection';
   static const String studyMaterial = '/studyMaterial';
@@ -155,6 +156,7 @@ abstract class AppRoutes {
   static const String mentorAssign = '/mentorAssign';
   static const String adminDashboard = '/adminDashboard';
   static const String assignMentorDetail = '/assignMentorDetail';
+  static const String assessmentTypeSelection = '/assessmentTypeSelection';
 }
 
 class AdUnitIds {

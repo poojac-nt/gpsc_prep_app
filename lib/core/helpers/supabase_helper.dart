@@ -18,6 +18,7 @@ import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/domain/entities/package_model.dart';
 import 'package:gpsc_prep_app/domain/entities/peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
@@ -28,6 +29,7 @@ import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
 import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
@@ -758,6 +760,37 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, void>> submitDescriptiveTestPdf({
+    required int testId,
+    required File file,
+  }) async {
+    try {
+      // 1. Upload the PDF
+      final fileName =
+          "${testId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}";
+      final filePath = "course_submissions/$fileName";
+
+      await supabase.storage.from(SupabaseKeys.answers).upload(filePath, file);
+
+      final publicUrl = supabase.storage
+          .from(SupabaseKeys.answers)
+          .getPublicUrl(filePath);
+
+      // 2. Insert into des_test_submission table
+      await supabase.from(SupabaseKeys.desTestSubmission).insert({
+        'user_id': _cache.user!.id,
+        'test_id': testId,
+        'submission_pdf_url': publicUrl,
+        'is_finalized': true,
+      });
+
+      return const Right(null);
+    } catch (e) {
+      _log.e("Failed to submit descriptive test PDF: $e");
+      return Left(Failure(e.toString()));
+    }
+  }
+
   Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
     int testId,
   ) async {
@@ -1310,6 +1343,36 @@ class SupabaseHelper {
           "Error inserting Peer Review comment for answerId $answerId by reviewerId $reviewerId: ${e.toString()}",
         ),
       );
+    }
+  }
+
+  /// ===========================================================================
+  /// Package Management (for in-app purchases, if needed in future)
+  /// ===========================================================================
+
+  Future<Either<Failure, List<PackageModel>>> fetchPackages() async {
+    try {
+      final result = await supabase.from(SupabaseKeys.package).select('*');
+      final packages =
+          (result as List).map((e) => PackageModel.fromJson(e)).toList();
+      return Right(packages);
+    } catch (e) {
+      _snackBar.showError('Error Fetching Packages: ${e.toString()}');
+      _log.e('Error Fetching Packages: $e', error: e);
+      return Left(Failure('Error Fetching Packages: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, List<UserPurchaseModel>>> fetchUserPurchase() async {
+    try {
+      final result = await supabase.from(SupabaseKeys.userPurchase).select('*');
+      final purchase =
+          (result as List).map((e) => UserPurchaseModel.fromJson(e)).toList();
+      return Right(purchase);
+    } catch (e) {
+      _snackBar.showError('Error Fetching Packages: ${e.toString()}');
+      _log.e('Error Fetching Packages: $e', error: e);
+      return Left(Failure('Error Fetching Packages: ${e.toString()}'));
     }
   }
 }
