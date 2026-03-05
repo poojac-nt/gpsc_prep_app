@@ -6,6 +6,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
@@ -47,6 +48,8 @@ class SupabaseHelper {
   final CacheManager _cache;
 
   SupabaseHelper(this._log, this._snackBar, this._cache);
+
+  late final userId = _cache.user!.id;
 
   /// ===========================================================================
   /// AUTHENTICATION
@@ -526,7 +529,7 @@ class SupabaseHelper {
           await supabase
               .from(SupabaseKeys.testResultsTable)
               .select()
-              .eq('user_id', _cache.user!.id!)
+              .eq('user_id', userId!)
               .eq('test_id', testId)
               .order('created_at', ascending: false)
               .limit(1)
@@ -549,7 +552,7 @@ class SupabaseHelper {
     try {
       final response = await supabase.rpc(
         SupabaseKeys.getTestAttemptWithAnalytics,
-        params: {'p_user_id': _cache.user!.id, 'p_test_id': testId},
+        params: {'p_user_id': userId, 'p_test_id': testId},
       );
 
       // Cast response to Map<String, dynamic>
@@ -571,7 +574,7 @@ class SupabaseHelper {
       final response = await supabase
           .from('test_results')
           .select()
-          .eq('user_id', _cache.user!.id!);
+          .eq('user_id', userId!);
 
       final results =
           (response as List).map((e) => TestResultModel.fromJson(e)).toList();
@@ -678,30 +681,6 @@ class SupabaseHelper {
     }
   }
 
-  // Future<Either<Failure, String>> submitDescriptiveTest(
-  //   int testId,
-  //   Map<int, dynamic> answers,
-  // ) async {
-  //   try {
-  //     await supabase
-  //         .from(SupabaseKeys.descTestResult)
-  //         .upsert(
-  //           answers.entries.map((e) {
-  //             return {
-  //               'user_id': _cache.user!.id,
-  //               'test_id': testId,
-  //               'question_id': e.key,
-  //               'answer': e.value, // could be text or pdf url
-  //             };
-  //           }).toList(),
-  //         );
-  //
-  //     return Right("Test submitted successfully!");
-  //   } catch (e) {
-  //     return Left(Failure(e.toString()));
-  //   }
-  // }
-
   Future<Either<Failure, String>> submitDescriptiveTest(
     int testId,
     Map<int, dynamic> answers,
@@ -714,7 +693,7 @@ class SupabaseHelper {
       await supabase.rpc(
         SupabaseKeys.submitDescTest,
         params: {
-          'p_user_id': _cache.user!.id!,
+          'p_user_id': userId,
           'p_test_id': testId,
           'p_answers': formattedAnswers,
         },
@@ -767,8 +746,8 @@ class SupabaseHelper {
     try {
       // 1. Upload the PDF
       final fileName =
-          "${testId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}";
-      final filePath = "course_submissions/$fileName";
+          "${testId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}";
+      final filePath = "answers/$fileName";
 
       await supabase.storage.from(SupabaseKeys.answers).upload(filePath, file);
 
@@ -777,8 +756,8 @@ class SupabaseHelper {
           .getPublicUrl(filePath);
 
       // 2. Insert into des_test_submission table
-      await supabase.from(SupabaseKeys.desTestSubmission).insert({
-        'user_id': _cache.user!.id,
+      await supabase.from(SupabaseKeys.descTestSubmissions).insert({
+        'user_id': userId,
         'test_id': testId,
         'submission_pdf_url': publicUrl,
         'is_finalized': true,
@@ -791,6 +770,25 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<int>>> fetchDescriptiveTestSubmissions() async {
+    try {
+      if (userId == null) {
+        return Left(Failure("User not found"));
+      }
+      final response = await supabase
+          .from(SupabaseKeys.descTestSubmissions)
+          .select('test_id')
+          .eq('user_id', userId!);
+
+      final List<int> ids =
+          (response as List).map((e) => e['test_id'] as int).toList();
+      return Right(ids);
+    } catch (e) {
+      _log.e("Failed to fetch descriptive test submissions: $e");
+      return Left(Failure(e.toString()));
+    }
+  }
+
   Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
     int testId,
   ) async {
@@ -799,7 +797,7 @@ class SupabaseHelper {
           .from('desc_test_detailed_results')
           .select()
           .eq('test_id', testId)
-          .eq('user_id', _cache.user!.id!);
+          .eq('user_id', userId!);
 
       final answers =
           (response as List<dynamic>)
@@ -830,14 +828,14 @@ class SupabaseHelper {
           await supabase
               .from(SupabaseKeys.userTests)
               .select('id, started_at')
-              .eq('user_id', _cache.user!.id!)
+              .eq('user_id', userId!)
               .eq('test_id', testId)
               .maybeSingle();
 
       if (existing == null) {
         // 🔹 First start
         await supabase.from(SupabaseKeys.userTests).insert({
-          'user_id': _cache.user!.id!,
+          'user_id': userId!,
           'test_id': testId,
           'status': status,
           'started_at': DateTime.now().toUtc().toIso8601String(),
@@ -853,7 +851,7 @@ class SupabaseHelper {
         await supabase
             .from(SupabaseKeys.userTests)
             .update(updatePayload)
-            .eq('user_id', _cache.user!.id!)
+            .eq('user_id', userId!)
             .eq('test_id', testId);
       }
 
@@ -873,7 +871,7 @@ class SupabaseHelper {
       await supabase
           .from(SupabaseKeys.userTests)
           .delete()
-          .eq('user_id', _cache.user!.id!)
+          .eq('user_id', userId!)
           .eq('test_id', testId);
 
       _log.i('User test progress deleted: test=$testId');
@@ -890,7 +888,7 @@ class SupabaseHelper {
     try {
       final response = await supabase.rpc(
         SupabaseKeys.getTestAttemptState,
-        params: {'p_user_id': _cache.user!.id!, 'p_test_id': testId},
+        params: {'p_user_id': userId!, 'p_test_id': testId},
       );
 
       final results = TestAttemptState.fromJson(response);
@@ -987,8 +985,6 @@ class SupabaseHelper {
     DateTime? from,
     DateTime? to,
   }) async {
-    final userId = _cache.getUserId();
-
     try {
       final params = <String, dynamic>{'p_user_id': userId};
 
@@ -1012,7 +1008,6 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async {
-    final userId = _cache.getUserId();
     try {
       final result = await supabase.rpc(
         SupabaseKeys.getAccuracyTrend,
@@ -1036,7 +1031,7 @@ class SupabaseHelper {
     try {
       final result = await supabase.rpc(
         SupabaseKeys.getDashboardAnalytics,
-        params: {'p_user_id': _cache.user!.id},
+        params: {'p_user_id': userId},
       );
       final analytics = DashboardAnalytics.fromJson(
         result.first as Map<String, dynamic>,
@@ -1365,7 +1360,10 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<UserPurchaseModel>>> fetchUserPurchase() async {
     try {
-      final result = await supabase.from(SupabaseKeys.userPurchase).select('*');
+      final result = await supabase
+          .from(SupabaseKeys.userPurchase)
+          .select('*')
+          .eq('user_id', userId!);
       final purchase =
           (result as List).map((e) => UserPurchaseModel.fromJson(e)).toList();
       return Right(purchase);
@@ -1373,6 +1371,29 @@ class SupabaseHelper {
       _snackBar.showError('Error Fetching Packages: ${e.toString()}');
       _log.e('Error Fetching Packages: $e', error: e);
       return Left(Failure('Error Fetching Packages: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, UserPurchaseModel>> purchaseCourse({
+    required UserPurchasePayload payload,
+  }) async {
+    try {
+      final result =
+          await supabase
+              .from(SupabaseKeys.userPurchase)
+              .insert({
+                'user_id': userId,
+                'course_id': payload.courseId,
+                'assessment_type': payload.assessmentType.name,
+              })
+              .select()
+              .single();
+      final purchase = UserPurchaseModel.fromJson(result);
+      return Right(purchase);
+    } catch (e) {
+      _snackBar.showError('Error Purchasing Course: ${e.toString()}');
+      _log.e('Error Purchasing Course :$e', error: e);
+      return Left(Failure('Error Purchasing Course: ${e.toString()}'));
     }
   }
 }

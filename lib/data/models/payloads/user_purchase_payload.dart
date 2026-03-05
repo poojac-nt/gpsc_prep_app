@@ -7,8 +7,6 @@ part 'user_purchase_payload.g.dart';
 class UserPurchasePayload {
   @JsonKey(name: "user_id")
   int userId;
-  @JsonKey(name: "package_id")
-  int packageId;
   @JsonKey(name: "course_id")
   int courseId;
   @JsonKey(name: "assessment_type")
@@ -16,7 +14,7 @@ class UserPurchasePayload {
 
   UserPurchasePayload({
     required this.userId,
-    required this.packageId,
+
     required this.courseId,
     required this.assessmentType,
   });

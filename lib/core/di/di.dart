@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart
 import 'package:gpsc_prep_app/data/repositories/study_material_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/subject_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/peer_review_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/purchase_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
@@ -44,6 +45,7 @@ import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:hive_flutter/adapters.dart';
 
 import '../../presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import '../../presentation/blocs/purchase/purchase_bloc.dart';
 import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
 
 final getIt = GetIt.instance;
@@ -106,6 +108,9 @@ void setupRepositories() {
   );
   getIt.registerLazySingleton<PeerReviewRepository>(
     () => PeerReviewRepository(getIt<SupabaseHelper>()),
+  );
+  getIt.registerLazySingleton<PurchaseRepository>(
+    () => PurchaseRepository(getIt<SupabaseHelper>()),
   );
 }
 
@@ -182,6 +187,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<SubmitPeerReviewBloc>(
     () => SubmitPeerReviewBloc(getIt<PeerReviewRepository>()),
+  );
+  getIt.registerLazySingleton<PurchaseBloc>(
+    () => PurchaseBloc(getIt<PurchaseRepository>()),
   );
 }
 

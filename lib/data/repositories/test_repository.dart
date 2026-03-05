@@ -106,4 +106,7 @@ class TestRepository {
 
   Future<Either<Failure, void>> deleteUserTest({required int testId}) async =>
       await _supabase.deleteUserTest(testId: testId);
+
+  Future<Either<Failure, List<int>>> fetchDescriptiveTestSubmissions() async =>
+      await _supabase.fetchDescriptiveTestSubmissions();
 }

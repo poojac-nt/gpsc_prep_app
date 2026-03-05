@@ -9,8 +9,6 @@ class UserPurchaseModel {
   int id;
   @JsonKey(name: "user_id")
   int userId;
-  @JsonKey(name: "package_id")
-  int packageId;
   @JsonKey(name: "course_id")
   int courseId;
   @JsonKey(name: "assessment_type")
@@ -21,7 +19,6 @@ class UserPurchaseModel {
   UserPurchaseModel({
     required this.id,
     required this.userId,
-    required this.packageId,
     required this.courseId,
     required this.assessmentType,
     required this.createdAt,

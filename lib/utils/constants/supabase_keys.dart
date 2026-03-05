@@ -40,7 +40,7 @@ abstract class SupabaseKeys {
   static final String config = 'config';
   static final String descTests = 'desc_tests';
   static final String descTestResult = 'desc_test_detailed_results';
-  static final String desTestSubmission = 'des_test_submission';
+  static final String descTestSubmissions = 'desc_test_submissions';
   static final String testDetailedResults = 'test_detailed_results';
   static final String studyMaterial = 'study_material';
   static final String userTests = 'user_tests';

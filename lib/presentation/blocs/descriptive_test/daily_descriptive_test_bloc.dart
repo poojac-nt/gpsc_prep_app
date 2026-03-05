@@ -61,16 +61,33 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         }
         final answersMap = <int, List<DescAnswerModel>>{};
 
-        for (final test in tests) {
-          final answersResult = await _testRepository.fetchAnswersForTest(
-            test.id,
-          );
-
-          answersResult.fold((_) {}, (ansList) {
-            if (ansList.isNotEmpty) {
-              answersMap[test.id] = ansList;
+        if (event.courseId != null) {
+          final submissionsResult =
+              await _testRepository.fetchDescriptiveTestSubmissions();
+          submissionsResult.fold((_) {}, (submittedIds) {
+            for (final id in submittedIds) {
+              answersMap[id] = [
+                DescAnswerModel(
+                  userId: 0,
+                  testId: id,
+                  questionId: 0,
+                  answer: 'Submitted',
+                ),
+              ];
             }
           });
+        } else {
+          for (final test in tests) {
+            final answersResult = await _testRepository.fetchAnswersForTest(
+              test.id,
+            );
+
+            answersResult.fold((_) {}, (ansList) {
+              if (ansList.isNotEmpty) {
+                answersMap[test.id] = ansList;
+              }
+            });
+          }
         }
 
         // 3. Emit success state with both tests and answers

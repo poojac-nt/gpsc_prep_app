@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 
 class AssessmentTypeSelectionScreen extends StatefulWidget {
   const AssessmentTypeSelectionScreen({super.key});
@@ -61,7 +61,6 @@ class _AssessmentTypeSelectionScreenState
                     title: "Single Assessment",
                     description:
                         "Your answers will be evaluated once by a verified mentor with detailed feedback.",
-                    price: "₹499",
                     icon: Icons.person_outline_rounded,
                   ),
                   16.hGap,
@@ -70,9 +69,7 @@ class _AssessmentTypeSelectionScreenState
                     title: "Double Assessment",
                     description:
                         "Get your answers reviewed by two different mentors for more comprehensive insights.",
-                    price: "₹799",
                     icon: Icons.people_outline_rounded,
-                    isRecommended: true,
                   ),
                 ],
               ),
@@ -88,9 +85,7 @@ class _AssessmentTypeSelectionScreenState
     required AssessmentType type,
     required String title,
     required String description,
-    required String price,
     required IconData icon,
-    bool isRecommended = false,
   }) {
     final bool isSelected = _selectedType == type;
 
@@ -161,15 +156,6 @@ class _AssessmentTypeSelectionScreenState
                           height: 1.4,
                         ),
                       ),
-                      12.hGap,
-                      Text(
-                        price,
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFF111827),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -181,26 +167,6 @@ class _AssessmentTypeSelectionScreenState
                   ),
               ],
             ),
-            if (isRecommended)
-              Positioned(
-                top: 0,
-                right: isSelected ? 30.w : 0,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFACC15), // Amber 400
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                  child: Text(
-                    "RECOMMENDED",
-                    style: TextStyle(
-                      fontSize: 8.sp,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

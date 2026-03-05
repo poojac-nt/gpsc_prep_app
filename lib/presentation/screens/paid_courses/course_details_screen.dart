@@ -3,15 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
@@ -36,6 +41,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     context.read<DailyDescTestBloc>().add(
       FetchAllTests(courseId: widget.courseModel.id),
     );
+    context.read<PurchaseBloc>().add(FetchPurchases());
   }
 
   Future<void> _fetchAttemptStates() async {
@@ -232,7 +238,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ),
             ),
           ),
-          _bottomBar(),
+          BlocBuilder<PurchaseBloc, PurchaseState>(
+            builder: (context, state) {
+              final purchases =
+                  (state is PurchaseFetched)
+                      ? state.purchases
+                      : (state is PurchaseSuccess
+                          ? state.purchases
+                          : (state is PurchasePurchasing
+                              ? state.purchases
+                              : (state is PurchaseFailed
+                                  ? state.purchases
+                                  : <UserPurchaseModel>[])));
+              final bool isEnrolled = purchases.any(
+                (p) => p.courseId == widget.courseModel.id,
+              );
+              return _bottomBar(isEnrolled);
+            },
+          ),
         ],
       ),
     );
@@ -294,51 +317,74 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Widget _buildAllTests() {
     if (_hasNoTests()) return _buildEmptyState();
 
-    final tests = widget.courseModel.tests;
-    final List<Widget> items = [];
-    int counter = 1;
+    return BlocBuilder<PurchaseBloc, PurchaseState>(
+      builder: (context, purchaseState) {
+        final purchases =
+            (purchaseState is PurchaseFetched)
+                ? purchaseState.purchases
+                : (purchaseState is PurchaseSuccess
+                    ? purchaseState.purchases
+                    : (purchaseState is PurchasePurchasing
+                        ? purchaseState.purchases
+                        : (purchaseState is PurchaseFailed
+                            ? purchaseState.purchases
+                            : <UserPurchaseModel>[])));
+        final bool isEnrolled = purchases.any(
+          (p) => p.courseId == widget.courseModel.id,
+        );
 
-    for (final test in tests?.prelims ?? []) {
-      items.add(
-        Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: _buildTestItem(test: test, index: '$counter'),
-        ),
-      );
-      counter++;
-    }
+        final tests = widget.courseModel.tests;
+        final List<Widget> items = [];
+        final prelims = tests?.prelims ?? [];
+        for (int i = 0; i < prelims.length; i++) {
+          items.add(
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: _buildTestItem(
+                test: prelims[i],
+                index: '${i + 1}',
+                isEnrolled: isEnrolled,
+              ),
+            ),
+          );
+        }
 
-    final descriptiveTests = tests?.descriptive ?? [];
-    if (descriptiveTests.isNotEmpty) {
-      items.add(
-        BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
-          builder: (context, state) {
-            final List<Widget> descItems = [];
-            final bool isFetching = state is DailyDescTestFetching;
-            final Map<int, dynamic> answersMap =
-                (state is DailyDescTestFetched) ? state.answersMap : {};
+        final descriptiveTests = tests?.descriptive ?? [];
+        if (descriptiveTests.isNotEmpty) {
+          final prelimCount = prelims.length;
+          items.add(
+            BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
+              builder: (context, state) {
+                final List<Widget> descItems = [];
+                final bool isFetching = state is DailyDescTestFetching;
+                final Map<int, dynamic> answersMap =
+                    (state is DailyDescTestFetched) ? state.answersMap : {};
 
-            for (final test in descriptiveTests) {
-              final hasAnswer = answersMap.containsKey(test.id);
-              descItems.add(
-                Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: _buildDescTestItem(
-                    test: test,
-                    index: '${counter++}',
-                    hasAnswer: hasAnswer,
-                    isLoading: isFetching,
-                  ),
-                ),
-              );
-            }
-            return Column(children: descItems);
-          },
-        ),
-      );
-    }
+                for (int i = 0; i < descriptiveTests.length; i++) {
+                  final test = descriptiveTests[i];
+                  final hasAnswer = answersMap.containsKey(test.id);
+                  descItems.add(
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 12.h),
+                      child: _buildDescTestItem(
+                        test: test,
+                        index: '${prelimCount + i + 1}',
+                        hasAnswer: hasAnswer,
+                        isEnrolled: isEnrolled,
+                        isLoading: isFetching,
+                      ),
+                    ),
+                  );
+                }
+                return Column(children: descItems);
+              },
+            ),
+          );
+        }
 
-    return Column(children: items);
+        return Column(children: items);
+      },
+    );
   }
 
   Future<void> _navigateToInstruction(TestModel test) async {
@@ -349,7 +395,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   // // Bottom Bar
-  Widget _bottomBar() {
+  Widget _bottomBar(bool isEnrolled) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
@@ -364,15 +410,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Total Price",
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                4.hGap,
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
@@ -400,47 +437,89 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 ),
               ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                final hasDescriptive =
-                    widget.courseModel.tests?.descriptive != null &&
-                    widget.courseModel.tests!.descriptive!.isNotEmpty;
+            isEnrolled
+                ? Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.w,
+                    vertical: 12.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_rounded,
+                        color: const Color(0xFF10B981),
+                        size: 20.sp,
+                      ),
+                      8.wGap,
+                      Text(
+                        "Enrolled",
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                : ElevatedButton(
+                  onPressed: () {
+                    final hasDescriptive =
+                        widget.courseModel.tests?.descriptive != null &&
+                        widget.courseModel.tests!.descriptive!.isNotEmpty;
 
-                if (hasDescriptive) {
-                  context.push(
-                    AppRoutes.assessmentTypeSelection,
-                    extra: AssessmentTypeSelectionScreenArgs(
-                      courseModel: widget.courseModel,
+                    if (hasDescriptive) {
+                      context.push(
+                        AppRoutes.assessmentTypeSelection,
+                        extra: AssessmentTypeSelectionScreenArgs(
+                          courseModel: widget.courseModel,
+                        ),
+                      );
+                    } else {
+                      // Standard flow
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Proceeding to checkout..."),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 48.w,
+                      vertical: 14.h,
                     ),
-                  );
-                } else {
-                  // Standard flow
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Proceeding to checkout...")),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: EdgeInsets.symmetric(horizontal: 48.w, vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  child: Text(
+                    "Enroll Now",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                "Buy Now",
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTestItem({required TestModel test, required String index}) {
+  Widget _buildTestItem({
+    required TestModel test,
+    required String index,
+    required bool isEnrolled,
+  }) {
     final bool isPrelims = test.testType == TestType.prelims;
     final Color badgeColor =
         isPrelims ? const Color(0xFF059669) : AppColors.primary;
@@ -483,6 +562,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return InkWell(
       onTap: () async {
+        if (!isEnrolled) {
+          getIt<SnackBarHelper>().showError(
+            "Please enroll in the course to access tests.",
+          );
+          return;
+        }
         if (isCompleted) {
           // Navigate to result screen
           await context.push(
@@ -499,6 +584,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           _fetchAttemptStates();
         } else {
           await _navigateToInstruction(test);
+          if (!mounted) return;
           _fetchAttemptStates();
         }
       },
@@ -510,6 +596,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
         statusWidget: statusWidget,
+        isLocked: !isEnrolled,
       ),
     );
   }
@@ -565,6 +652,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required DescTestModel test,
     required String index,
     required bool hasAnswer,
+    required bool isEnrolled,
     bool isLoading = false,
   }) {
     const Color badgeColor = Color(0xFF7C3AED);
@@ -582,6 +670,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return InkWell(
       onTap: () async {
+        if (!isEnrolled) {
+          getIt<SnackBarHelper>().showError(
+            "Please enroll in the course to access tests.",
+          );
+          return;
+        }
+        if (hasAnswer) {
+          getIt<SnackBarHelper>().showSuccess(
+            "This test has already been attempted!",
+          );
+          return;
+        }
         await context.push(
           AppRoutes.descFullQuestions,
           extra: DescFullQuestionsScreenArgs(
@@ -591,6 +691,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
         );
         // Refresh submission status after returning
+        if (!mounted) return;
         context.read<DailyDescTestBloc>().add(
           FetchAllTests(courseId: widget.courseModel.id),
         );
@@ -603,6 +704,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
         statusWidget: statusWidget,
+        isLocked: !isEnrolled,
       ),
     );
   }
@@ -614,6 +716,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required String badgeLabel,
     required Color badgeColor,
     Widget? statusWidget,
+    bool isLocked = false,
   }) {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -689,11 +792,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ],
             ),
           ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: Colors.grey.shade400,
-            size: 16.sp,
-          ),
+          isLocked
+              ? Icon(
+                Icons.lock_rounded,
+                color: Colors.grey.shade400,
+                size: 20.sp,
+              )
+              : Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.grey.shade400,
+                size: 16.sp,
+              ),
         ],
       ),
     );
