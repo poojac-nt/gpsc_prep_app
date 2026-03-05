@@ -11,6 +11,8 @@ CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => CourseModel(
       name: json['name'] as String,
       description: json['description'] as String,
       testType: json['test_type'] as String?,
+      priceSingle: (json['single_assessment_price'] as num?)?.toInt(),
+      priceDual: (json['dual_assessment_price'] as num?)?.toInt(),
       tests: json['tests'] == null
           ? null
           : CourseTestsModel.fromJson(json['tests'] as Map<String, dynamic>),
@@ -22,6 +24,8 @@ Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
       'name': instance.name,
       'description': instance.description,
       'test_type': instance.testType,
+      'single_assessment_price': instance.priceSingle,
+      'dual_assessment_price': instance.priceDual,
       'tests': instance.tests,
     };
 

@@ -15,6 +15,11 @@ class CourseModel {
   @JsonKey(name: "test_type")
   String? testType;
 
+  @JsonKey(name: "single_assessment_price")
+  int? priceSingle;
+  @JsonKey(name: "dual_assessment_price")
+  int? priceDual;
+
   @JsonKey(name: "tests")
   final CourseTestsModel? tests;
 
@@ -23,6 +28,8 @@ class CourseModel {
     required this.name,
     required this.description,
     this.testType,
+    this.priceSingle,
+    this.priceDual,
     this.tests,
   });
 

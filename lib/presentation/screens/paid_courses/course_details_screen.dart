@@ -404,39 +404,32 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       ),
       child: SafeArea(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment:
+              widget.courseModel.testType?.toLowerCase() == 'prelims'
+                  ? MainAxisAlignment.spaceBetween
+                  : MainAxisAlignment.center,
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      "Free",
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF111827),
+            if (widget.courseModel.testType?.toLowerCase() == 'prelims')
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        "₹${widget.courseModel.priceSingle ?? 0}",
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF111827),
+                        ),
                       ),
-                    ),
-                    8.wGap,
-                    Text(
-                      "₹500",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade400,
-                        decoration: TextDecoration.lineThrough,
-                        decorationColor: Colors.grey.shade400,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
+                ],
+              ),
             isEnrolled
                 ? Container(
                   padding: EdgeInsets.symmetric(
@@ -449,6 +442,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     border: Border.all(color: const Color(0xFF10B981)),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.check_circle_rounded,

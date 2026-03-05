@@ -24,6 +24,8 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
         name: event.name,
         description: event.description,
         testType: event.testType,
+        priceSingle: event.priceSingle,
+        priceDual: event.priceDual,
       ),
     );
 

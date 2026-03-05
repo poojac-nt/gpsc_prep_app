@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/services/validator.dart';
 
 class AddCourseScreen extends StatefulWidget {
   const AddCourseScreen({super.key});
@@ -20,6 +21,8 @@ class AddCourseScreen extends StatefulWidget {
 class _AddCourseScreenState extends State<AddCourseScreen> {
   final TextEditingController _courseController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceSingleController = TextEditingController();
+  final TextEditingController _priceDualController = TextEditingController();
   String _selectedTestType = 'Prelims'; // Default value
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final CourseBloc _bloc;
@@ -34,6 +37,8 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   void dispose() {
     _courseController.dispose();
     _descriptionController.dispose();
+    _priceSingleController.dispose();
+    _priceDualController.dispose();
     super.dispose();
   }
 
@@ -41,11 +46,16 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     if (_formKey.currentState!.validate()) {
       final courseName = _courseController.text.trim();
       final description = _descriptionController.text.trim();
+      final priceSingle = int.tryParse(_priceSingleController.text.trim());
+      final priceDual = int.tryParse(_priceDualController.text.trim());
+
       _bloc.add(
         AddCourseRequested(
           name: courseName,
           description: description.isNotEmpty ? description : null,
           testType: _selectedTestType.toLowerCase(),
+          priceSingle: priceSingle,
+          priceDual: priceDual,
         ),
       );
     }
@@ -104,31 +114,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                             TextFormField(
                               controller: _courseController,
                               enabled: !isLoading,
-                              decoration: InputDecoration(
-                                labelText: 'Course Name',
-                                floatingLabelStyle: TextStyle(
-                                  color: AppColors.primary,
-                                ),
-                                hintText:
+                              decoration: _inputDecoration(
+                                label: 'Course Name',
+                                hint:
                                     'Enter course name (e.g., GPSC Class 1-2)',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -142,31 +131,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               controller: _descriptionController,
                               enabled: !isLoading,
                               maxLines: 3,
-                              decoration: InputDecoration(
-                                labelText: 'Description',
-                                floatingLabelStyle: TextStyle(
-                                  color: AppColors.primary,
-                                ),
-                                hintText: 'Enter course description (optional)',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                alignLabelWithHint: true,
+                              decoration: _inputDecoration(
+                                label: 'Description',
+                                hint: 'Enter course description',
                               ),
                             ),
                             16.hGap,
@@ -182,33 +149,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                           });
                                         }
                                       },
-                              decoration: InputDecoration(
-                                labelText: 'Test Type',
-                                floatingLabelStyle: TextStyle(
-                                  color: AppColors.primary,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  borderSide: BorderSide(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16.w,
-                                  vertical: 12.h,
-                                ),
+                              decoration: _inputDecoration(
+                                label: 'Test Type',
+                                hint: null,
                               ),
                               items: const [
                                 DropdownMenuItem(
@@ -220,6 +163,53 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                   child: Text('Mains'),
                                 ),
                               ],
+                            ),
+                            16.hGap,
+                            TextFormField(
+                              controller: _priceSingleController,
+                              enabled: !isLoading,
+                              keyboardType: TextInputType.number,
+                              decoration: _inputDecoration(
+                                label: 'Price (Single Assessment)',
+                                hint: 'Enter price (e.g., 500)',
+                              ),
+                              validator: (value) {
+                                return Validator.validatePrice(
+                                  value,
+                                  fieldName: 'Price (Single Assessment)',
+                                );
+                              },
+                            ),
+                            16.hGap,
+                            TextFormField(
+                              controller: _priceDualController,
+                              enabled: !isLoading,
+                              keyboardType: TextInputType.number,
+                              decoration: _inputDecoration(
+                                label: 'Price (Dual Assessment)',
+                                hint:
+                                    _selectedTestType == 'Mains'
+                                        ? 'Enter price (e.g., 800)'
+                                        : 'Enter price (optional)',
+                              ),
+                              validator: (value) {
+                                if (_selectedTestType == 'Mains') {
+                                  return Validator.validatePrice(
+                                    value,
+                                    fieldName: 'Price (Dual Assessment)',
+                                  );
+                                }
+                                if (value != null && value.trim().isNotEmpty) {
+                                  final price = int.tryParse(value);
+                                  if (price == null) {
+                                    return 'Please enter a valid number';
+                                  }
+                                  if (price < 0) {
+                                    return 'Price cannot be negative';
+                                  }
+                                }
+                                return null;
+                              },
                             ),
                             24.hGap,
                             SizedBox(
@@ -246,6 +236,28 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           );
         },
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration({required String label, String? hint}) {
+    return InputDecoration(
+      labelText: label,
+      floatingLabelStyle: TextStyle(color: AppColors.primary),
+      hintText: hint,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: AppColors.primary),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      alignLabelWithHint: true,
     );
   }
 }

@@ -604,9 +604,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.assessmentTypeSelection,
-    pageBuilder:
-        (context, state) =>
-            _slideTransition(const AssessmentTypeSelectionScreen(), state),
+    pageBuilder: (context, state) {
+      final args = state.extra as AssessmentTypeSelectionScreenArgs;
+      return _slideTransition(
+        AssessmentTypeSelectionScreen(courseModel: args.courseModel),
+        state,
+      );
+    },
   ),
 ];
 

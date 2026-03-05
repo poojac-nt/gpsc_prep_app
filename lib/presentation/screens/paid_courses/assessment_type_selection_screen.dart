@@ -6,8 +6,11 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
+import '../../../domain/entities/course_model.dart';
+
 class AssessmentTypeSelectionScreen extends StatefulWidget {
-  const AssessmentTypeSelectionScreen({super.key});
+  final CourseModel courseModel;
+  const AssessmentTypeSelectionScreen({super.key, required this.courseModel});
 
   @override
   State<AssessmentTypeSelectionScreen> createState() =>
@@ -59,6 +62,7 @@ class _AssessmentTypeSelectionScreenState
                   _buildOptionCard(
                     type: AssessmentType.single,
                     title: "Single Assessment",
+                    price: widget.courseModel.priceSingle ?? 0,
                     description:
                         "Your answers will be evaluated once by a verified mentor with detailed feedback.",
                     icon: Icons.person_outline_rounded,
@@ -67,6 +71,7 @@ class _AssessmentTypeSelectionScreenState
                   _buildOptionCard(
                     type: AssessmentType.double,
                     title: "Double Assessment",
+                    price: widget.courseModel.priceDual ?? 0,
                     description:
                         "Get your answers reviewed by two different mentors for more comprehensive insights.",
                     icon: Icons.people_outline_rounded,
@@ -86,6 +91,7 @@ class _AssessmentTypeSelectionScreenState
     required String title,
     required String description,
     required IconData icon,
+    required int price,
   }) {
     final bool isSelected = _selectedType == type;
 
@@ -154,6 +160,15 @@ class _AssessmentTypeSelectionScreenState
                           fontSize: 12.sp,
                           color: const Color(0xFF64748B),
                           height: 1.4,
+                        ),
+                      ),
+                      8.hGap,
+                      Text(
+                        "₹$price",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
