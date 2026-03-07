@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
+import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class AssignMentorDetailScreen extends StatefulWidget {
   final String testName;
+  final int testId;
 
-  const AssignMentorDetailScreen({super.key, required this.testName});
+  const AssignMentorDetailScreen({
+    super.key,
+    required this.testName,
+    required this.testId,
+  });
 
   @override
   State<AssignMentorDetailScreen> createState() =>
@@ -14,81 +30,22 @@ class AssignMentorDetailScreen extends StatefulWidget {
 }
 
 class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
-  final Set<int> _selectedIndices = {};
+  final Set<int> _selectedSubmissionIds = {};
 
-  final List<Map<String, dynamic>> dummySubmissions = [
-    {
-      "name": "Alice Johnson",
-      "type": "Dual Assessment",
-      "progress": "1/2 Complete",
-      "isDual": true,
-    },
-    {
-      "name": "Bob Smith",
-      "type": "Single Assessment",
-      "progress": "",
-      "isDual": false,
-    },
-    {
-      "name": "Clara Davis",
-      "type": "Dual Assessment",
-      "progress": "1/2 Complete",
-      "isDual": true,
-    },
-    {
-      "name": "David Miller",
-      "type": "Single Assessment",
-      "progress": "",
-      "isDual": false,
-    },
-    {
-      "name": "Elena Rodriguez",
-      "type": "Single Assessment",
-      "progress": "",
-      "isDual": false,
-    },
-    {
-      "name": "Frank White",
-      "type": "Single Assessment",
-      "progress": "",
-      "isDual": false,
-    },
-  ];
-
-  final List<Map<String, dynamic>> dummyMentors = [
-    {"name": "Dr. Sarah Wilson", "subject": "Science"},
-    {"name": "Michael Page", "subject": "Mathematics"},
-    {"name": "Prof. James Miller", "subject": "Humanities"},
-    {"name": "Anjali Sharma", "subject": "CS"},
-    {"name": "Dr. Robert Fox", "subject": "Science"},
-    {"name": "Emily Chen", "subject": "English"},
-  ];
-
-  String _getSubjectFromTestName(String testName) {
-    if (testName.contains("Physics") || testName.contains("Science")) {
-      return "Science";
-    }
-    if (testName.contains("Calculus") || testName.contains("Math")) {
-      return "Mathematics";
-    }
-    if (testName.contains("History") || testName.contains("Humanities")) {
-      return "Humanities";
-    }
-    if (testName.contains("Data Structures") || testName.contains("CS")) {
-      return "CS";
-    }
-    if (testName.contains("Literature") || testName.contains("English")) {
-      return "English";
-    }
-    return "All";
+  @override
+  void initState() {
+    super.initState();
+    context.read<TestWiseSubmissionsBloc>().add(
+      FetchTestWisePendingSubmissions(widget.testId),
+    );
   }
 
-  void _toggleSelection(int index) {
+  void _toggleSelection(int submissionId) {
     setState(() {
-      if (_selectedIndices.contains(index)) {
-        _selectedIndices.remove(index);
+      if (_selectedSubmissionIds.contains(submissionId)) {
+        _selectedSubmissionIds.remove(submissionId);
       } else {
-        _selectedIndices.add(index);
+        _selectedSubmissionIds.add(submissionId);
       }
     });
   }
@@ -98,17 +55,47 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
       appBar: _buildAppBar(context),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.only(bottom: 100.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [10.hGap, _buildSubmissionList()],
-            ),
-          ),
-          _buildFloatingButton(),
-        ],
+      body: BlocBuilder<TestWiseSubmissionsBloc, TestWiseSubmissionsState>(
+        builder: (context, state) {
+          if (state is TestWiseSubmissionsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is TestWiseSubmissionsError) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.r),
+                child: Text(
+                  state.message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.gray500),
+                ),
+              ),
+            );
+          } else if (state is TestWiseSubmissionsLoaded) {
+            List<StudentListWithMentor> submissions = state.studentsWithMentors;
+
+            if (submissions.isEmpty) {
+              return const Center(
+                child: Text(
+                  "No pending submissions for this test",
+                  style: TextStyle(color: AppColors.gray500),
+                ),
+              );
+            }
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: EdgeInsets.only(bottom: 100.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [10.hGap, _buildSubmissionList(submissions)],
+                  ),
+                ),
+                _buildFloatingButton(submissions),
+              ],
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -150,23 +137,25 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  Widget _buildSubmissionList() {
+  Widget _buildSubmissionList(List<StudentListWithMentor> submissions) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      itemCount: dummySubmissions.length,
+      itemCount: submissions.length,
       itemBuilder: (context, index) {
-        final submission = dummySubmissions[index];
-        return _buildSubmissionCard(submission, index);
+        final submission = submissions[index];
+        return _buildSubmissionCard(submission);
       },
     );
   }
 
-  Widget _buildSubmissionCard(Map<String, dynamic> submission, int index) {
-    final bool isSelected = _selectedIndices.contains(index);
+  Widget _buildSubmissionCard(StudentListWithMentor submission) {
+    final bool isSelected = _selectedSubmissionIds.contains(
+      submission.submissionId,
+    );
     return GestureDetector(
-      onTap: () => _toggleSelection(index),
+      onTap: () => _toggleSelection(submission.submissionId),
       child: Container(
         margin: EdgeInsets.only(bottom: 16.h),
         padding: EdgeInsets.all(12.r),
@@ -193,7 +182,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
               radius: 24.r,
               backgroundColor: AppColors.primary.withAlpha(15),
               child: Text(
-                submission["name"]![0],
+                submission.studentName[0],
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 18.sp,
@@ -206,23 +195,19 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        submission["name"]!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.gray900,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    submission.studentName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.gray900,
+                    ),
                   ),
                   4.hGap,
                   Text(
-                    submission["type"]!,
+                    "Submitted on: ${submission.submittedAt}",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -234,44 +219,30 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                 ],
               ),
             ),
-            if (submission["progress"].isNotEmpty) ...[
-              8.wGap,
-              _buildProgressIndicator(submission["progress"]),
-            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProgressIndicator(String progress) {
-    // Assuming simple format like "1/2 Complete"
-    bool isHalf = progress.contains("1/2");
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [_buildSegment(true), 4.wGap, _buildSegment(!isHalf)],
-    );
-  }
+  void _showMentorSelectionSheet(List<StudentListWithMentor> submissions) {
+    // Collect all unique mentors available for the selected submissions
+    final Set<int> selectedSubIds = _selectedSubmissionIds;
+    final List<Mentor> availableMentors = [];
+    final Set<int> mentorIdsSeen = {};
 
-  Widget _buildSegment(bool isActive) {
-    return Container(
-      width: 18.w,
-      height: 6.h,
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.green500 : AppColors.gray200,
-        borderRadius: BorderRadius.circular(2.r),
-      ),
-    );
-  }
+    for (var sub in submissions) {
+      if (selectedSubIds.contains(sub.submissionId)) {
+        for (var mentor in sub.mentors) {
+          if (!mentorIdsSeen.contains(mentor.mentorId)) {
+            availableMentors.add(mentor);
+            mentorIdsSeen.add(mentor.mentorId);
+          }
+        }
+      }
+    }
 
-  void _showMentorSelectionSheet() {
-    final String targetSubject = _getSubjectFromTestName(widget.testName);
-    final List<Map<String, dynamic>> filteredMentors =
-        targetSubject == "All"
-            ? dummyMentors
-            : dummyMentors.where((m) => m["subject"] == targetSubject).toList();
-
-    final Set<int> selectedMentorIndices = {};
+    final Set<int> selectedMentorIds = {};
 
     showModalBottomSheet(
       context: context,
@@ -280,131 +251,163 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
       ),
-      builder: (context) {
+      builder: (bottomSheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final bool hasWarning = selectedMentorIndices.length >= 2;
-            final bool isButtonActive = selectedMentorIndices.isNotEmpty;
+            final bool hasWarning = selectedMentorIds.length >= 2;
+            final bool isButtonActive = selectedMentorIds.isNotEmpty;
 
-            return Container(
-              padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.gray200,
-                      borderRadius: BorderRadius.circular(2.r),
+            return BlocListener<MentorAssignmentBloc, MentorAssignmentState>(
+              listener: (context, state) {
+                if (state is MentorsAssignedSuccessfully) {
+                  Navigator.pop(bottomSheetContext); // Close sheet
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text("Mentors assigned successfully!"),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
                     ),
-                  ),
-                  24.hGap,
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Select Mentors",
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.gray900,
-                          ),
-                        ),
-                        4.hGap,
-                        Text(
-                          "Specialized in $targetSubject",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: AppColors.gray500,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  16.hGap,
-                  if (hasWarning)
+                  );
+                  setState(() {
+                    _selectedSubmissionIds.clear();
+                  });
+                  // Refresh the list
+                  context.read<TestWiseSubmissionsBloc>().add(
+                    FetchTestWisePendingSubmissions(widget.testId),
+                  );
+                } else if (state is MentorAssignmentError) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.message)));
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 10.h,
-                      ),
+                      width: 40.w,
+                      height: 4.h,
                       decoration: BoxDecoration(
-                        color: AppColors.orange500.withAlpha(20),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: AppColors.orange500.withAlpha(50),
-                        ),
+                        color: AppColors.gray200,
+                        borderRadius: BorderRadius.circular(2.r),
                       ),
-                      child: Row(
+                    ),
+                    24.hGap,
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.warning_amber_rounded,
-                            color: AppColors.orange800,
-                            size: 20.sp,
+                          Text(
+                            "Select Mentors",
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.gray900,
+                            ),
                           ),
-                          12.wGap,
-                          Expanded(
-                            child: Text(
-                              "You have selected multiple mentors for these submissions.",
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: AppColors.orange800,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          4.hGap,
+                          Text(
+                            "${availableMentors.length} specialized mentors found",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: AppColors.gray500,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  16.hGap,
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: 300.h),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: List.generate(
-                          filteredMentors.length,
-                          (index) => _buildMentorItem(
-                            filteredMentors[index],
-                            selectedMentorIndices.contains(index),
-                            () => setSheetState(() {
-                              if (selectedMentorIndices.contains(index)) {
-                                selectedMentorIndices.remove(index);
-                              } else {
-                                selectedMentorIndices.add(index);
-                              }
-                            }),
+                    16.hGap,
+                    if (hasWarning)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 10.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.orange500.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: AppColors.orange500.withAlpha(50),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: AppColors.orange800,
+                              size: 20.sp,
+                            ),
+                            12.wGap,
+                            Expanded(
+                              child: Text(
+                                "You have selected multiple mentors for these submissions.",
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: AppColors.orange800,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    16.hGap,
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: 300.h),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: List.generate(
+                            availableMentors.length,
+                            (index) => _buildMentorItem(
+                              availableMentors[index],
+                              selectedMentorIds.contains(
+                                availableMentors[index].mentorId,
+                              ),
+                              () => setSheetState(() {
+                                if (selectedMentorIds.contains(
+                                  availableMentors[index].mentorId,
+                                )) {
+                                  selectedMentorIds.remove(
+                                    availableMentors[index].mentorId,
+                                  );
+                                } else {
+                                  selectedMentorIds.add(
+                                    availableMentors[index].mentorId,
+                                  );
+                                }
+                              }),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  24.hGap,
-                  _buildConfirmButton(isButtonActive, () {
-                    Navigator.pop(context);
-                    final mentorNames = selectedMentorIndices
-                        .map((idx) => filteredMentors[idx]["name"])
-                        .join(", ");
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          "${_selectedIndices.length} Submissions assigned to $mentorNames",
-                        ),
-                        backgroundColor: AppColors.primary,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                      ),
-                    );
-                    setState(() {
-                      _selectedIndices.clear();
-                    });
-                  }),
-                ],
+                    24.hGap,
+                    _buildConfirmButton(isButtonActive, () {
+                      final List<MentorAssignmentPayload> payloads = [];
+                      for (var subId in _selectedSubmissionIds) {
+                        for (var mentorId in selectedMentorIds) {
+                          payloads.add(
+                            MentorAssignmentPayload(
+                              submissionId: subId,
+                              mentorId: mentorId,
+                              assignedBy: getIt<CacheManager>().getUserId(),
+                            ),
+                          );
+                        }
+                      }
+                      context.read<MentorAssignmentBloc>().add(
+                        AssignMentorsToSubmissions(payloads),
+                      );
+                    }),
+                  ],
+                ),
               ),
             );
           },
@@ -413,11 +416,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  Widget _buildMentorItem(
-    Map<String, dynamic> mentor,
-    bool isSelected,
-    VoidCallback onTap,
-  ) {
+  Widget _buildMentorItem(Mentor mentor, bool isSelected, VoidCallback onTap) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
@@ -435,7 +434,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
           backgroundColor:
               isSelected ? AppColors.primary : AppColors.primary.withAlpha(25),
           child: Text(
-            mentor["name"][0],
+            mentor.mentorName[0],
             style: TextStyle(
               color: isSelected ? Colors.white : AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -443,7 +442,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
           ),
         ),
         title: Text(
-          mentor["name"],
+          mentor.mentorName,
           style: TextStyle(
             fontSize: 15.sp,
             fontWeight: FontWeight.w700,
@@ -522,8 +521,8 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  Widget _buildFloatingButton() {
-    final bool isActive = _selectedIndices.isNotEmpty;
+  Widget _buildFloatingButton(List<StudentListWithMentor> submissions) {
+    final bool isActive = _selectedSubmissionIds.isNotEmpty;
     return Positioned(
       bottom: 24.h,
       left: 20.w,
@@ -547,7 +546,10 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: isActive ? () => _showMentorSelectionSheet() : null,
+              onTap:
+                  isActive
+                      ? () => _showMentorSelectionSheet(submissions)
+                      : null,
               borderRadius: BorderRadius.circular(16.r),
               child: Center(
                 child: Row(

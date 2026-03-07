@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
+import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
@@ -21,9 +22,11 @@ import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/package_model.dart';
 import 'package:gpsc_prep_app/domain/entities/peer_review_model.dart';
+import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
@@ -1394,6 +1397,80 @@ class SupabaseHelper {
       _snackBar.showError('Error Purchasing Course: ${e.toString()}');
       _log.e('Error Purchasing Course :$e', error: e);
       return Left(Failure('Error Purchasing Course: ${e.toString()}'));
+    }
+  }
+
+  /// ===========================================================================
+  /// Mentor Assign Flows
+  /// ===========================================================================
+
+  Future<Either<Failure, List<PendingSubmission>>>
+  fetchPendingSubmission() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getTestWithUnassignedSubmission,
+      );
+      final submissions =
+          (result as List)
+              .map(
+                (e) => PendingSubmission.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList();
+      return Right(submissions);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Pending Submission Test: ${e.toString()}',
+      );
+      _log.e('Error Fetching Pending Submission Test:$e', error: e);
+      return Left(
+        Failure('Error Fetching Pending Submission Test: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, List<StudentListWithMentor>>>
+  fetchTestWisePendingSubmission({required int testId}) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getUnassignedStudentsForTest,
+        params: {'p_test_id': testId},
+      );
+      final submissions =
+          (result as List)
+              .map(
+                (e) => StudentListWithMentor.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList();
+      return Right(submissions);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Test Wise Pending Submission: ${e.toString()}',
+      );
+      _log.e('Error Fetching Test Wise Pending Submission:$e', error: e);
+      return Left(
+        Failure('Error Fetching Test Wise Pending Submission: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, void>> assignMentorToTest({
+    required List<MentorAssignmentPayload> payloads,
+  }) async {
+    try {
+      await supabase.rpc(
+        SupabaseKeys.rpcDescMentorAssignment,
+        params: {'p_rows': payloads.map((e) => e.toJson()).toList()},
+      );
+
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error Assigning Mentors: ${e.toString()}');
+      _log.e('Error Assigning Mentors:$e', error: e);
+      return Left(Failure('Error Assigning Mentors: ${e.toString()}'));
     }
   }
 }

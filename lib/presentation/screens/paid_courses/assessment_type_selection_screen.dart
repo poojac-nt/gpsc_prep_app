@@ -202,13 +202,7 @@ class _AssessmentTypeSelectionScreenState
               _selectedType == null
                   ? null
                   : () {
-                    // For now, just a placeholder action
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Selected: ${_selectedType!.type}"),
-                        backgroundColor: AppColors.primary,
-                      ),
-                    );
+                    context.pop(_selectedType);
                   },
         ),
       ),

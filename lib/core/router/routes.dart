@@ -595,9 +595,11 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.assignMentorDetail,
     pageBuilder: (context, state) {
-      final testName = state.extra as String? ?? "Advanced Physics Midterm";
+      final extra = state.extra as Map<String, dynamic>?;
+      final testName = extra?['testName'] as String? ?? "";
+      final testId = extra?['testId'] as int? ?? 0;
       return _slideTransition(
-        AssignMentorDetailScreen(testName: testName),
+        AssignMentorDetailScreen(testName: testName, testId: testId),
         state,
       );
     },

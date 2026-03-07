@@ -30,6 +30,12 @@ abstract class SupabaseKeys {
   static final String detailedPeerReviewPerUser = 'get_answer_with_comments';
   static final String insertPeerReview = 'insert_peer_review';
   static final String submitDescTest = 'submit_descriptive_test';
+  static final String getTestWithUnassignedSubmission =
+      'get_desc_tests_with_unassigned_submissions';
+  static final String getUnassignedStudentsForTest =
+      'get_unassigned_students_with_mentors_for_test';
+  static final String rpcDescMentorAssignment =
+      'rpc_insert_desc_mentor_assignments_bulk';
 
   ///table
   static final String usersTable = 'users';
@@ -48,6 +54,8 @@ abstract class SupabaseKeys {
   static final String subjects = 'subjects';
   static final String package = 'package';
   static final String userPurchase = 'user_purchase';
+  static final String descMentorAssignment = 'desc_mentor_assignment';
+  static final String peerReviewTable = 'peer_review';
 
   ///columns
   static final String email = 'user_email';

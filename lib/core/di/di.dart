@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart
 import 'package:gpsc_prep_app/data/repositories/study_material_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/subject_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/peer_review_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/purchase_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
@@ -40,6 +41,9 @@ import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -111,6 +115,9 @@ void setupRepositories() {
   );
   getIt.registerLazySingleton<PurchaseRepository>(
     () => PurchaseRepository(getIt<SupabaseHelper>()),
+  );
+  getIt.registerLazySingleton<MentorRepository>(
+    () => MentorRepository(getIt<SupabaseHelper>()),
   );
 }
 
@@ -190,6 +197,15 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<PurchaseBloc>(
     () => PurchaseBloc(getIt<PurchaseRepository>()),
+  );
+  getIt.registerLazySingleton<PendingSubmissionsBloc>(
+    () => PendingSubmissionsBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<TestWiseSubmissionsBloc>(
+    () => TestWiseSubmissionsBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<MentorAssignmentBloc>(
+    () => MentorAssignmentBloc(getIt<MentorRepository>()),
   );
 }
 

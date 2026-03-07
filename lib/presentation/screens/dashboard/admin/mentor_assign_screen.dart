@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
@@ -15,11 +20,7 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    context.read<PendingSubmissionsBloc>().add(FetchPendingSubmissions());
   }
 
   @override
@@ -27,11 +28,47 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [_buildPendingHeader(), _buildTestList()],
-        ),
+      body: BlocBuilder<PendingSubmissionsBloc, PendingSubmissionsState>(
+        builder: (context, state) {
+          if (state is PendingSubmissionsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is PendingSubmissionsError) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.r),
+                child: Text(
+                  state.message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.gray500),
+                ),
+              ),
+            );
+          } else if (state is PendingSubmissionsLoaded) {
+            final submissions = state.pendingSubmissions;
+            if (submissions.isEmpty) {
+              return Center(
+                child: Text(
+                  "No pending submissions",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: AppColors.gray500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            }
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildPendingHeader(submissions.length),
+                  _buildTestList(submissions),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -61,7 +98,7 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
     );
   }
 
-  Widget _buildPendingHeader() {
+  Widget _buildPendingHeader(int count) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
       child: Row(
@@ -82,7 +119,7 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Text(
-              "4 New",
+              "$count New",
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
@@ -95,64 +132,20 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
     );
   }
 
-  Widget _buildTestList() {
-    final List<Map<String, dynamic>> dummyData = [
-      {
-        "title": "Advanced Physics...",
-        "subtitle": "Science • 24 submissions",
-        "icon": Icons.science_outlined,
-        "iconBg": AppColors.primary.withAlpha(20),
-        "iconColor": AppColors.primary,
-        "action": "Assign",
-      },
-      {
-        "title": "Calculus II Final",
-        "subtitle": "Mathematics • 12 submissions",
-        "icon": Icons.calculate_outlined,
-        "iconBg": AppColors.orange500.withAlpha(20),
-        "iconColor": AppColors.orange500,
-        "action": "Assign",
-      },
-      {
-        "title": "World History Unit 4",
-        "subtitle": "Humanities • 8 submissions",
-        "icon": Icons.public_outlined,
-        "iconBg": AppColors.green500.withAlpha(20),
-        "iconColor": AppColors.green500,
-        "action": "Assign",
-      },
-      {
-        "title": "Data Structures Quiz",
-        "subtitle": "CS • 15 submissions",
-        "icon": Icons.code_rounded,
-        "iconBg": Colors.purple.withAlpha(20),
-        "iconColor": Colors.purple,
-        "action": "Assign",
-      },
-      {
-        "title": "Literature Analysis",
-        "subtitle": "English • All assigned",
-        "icon": Icons.edit_note_rounded,
-        "iconBg": AppColors.gray200,
-        "iconColor": AppColors.gray700,
-        "action": "View",
-      },
-    ];
-
+  Widget _buildTestList(List<PendingSubmission> submissions) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      itemCount: dummyData.length,
+      itemCount: submissions.length,
       itemBuilder: (context, index) {
-        final item = dummyData[index];
+        final item = submissions[index];
         return _buildTestSubmissionCard(item);
       },
     );
   }
 
-  Widget _buildTestSubmissionCard(Map<String, dynamic> item) {
-    bool isView = item["action"] == "View";
+  Widget _buildTestSubmissionCard(PendingSubmission item) {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(12.r),
@@ -169,22 +162,12 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 48.r,
-            height: 48.r,
-            decoration: BoxDecoration(
-              color: item["iconBg"],
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(item["icon"], color: item["iconColor"], size: 24.sp),
-          ),
-          16.wGap,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item["title"],
+                  item.testName,
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
@@ -193,7 +176,7 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
                 ),
                 2.hGap,
                 Text(
-                  item["subtitle"],
+                  "${item.unassignedSubmissions} submissions",
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: AppColors.gray500,
@@ -205,15 +188,22 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (item["action"] == "Assign") {
-                GoRouter.of(
-                  context,
-                ).push(AppRoutes.assignMentorDetail, extra: item["title"]);
-              }
+              GoRouter.of(context)
+                  .push(
+                    AppRoutes.assignMentorDetail,
+                    extra: {'testId': item.testId, 'testName': item.testName},
+                  )
+                  .then((_) {
+                    if (mounted) {
+                      context.read<PendingSubmissionsBloc>().add(
+                        FetchPendingSubmissions(),
+                      );
+                    }
+                  });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isView ? AppColors.gray100 : AppColors.primary,
-              foregroundColor: isView ? AppColors.gray700 : Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
               elevation: 0,
               minimumSize: Size(80.w, 36.h),
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -222,7 +212,7 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
               ),
             ),
             child: Text(
-              item["action"],
+              "Assign",
               style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700),
             ),
           ),

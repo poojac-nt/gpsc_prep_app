@@ -28,6 +28,9 @@ import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart';
@@ -143,5 +146,14 @@ class AppServices {
       create: (_) => getIt<SubmitPeerReviewBloc>(),
     ),
     BlocProvider<PurchaseBloc>(create: (_) => getIt<PurchaseBloc>()),
+    BlocProvider<PendingSubmissionsBloc>(
+      create: (_) => getIt<PendingSubmissionsBloc>(),
+    ),
+    BlocProvider<TestWiseSubmissionsBloc>(
+      create: (_) => getIt<TestWiseSubmissionsBloc>(),
+    ),
+    BlocProvider<MentorAssignmentBloc>(
+      create: (_) => getIt<MentorAssignmentBloc>(),
+    ),
   ];
 }

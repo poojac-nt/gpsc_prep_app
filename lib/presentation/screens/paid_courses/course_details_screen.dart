@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
@@ -18,6 +19,7 @@ import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
@@ -462,23 +464,32 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   ),
                 )
                 : ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final hasDescriptive =
                         widget.courseModel.tests?.descriptive != null &&
                         widget.courseModel.tests!.descriptive!.isNotEmpty;
 
+                    AssessmentType? selectedType;
                     if (hasDescriptive) {
-                      context.push(
+                      selectedType = await context.push<AssessmentType>(
                         AppRoutes.assessmentTypeSelection,
                         extra: AssessmentTypeSelectionScreenArgs(
                           courseModel: widget.courseModel,
                         ),
                       );
                     } else {
-                      // Standard flow
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Proceeding to checkout..."),
+                      selectedType = AssessmentType.single;
+                    }
+
+                    if (selectedType != null) {
+                      if (!mounted) return;
+                      context.read<PurchaseBloc>().add(
+                        PurchaseCourse(
+                          UserPurchasePayload(
+                            userId: 0, // Handled internally in SupabaseHelper
+                            courseId: widget.courseModel.id,
+                            assessmentType: selectedType,
+                          ),
                         ),
                       );
                     }
