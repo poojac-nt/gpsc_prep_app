@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/shared_prefs_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/admin_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
@@ -43,6 +44,7 @@ import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
@@ -118,6 +120,9 @@ void setupRepositories() {
   );
   getIt.registerLazySingleton<MentorRepository>(
     () => MentorRepository(getIt<SupabaseHelper>()),
+  );
+  getIt.registerLazySingleton<AdminRepository>(
+    () => AdminRepository(getIt<SupabaseHelper>()),
   );
 }
 
@@ -206,6 +211,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<MentorAssignmentBloc>(
     () => MentorAssignmentBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<AdminBloc>(
+    () => AdminBloc(getIt<AdminRepository>()),
   );
 }
 

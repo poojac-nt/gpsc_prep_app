@@ -3,10 +3,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/admin_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/admin_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  @override
+  void initState() {
+    context.read<AdminBloc>().add(FetchAdminStats());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +35,23 @@ class AdminDashboardScreen extends StatelessWidget {
             children: [
               _buildHeader(context),
               10.hGap,
-              _buildPlatformOverview(),
+              BlocBuilder<AdminBloc, AdminState>(
+                builder: (context, state) {
+                  String totalMentors = '0';
+                  String totalCourses = '0';
+
+                  if (state is AdminStatsLoaded) {
+                    totalMentors = state.stats.totalMentors.toString();
+                    totalCourses = state.stats.totalCourses.toString();
+                  }
+
+                  return _buildPlatformOverview(
+                    totalMentors: totalMentors,
+                    totalCourses: totalCourses,
+                    isLoading: state is AdminStatsLoading,
+                  );
+                },
+              ),
               20.hGap,
               _buildCoreManagement(context),
             ],
@@ -51,7 +82,11 @@ class AdminDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlatformOverview() {
+  Widget _buildPlatformOverview({
+    required String totalMentors,
+    required String totalCourses,
+    bool isLoading = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -60,20 +95,22 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildOverviewCard(
                 title: 'Total Mentors',
-                value: '124',
+                value: totalMentors,
                 icon: Icons.people_outline,
                 iconBgColor: const Color(0xfff5f3ff),
                 iconColor: const Color(0xff8b5cf6),
+                isLoading: isLoading,
               ),
             ),
             16.wGap,
             Expanded(
               child: _buildOverviewCard(
                 title: 'Live Course',
-                value: '45',
+                value: totalCourses,
                 icon: Icons.library_books_outlined,
                 iconBgColor: const Color(0xfff0fdfa),
                 iconColor: const Color(0xff06b6d4),
+                isLoading: isLoading,
               ),
             ),
           ],
@@ -88,6 +125,7 @@ class AdminDashboardScreen extends StatelessWidget {
     required IconData icon,
     required Color iconBgColor,
     required Color iconColor,
+    bool isLoading = false,
   }) {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -107,7 +145,25 @@ class AdminDashboardScreen extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Icon(icon, color: iconColor, size: 24.sp)],
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(icon, color: iconColor, size: 20.sp),
+              ),
+              if (isLoading)
+                SizedBox(
+                  width: 12.w,
+                  height: 12.w,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.w,
+                    valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+                  ),
+                ),
+            ],
           ),
           16.hGap,
           Text(

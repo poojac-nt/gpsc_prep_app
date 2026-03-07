@@ -8,6 +8,7 @@ import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
+import 'package:gpsc_prep_app/domain/entities/admin_stats_model.dart';
 import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
@@ -1471,6 +1472,17 @@ class SupabaseHelper {
       _snackBar.showError('Error Assigning Mentors: ${e.toString()}');
       _log.e('Error Assigning Mentors:$e', error: e);
       return Left(Failure('Error Assigning Mentors: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, AdminStatsModel>> fetchAdminStats() async {
+    try {
+      final response = await supabase.rpc(SupabaseKeys.getAdminDashboardStats);
+      final data = AdminStatsModel.fromJson(response);
+      return Right(data);
+    } catch (e) {
+      _log.e('Error fetching admin stats:$e', error: e);
+      return Left(Failure("Error fetching admin stats: ${e.toString()}"));
     }
   }
 }
