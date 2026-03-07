@@ -6,21 +6,23 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
-import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/widgets/answer_writing_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../domain/entities/desc_test_model.dart';
 import '../../../domain/entities/test_model.dart';
+import '../../../icons/icons.dart';
 import '../../widgets/bordered_container.dart';
+import '../prelims/widgets/test_card.dart';
 
 class AnswerWritingScreen extends StatefulWidget {
   const AnswerWritingScreen({super.key});
@@ -54,7 +56,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
       body: BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
         builder: (context, state) {
           if (state is DailyDescTestFetching) {
-            return Center(child: _buildWhenLoading());
+            return _buildWhenLoading();
           }
           if (state is DailyDescTestFetchFailed) {
             return Center(child: Text(state.failure.toString()));
@@ -72,52 +74,37 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 itemBuilder: (context, index) {
                   final test = descTests[index];
                   final hasAnswer = state.answersMap.containsKey(test.id);
-                  return GestureDetector(
-                    onTap: () {
-                      if (hasAnswer) {
-                        getIt<SnackBarHelper>().showSuccess(
-                          "This test has already been attempted!",
-                        );
-                        return;
-                      }
-                      context.push(
-                        AppRoutes.descriptiveTestInstructionScreen,
-                        extra: DescTestInstructionScreenArgs(
-                          dailyTestModel: test,
+                  return AnswerWritingCard(
+                    descTestModel: test,
+                    isUnlocked: isAnswerUnlocked(test.createdAt),
+                    isAttempted: hasAnswer,
+                    onStartTestTap:
+                        hasAnswer
+                            ? () {}
+                            : () {
+                              context.push(
+                                AppRoutes.descriptiveTestInstructionScreen,
+                                extra: DescTestInstructionScreenArgs(
+                                  dailyTestModel: test,
+                                ),
+                              );
+                            },
+                    onAnswerModuleTap: () {
+                      context.push(AppRoutes.descAnswerScreen, extra: test);
+                    },
+                    onShareTap: () async {
+                      final url = DeepLinkGenerator.generateShareableUrl(
+                        testId: test.id,
+                        testType: TestType.desc,
+                      );
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          text: "Check out this ${test.name} Test! 🚀\n$url",
+                          subject: 'GPSC Prep Test Share',
                         ),
                       );
                     },
-                    child: TestCard(
-                      descTestModel: test,
-                      showFooter: false,
-                      trailing:
-                          isAnswerUnlocked(test.createdAt)
-                              ? Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      context.push(
-                                        AppRoutes.descAnswerScreen,
-                                        extra: test,
-                                      );
-                                    },
-                                    icon: Icon(
-                                      AppIcons.descAnsIcon,
-                                      size: 25.sp,
-                                      color: AppColors.primary,
-                                    ),
-                                    tooltip: "Answer Module",
-                                  ),
-                                  Text(
-                                    "Answer Module",
-                                    style: TextStyle(fontSize: 10.sp),
-                                  ),
-                                ],
-                              )
-                              : null,
-                    ).padSymmetric(vertical: 6.h),
-                  );
+                  ).padSymmetric(vertical: 8.h);
                 },
               ),
             );
@@ -136,17 +123,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Available Tests', style: AppTexts.heading),
-                  IntrinsicWidth(
-                    child: ActionButton(text: 'Generate Test', onTap: () {}),
-                  ),
-                ],
-              ),
-              10.hGap,
-
               /// Daily Tests Section
               ...List.generate(
                 3,
@@ -180,40 +156,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 showFooter: false,
               ),
               10.hGap,
-
-              /// Offline Mode Section
-              TestModule(
-                title: 'Offline Mode',
-                subtitle: 'Download tests for offline Practice',
-                prefixIcon: Icons.file_download_outlined,
-                cards: [
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_download_outlined),
-                        10.wGap,
-                        Text('Download PDF Test', style: AppTexts.title),
-                      ],
-                    ),
-                  ),
-                  10.hGap,
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_upload_outlined),
-                        10.wGap,
-                        Text('Upload Answers', style: AppTexts.title),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ],
           ).padAll(AppPaddings.appPaddingInt),
         ),

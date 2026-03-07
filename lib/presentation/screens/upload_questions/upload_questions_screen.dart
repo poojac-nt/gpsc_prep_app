@@ -218,6 +218,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
             ),
             8.hGap,
             DropdownButtonFormField<int?>(
+              dropdownColor: Colors.white,
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: EdgeInsets.symmetric(

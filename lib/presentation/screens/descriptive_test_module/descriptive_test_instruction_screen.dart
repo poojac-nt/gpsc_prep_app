@@ -107,7 +107,7 @@ class _DescriptiveTestInstructionScreenState
     if (model == null) return _loadingScreen();
 
     return ListView.separated(
-      padding: EdgeInsets.all(20.h),
+      padding: EdgeInsets.symmetric(vertical: 20),
       itemBuilder: (context, index) {
         final q = state.questionsModels[index].questionEn;
         return QuestionTile(

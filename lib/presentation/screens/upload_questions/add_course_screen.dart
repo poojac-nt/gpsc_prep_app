@@ -139,6 +139,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                             16.hGap,
                             DropdownButtonFormField<String>(
                               initialValue: _selectedTestType,
+                              dropdownColor: Colors.white,
                               onChanged:
                                   isLoading
                                       ? null

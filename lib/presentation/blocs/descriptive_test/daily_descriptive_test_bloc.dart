@@ -61,32 +61,37 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         }
         final answersMap = <int, List<DescAnswerModel>>{};
 
-        if (event.courseId != null) {
-          final submissionsResult =
-              await _testRepository.fetchDescriptiveTestSubmissions();
-          submissionsResult.fold((_) {}, (submittedIds) {
-            for (final id in submittedIds) {
-              answersMap[id] = [
-                DescAnswerModel(
-                  userId: 0,
-                  testId: id,
-                  questionId: 0,
-                  answer: 'Submitted',
-                ),
-              ];
-            }
-          });
-        } else {
-          for (final test in tests) {
-            final answersResult = await _testRepository.fetchAnswersForTest(
-              test.id,
-            );
+        // Fetch all submissions from desc_test_submissions (e.g. PDF submissions)
+        final submissionsResult =
+            await _testRepository.fetchDescriptiveTestSubmissions();
+        submissionsResult.fold((_) {}, (submittedIds) {
+          for (final id in submittedIds) {
+            answersMap[id] = [
+              DescAnswerModel(
+                userId: 0,
+                testId: id,
+                questionId: 0,
+                answer: 'Submitted',
+              ),
+            ];
+          }
+        });
 
-            answersResult.fold((_) {}, (ansList) {
-              if (ansList.isNotEmpty) {
-                answersMap[test.id] = ansList;
-              }
-            });
+        // If courseId is null, also fetch detailed answers test-by-test
+        if (event.courseId == null) {
+          for (final test in tests) {
+            // Only fetch if not already in answersMap from submissions
+            if (!answersMap.containsKey(test.id)) {
+              final answersResult = await _testRepository.fetchAnswersForTest(
+                test.id,
+              );
+
+              answersResult.fold((_) {}, (ansList) {
+                if (ansList.isNotEmpty) {
+                  answersMap[test.id] = ansList;
+                }
+              });
+            }
           }
         }
 

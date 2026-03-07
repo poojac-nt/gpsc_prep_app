@@ -112,38 +112,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                       ),
                     ),
                     24.hGap,
-
-                    // Key Highlights
-                    Text(
-                      "Key Highlights",
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    16.hGap,
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildHighlightCard(
-                            icon: Icons.analytics_outlined,
-                            title: "Serious Aspirants Only",
-                            subtitle: "Outperform your peers",
-                          ),
-                        ),
-                        12.wGap,
-                        Expanded(
-                          child: _buildHighlightCard(
-                            icon: Icons.bar_chart_rounded,
-                            title: "Real Exam Simulation",
-                            subtitle: "Compete. Analyze. Improve.",
-                          ),
-                        ),
-                      ],
-                    ),
-                    32.hGap,
-
                     // Description
                     Text(
                       "Description",
