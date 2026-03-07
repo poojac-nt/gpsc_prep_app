@@ -67,7 +67,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.scaffoldColor,
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => context.pop(),
@@ -75,15 +75,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ),
         title: Text(
           "Course Details",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.scaffoldColor,
+        surfaceTintColor: Colors.transparent,
       ),
       body: Column(
         children: [
@@ -104,32 +101,26 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   children: [
                     Text(
                       widget.courseModel.name,
-                      style: TextStyle(
+                      style: AppTexts.titleTextStyle.copyWith(
                         fontSize: 24.sp,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF111827),
                         height: 1.2,
                       ),
                     ),
                     24.hGap,
                     // Description
                     Text(
-                      "Description",
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                      "About this course",
+                      style: AppTexts.heading.copyWith(fontSize: 16.sp),
                     ),
-                    8.hGap,
+                    12.hGap,
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final String descriptionText =
-                            widget.courseModel.description;
+                            "hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet you  hguirtiuri urihtieuiet ";
                         final TextStyle style = TextStyle(
-                          fontSize: 12.sp,
-                          color: const Color(0xFF64748B), // Slate 500
-                          height: 1.5,
+                          fontSize: 13.sp,
+                          color: AppColors.gray500,
+                          height: 1.6,
                         );
 
                         final span = TextSpan(
@@ -192,12 +183,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     ),
                     32.hGap,
                     Text(
-                      "Test Series",
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                      "Curriculum",
+                      style: AppTexts.heading.copyWith(fontSize: 16.sp),
                     ),
                     16.hGap,
                     _buildAllTests(),
@@ -345,7 +332,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24.r),
+          topRight: Radius.circular(24.r),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -378,27 +375,30 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             isEnrolled
                 ? Expanded(
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFECFDF5),
-                      borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(color: const Color(0xFF10B981)),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: const Color(0xFF10B981),
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.check_circle_rounded,
+                          Icons.verified_rounded,
                           color: const Color(0xFF10B981),
                           size: 20.sp,
                         ),
-                        8.wGap,
+                        10.wGap,
                         Text(
-                          "Enrolled",
+                          "Enrolled Successfully",
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF10B981),
+                            color: const Color(0xFF065F46),
                           ),
                         ),
                       ],
@@ -417,13 +417,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           vertical: 14.h,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: Text(
                         "Enroll Now",
                         style: TextStyle(
-                          fontSize: 14.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -437,13 +437,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           elevation: 0,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                         child: Text(
                           "Enroll Now",
                           style: TextStyle(
-                            fontSize: 14.sp,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -578,24 +578,23 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required Color color,
   }) {
     return Container(
-      margin: EdgeInsets.only(top: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      margin: EdgeInsets.only(top: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: color.withAlpha(20),
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: color.withAlpha(77)),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12.sp, color: color),
-          4.wGap,
+          Icon(icon, size: 14.sp, color: color),
+          6.wGap,
           Flexible(
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
@@ -692,32 +691,39 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     bool isLocked = false,
   }) {
     return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 36.w,
-            height: 36.w,
+            width: 40.w,
+            height: 40.w,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: AppColors.primary.withAlpha(20),
               shape: BoxShape.circle,
             ),
             child: Text(
               index,
               style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade700,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
               ),
             ),
           ),
-          12.wGap,
+          16.wGap,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,38 +731,43 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 Text(
                   name,
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E293B),
+                    color: AppColors.gray900,
                   ),
                 ),
-                4.hGap,
+                6.hGap,
                 Row(
                   children: [
                     Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 6.w,
-                        vertical: 2.h,
+                        horizontal: 8.w,
+                        vertical: 3.h,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeColor.withAlpha(26),
-                        borderRadius: BorderRadius.circular(4.r),
+                        color: badgeColor.withAlpha(30),
+                        borderRadius: BorderRadius.circular(100.r),
                       ),
                       child: Text(
                         badgeLabel,
                         style: TextStyle(
-                          fontSize: 9.sp,
+                          fontSize: 10.sp,
                           fontWeight: FontWeight.bold,
                           color: badgeColor,
                         ),
                       ),
                     ),
-                    6.wGap,
-                    Text(
-                      details,
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: const Color(0xFF64748B),
+                    8.wGap,
+                    Flexible(
+                      child: Text(
+                        details,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppColors.gray500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -765,15 +776,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ],
             ),
           ),
+          12.wGap,
           isLocked
               ? Icon(
-                Icons.lock_rounded,
-                color: Colors.grey.shade400,
-                size: 20.sp,
+                Icons.lock_person_rounded,
+                color: AppColors.gray400,
+                size: 22.sp,
               )
               : Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.grey.shade400,
+                color: AppColors.gray400,
                 size: 16.sp,
               ),
         ],
