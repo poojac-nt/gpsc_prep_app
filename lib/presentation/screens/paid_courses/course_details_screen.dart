@@ -231,52 +231,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  Widget _buildHighlightCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(10),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(icon, color: AppColors.primary, size: 20.sp),
-          ),
-          12.hGap,
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
-          4.hGap,
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 10.sp,
-              color: const Color(0xFF64748B),
-              height: 1.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   bool _hasNoTests() {
     final t = widget.courseModel.tests;
     if (t == null) return true;
@@ -333,6 +287,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 for (int i = 0; i < descriptiveTests.length; i++) {
                   final test = descriptiveTests[i];
                   final hasAnswer = answersMap.containsKey(test.id);
+
+                  // Find purchase to get assessment type
+                  final purchase = purchases.firstWhere(
+                    (p) => p.courseId == widget.courseModel.id,
+                    orElse:
+                        () => UserPurchaseModel(
+                          id: 0,
+                          userId: 0,
+                          courseId: 0,
+                          assessmentType: AssessmentType.single,
+                          createdAt: '',
+                        ),
+                  );
+
                   descItems.add(
                     Padding(
                       padding: EdgeInsets.only(bottom: 12.h),
@@ -341,6 +309,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         index: '${prelimCount + i + 1}',
                         hasAnswer: hasAnswer,
                         isEnrolled: isEnrolled,
+                        assessmentType:
+                            isEnrolled ? purchase.assessmentType : null,
                         isLoading: isFetching,
                       ),
                     ),
@@ -366,6 +336,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   // // Bottom Bar
   Widget _bottomBar(bool isEnrolled) {
+    final bool isPrelims =
+        widget.courseModel.testType?.toLowerCase() == 'prelims';
+    final bool hasPrice = widget.courseModel.priceSingle != null;
+    final bool showPrice = !isEnrolled && isPrelims && hasPrice;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
@@ -375,11 +350,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       child: SafeArea(
         child: Row(
           mainAxisAlignment:
-              widget.courseModel.testType?.toLowerCase() == 'prelims'
+              showPrice
                   ? MainAxisAlignment.spaceBetween
                   : MainAxisAlignment.center,
           children: [
-            if (widget.courseModel.testType?.toLowerCase() == 'prelims')
+            if (showPrice)
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,7 +364,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        "₹${widget.courseModel.priceSingle ?? 0}",
+                        "₹${widget.courseModel.priceSingle}",
                         style: TextStyle(
                           fontSize: 22.sp,
                           fontWeight: FontWeight.w900,
@@ -401,91 +376,114 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 ],
               ),
             isEnrolled
-                ? Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.w,
-                    vertical: 12.h,
+                ? Expanded(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: const Color(0xFF10B981)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: const Color(0xFF10B981),
+                          size: 20.sp,
+                        ),
+                        8.wGap,
+                        Text(
+                          "Enrolled",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF10B981),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECFDF5),
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: const Color(0xFF10B981)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        color: const Color(0xFF10B981),
-                        size: 20.sp,
+                )
+                : (showPrice
+                    ? ElevatedButton(
+                      onPressed: () => _handleEnrollment(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 48.w,
+                          vertical: 14.h,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
                       ),
-                      8.wGap,
-                      Text(
-                        "Enrolled",
+                      child: Text(
+                        "Enroll Now",
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF10B981),
                         ),
                       ),
-                    ],
-                  ),
-                )
-                : ElevatedButton(
-                  onPressed: () async {
-                    final hasDescriptive =
-                        widget.courseModel.tests?.descriptive != null &&
-                        widget.courseModel.tests!.descriptive!.isNotEmpty;
-
-                    AssessmentType? selectedType;
-                    if (hasDescriptive) {
-                      selectedType = await context.push<AssessmentType>(
-                        AppRoutes.assessmentTypeSelection,
-                        extra: AssessmentTypeSelectionScreenArgs(
-                          courseModel: widget.courseModel,
-                        ),
-                      );
-                    } else {
-                      selectedType = AssessmentType.single;
-                    }
-
-                    if (selectedType != null) {
-                      if (!mounted) return;
-                      context.read<PurchaseBloc>().add(
-                        PurchaseCourse(
-                          UserPurchasePayload(
-                            userId: 0, // Handled internally in SupabaseHelper
-                            courseId: widget.courseModel.id,
-                            assessmentType: selectedType,
+                    )
+                    : Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _handleEnrollment(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 48.w,
-                      vertical: 14.h,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  child: Text(
-                    "Enroll Now",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                        child: Text(
+                          "Enroll Now",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _handleEnrollment(BuildContext context) async {
+    final hasDescriptive =
+        widget.courseModel.tests?.descriptive != null &&
+        widget.courseModel.tests!.descriptive!.isNotEmpty;
+
+    AssessmentType? selectedType;
+    if (hasDescriptive) {
+      selectedType = await context.push<AssessmentType>(
+        AppRoutes.assessmentTypeSelection,
+        extra: AssessmentTypeSelectionScreenArgs(
+          courseModel: widget.courseModel,
+        ),
+      );
+    } else {
+      selectedType = AssessmentType.single;
+    }
+
+    if (selectedType != null) {
+      if (!mounted) return;
+      context.read<PurchaseBloc>().add(
+        PurchaseCourse(
+          UserPurchasePayload(
+            userId: 0, // Handled internally in SupabaseHelper
+            courseId: widget.courseModel.id,
+            assessmentType: selectedType,
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildTestItem({
@@ -626,10 +624,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required String index,
     required bool hasAnswer,
     required bool isEnrolled,
+    AssessmentType? assessmentType,
     bool isLoading = false,
   }) {
     const Color badgeColor = Color(0xFF7C3AED);
-    const String badgeLabel = 'Descriptive';
+    final String badgeLabel =
+        assessmentType != null ? assessmentType.type : 'Descriptive';
     final String details = "${test.noQuestions} Questions";
 
     Widget? statusWidget;
