@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
@@ -13,7 +12,10 @@ import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
+import '../../../core/di/di.dart';
+import '../../../core/helpers/snack_bar_helper.dart';
 import '../../../utils/app_constants.dart';
+import '../../blocs/descriptive_test/daily_descriptive_test_state.dart';
 
 class DescriptiveTestInstructionScreen extends StatefulWidget {
   final DescTestModel? descTestModel;
@@ -78,16 +80,20 @@ class _DescriptiveTestInstructionScreenState
             style: AppTexts.titleTextStyle,
           ),
         ),
-        body: BlocBuilder<QuestionBloc, QuestionState>(
-          builder: (context, state) {
-            if (state is QuestionLoading) return _loadingScreen();
-            if (state is DescQuestionLoaded) {
-              return _buildQuestionList(state);
-            }
-            if (state is QuestionLoadFailed) {
-              return _errorScreen(state.failure.message);
-            }
-            return _emptyScreen();
+        body: BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
+          builder: (context, descState) {
+            return BlocBuilder<QuestionBloc, QuestionState>(
+              builder: (context, state) {
+                if (state is QuestionLoading) return _loadingScreen();
+                if (state is DescQuestionLoaded) {
+                  return _buildQuestionList(state, descState);
+                }
+                if (state is QuestionLoadFailed) {
+                  return _errorScreen(state.failure.message);
+                }
+                return _emptyScreen();
+              },
+            );
           },
         ),
       ),
@@ -101,10 +107,19 @@ class _DescriptiveTestInstructionScreenState
 
   Widget _emptyScreen() => const Center(child: Text('No Questions Available'));
 
-  Widget _buildQuestionList(DescQuestionLoaded state) {
+  Widget _buildQuestionList(
+    DescQuestionLoaded state,
+    DailyDescTestState descState,
+  ) {
     final model = widget.descTestModel ?? _fetchedTestModel;
 
     if (model == null) return _loadingScreen();
+
+    // Check if test is already submitted
+    bool hasAnswer = false;
+    if (descState is DailyDescTestFetched) {
+      hasAnswer = descState.answersMap.containsKey(model.id);
+    }
 
     return ListView.separated(
       padding: EdgeInsets.symmetric(vertical: 20),
@@ -114,6 +129,12 @@ class _DescriptiveTestInstructionScreenState
           index: index,
           questionText: q.questionTxt,
           onTap: () {
+            if (isFromId && hasAnswer) {
+              getIt<SnackBarHelper>().showSuccess(
+                "This test has already been attempted!",
+              );
+              return;
+            }
             context.push(
               AppRoutes.descriptiveTestScreen,
               extra: DescTestScreenArgs(
