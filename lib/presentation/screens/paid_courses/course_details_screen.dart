@@ -116,7 +116,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final String descriptionText =
-                            "hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet hguirtiuri urihtieuiet you  hguirtiuri urihtieuiet ";
+                            widget.courseModel.description;
                         final TextStyle style = TextStyle(
                           fontSize: 13.sp,
                           color: AppColors.gray500,
