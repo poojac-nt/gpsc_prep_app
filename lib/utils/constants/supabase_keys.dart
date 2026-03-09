@@ -40,6 +40,10 @@ abstract class SupabaseKeys {
   static final String mentorSubmission = 'rpc_mentor_submissions';
   static final String getAdminDashboardStats = 'get_admin_stats';
   static final String getMentorList = 'get_mentors_with_subjects';
+  static final String fetchMentorTestSubmissions =
+      'rpc_mentor_test_submissions';
+  static final String getSubmissionsReport = 'get_submission_report';
+  static final String submitMentorEvaluation = 'insert_desc_mentor_review';
 
   ///table
   static final String usersTable = 'users';
@@ -73,4 +77,5 @@ abstract class SupabaseKeys {
   ///Buckets
   static final String answers = 'answers';
   static final String profilePicture = 'profile-picture';
+  static final String mentorReview = 'mentor_review';
 }

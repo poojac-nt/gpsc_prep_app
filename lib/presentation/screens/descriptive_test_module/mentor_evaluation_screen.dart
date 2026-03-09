@@ -1,6 +1,18 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/document_action_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/score_input_tile.dart';
@@ -9,56 +21,29 @@ import 'package:gpsc_prep_app/presentation/widgets/status_badge.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
-/// Mock data model for questions shown in the scoring section.
-class _MockQuestion {
-  final String label;
-  final String subject;
-  final int maxMarks;
-
-  const _MockQuestion({
-    required this.label,
-    required this.subject,
-    required this.maxMarks,
-  });
-}
-
 class MentorEvaluationScreen extends StatefulWidget {
-  const MentorEvaluationScreen({super.key});
+  final MentorEvaluationScreenArgs args;
+
+  const MentorEvaluationScreen({super.key, required this.args});
 
   @override
   State<MentorEvaluationScreen> createState() => _MentorEvaluationScreenState();
 }
 
 class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
-  // Mock data — will be replaced with real data from backend
-  final String _studentName = 'Arjun Mehta';
-  final String _testName = 'Test: Prelims Full Test - 05';
-  final String _studentPdfFile = 'prelims_05_arjun.pdf';
-
-  final List<_MockQuestion> _questions = const [
-    _MockQuestion(
-      label: 'Question 01',
-      subject: 'History & Culture',
-      maxMarks: 10,
-    ),
-    _MockQuestion(label: 'Question 02', subject: 'Geography', maxMarks: 10),
-    _MockQuestion(
-      label: 'Question 03',
-      subject: 'Polity & Governance',
-      maxMarks: 15,
-    ),
-  ];
-
-  late final List<TextEditingController> _scoreControllers;
   final TextEditingController _feedbackController = TextEditingController();
+  List<TextEditingController> _scoreControllers = [];
+  SubmissionReportModel? _data;
+  File? _evaluatedPdfFile;
 
   @override
   void initState() {
     super.initState();
-    _scoreControllers = List.generate(
-      _questions.length,
-      (_) => TextEditingController(),
-    );
+    if (widget.args.submissionId != null) {
+      context.read<MentorEvaluationBloc>().add(
+        FetchMentorEvaluationData(widget.args.submissionId!),
+      );
+    }
   }
 
   @override
@@ -68,6 +53,18 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
     }
     _feedbackController.dispose();
     super.dispose();
+  }
+
+  void _initializeControllers(List<Question> questions) {
+    if (_scoreControllers.length != questions.length) {
+      for (final controller in _scoreControllers) {
+        controller.dispose();
+      }
+      _scoreControllers = List.generate(
+        questions.length,
+        (index) => TextEditingController(text: ''),
+      );
+    }
   }
 
   @override
@@ -80,33 +77,101 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
         ),
         title: Text('Evaluation Workspace', style: AppTexts.titleTextStyle),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Student Info Header ──
-            _buildStudentInfoHeader(),
-            16.hGap,
+      body: BlocConsumer<MentorEvaluationBloc, MentorEvaluationState>(
+        listener: (context, state) {
+          if (state is MentorEvaluationSubmitSuccess) {
+            getIt<SnackBarHelper>().showSuccess(
+              'Evaluation submitted successfully',
+            );
+            context.pop();
+          } else if (state is MentorEvaluationSubmitError) {
+            getIt<SnackBarHelper>().showError(state.message);
+          }
+        },
+        builder: (context, state) {
+          if (state is MentorEvaluationLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            // ── Document Actions ──
-            const SectionHeader(title: 'Document Actions'),
-            _buildDocumentActions(),
+          if (state is MentorEvaluationError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                  ),
+                  16.hGap,
+                  ElevatedButton(
+                    onPressed: () {
+                      if (widget.args.submissionId != null) {
+                        context.read<MentorEvaluationBloc>().add(
+                          FetchMentorEvaluationData(widget.args.submissionId!),
+                        );
+                      }
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
 
-            // ── Scoring & Feedback ──
-            const SectionHeader(title: 'Scoring & Feedback'),
-            _buildScoringSection(),
+          if (state is MentorEvaluationLoaded) {
+            _data = state.data;
+            _initializeControllers(_data!.questions);
+            return _buildContent();
+          }
 
-            // ── Overall Feedback ──
-            const SectionHeader(title: 'Overall Feedback'),
-            _buildFeedbackField(),
-            24.hGap,
-
-            // ── Submit Button ──
-            ActionButton(text: 'Submit Evaluation', onTap: _onSubmitEvaluation),
-            24.hGap,
-          ],
-        ),
+          return const SizedBox.shrink();
+        },
       ).padAll(AppPaddings.appPaddingInt),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_data == null) return const SizedBox.shrink();
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Student Info Header ──
+          _buildStudentInfoHeader(),
+          16.hGap,
+
+          // ── Document Actions ──
+          const SectionHeader(title: 'Document Actions'),
+          _buildDocumentActions(),
+
+          // ── Scoring & Feedback ──
+          const SectionHeader(title: 'Scoring & Feedback'),
+          _buildScoringSection(),
+
+          // ── Overall Feedback ──
+          const SectionHeader(title: 'Overall Feedback'),
+          _buildFeedbackField(),
+          24.hGap,
+
+          // ── Submit Button ──
+          BlocBuilder<MentorEvaluationBloc, MentorEvaluationState>(
+            builder: (context, state) {
+              return ActionButton(
+                text:
+                    state is MentorEvaluationSubmitting
+                        ? 'Submitting...'
+                        : 'Submit Evaluation',
+                onTap:
+                    state is MentorEvaluationSubmitting
+                        ? null
+                        : _onSubmitEvaluation,
+              );
+            },
+          ),
+          24.hGap,
+        ],
+      ),
     );
   }
 
@@ -117,7 +182,6 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar
         CircleAvatar(
           radius: 28.r,
           backgroundColor: AppColors.primary.withValues(alpha: 0.15),
@@ -129,7 +193,7 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _studentName,
+                widget.args.studentName ?? 'Student',
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
@@ -138,11 +202,13 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
               ),
               4.hGap,
               Text(
-                _testName,
+                widget.args.testName ?? 'Test',
                 style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
               ),
               8.hGap,
-              StatusBadge.inProgress(),
+              widget.args.isChecked == true
+                  ? StatusBadge.evaluated()
+                  : StatusBadge.inProgress(),
             ],
           ),
         ),
@@ -159,20 +225,42 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
         DocumentActionCard(
           icon: Icons.download_rounded,
           title: 'Download Student PDF',
-          subtitle: 'File: $_studentPdfFile',
+          subtitle: 'Student Answer Script',
           onTap: () {
-            // TODO: Implement PDF download
+            if (_data?.submissionPdfUrl != null) {
+              context.read<DownLoadPdfBloc>().add(
+                DownloadStudyMaterial(
+                  url: _data!.submissionPdfUrl!,
+                  filename:
+                      '${widget.args.studentName ?? 'student'}_${widget.args.testName ?? 'test'}.pdf',
+                ),
+              );
+            } else {
+              getIt<SnackBarHelper>().showError('Student PDF URL not found');
+            }
           },
         ),
         12.hGap,
         DocumentActionCard(
           icon: Icons.upload_file_rounded,
           title: 'Upload Evaluated PDF',
-          subtitle: 'Drop file or click to browse',
+          subtitle:
+              _evaluatedPdfFile != null
+                  ? _evaluatedPdfFile!.path.split('/').last
+                  : 'Drop file or click to browse',
           iconColor: const Color(0xFF059669),
           iconBackgroundColor: const Color(0xFFD1FAE5),
-          onTap: () {
-            // TODO: Implement PDF upload
+          onTap: () async {
+            final result = await FilePicker.platform.pickFiles(
+              type: FileType.custom,
+              allowedExtensions: ['pdf'],
+            );
+
+            if (result != null && result.files.single.path != null) {
+              setState(() {
+                _evaluatedPdfFile = File(result.files.single.path!);
+              });
+            }
           },
         ),
       ],
@@ -183,12 +271,12 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
   //  Scoring Section
   // ─────────────────────────────────────────────
   Widget _buildScoringSection() {
+    final questions = _data?.questions ?? [];
     return Column(
-      children: List.generate(_questions.length, (index) {
-        final question = _questions[index];
+      children: List.generate(questions.length, (index) {
+        final question = questions[index];
         return ScoreInputTile(
-          questionLabel: question.label,
-          subject: question.subject,
+          questionLabel: 'Question ${index + 1}',
           maxMarks: question.maxMarks,
           controller: _scoreControllers[index],
         );
@@ -222,11 +310,26 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
   }
 
   // ─────────────────────────────────────────────
-  //  Submit Handler (placeholder)
+  //  Submit Handler
   // ─────────────────────────────────────────────
   void _onSubmitEvaluation() {
-    // TODO: Implement evaluation submission
-    debugPrint('Scores: ${_scoreControllers.map((c) => c.text).toList()}');
-    debugPrint('Feedback: ${_feedbackController.text}');
+    if (_data == null || widget.args.submissionId == null) return;
+
+    final Map<String, dynamic> scores = {};
+
+    for (int i = 0; i < _data!.questions.length; i++) {
+      final marks = int.tryParse(_scoreControllers[i].text) ?? 0;
+
+      scores[_data!.questions[i].questionId.toString()] = marks;
+    }
+
+    context.read<MentorEvaluationBloc>().add(
+      SubmitMentorEvaluation(
+        submissionId: widget.args.submissionId!,
+        questionScores: scores,
+        feedback: _feedbackController.text,
+        evaluatedPdfFile: _evaluatedPdfFile,
+      ),
+    );
   }
 }

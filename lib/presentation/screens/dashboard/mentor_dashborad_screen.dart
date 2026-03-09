@@ -261,7 +261,14 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
       itemBuilder: (context, index) {
         final assignment = assignments[index];
         return GestureDetector(
-          onTap: () => context.push(AppRoutes.testStudentsList),
+          onTap:
+              () => context.push(
+                AppRoutes.testStudentsList,
+                extra: {
+                  'testId': assignment.testId,
+                  'testName': assignment.testName,
+                },
+              ),
           child: _buildTestCard(assignment),
         );
       },

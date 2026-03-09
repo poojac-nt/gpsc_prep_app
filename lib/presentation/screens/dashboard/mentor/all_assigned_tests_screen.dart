@@ -188,7 +188,11 @@ class _AllAssignedTestsScreenState extends State<AllAssignedTestsScreen> {
       itemBuilder: (context, index) {
         final test = data[index];
         return GestureDetector(
-          onTap: () => context.push(AppRoutes.testStudentsList),
+          onTap:
+              () => context.push(
+                AppRoutes.testStudentsList,
+                extra: {'testId': test.testId, 'testName': test.testName},
+              ),
           child: _buildTestCard(test),
         );
       },
@@ -263,27 +267,29 @@ class _AllAssignedTestsScreenState extends State<AllAssignedTestsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.book_rounded,
-                    color: AppColors.gray400,
-                    size: 14.sp,
-                  ),
-                  6.wGap,
-                  Expanded(
-                    child: Text(
-                      test.subjects.map((s) => s.subjectName).join(', '),
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.gray500,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.book_rounded,
+                      color: AppColors.gray400,
+                      size: 14.sp,
                     ),
-                  ),
-                ],
+                    6.wGap,
+                    Expanded(
+                      child: Text(
+                        test.subjects.map((s) => s.subjectName).join(', '),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: AppColors.gray500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               if (test.allCompleted)
                 Container(

@@ -23,7 +23,6 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
-import 'package:intl/intl.dart';
 
 import '../../../utils/app_constants.dart';
 import '../../widgets/action_button.dart';
@@ -325,9 +324,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     required bool isLimitReached,
   }) {
     String createdAtStr = testResult.createdAt!;
-    String formattedDate = DateFormat(
-      'dd-MM-yyyy',
-    ).format(createdAtStr.toLocalDateTime());
+    String formattedDate = createdAtStr.toFormattedDate();
 
     int hoursRemaining = createdAtStr.hoursRemaining(12);
 

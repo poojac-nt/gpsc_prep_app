@@ -224,9 +224,10 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.mentorEvaluation,
-    pageBuilder:
-        (context, state) =>
-            _slideTransition(const MentorEvaluationScreen(), state),
+    pageBuilder: (context, state) {
+      final args = state.extra as MentorEvaluationScreenArgs;
+      return _slideTransition(MentorEvaluationScreen(args: args), state);
+    },
   ),
   GoRoute(
     path: AppRoutes.allAssignedTests,
@@ -235,8 +236,15 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.testStudentsList,
-    pageBuilder:
-        (context, state) => _slideTransition(TestStudentsListScreen(), state),
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      final testId = extra?['testId'] as int? ?? 0;
+      final testName = extra?['testName'] as String? ?? "";
+      return _slideTransition(
+        TestStudentsListScreen(testId: testId, testName: testName),
+        state,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.login,

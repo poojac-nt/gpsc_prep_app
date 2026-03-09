@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class TestStudentsListScreen extends StatefulWidget {
-  const TestStudentsListScreen({super.key});
+  final int testId;
+  final String testName;
+
+  const TestStudentsListScreen({
+    super.key,
+    required this.testId,
+    required this.testName,
+  });
 
   @override
   State<TestStudentsListScreen> createState() => _TestStudentsListScreenState();
@@ -19,6 +33,9 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    context.read<TestStudentsListBloc>().add(
+      FetchTestStudentsList(widget.testId),
+    );
   }
 
   @override
@@ -43,7 +60,7 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Prelims Full Test - 05',
+              widget.testName,
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w800,
@@ -52,31 +69,54 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
                 height: 1.2,
               ),
             ),
-            Text(
-              '42 Students Enrolled',
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-                color: AppColors.gray500,
-              ),
+            BlocBuilder<TestStudentsListBloc, TestStudentsListState>(
+              builder: (context, state) {
+                if (state is TestStudentsListLoaded) {
+                  return Text(
+                    '${state.submissions.length} Students Enrolled',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.gray500,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ],
         ),
       ),
-      body: Column(
-        children: [
-          _buildTabBar(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+      body: BlocBuilder<TestStudentsListBloc, TestStudentsListState>(
+        builder: (context, state) {
+          if (state is TestStudentsListLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is TestStudentsListError) {
+            return Center(child: Text(state.message));
+          }
+
+          if (state is TestStudentsListLoaded) {
+            return Column(
               children: [
-                _buildStudentList('All'),
-                _buildStudentList('Pending'),
-                _buildStudentList('Submitted'),
+                _buildTabBar(),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildStudentList(state.submissions, 'All'),
+                      _buildStudentList(state.submissions, 'Pending'),
+                      _buildStudentList(state.submissions, 'Submitted'),
+                    ],
+                  ),
+                ),
               ],
-            ),
-          ),
-        ],
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -114,49 +154,55 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
     );
   }
 
-  Widget _buildStudentList(String statusFilter) {
-    final List<Map<String, dynamic>> allStudents = [
-      {
-        'name': 'Priya Sharma',
-        'subInfo': 'Submitted on 13 Oct 2023',
-        'status': 'Submitted',
-      },
-      {
-        'name': 'Rahul Verma',
-        'subInfo': 'Due by 15 Oct 2023',
-        'status': 'Pending',
-      },
-      {
-        'name': 'Siddharth Nair',
-        'subInfo': 'Due by 15 Oct 2023',
-        'status': 'Pending',
-      },
-      {
-        'name': 'Megha Iyer',
-        'subInfo': 'Submitted on 14 Oct 2023',
-        'status': 'Submitted',
-      },
-    ];
-
-    final filteredStudents =
+  Widget _buildStudentList(
+    List<MentorTestSubmissions> submissions,
+    String statusFilter,
+  ) {
+    final filteredSubmissions =
         statusFilter == 'All'
-            ? allStudents
-            : allStudents.where((s) => s['status'] == statusFilter).toList();
+            ? submissions
+            : statusFilter == 'Pending'
+            ? submissions.where((s) => !s.isChecked).toList()
+            : submissions.where((s) => s.isChecked).toList();
+
+    if (filteredSubmissions.isEmpty) {
+      return Center(
+        child: Text(
+          'No ${statusFilter.toLowerCase()} students found',
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: AppColors.gray500,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
 
     return ListView.separated(
       padding: EdgeInsets.all(20.r),
-      itemCount: filteredStudents.length,
+      itemCount: filteredSubmissions.length,
       separatorBuilder: (context, index) => 16.hGap,
       itemBuilder: (context, index) {
-        final student = filteredStudents[index];
-        return _buildStudentCard(student);
+        final submission = filteredSubmissions[index];
+        return _buildStudentCard(submission);
       },
     );
   }
 
-  Widget _buildStudentCard(Map<String, dynamic> student) {
+  Widget _buildStudentCard(MentorTestSubmissions submission) {
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.mentorEvaluation),
+      onTap:
+          () => context.push(
+            AppRoutes.mentorEvaluation,
+            extra: MentorEvaluationScreenArgs(
+              submissionId: submission.submissionId,
+              studentId: submission.studentId,
+              testId: widget.testId,
+              studentName: submission.studentName,
+              testName: widget.testName,
+              isChecked: submission.isChecked,
+            ),
+          ),
       child: Container(
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
@@ -183,7 +229,7 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    student['name'],
+                    submission.studentName,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
@@ -192,7 +238,9 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
                   ),
                   4.hGap,
                   Text(
-                    student['subInfo'],
+                    submission.isChecked
+                        ? 'Checked on ${submission.submittedAt.toFormattedDate()}'
+                        : 'Submitted on ${submission.submittedAt.toFormattedDate()}',
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
@@ -202,7 +250,7 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
                 ],
               ),
             ),
-            _buildStatusBadge(student['status']),
+            _buildStatusBadge(submission.isChecked ? 'Submitted' : 'Pending'),
             12.wGap,
             Icon(
               Icons.arrow_forward_ios_rounded,

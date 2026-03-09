@@ -21,6 +21,7 @@ import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/package_model.dart';
@@ -31,6 +32,7 @@ import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
+import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
@@ -1533,6 +1535,120 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<MentorTestSubmissions>>>
+  fetchMentorTestSubmission({required int testId}) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.fetchMentorTestSubmissions,
+        params: {'p_mentor_id': userId, 'p_test_id': testId},
+      );
+      final data =
+          (result as List)
+              .map(
+                (e) => MentorTestSubmissions.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList();
+
+      return Right(data);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Mentor Test Submission List for $testId: ${e.toString()}',
+      );
+      _log.e(
+        'Error Fetching Mentor Test Submission List for $testId $e',
+        error: e,
+      );
+      return Left(
+        Failure(
+          'Error Fetching Mentor Test Submission List for $testId ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<Either<Failure, void>> submitMentorEvaluation({
+    required int submissionId,
+    required Map<String, dynamic> questionScores,
+    String? feedback,
+    File? evaluatedPdfFile,
+  }) async {
+    try {
+      String? publicUrl;
+
+      if (evaluatedPdfFile != null) {
+        final fileName =
+            "${submissionId}_${userId}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+        final filePath = "reviewed_pdf/$fileName";
+
+        await supabase.storage
+            .from(SupabaseKeys.mentorReview)
+            .upload(filePath, evaluatedPdfFile);
+
+        publicUrl = supabase.storage
+            .from(SupabaseKeys.mentorReview)
+            .getPublicUrl(filePath);
+      }
+
+      await supabase.rpc(
+        SupabaseKeys.submitMentorEvaluation,
+        params: {
+          'p_submission_id': submissionId,
+          'p_marks_per_question': questionScores,
+          'p_reviewed_pdf_link': publicUrl,
+          'p_feedback': feedback,
+        },
+      );
+
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error submitting evaluation: ${e.toString()}');
+      _log.e('Error submitting evaluation: $e', error: e);
+      return Left(Failure('Error submitting evaluation: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, SubmissionReportModel>> fetchSubmissionReport({
+    required int submissionId,
+  }) async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getSubmissionsReport,
+        params: {'p_submission_id': submissionId},
+      );
+
+      final Map<String, dynamic> jsonData;
+      if (result is List && result.isNotEmpty) {
+        jsonData = result.first as Map<String, dynamic>;
+      } else if (result is Map<String, dynamic>) {
+        jsonData = result;
+      } else {
+        throw Exception('Invalid response format or empty data');
+      }
+
+      final data = SubmissionReportModel.fromJson(jsonData);
+
+      return Right(data);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Submission Report for  $submissionId: ${e.toString()}',
+      );
+      _log.e(
+        'Error Fetching Submission Report for  $submissionId: $e',
+        error: e,
+      );
+      return Left(
+        Failure(
+          'Error Fetching Submission Report for  $submissionId: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  /// ===========================================================================
+  /// Admin Profile Data
+  /// ===========================================================================
   Future<Either<Failure, AdminStatsModel>> fetchAdminStats() async {
     try {
       final response = await supabase.rpc(SupabaseKeys.getAdminDashboardStats);

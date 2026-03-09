@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
+import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class AssignMentorDetailScreen extends StatefulWidget {
@@ -272,7 +273,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                     ),
                     4.hGap,
                     Text(
-                      "Submitted on: ${submission.submittedAt}",
+                      "Submitted on: ${submission.submittedAt.toFormattedDate()}",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

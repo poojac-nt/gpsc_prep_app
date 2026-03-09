@@ -46,6 +46,8 @@ import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_b
 import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
@@ -222,6 +224,12 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<AllAssignedTestsBloc>(
     () => AllAssignedTestsBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<TestStudentsListBloc>(
+    () => TestStudentsListBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<MentorEvaluationBloc>(
+    () => MentorEvaluationBloc(getIt<MentorRepository>()),
   );
 }
 

@@ -146,8 +146,18 @@ class MentorEvaluationScreenArgs {
   final int? studentId;
   final int? testId;
   final int? submissionId;
+  final String? studentName;
+  final String? testName;
+  final bool? isChecked;
 
-  MentorEvaluationScreenArgs({this.studentId, this.testId, this.submissionId});
+  MentorEvaluationScreenArgs({
+    this.studentId,
+    this.testId,
+    this.submissionId,
+    this.studentName,
+    this.testName,
+    this.isChecked,
+  });
 }
 
 class AssessmentTypeSelectionScreenArgs {
