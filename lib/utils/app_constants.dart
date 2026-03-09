@@ -157,6 +157,8 @@ abstract class AppRoutes {
   static const String adminDashboard = '/adminDashboard';
   static const String assignMentorDetail = '/assignMentorDetail';
   static const String assessmentTypeSelection = '/assessmentTypeSelection';
+  static const String allAssignedTests = '/allAssignedTests';
+  static const String testStudentsList = '/testStudentsList';
 }
 
 class AdUnitIds {

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/selection_drawer.dart';
-import 'package:gpsc_prep_app/presentation/widgets/mentor_assignment_tile.dart';
-import 'package:gpsc_prep_app/presentation/widgets/mentor_progress_card.dart';
-import 'package:gpsc_prep_app/presentation/widgets/mentor_stat_card.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_state.dart';
+import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:intl/intl.dart';
 
 class MentorDashboardScreen extends StatefulWidget {
   const MentorDashboardScreen({super.key});
@@ -14,219 +18,314 @@ class MentorDashboardScreen extends StatefulWidget {
   State<MentorDashboardScreen> createState() => _MentorDashboardScreenState();
 }
 
-class _MentorDashboardScreenState extends State<MentorDashboardScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    context.read<MentorDashboardBloc>().add(FetchMentorDashboardData());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      drawer: SelectionDrawer(),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Builder(
-          builder:
-              (context) => IconButton(
-                icon: Icon(
-                  Icons.menu_rounded,
-                  color: const Color(0xFF4F46E5),
-                  size: 28.sp,
-                ),
-                onPressed: () => Scaffold.of(context).openDrawer(),
+      backgroundColor: AppColors.scaffoldColor,
+      appBar: _buildAppBar(),
+      body: BlocBuilder<MentorDashboardBloc, MentorDashboardState>(
+        builder: (context, state) {
+          if (state is MentorDashboardLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is MentorDashboardError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                  ),
+                  16.hGap,
+                  ElevatedButton(
+                    onPressed:
+                        () => context.read<MentorDashboardBloc>().add(
+                          FetchMentorDashboardData(),
+                        ),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
+            );
+          }
+
+          if (state is MentorDashboardLoaded) {
+            final data = state.data;
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<MentorDashboardBloc>().add(
+                  FetchMentorDashboardData(),
+                );
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    24.hGap,
+                    _buildStatCards(data),
+                    32.hGap,
+                    _buildLatestAssignedHeader(),
+                    16.hGap,
+                    _buildTestList(data.latestAssignments),
+                    40.hGap,
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppColors.scaffoldColor,
+      elevation: 0,
+      centerTitle: false,
+      titleSpacing: 20.w,
+      title: Text(
+        'Mentor Dashboard',
+        style: TextStyle(
+          fontSize: 22.sp,
+          fontWeight: FontWeight.w800,
+          color: AppColors.gray900,
+          letterSpacing: -0.5,
         ),
-        title: Text(
-          'Dashboard',
-          style: AppTexts.titleTextStyle.copyWith(fontSize: 20.sp),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () => showLogoutDialog(context),
+          icon: Icon(Icons.logout, size: 24.sp, color: Colors.red),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.notifications_outlined,
-              color: const Color(0xFF64748B),
-              size: 24.sp,
+      ],
+    );
+  }
+
+  Widget _buildStatCards(MentorDashboardData data) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              title: 'Total\nAssigned',
+              value: data.totalAssigned.toString(),
+              icon: Icons.assignment_ind_rounded,
+              color: AppColors.primary,
             ),
-            onPressed: () {},
           ),
-          12.wGap,
+          16.wGap,
+          Expanded(
+            child: _buildStatCard(
+              title: 'Completed\nTests',
+              value: data.totalCompleted.toString(),
+              icon: Icons.analytics_rounded,
+              color: AppColors.primary,
+            ),
+          ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Header
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome, Mentor',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF1E293B),
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Here is your evaluation progress for today.',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(20.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [Icon(icon, color: AppColors.gray400, size: 20.sp)],
+          ),
+          12.hGap,
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.gray500,
+              height: 1.2,
             ),
-
-            // Stat Cards Row
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: MentorStatCard(
-                      icon: Icons.description_outlined,
-                      title: 'Assigned Papers',
-                      value: '45',
-                      trendText: '+5% vs last week',
-                      iconColor: const Color(0xFF4F46E5),
-                      iconBackgroundColor: const Color(0xFFEEF2FF),
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: MentorStatCard(
-                      icon: Icons.assignment_late_outlined,
-                      title: 'Pending',
-                      value: '12',
-                      trendText: '+2% daily increase',
-                      trendColor: const Color(0xFFF59E0B),
-                      iconColor: const Color(0xFFF59E0B),
-                      iconBackgroundColor: const Color(0xFFFFF7ED),
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          12.hGap,
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 28.sp,
+              fontWeight: FontWeight.w800,
+              color: AppColors.gray900,
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            SizedBox(height: 16.h),
-
-            // Progress Card
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: const MentorProgressCard(
-                title: 'Completed Reviews',
-                value: '33',
-                progress: 0.73,
-                footerText: '73% of weekly goal achieved',
-              ),
+  Widget _buildLatestAssignedHeader() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Latest Assigned Tests',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+              color: AppColors.gray900,
             ),
-
-            SizedBox(height: 32.h),
-
-            // Subject Tabs
-            TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              labelColor: const Color(0xFF4F46E5),
-              unselectedLabelColor: const Color(0xFF94A3B8),
-              indicatorColor: const Color(0xFF4F46E5),
-              indicatorSize: TabBarIndicatorSize.label,
-              labelStyle: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-              tabs: const [
-                Tab(text: 'History'),
-                Tab(text: 'Geography'),
-                Tab(text: 'Polity'),
-                Tab(text: 'Ethics'),
+          ),
+          TextButton(
+            onPressed: () => context.push(AppRoutes.allAssignedTests),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'All Tests',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+                4.wGap,
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppColors.primary,
+                  size: 16.sp,
+                ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            SizedBox(height: 24.h),
+  Widget _buildTestList(List<LatestAssignment> assignments) {
+    if (assignments.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.all(32.r),
+        child: Center(
+          child: Text(
+            'No tests assigned yet.',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: AppColors.gray500,
+            ),
+          ),
+        ),
+      );
+    }
 
-            // Assignments Section
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Current Assignments',
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF1E293B),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'View All',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF4F46E5),
-                          ),
-                        ),
-                      ),
-                    ],
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      itemCount: assignments.length,
+      itemBuilder: (context, index) {
+        final assignment = assignments[index];
+        return GestureDetector(
+          onTap: () => context.push(AppRoutes.testStudentsList),
+          child: _buildTestCard(assignment),
+        );
+      },
+    );
+  }
+
+  Widget _buildTestCard(LatestAssignment assignment) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  assignment.testName,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gray900,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 12.h),
-                  MentorAssignmentTile(
-                    studentName: 'John Doe',
-                    testTitle: 'Modern India Mock #4',
-                    status: 'Pending',
-                    date: 'Oct 24, 2023',
-                    actionText: 'Start Checking',
-                    onActionTap: () {},
+                ),
+                4.hGap,
+                Text(
+                  'Assigned: ${DateFormat('MMM dd, yyyy').format(assignment.latestAssignedAt)}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.gray500,
+                    fontWeight: FontWeight.w500,
                   ),
-                  MentorAssignmentTile(
-                    studentName: 'Amara Singh',
-                    testTitle: 'Ancient History Quiz',
-                    status: 'In Progress',
-                    date: 'Oct 25, 2023',
-                    actionText: 'Resume',
-                    onActionTap: () {},
-                  ),
-                  MentorAssignmentTile(
-                    studentName: 'Mark Knight',
-                    testTitle: 'World War II Essay',
-                    status: 'Evaluated',
-                    date: 'Oct 22, 2023',
-                    actionText: 'View Results',
-                    onActionTap: () {},
-                  ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: AppColors.gray100,
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Text(
+              '${assignment.totalStudentsSubmissions} Submissions',
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.gray700,
               ),
             ),
-            SizedBox(height: 40.h),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

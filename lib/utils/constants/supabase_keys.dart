@@ -36,6 +36,8 @@ abstract class SupabaseKeys {
       'get_unassigned_students_with_mentors_for_test';
   static final String rpcDescMentorAssignment =
       'rpc_insert_desc_mentor_assignments_bulk';
+  static final String mentorDashboard = 'rpc_mentor_dashboard';
+  static final String mentorSubmission = 'rpc_mentor_submissions';
   static final String getAdminDashboardStats = 'get_admin_stats';
 
   ///table

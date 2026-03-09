@@ -19,6 +19,8 @@ import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.da
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
@@ -223,6 +225,16 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) =>
             _slideTransition(const MentorEvaluationScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.allAssignedTests,
+    pageBuilder:
+        (context, state) => _slideTransition(AllAssignedTestsScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.testStudentsList,
+    pageBuilder:
+        (context, state) => _slideTransition(TestStudentsListScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.login,

@@ -18,6 +18,8 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
@@ -1472,6 +1474,62 @@ class SupabaseHelper {
       _snackBar.showError('Error Assigning Mentors: ${e.toString()}');
       _log.e('Error Assigning Mentors:$e', error: e);
       return Left(Failure('Error Assigning Mentors: ${e.toString()}'));
+    }
+  }
+
+  /// ===========================================================================
+  /// Mentor Profile Data
+  /// ===========================================================================
+  Future<Either<Failure, MentorDashboardData>>
+  fetchMentorDashboardData() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.mentorDashboard,
+        params: {'p_mentor_id': userId},
+      );
+
+      final data = (result as List).first as Map<String, dynamic>;
+
+      final dashboardData = MentorDashboardData.fromJson(data);
+
+      return Right(dashboardData);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Mentor Dashboard Data: ${e.toString()}',
+      );
+      _log.e('Error Fetching Mentor Dashboard Data:$e', error: e);
+
+      return Left(
+        Failure('Error Fetching Mentor Dashboard Data: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, List<MentorAssignmentListModel>>>
+  fetchMentorSubmission() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.mentorSubmission,
+        params: {'p_mentor_id': userId},
+      );
+      final data =
+          (result as List)
+              .map(
+                (e) => MentorAssignmentListModel.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList();
+
+      return Right(data);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Mentor Submission List: ${e.toString()}',
+      );
+      _log.e('Error Fetching Mentor Submission List:$e', error: e);
+      return Left(
+        Failure('Error Fetching Mentor Submission List: ${e.toString()}'),
+      );
     }
   }
 
