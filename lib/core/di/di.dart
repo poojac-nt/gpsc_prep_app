@@ -123,6 +123,9 @@ void setupRepositories() {
   getIt.registerLazySingleton<MentorRepository>(
     () => MentorRepository(getIt<SupabaseHelper>()),
   );
+  getIt.registerLazySingleton<AdminRepository>(
+    () => AdminRepository(getIt<SupabaseHelper>()),
+  );
 }
 
 void setupBlocs() {

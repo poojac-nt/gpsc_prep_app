@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'student_list_with_mentor.g.dart';
@@ -12,6 +13,8 @@ class StudentListWithMentor {
   String studentName;
   @JsonKey(name: "submitted_at")
   String submittedAt;
+  @JsonKey(name: "assessment_type")
+  AssessmentType assessmentType;
   @JsonKey(name: "mentors")
   List<Mentor> mentors;
 
@@ -20,6 +23,7 @@ class StudentListWithMentor {
     required this.studentId,
     required this.studentName,
     required this.submittedAt,
+    required this.assessmentType,
     required this.mentors,
   });
 

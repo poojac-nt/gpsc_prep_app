@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class AssignMentorDetailScreen extends StatefulWidget {
@@ -30,8 +31,6 @@ class AssignMentorDetailScreen extends StatefulWidget {
 }
 
 class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
-  final Set<int> _selectedSubmissionIds = {};
-
   @override
   void initState() {
     super.initState();
@@ -40,22 +39,28 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  void _toggleSelection(int submissionId) {
-    setState(() {
-      if (_selectedSubmissionIds.contains(submissionId)) {
-        _selectedSubmissionIds.remove(submissionId);
-      } else {
-        _selectedSubmissionIds.add(submissionId);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
       appBar: _buildAppBar(context),
-      body: BlocBuilder<TestWiseSubmissionsBloc, TestWiseSubmissionsState>(
+      body: BlocConsumer<TestWiseSubmissionsBloc, TestWiseSubmissionsState>(
+        listener: (context, state) {
+          if (state is TestWiseSubmissionsLoaded &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: AppColors.primary,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is TestWiseSubmissionsLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -72,6 +77,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
             );
           } else if (state is TestWiseSubmissionsLoaded) {
             List<StudentListWithMentor> submissions = state.studentsWithMentors;
+            final selectedIds = state.selectedSubmissionIds;
 
             if (submissions.isEmpty) {
               return const Center(
@@ -87,10 +93,13 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                   padding: EdgeInsets.only(bottom: 100.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [10.hGap, _buildSubmissionList(submissions)],
+                    children: [
+                      10.hGap,
+                      _buildSubmissionList(submissions, selectedIds),
+                    ],
                   ),
                 ),
-                _buildFloatingButton(submissions),
+                _buildFloatingButton(submissions, selectedIds),
               ],
             );
           }
@@ -137,7 +146,10 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  Widget _buildSubmissionList(List<StudentListWithMentor> submissions) {
+  Widget _buildSubmissionList(
+    List<StudentListWithMentor> submissions,
+    Set<int> selectedIds,
+  ) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -145,89 +157,144 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
       itemCount: submissions.length,
       itemBuilder: (context, index) {
         final submission = submissions[index];
-        return _buildSubmissionCard(submission);
+        return _buildSubmissionCard(submission, submissions, selectedIds);
       },
     );
   }
 
-  Widget _buildSubmissionCard(StudentListWithMentor submission) {
-    final bool isSelected = _selectedSubmissionIds.contains(
-      submission.submissionId,
-    );
+  Widget _buildSubmissionCard(
+    StudentListWithMentor submission,
+    List<StudentListWithMentor> allSubmissions,
+    Set<int> selectedIds,
+  ) {
+    final bool isSelected = selectedIds.contains(submission.submissionId);
+
+    bool isEnabled = true;
+    if (selectedIds.isNotEmpty) {
+      final firstSelectedId = selectedIds.first;
+      final firstSelectedSub = allSubmissions.firstWhere(
+        (s) => s.submissionId == firstSelectedId,
+      );
+      if (firstSelectedSub.assessmentType != submission.assessmentType) {
+        isEnabled = false;
+      }
+    }
+
     return GestureDetector(
-      onTap: () => _toggleSelection(submission.submissionId),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        padding: EdgeInsets.all(12.r),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(5),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+      onTap: () {
+        context.read<TestWiseSubmissionsBloc>().add(
+          ToggleSubmissionSelection(submission),
+        );
+      },
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: isEnabled ? 1.0 : 0.4,
+        child: Container(
+          margin: EdgeInsets.only(bottom: 16.h),
+          padding: EdgeInsets.all(12.r),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : Colors.transparent,
+              width: 1.5,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _buildCustomCheckbox(isSelected),
-            12.wGap,
-            CircleAvatar(
-              radius: 24.r,
-              backgroundColor: AppColors.primary.withAlpha(15),
-              child: Text(
-                submission.studentName[0],
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w800,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(5),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              _buildCustomCheckbox(isSelected),
+              12.wGap,
+              CircleAvatar(
+                radius: 24.r,
+                backgroundColor: AppColors.primary.withAlpha(15),
+                child: Text(
+                  submission.studentName[0],
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-            ),
-            16.wGap,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    submission.studentName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.gray900,
+              16.wGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            submission.studentName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.gray900,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                submission.assessmentType ==
+                                        AssessmentType.double
+                                    ? AppColors.orange500.withAlpha(30)
+                                    : AppColors.primary.withAlpha(30),
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                          child: Text(
+                            submission.assessmentType.type.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w800,
+                              color:
+                                  submission.assessmentType ==
+                                          AssessmentType.double
+                                      ? AppColors.orange800
+                                      : AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  4.hGap,
-                  Text(
-                    "Submitted on: ${submission.submittedAt}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AppColors.gray500,
-                      fontWeight: FontWeight.w500,
+                    4.hGap,
+                    Text(
+                      "Submitted on: ${submission.submittedAt}",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppColors.gray500,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showMentorSelectionSheet(List<StudentListWithMentor> submissions) {
-    // Collect all unique mentors available for the selected submissions
-    final Set<int> selectedSubIds = _selectedSubmissionIds;
+  void _showMentorSelectionSheet(
+    List<StudentListWithMentor> submissions,
+    Set<int> selectedSubIds,
+  ) {
     final List<Mentor> availableMentors = [];
     final Set<int> mentorIdsSeen = {};
 
@@ -242,6 +309,16 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
       }
     }
 
+    AssessmentType? commonAssessmentType;
+    for (var sub in submissions) {
+      if (selectedSubIds.contains(sub.submissionId)) {
+        commonAssessmentType = sub.assessmentType;
+        break;
+      }
+    }
+
+    final int maxMentors =
+        commonAssessmentType == AssessmentType.double ? 2 : 1;
     final Set<int> selectedMentorIds = {};
 
     showModalBottomSheet(
@@ -254,7 +331,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
       builder: (bottomSheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final bool hasWarning = selectedMentorIds.length >= 2;
+            final bool isLimitReached = selectedMentorIds.length >= maxMentors;
             final bool isButtonActive = selectedMentorIds.isNotEmpty;
 
             return BlocListener<MentorAssignmentBloc, MentorAssignmentState>(
@@ -271,9 +348,10 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                       ),
                     ),
                   );
-                  setState(() {
-                    _selectedSubmissionIds.clear();
-                  });
+                  // Clear selection in Bloc
+                  context.read<TestWiseSubmissionsBloc>().add(
+                    ClearSubmissionSelection(),
+                  );
                   // Refresh the list
                   context.read<TestWiseSubmissionsBloc>().add(
                     FetchTestWisePendingSubmissions(widget.testId),
@@ -304,7 +382,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Select Mentors",
+                            "Select Mentors (${selectedMentorIds.length}/$maxMentors)",
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.w800,
@@ -313,7 +391,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                           ),
                           4.hGap,
                           Text(
-                            "${availableMentors.length} specialized mentors found",
+                            "${availableMentors.length} specialized mentors found • ${commonAssessmentType?.type ?? "Assessment"}",
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: AppColors.gray500,
@@ -324,12 +402,48 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                       ),
                     ),
                     16.hGap,
-                    if (hasWarning)
+                    if (isLimitReached && maxMentors == 1)
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 16.w,
                           vertical: 10.h,
                         ),
+                        margin: EdgeInsets.only(bottom: 16.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: AppColors.primary.withAlpha(50),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: AppColors.primary,
+                              size: 20.sp,
+                            ),
+                            12.wGap,
+                            Expanded(
+                              child: Text(
+                                "Single assessment allows only 1 mentor.",
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (isLimitReached && maxMentors == 2)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 10.h,
+                        ),
+                        margin: EdgeInsets.only(bottom: 16.h),
                         decoration: BoxDecoration(
                           color: AppColors.orange500.withAlpha(20),
                           borderRadius: BorderRadius.circular(12.r),
@@ -347,7 +461,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                             12.wGap,
                             Expanded(
                               child: Text(
-                                "You have selected multiple mentors for these submissions.",
+                                "Double assessment allows maximum 2 mentors.",
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   color: AppColors.orange800,
@@ -371,16 +485,29 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                                 availableMentors[index].mentorId,
                               ),
                               () => setSheetState(() {
-                                if (selectedMentorIds.contains(
-                                  availableMentors[index].mentorId,
-                                )) {
-                                  selectedMentorIds.remove(
-                                    availableMentors[index].mentorId,
-                                  );
+                                final int mentorId =
+                                    availableMentors[index].mentorId;
+                                if (selectedMentorIds.contains(mentorId)) {
+                                  selectedMentorIds.remove(mentorId);
                                 } else {
-                                  selectedMentorIds.add(
-                                    availableMentors[index].mentorId,
-                                  );
+                                  if (maxMentors == 1) {
+                                    // Replace selection for single assessment
+                                    selectedMentorIds.clear();
+                                    selectedMentorIds.add(mentorId);
+                                  } else if (selectedMentorIds.length <
+                                      maxMentors) {
+                                    selectedMentorIds.add(mentorId);
+                                  } else {
+                                    // Limit reached for multiple
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Maximum $maxMentors mentors allowed for this assessment type.",
+                                        ),
+                                        duration: const Duration(seconds: 1),
+                                      ),
+                                    );
+                                  }
                                 }
                               }),
                             ),
@@ -391,7 +518,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                     24.hGap,
                     _buildConfirmButton(isButtonActive, () {
                       final List<MentorAssignmentPayload> payloads = [];
-                      for (var subId in _selectedSubmissionIds) {
+                      for (var subId in selectedSubIds) {
                         for (var mentorId in selectedMentorIds) {
                           payloads.add(
                             MentorAssignmentPayload(
@@ -521,8 +648,11 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  Widget _buildFloatingButton(List<StudentListWithMentor> submissions) {
-    final bool isActive = _selectedSubmissionIds.isNotEmpty;
+  Widget _buildFloatingButton(
+    List<StudentListWithMentor> submissions,
+    Set<int> selectedIds,
+  ) {
+    final bool isActive = selectedIds.isNotEmpty;
     return Positioned(
       bottom: 24.h,
       left: 20.w,
@@ -548,7 +678,8 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
             child: InkWell(
               onTap:
                   isActive
-                      ? () => _showMentorSelectionSheet(submissions)
+                      ? () =>
+                          _showMentorSelectionSheet(submissions, selectedIds)
                       : null,
               borderRadius: BorderRadius.circular(16.r),
               child: Center(

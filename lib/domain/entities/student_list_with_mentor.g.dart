@@ -13,6 +13,8 @@ StudentListWithMentor _$StudentListWithMentorFromJson(
       studentId: (json['student_id'] as num).toInt(),
       studentName: json['student_name'] as String,
       submittedAt: json['submitted_at'] as String,
+      assessmentType:
+          $enumDecode(_$AssessmentTypeEnumMap, json['assessment_type']),
       mentors: (json['mentors'] as List<dynamic>)
           .map((e) => Mentor.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -25,8 +27,14 @@ Map<String, dynamic> _$StudentListWithMentorToJson(
       'student_id': instance.studentId,
       'student_name': instance.studentName,
       'submitted_at': instance.submittedAt,
+      'assessment_type': _$AssessmentTypeEnumMap[instance.assessmentType]!,
       'mentors': instance.mentors,
     };
+
+const _$AssessmentTypeEnumMap = {
+  AssessmentType.single: 'single',
+  AssessmentType.double: 'double',
+};
 
 Mentor _$MentorFromJson(Map<String, dynamic> json) => Mentor(
       mentorId: (json['mentor_id'] as num).toInt(),
