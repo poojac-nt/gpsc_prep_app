@@ -19,6 +19,8 @@ import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.da
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
@@ -597,6 +599,18 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.mentorAssign,
     pageBuilder:
         (context, state) => _slideTransition(const MentorAssignScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.mentorList,
+    pageBuilder:
+        (context, state) => _slideTransition(const MentorListScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.editMentor,
+    pageBuilder: (context, state) {
+      final args = state.extra as EditMentorScreenArgs;
+      return _slideTransition(EditMentorScreen(mentor: args.mentor), state);
+    },
   ),
   GoRoute(
     path: AppRoutes.adminDashboard,

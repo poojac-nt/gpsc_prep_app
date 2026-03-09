@@ -201,11 +201,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _buildManagementItem(
           context,
           title: 'Manage Mentors',
-          subtitle: 'Create Mentors for Review',
-          icon: Icons.person_add_outlined,
+          subtitle: 'View and manage all mentors',
+          icon: Icons.people_outline_rounded,
           iconBgColor: const Color(0xffeff6ff),
           iconColor: const Color(0xff3b82f6),
-          onTap: () => context.push(AppRoutes.mentorRegistration),
+          onTap: () => context.push(AppRoutes.mentorList),
         ),
         12.hGap,
         _buildManagementItem(

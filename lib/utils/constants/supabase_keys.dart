@@ -39,6 +39,7 @@ abstract class SupabaseKeys {
   static final String mentorDashboard = 'rpc_mentor_dashboard';
   static final String mentorSubmission = 'rpc_mentor_submissions';
   static final String getAdminDashboardStats = 'get_admin_stats';
+  static final String getMentorList = 'get_mentors_with_subjects';
 
   ///table
   static final String usersTable = 'users';

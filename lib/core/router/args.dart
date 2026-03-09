@@ -2,7 +2,8 @@ import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-
+import 'package:gpsc_prep_app/domain/entities/user_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import '../../domain/entities/desc_test_model.dart';
 import '../../domain/entities/detailed_test_result_model.dart';
 
@@ -153,4 +154,9 @@ class AssessmentTypeSelectionScreenArgs {
   final CourseModel courseModel;
 
   AssessmentTypeSelectionScreenArgs({required this.courseModel});
+}
+
+class EditMentorScreenArgs {
+  final MentorModel mentor;
+  EditMentorScreenArgs({required this.mentor});
 }

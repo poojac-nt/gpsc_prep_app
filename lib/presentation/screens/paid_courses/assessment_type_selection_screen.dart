@@ -197,7 +197,7 @@ class _AssessmentTypeSelectionScreenState
       ),
       child: SafeArea(
         child: ActionButton(
-          text: "Proceed to Payment",
+          text: "Proceed",
           onTap:
               _selectedType == null
                   ? null

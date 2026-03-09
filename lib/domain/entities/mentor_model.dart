@@ -13,7 +13,7 @@ class MentorModel {
   MentorModel({required this.user, required this.subjects});
 
   factory MentorModel.fromJson(Map<String, dynamic> json) {
-    final user = UserModel.fromJson(json['user']); // ✅ use json['user']
+    final user = UserModel.fromJson(json['user_data']); // ✅ use json['user']
 
     final subjects =
         (json['subjects'] as List<dynamic>?)

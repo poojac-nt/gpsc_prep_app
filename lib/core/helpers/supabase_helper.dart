@@ -1543,4 +1543,104 @@ class SupabaseHelper {
       return Left(Failure("Error fetching admin stats: ${e.toString()}"));
     }
   }
+
+  Future<Either<Failure, List<MentorModel>>> fetchMentorList() async {
+    try {
+      final response = await supabase.rpc(SupabaseKeys.getMentorList);
+
+      final mentors =
+          (response as List).map((e) => MentorModel.fromJson(e)).toList();
+      _log.i('Fetched ${mentors.length} mentors');
+      return Right(mentors);
+    } catch (e) {
+      _log.e('Error fetching mentor list: $e', error: e);
+      return Left(Failure('Error fetching mentor list: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, UserModel>> updateMentorInfo({
+    required int userId,
+    required String name,
+    required String bio,
+    required List<String> subjectExpertise,
+    required bool isActive,
+    File? profileImage,
+  }) async {
+    try {
+      String? profilePictureUrl;
+
+      if (profileImage != null) {
+        final fileName =
+            'mentor_${userId}_${DateTime.now().millisecondsSinceEpoch}';
+        final filePath = 'mentors/$fileName';
+        await supabase.storage
+            .from(SupabaseKeys.profilePicture)
+            .upload(filePath, profileImage);
+        profilePictureUrl = supabase.storage
+            .from(SupabaseKeys.profilePicture)
+            .getPublicUrl(filePath);
+      }
+
+      final updateData = <String, dynamic>{
+        'full_name': name,
+        'bio': bio,
+        'is_active': isActive,
+        if (profilePictureUrl != null) 'profile_picture': profilePictureUrl,
+      };
+
+      final response =
+          await supabase
+              .from(SupabaseKeys.usersTable)
+              .update(updateData)
+              .eq('id', userId)
+              .select()
+              .single();
+
+      // Now update the mentor subjects
+      // 1. Fetch all subject models to get their IDs matching the selected names
+      if (subjectExpertise.isNotEmpty) {
+        final subjectResponse = await supabase.from(SupabaseKeys.subjects)
+                             .select('subject_id, subject_name')
+                             .inFilter('subject_name', subjectExpertise);
+        final List<int> subjectIds = (subjectResponse as List).map((e) => e['subject_id'] as int).toList();
+
+        // 2. Clear existing subjects for this mentor
+        await supabase.from('mentor_subjects').delete().eq('mentor_id', userId);
+
+        // 3. Insert new ones
+        if (subjectIds.isNotEmpty) {
+          final Set<int> uniqueSubjectIds = subjectIds.toSet();
+          final insertData = uniqueSubjectIds.map((sId) => {
+            'mentor_id': userId,
+            'subject_id': sId,
+          }).toList();
+          await supabase.from('mentor_subjects').insert(insertData);
+        }
+      } else {
+        await supabase.from('mentor_subjects').delete().eq('mentor_id', userId);
+      }
+
+      final updatedMentor = UserModel.fromJson(response);
+      _snackBar.showSuccess('Mentor profile updated successfully');
+      _log.i('Mentor updated: ${updatedMentor.name}');
+      return Right(updatedMentor);
+    } catch (e) {
+      _snackBar.showError('Error updating mentor: ${e.toString()}');
+      _log.e('Error updating mentor: $e', error: e);
+      return Left(Failure('Error updating mentor: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, void>> deleteMentorAccount(int userId) async {
+    try {
+      await supabase.from(SupabaseKeys.usersTable).delete().eq('id', userId);
+      _snackBar.showSuccess('Mentor account deleted');
+      _log.i('Mentor account deleted: userId=$userId');
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error deleting mentor: ${e.toString()}');
+      _log.e('Error deleting mentor: $e', error: e);
+      return Left(Failure('Error deleting mentor: ${e.toString()}'));
+    }
+  }
 }
