@@ -11,7 +11,6 @@ import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
 import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
 import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
-import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
 
 class MentorRepository {
@@ -97,11 +96,13 @@ class MentorRepository {
 
   Future<Either<Failure, void>> submitMentorEvaluation({
     required int submissionId,
+    required int mentorAssignmentId,
     required Map<String, dynamic> questionScores,
     String? feedback,
     File? evaluatedPdfFile,
   }) async => await _supabase.submitMentorEvaluation(
     submissionId: submissionId,
+    mentorAssignmentId: mentorAssignmentId,
     questionScores: questionScores,
     feedback: feedback,
     evaluatedPdfFile: evaluatedPdfFile,

@@ -326,6 +326,7 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
     context.read<MentorEvaluationBloc>().add(
       SubmitMentorEvaluation(
         submissionId: widget.args.submissionId!,
+        mentorAssignmentId: widget.args.mentorAssignmentId,
         questionScores: scores,
         feedback: _feedbackController.text,
         evaluatedPdfFile: _evaluatedPdfFile,

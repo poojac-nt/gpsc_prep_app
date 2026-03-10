@@ -1569,6 +1569,7 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, void>> submitMentorEvaluation({
+    required int mentorAssignmentId,
     required int submissionId,
     required Map<String, dynamic> questionScores,
     String? feedback,
@@ -1594,7 +1595,7 @@ class SupabaseHelper {
       await supabase.rpc(
         SupabaseKeys.submitMentorEvaluation,
         params: {
-          'p_submission_id': submissionId,
+          'p_mentor_assignment_id': mentorAssignmentId,
           'p_marks_per_question': questionScores,
           'p_reviewed_pdf_link': publicUrl,
           'p_feedback': feedback,

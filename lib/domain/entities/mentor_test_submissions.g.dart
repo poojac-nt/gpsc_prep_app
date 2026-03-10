@@ -10,6 +10,7 @@ MentorTestSubmissions _$MentorTestSubmissionsFromJson(
         Map<String, dynamic> json) =>
     MentorTestSubmissions(
       submissionId: (json['submission_id'] as num).toInt(),
+      mentorAssignmentId: (json['mentor_assignment_id'] as num).toInt(),
       studentId: (json['student_id'] as num).toInt(),
       studentName: json['student_name'] as String,
       submittedAt: json['submitted_at'] as String,
@@ -20,6 +21,7 @@ Map<String, dynamic> _$MentorTestSubmissionsToJson(
         MentorTestSubmissions instance) =>
     <String, dynamic>{
       'submission_id': instance.submissionId,
+      'mentor_assignment_id': instance.mentorAssignmentId,
       'student_id': instance.studentId,
       'student_name': instance.studentName,
       'submitted_at': instance.submittedAt,

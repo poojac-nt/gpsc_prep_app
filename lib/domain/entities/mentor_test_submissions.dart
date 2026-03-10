@@ -6,6 +6,8 @@ part 'mentor_test_submissions.g.dart';
 class MentorTestSubmissions {
   @JsonKey(name: "submission_id")
   int submissionId;
+  @JsonKey(name: "mentor_assignment_id")
+  int mentorAssignmentId;
   @JsonKey(name: "student_id")
   int studentId;
   @JsonKey(name: "student_name")
@@ -17,6 +19,7 @@ class MentorTestSubmissions {
 
   MentorTestSubmissions({
     required this.submissionId,
+    required this.mentorAssignmentId,
     required this.studentId,
     required this.studentName,
     required this.submittedAt,

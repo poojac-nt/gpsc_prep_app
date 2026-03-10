@@ -195,6 +195,7 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
           () => context.push(
             AppRoutes.mentorEvaluation,
             extra: MentorEvaluationScreenArgs(
+              mentorAssignmentId: submission.mentorAssignmentId,
               submissionId: submission.submissionId,
               studentId: submission.studentId,
               testId: widget.testId,

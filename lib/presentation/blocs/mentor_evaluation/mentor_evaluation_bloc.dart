@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
+
 import 'mentor_evaluation_event.dart';
 import 'mentor_evaluation_state.dart';
 
@@ -31,6 +32,7 @@ class MentorEvaluationBloc
     emit(MentorEvaluationSubmitting());
     final result = await _repository.submitMentorEvaluation(
       submissionId: event.submissionId,
+      mentorAssignmentId: event.mentorAssignmentId,
       questionScores: event.questionScores,
       feedback: event.feedback,
       evaluatedPdfFile: event.evaluatedPdfFile,
