@@ -15,6 +15,8 @@ import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
@@ -161,6 +163,8 @@ class AppServices {
       create: (_) => getIt<MentorAssignmentBloc>(),
     ),
     BlocProvider<AdminBloc>(create: (_) => getIt<AdminBloc>()),
+    BlocProvider<MentorBloc>(create: (_) => getIt<MentorBloc>()),
+    BlocProvider<EditMentorBloc>(create: (_) => getIt<EditMentorBloc>()),
     BlocProvider<MentorDashboardBloc>(
       create: (_) => getIt<MentorDashboardBloc>(),
     ),

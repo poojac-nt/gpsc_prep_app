@@ -55,6 +55,7 @@ class UserModel {
     String? address,
     int? number,
     String? profilePicture,
+    String? bio,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -65,6 +66,7 @@ class UserModel {
       address: address ?? this.address,
       number: number ?? this.number,
       profilePicture: profilePicture ?? this.profilePicture,
+      bio: bio ?? this.bio,
     );
   }
 

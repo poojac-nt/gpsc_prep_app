@@ -17,29 +17,3 @@ class AdminStatsError extends AdminState {
   final String message;
   AdminStatsError(this.message);
 }
-
-class MentorListLoading extends AdminState {}
-
-class MentorListLoaded extends AdminState {
-  final List<MentorModel> mentors;
-  MentorListLoaded(this.mentors);
-}
-
-class MentorListError extends AdminState {
-  final String message;
-  MentorListError(this.message);
-}
-
-class MentorSaving extends AdminState {}
-
-class MentorUpdateSuccess extends AdminState {
-  final UserModel mentor;
-  MentorUpdateSuccess(this.mentor);
-}
-
-class MentorDeleteSuccess extends AdminState {}
-
-class MentorOperationError extends AdminState {
-  final String message;
-  MentorOperationError(this.message);
-}

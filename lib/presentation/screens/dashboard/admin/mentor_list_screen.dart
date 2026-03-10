@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/admin_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/admin_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+
+import '../../../blocs/admin/admin_bloc.dart';
 
 class MentorListScreen extends StatefulWidget {
   const MentorListScreen({super.key});
@@ -22,7 +24,7 @@ class _MentorListScreenState extends State<MentorListScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AdminBloc>().add(FetchMentorList());
+    context.read<MentorBloc>().add(FetchMentorList());
   }
 
   @override
@@ -30,7 +32,7 @@ class _MentorListScreenState extends State<MentorListScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
       appBar: _buildAppBar(),
-      body: BlocBuilder<AdminBloc, AdminState>(
+      body: BlocBuilder<MentorBloc, MentorState>(
         builder: (context, state) {
           if (state is MentorListLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -195,7 +197,7 @@ class _MentorListScreenState extends State<MentorListScreen> {
                 extra: EditMentorScreenArgs(mentor: mentor),
               );
               if (result == true && mounted) {
-                context.read<AdminBloc>().add(FetchMentorList());
+                context.read<MentorBloc>().add(FetchMentorList());
               }
             },
             child: Padding(
@@ -303,7 +305,8 @@ class _MentorListScreenState extends State<MentorListScreen> {
             ),
             16.hGap,
             ElevatedButton(
-              onPressed: () => context.read<AdminBloc>().add(FetchMentorList()),
+              onPressed:
+                  () => context.read<MentorBloc>().add(FetchMentorList()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,

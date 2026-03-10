@@ -6,15 +6,46 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
 import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
 import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
+import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
+import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
 
 class MentorRepository {
   final SupabaseHelper _supabase;
 
   MentorRepository(this._supabase);
+
+  Future<Either<Failure, List<MentorModel>>> getMentorList() async {
+    return await _supabase.fetchMentorList();
+  }
+
+  Future<Either<Failure, UserModel>> updateMentor({
+    required int userId,
+    required String name,
+    required String bio,
+    required List<String> subjectExpertise,
+    required bool isActive,
+  }) async {
+    return await _supabase.updateMentorInfo(
+      userId: userId,
+      name: name,
+      bio: bio,
+      subjectExpertise: subjectExpertise,
+      isActive: isActive,
+    );
+  }
+
+  Future<Either<Failure, void>> deleteMentor(int userId) async {
+    return await _supabase.deleteMentorAccount(userId);
+  }
+
+  Future<Either<Failure, List<SubjectModel>>> fetchSubjects() async {
+    return await _supabase.fetchSubjects();
+  }
 
   Future<Either<Failure, List<PendingSubmission>>>
   fetchPendingSubmissions() async => await _supabase.fetchPendingSubmission();
