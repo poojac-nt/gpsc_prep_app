@@ -46,6 +46,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../domain/entities/all_tests_model.dart';
 import '../../domain/entities/study_material_model.dart';
 import 'log_helper.dart';
 
@@ -1753,6 +1754,28 @@ class SupabaseHelper {
       _snackBar.showError('Error deleting mentor: ${e.toString()}');
       _log.e('Error deleting mentor: $e', error: e);
       return Left(Failure('Error deleting mentor: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, AllTestsModel>> fetchAllTests() async {
+    try {
+      final response = await supabase.rpc('fetch_all_tests_grouped');
+
+      if (response == null) {
+        throw Exception('Empty response from fetch_all_tests_grouped');
+      }
+
+      final allTests = AllTestsModel.fromJson(
+        Map<String, dynamic>.from(response),
+      );
+
+      _log.i('Fetched tests successfully');
+
+      return Right(allTests);
+    } catch (e) {
+      _log.e('Error fetching tests: $e', error: e);
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      return Left(Failure('Error fetching tests: ${e.toString()}'));
     }
   }
 }

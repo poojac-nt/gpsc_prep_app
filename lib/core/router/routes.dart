@@ -16,9 +16,11 @@ import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
@@ -52,6 +54,7 @@ import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_q
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
+import '../../presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
@@ -644,6 +647,18 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as AssessmentTypeSelectionScreenArgs;
       return _slideTransition(
         AssessmentTypeSelectionScreen(courseModel: args.courseModel),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allTests,
+    pageBuilder: (context, state) {
+      return _slideTransition(
+        BlocProvider(
+          create: (context) => getIt<AllTestBloc>()..add(FetchAllTests()),
+          child: const AllTestScreen(),
+        ),
         state,
       );
     },

@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 import '../../core/error/failure.dart';
+import '../../domain/entities/all_tests_model.dart';
 import '../../domain/entities/question_model.dart';
 
 class TestRepository {
@@ -109,4 +110,7 @@ class TestRepository {
 
   Future<Either<Failure, List<int>>> fetchDescriptiveTestSubmissions() async =>
       await _supabase.fetchDescriptiveTestSubmissions();
+
+  Future<Either<Failure, AllTestsModel>> fetchAllTests() async =>
+      await _supabase.fetchAllTests();
 }

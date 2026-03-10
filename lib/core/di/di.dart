@@ -53,6 +53,7 @@ import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evalua
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -238,6 +239,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<MentorEvaluationBloc>(
     () => MentorEvaluationBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<AllTestBloc>(
+    () => AllTestBloc(getIt<TestRepository>()),
   );
 }
 

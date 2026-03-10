@@ -161,6 +161,7 @@ abstract class AppRoutes {
   static const String assessmentTypeSelection = '/assessmentTypeSelection';
   static const String allAssignedTests = '/allAssignedTests';
   static const String testStudentsList = '/testStudentsList';
+  static const String allTests = '/allTests';
 }
 
 class AdUnitIds {

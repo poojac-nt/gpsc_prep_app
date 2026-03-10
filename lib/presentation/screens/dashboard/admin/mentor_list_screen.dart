@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:hive/hive.dart';
 
 import '../../../blocs/admin/admin_bloc.dart';
 
@@ -144,7 +145,7 @@ class _MentorListScreenState extends State<MentorListScreen> {
 
   Widget _buildMentorCard(MentorModel mentor) {
     final initials = _getInitials(mentor.user.name);
-    final subjectText = mentor.user.bio ?? 'Mentor';
+    final status = (mentor.user.isActive ?? false) ? 'Active' : 'Deactivated';
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -177,15 +178,28 @@ class _MentorListScreenState extends State<MentorListScreen> {
                   ),
                 ),
                 4.hGap,
-                Text(
-                  subjectText,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.gray500,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color:
+                        (mentor.user.isActive ?? false)
+                            ? AppColors.primary.withAlpha(20)
+                            : Colors.red.withAlpha(20),
+                    borderRadius: BorderRadius.circular(20.r),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  child: Text(
+                    status,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                      color:
+                          (mentor.user.isActive ?? false)
+                              ? AppColors.primary
+                              : Colors.red,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

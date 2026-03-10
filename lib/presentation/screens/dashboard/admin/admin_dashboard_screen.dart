@@ -247,6 +247,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           iconColor: const Color(0xff0d9488),
           onTap: () => context.push(AppRoutes.uploadStudyMaterial),
         ),
+        12.hGap,
+        _buildManagementItem(
+          context,
+          title: 'All Tests',
+          subtitle: 'View and share all tests',
+          icon: Icons.assignment_turned_in_outlined,
+          iconBgColor: const Color(0xfff5f3ff),
+          iconColor: const Color(0xff8b5cf6),
+          onTap: () => context.push(AppRoutes.allTests),
+        ),
       ],
     );
   }

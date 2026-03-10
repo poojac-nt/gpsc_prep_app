@@ -20,7 +20,8 @@ TestModel _$TestModelFromJson(Map<String, dynamic> json) => TestModel(
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
-    );
+      courseID: (json['course_id'] as num?)?.toInt(),
+    )..totalAttempt = (json['total_attempts'] as num?)?.toInt();
 
 Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'id': instance.id,
@@ -32,10 +33,13 @@ Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'omr_link': instance.omrLink,
       'available_at': instance.availableAt?.toIso8601String(),
       'created_at': instance.createdAt?.toIso8601String(),
+      'course_id': instance.courseID,
+      'total_attempts': instance.totalAttempt,
     };
 
 const _$TestTypeEnumMap = {
   TestType.mcq: 'mcq',
   TestType.desc: 'desc',
   TestType.prelims: 'prelims',
+  TestType.mains: 'mains',
 };
