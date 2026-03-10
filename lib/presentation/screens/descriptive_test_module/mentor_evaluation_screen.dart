@@ -9,6 +9,8 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_event.dart';
@@ -31,10 +33,25 @@ class MentorEvaluationScreen extends StatefulWidget {
 }
 
 class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
-  final TextEditingController _feedbackController = TextEditingController();
+  final TextEditingController _feedbackController = TextEditingController(
+    text: '''
+Comment:
+
+Presentation:
+
+Substantiation:
+
+Language and Handwriting:
+
+Suggestion of Improvement:
+
+Positives:
+''',
+  );
   List<TextEditingController> _scoreControllers = [];
   SubmissionReportModel? _data;
   File? _evaluatedPdfFile;
+  List<bool> _scoreErrors = [];
 
   @override
   void initState() {
@@ -64,6 +81,7 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
         questions.length,
         (index) => TextEditingController(text: ''),
       );
+      _scoreErrors = List.generate(questions.length, (index) => false);
     }
   }
 
@@ -82,6 +100,9 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
           if (state is MentorEvaluationSubmitSuccess) {
             getIt<SnackBarHelper>().showSuccess(
               'Evaluation submitted successfully',
+            );
+            context.read<TestStudentsListBloc>().add(
+              FetchTestStudentsList(widget.args.testId!),
             );
             context.pop();
           } else if (state is MentorEvaluationSubmitError) {
@@ -279,6 +300,20 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
           questionLabel: 'Question ${index + 1}',
           maxMarks: question.maxMarks,
           controller: _scoreControllers[index],
+          isError: _scoreErrors[index],
+          errorMessage: 'Marks cannot exceed ${question.maxMarks}',
+          onChanged: (value) {
+            final marks = int.tryParse(value) ?? 0;
+            if (marks > question.maxMarks) {
+              setState(() {
+                _scoreErrors[index] = true;
+              });
+            } else if (_scoreErrors[index]) {
+              setState(() {
+                _scoreErrors[index] = false;
+              });
+            }
+          },
         );
       }),
     );
@@ -296,14 +331,14 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
       ),
       child: TextField(
         controller: _feedbackController,
-        maxLines: 5,
+        minLines: 8,
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
         decoration: InputDecoration(
-          hintText: 'Enter detailed qualitative feedback for the student...',
-          hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey[400]),
           contentPadding: EdgeInsets.all(16.w),
           border: InputBorder.none,
         ),
-        style: TextStyle(fontSize: 14.sp, color: Colors.black87, height: 1.5),
+        style: TextStyle(fontSize: 14.sp, color: Colors.black87, height: 1.6),
         cursorColor: AppColors.primary,
       ),
     );
@@ -317,10 +352,30 @@ class _MentorEvaluationScreenState extends State<MentorEvaluationScreen> {
 
     final Map<String, dynamic> scores = {};
 
+    bool hasError = false;
     for (int i = 0; i < _data!.questions.length; i++) {
-      final marks = int.tryParse(_scoreControllers[i].text) ?? 0;
+      final question = _data!.questions[i];
+      final marksStr = _scoreControllers[i].text.trim();
+      final marks = int.tryParse(marksStr) ?? 0;
 
-      scores[_data!.questions[i].questionId.toString()] = marks;
+      if (marks > question.maxMarks) {
+        setState(() {
+          _scoreErrors[i] = true;
+        });
+        hasError = true;
+      } else {
+        setState(() {
+          _scoreErrors[i] = false;
+        });
+      }
+      scores[question.questionId.toString()] = marks;
+    }
+
+    if (hasError) {
+      getIt<SnackBarHelper>().showError(
+        'Please correct the marks exceeding maximum limit',
+      );
+      return;
     }
 
     context.read<MentorEvaluationBloc>().add(
