@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
 import 'edit_mentor_event.dart';
@@ -35,6 +36,7 @@ class EditMentorBloc extends Bloc<EditMentorEvent, EditMentorState> {
       bio: event.bio,
       subjectExpertise: event.subjectExpertise,
       isActive: event.isActive,
+      profileImage: event.profileImage,
     );
     result.fold(
       (failure) => emit(MentorOperationError(failure.message)),

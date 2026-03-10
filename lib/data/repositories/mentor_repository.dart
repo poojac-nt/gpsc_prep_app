@@ -23,19 +23,41 @@ class MentorRepository {
     return await _supabase.fetchMentorList();
   }
 
-  Future<Either<Failure, UserModel>> updateMentor({
+  Future<Either<Failure, MentorModel>> updateMentor({
     required int userId,
     required String name,
     required String bio,
     required List<String> subjectExpertise,
     required bool isActive,
+    File? profileImage,
   }) async {
+    // 1️⃣ Fetch all subjects to convert names to IDs
+    final subjectsResult = await _supabase.fetchSubjects();
+
+    if (subjectsResult.isLeft) {
+      return Left(subjectsResult.left);
+    }
+
+    final allSubjects = subjectsResult.right;
+
+    // 2️⃣ Map specialization names to their IDs
+    final List<int> subjectIds =
+        subjectExpertise.map((name) {
+          final subject = allSubjects.firstWhere(
+            (s) => s.subjectName == name,
+            orElse: () => throw Exception('Subject "$name" not found'),
+          );
+          return subject.subjectId;
+        }).toList();
+
+    // 3️⃣ Call Supabase helper with mapped IDs
     return await _supabase.updateMentorInfo(
       userId: userId,
       name: name,
       bio: bio,
-      subjectExpertise: subjectExpertise,
+      subjectExpertise: subjectIds,
       isActive: isActive,
+      profileImage: profileImage,
     );
   }
 

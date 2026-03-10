@@ -1674,75 +1674,70 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, UserModel>> updateMentorInfo({
+  Future<Either<Failure, MentorModel>> updateMentorInfo({
     required int userId,
     required String name,
     required String bio,
-    required List<String> subjectExpertise,
+    required List<int> subjectExpertise,
     required bool isActive,
     File? profileImage,
   }) async {
     try {
       String? profilePictureUrl;
 
+      // 1️⃣ Upload profile image if provided
       if (profileImage != null) {
         final fileName =
-            'mentor_${userId}_${DateTime.now().millisecondsSinceEpoch}';
-        final filePath = 'mentors/$fileName';
+            'mentor_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final filePath = 'uploads/$fileName';
+
         await supabase.storage
             .from(SupabaseKeys.profilePicture)
-            .upload(filePath, profileImage);
+            .upload(
+              filePath,
+              profileImage,
+              fileOptions: const FileOptions(upsert: true),
+            );
+
         profilePictureUrl = supabase.storage
             .from(SupabaseKeys.profilePicture)
             .getPublicUrl(filePath);
       }
 
-      final updateData = <String, dynamic>{
-        'full_name': name,
-        'bio': bio,
-        'is_active': isActive,
-        if (profilePictureUrl != null) 'profile_picture': profilePictureUrl,
-      };
+      // 2️⃣ Call RPC to update mentor
+      final response = await supabase.rpc(
+        'update_mentor_details',
+        params: {
+          'p_user_id': userId,
+          'p_name': name,
+          'p_bio': bio,
+          'p_subject_ids': subjectExpertise,
+          'p_is_active': isActive,
+          'p_profile_picture': profilePictureUrl,
+        },
+      );
 
-      final response =
-          await supabase
-              .from(SupabaseKeys.usersTable)
-              .update(updateData)
-              .eq('id', userId)
-              .select()
-              .single();
-
-      // Now update the mentor subjects
-      // 1. Fetch all subject models to get their IDs matching the selected names
-      if (subjectExpertise.isNotEmpty) {
-        final subjectResponse = await supabase.from(SupabaseKeys.subjects)
-                             .select('subject_id, subject_name')
-                             .inFilter('subject_name', subjectExpertise);
-        final List<int> subjectIds = (subjectResponse as List).map((e) => e['subject_id'] as int).toList();
-
-        // 2. Clear existing subjects for this mentor
-        await supabase.from('mentor_subjects').delete().eq('mentor_id', userId);
-
-        // 3. Insert new ones
-        if (subjectIds.isNotEmpty) {
-          final Set<int> uniqueSubjectIds = subjectIds.toSet();
-          final insertData = uniqueSubjectIds.map((sId) => {
-            'mentor_id': userId,
-            'subject_id': sId,
-          }).toList();
-          await supabase.from('mentor_subjects').insert(insertData);
-        }
-      } else {
-        await supabase.from('mentor_subjects').delete().eq('mentor_id', userId);
+      if (response == null || response['success'] != true) {
+        return Left(Failure(response?['message'] ?? 'Failed to update mentor'));
       }
 
-      final updatedMentor = UserModel.fromJson(response);
+      // 3️⃣ Fetch updated mentor data
+      final mentorList = await supabase.rpc(SupabaseKeys.getMentorList);
+
+      final mentorJson = (mentorList as List).firstWhere(
+        (e) => e['user_data']['id'] == userId,
+      );
+
+      final mentor = MentorModel.fromJson(mentorJson);
+
       _snackBar.showSuccess('Mentor profile updated successfully');
-      _log.i('Mentor updated: ${updatedMentor.name}');
-      return Right(updatedMentor);
-    } catch (e) {
+      _log.i('Mentor updated: ${mentor.user.name}');
+
+      return Right(mentor);
+    } catch (e, stack) {
       _snackBar.showError('Error updating mentor: ${e.toString()}');
-      _log.e('Error updating mentor: $e', error: e);
+      _log.e('Error updating mentor: $e', error: e, s: stack);
+
       return Left(Failure('Error updating mentor: ${e.toString()}'));
     }
   }

@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 
@@ -20,7 +21,7 @@ class SubjectsError extends EditMentorState {
 class MentorSaving extends EditMentorState {}
 
 class MentorUpdateSuccess extends EditMentorState {
-  final UserModel mentor;
+  final MentorModel mentor;
   MentorUpdateSuccess(this.mentor);
 }
 

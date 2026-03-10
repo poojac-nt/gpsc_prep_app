@@ -32,6 +32,7 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
   File? _newProfileImage;
   late List<String> _specializations;
   List<SubjectModel> _availableSubjects = [];
+  late bool _isActive;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
     _bioController = TextEditingController(text: widget.mentor.user.bio);
     _specializations =
         widget.mentor.subjects.map((s) => s.subjectName).toList();
+    _isActive = widget.mentor.user.isActive ?? false;
     context.read<EditMentorBloc>().add(FetchSubjects());
   }
 
@@ -129,7 +131,8 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
         name: _nameController.text.trim(),
         bio: _bioController.text.trim(),
         subjectExpertise: _specializations,
-        isActive: true, // Temporarily disabled from UI
+        isActive: _isActive,
+        profileImage: _newProfileImage,
       ),
     );
   }
@@ -274,8 +277,8 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
                           'Tell us about your professional background and teaching experience...',
                       maxLine: 4,
                     ),
-                    // 20.hGap,
-                    // _buildAccountStatusCard(),
+                    20.hGap,
+                    _buildAccountStatusCard(),
                     32.hGap,
                     ActionButton(
                       isLoading: isSaving,
@@ -366,55 +369,53 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
       ),
     );
   }
-  // Widget _buildAccountStatusCard() {
-  //   return Container(
-  //     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(16.r),
-  //       boxShadow: [
-  //         BoxShadow(
-  //           color: Colors.black.withAlpha(5),
-  //           blurRadius: 10,
-  //           offset: const Offset(0, 4),
-  //         ),
-  //       ],
-  //     ),
-  //     child: Row(
-  //       children: [
-  //         Expanded(
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text(
-  //                 'Account Status',
-  //                 style: TextStyle(
-  //                   fontSize: 15.sp,
-  //                   fontWeight: FontWeight.w700,
-  //                   color: AppColors.gray900,
-  //                 ),
-  //               ),
-  //               4.hGap,
-  //               Text(
-  //                 'Temporarily deactivate mentor profile',
-  //                 style: TextStyle(
-  //                   fontSize: 12.sp,
-  //                   color: AppColors.gray500,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         Switch(
-  //           value: _isActive,
-  //           onChanged: (val) => setState(() => _isActive = val),
-  //           activeThumbColor: Colors.white,
-  //           activeTrackColor: AppColors.primary,
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+
+  Widget _buildAccountStatusCard() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Account Status',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gray900,
+                  ),
+                ),
+                4.hGap,
+                Text(
+                  'Temporarily deactivate mentor profile',
+                  style: TextStyle(fontSize: 12.sp, color: AppColors.gray500),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _isActive,
+            onChanged: (val) => setState(() => _isActive = val),
+            activeThumbColor: Colors.white,
+            activeTrackColor: AppColors.primary,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildAvatar() {
     final profilePic = widget.mentor.user.profilePicture;

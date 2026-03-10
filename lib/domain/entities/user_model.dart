@@ -33,6 +33,8 @@ class UserModel {
   @JsonKey(name: 'bio')
   final String? bio;
 
+  @JsonKey(name: 'is_active')
+  final bool? isActive;
   UserModel({
     this.id,
     required this.authID,
@@ -43,6 +45,7 @@ class UserModel {
     this.number,
     this.profilePicture,
     this.bio,
+    this.isActive,
   });
 
   /// Copy constructor
@@ -56,6 +59,7 @@ class UserModel {
     int? number,
     String? profilePicture,
     String? bio,
+    bool? isActive,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -67,6 +71,7 @@ class UserModel {
       number: number ?? this.number,
       profilePicture: profilePicture ?? this.profilePicture,
       bio: bio ?? this.bio,
+      isActive: isActive ?? this.isActive,
     );
   }
 

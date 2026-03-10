@@ -16,6 +16,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
       number: (json['number'] as num?)?.toInt(),
       profilePicture: json['profile_picture'] as String?,
       bio: json['bio'] as String?,
+      isActive: json['is_active'] as bool?,
     );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
@@ -28,4 +29,5 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'number': instance.number,
       'profile_picture': instance.profilePicture,
       'bio': instance.bio,
+      'is_active': instance.isActive,
     };

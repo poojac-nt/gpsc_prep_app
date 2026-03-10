@@ -1,3 +1,5 @@
+import 'dart:io';
+
 abstract class EditMentorEvent {}
 
 class FetchSubjects extends EditMentorEvent {}
@@ -8,12 +10,15 @@ class UpdateMentor extends EditMentorEvent {
   final String bio;
   final List<String> subjectExpertise;
   final bool isActive;
+  final File? profileImage;
+
   UpdateMentor({
     required this.userId,
     required this.name,
     required this.bio,
     required this.subjectExpertise,
     required this.isActive,
+    this.profileImage,
   });
 }
 

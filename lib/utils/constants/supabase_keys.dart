@@ -44,6 +44,7 @@ abstract class SupabaseKeys {
       'rpc_mentor_test_submissions';
   static final String getSubmissionsReport = 'get_submission_report';
   static final String submitMentorEvaluation = 'insert_desc_mentor_review';
+  static final String editMentor = 'update_mentor_details';
 
   ///table
   static final String usersTable = 'users';
