@@ -1,21 +1,13 @@
 import 'dart:io';
 
-import 'package:equatable/equatable.dart';
-
-abstract class MentorEvaluationEvent extends Equatable {
+abstract class MentorEvaluationEvent {
   const MentorEvaluationEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class FetchMentorEvaluationData extends MentorEvaluationEvent {
   final int submissionId;
 
   const FetchMentorEvaluationData(this.submissionId);
-
-  @override
-  List<Object?> get props => [submissionId];
 }
 
 class SubmitMentorEvaluation extends MentorEvaluationEvent {
@@ -32,12 +24,4 @@ class SubmitMentorEvaluation extends MentorEvaluationEvent {
     this.feedback,
     this.evaluatedPdfFile,
   });
-
-  @override
-  List<Object?> get props => [
-    submissionId,
-    questionScores,
-    feedback,
-    evaluatedPdfFile,
-  ];
 }

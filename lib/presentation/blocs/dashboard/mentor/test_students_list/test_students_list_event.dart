@@ -1,17 +1,9 @@
-import 'package:equatable/equatable.dart';
-
-abstract class TestStudentsListEvent extends Equatable {
+abstract class TestStudentsListEvent {
   const TestStudentsListEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class FetchTestStudentsList extends TestStudentsListEvent {
   final int testId;
 
   const FetchTestStudentsList(this.testId);
-
-  @override
-  List<Object?> get props => [testId];
 }

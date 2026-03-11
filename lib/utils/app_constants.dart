@@ -162,6 +162,7 @@ abstract class AppRoutes {
   static const String allAssignedTests = '/allAssignedTests';
   static const String testStudentsList = '/testStudentsList';
   static const String allTests = '/allTests';
+  static const String studentEvaluationResult = '/studentEvaluationResult';
 }
 
 class AdUnitIds {

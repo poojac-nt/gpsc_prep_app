@@ -172,3 +172,15 @@ class EditMentorScreenArgs {
   final MentorModel mentor;
   EditMentorScreenArgs({required this.mentor});
 }
+
+class StudentEvaluationResultScreenArgs {
+  final int? testId;
+  final String? testName;
+  final String? studentName;
+
+  StudentEvaluationResultScreenArgs({
+    this.testId,
+    this.testName,
+    this.studentName,
+  });
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
@@ -649,10 +650,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           return;
         }
         if (hasAnswer) {
-          getIt<SnackBarHelper>().showSuccess(
-            "This test has already been attempted!",
+          await context.push(
+            AppRoutes.studentEvaluationResult,
+            extra: StudentEvaluationResultScreenArgs(
+              testId: test.id,
+              testName: test.name,
+              studentName: getIt<CacheManager>().user?.name ?? 'Student',
+            ),
           );
-          return;
         }
         await context.push(
           AppRoutes.descFullQuestions,

@@ -191,8 +191,9 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
 
   Widget _buildStudentCard(MentorTestSubmissions submission) {
     return GestureDetector(
-      onTap:
-          () => context.push(
+      onTap: () {
+        if (submission.isChecked == false) {
+          context.push(
             AppRoutes.mentorEvaluation,
             extra: MentorEvaluationScreenArgs(
               mentorAssignmentId: submission.mentorAssignmentId,
@@ -203,7 +204,9 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
               testName: widget.testName,
               isChecked: submission.isChecked,
             ),
-          ),
+          );
+        }
+      },
       child: Container(
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(

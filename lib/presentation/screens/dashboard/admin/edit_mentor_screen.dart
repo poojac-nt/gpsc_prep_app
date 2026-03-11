@@ -82,7 +82,7 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
         return ListView.separated(
           padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
           itemCount: _availableSubjects.length,
-          separatorBuilder: (_, __) => const Divider(),
+          separatorBuilder: (_, _) => const Divider(),
           itemBuilder: (context, index) {
             final subjectName = _availableSubjects[index].subjectName;
             final isSelected = _specializations.contains(subjectName);
@@ -524,8 +524,9 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
     if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    if (parts.isNotEmpty && parts[0].isNotEmpty)
+    if (parts.isNotEmpty && parts[0].isNotEmpty) {
       return parts[0][0].toUpperCase();
+    }
     return 'M';
   }
 }

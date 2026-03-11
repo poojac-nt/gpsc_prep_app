@@ -1,10 +1,5 @@
-import 'package:equatable/equatable.dart';
-
-abstract class SubmitPeerReviewEvent extends Equatable {
+abstract class SubmitPeerReviewEvent {
   const SubmitPeerReviewEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class SubmitPeerReview extends SubmitPeerReviewEvent {
@@ -17,7 +12,4 @@ class SubmitPeerReview extends SubmitPeerReviewEvent {
     required this.reviewerId,
     required this.comment,
   });
-
-  @override
-  List<Object?> get props => [answerId, reviewerId, comment];
 }

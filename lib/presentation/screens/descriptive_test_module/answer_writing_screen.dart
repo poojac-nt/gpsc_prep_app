@@ -10,8 +10,6 @@ import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descript
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/widgets/answer_writing_card.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
@@ -20,8 +18,6 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../domain/entities/desc_test_model.dart';
 import '../../../domain/entities/test_model.dart';
-import '../../../icons/icons.dart';
-import '../../widgets/bordered_container.dart';
 import '../prelims/widgets/test_card.dart';
 
 class AnswerWritingScreen extends StatefulWidget {

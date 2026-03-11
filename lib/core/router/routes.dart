@@ -7,6 +7,8 @@ import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_difficulty_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_question_types_analytics_screen.dart';
@@ -18,21 +20,20 @@ import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_s
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_event.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_full_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answer_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/mentor_evaluation_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/student_evaluation_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/assessment_type_selection_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
@@ -661,6 +662,13 @@ final List<GoRoute> appRoutes = [
         ),
         state,
       );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.studentEvaluationResult,
+    pageBuilder: (context, state) {
+      final args = state.extra as StudentEvaluationResultScreenArgs;
+      return _slideTransition(StudentEvaluationResultScreen(args: args), state);
     },
   ),
 ];
