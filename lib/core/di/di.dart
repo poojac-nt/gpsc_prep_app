@@ -240,7 +240,7 @@ void setupBlocs() {
   getIt.registerLazySingleton<MentorEvaluationBloc>(
     () => MentorEvaluationBloc(getIt<MentorRepository>()),
   );
-  getIt.registerLazySingleton<AllTestBloc>(
+  getIt.registerFactory<AllTestBloc>(
     () => AllTestBloc(getIt<TestRepository>()),
   );
 }

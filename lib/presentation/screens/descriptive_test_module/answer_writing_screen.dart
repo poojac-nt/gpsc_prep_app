@@ -16,8 +16,10 @@ import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../core/cache_manager.dart';
 import '../../../domain/entities/desc_test_model.dart';
 import '../../../domain/entities/test_model.dart';
+import '../../../utils/enums/user_role.dart';
 import '../prelims/widgets/test_card.dart';
 
 class AnswerWritingScreen extends StatefulWidget {
@@ -44,7 +46,14 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.go(AppRoutes.studentDashboard);
+            final role = getIt<CacheManager>().getUserRole();
+            if (role == UserRole.admin) {
+              context.go(AppRoutes.adminDashboard);
+            } else if (role == UserRole.mentor) {
+              context.go(AppRoutes.mentorDashboard);
+            } else {
+              context.go(AppRoutes.studentDashboard);
+            }
           },
         ),
         title: Text('Writing Practice', style: AppTexts.titleTextStyle),

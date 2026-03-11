@@ -24,6 +24,7 @@ import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 import '../../../utils/app_constants.dart';
+import '../../../utils/enums/user_role.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/test_status_dialog.dart';
 
@@ -138,7 +139,16 @@ class _PrelimsMcqInstructionScreenState
             ),
             16.hGap,
             ElevatedButton(
-              onPressed: () => context.go(AppRoutes.studentDashboard),
+              onPressed: () {
+                final role = getIt<CacheManager>().getUserRole();
+                if (role == UserRole.admin) {
+                  context.go(AppRoutes.adminDashboard);
+                } else if (role == UserRole.mentor) {
+                  context.go(AppRoutes.mentorDashboard);
+                } else {
+                  context.go(AppRoutes.studentDashboard);
+                }
+              },
               child: const Text('Go back to Dashboard'),
             ),
           ],

@@ -36,6 +36,7 @@ import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../domain/entities/test_model.dart';
+import '../../../utils/enums/user_role.dart';
 import '../../blocs/pie_chart/pie_chart_bloc.dart';
 import '../../blocs/pie_chart/pie_chart_state.dart';
 import '../../blocs/timer/timer_bloc.dart';
@@ -315,7 +316,14 @@ class _TestScreenState extends State<TestScreen> {
                 _buildAutoSubmitDialog(context, state);
               } else if (questionCubitState is McqQuestionCubitLoaded &&
                   questionCubitState.isQuitTest) {
-                context.go(AppRoutes.studentDashboard);
+                final role = getIt<CacheManager>().getUserRole();
+                if (role == UserRole.admin) {
+                  context.go(AppRoutes.adminDashboard);
+                } else if (role == UserRole.mentor) {
+                  context.go(AppRoutes.mentorDashboard);
+                } else {
+                  context.go(AppRoutes.studentDashboard);
+                }
               } else {
                 Environment.isDevelopment
                     ? null

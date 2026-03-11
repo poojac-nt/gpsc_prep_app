@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
+import '../../../utils/enums/user_role.dart';
 import '../../widgets/action_button.dart';
 
 class DescriptiveTestResultScreen extends StatelessWidget {
@@ -15,7 +18,14 @@ class DescriptiveTestResultScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        context.go(AppRoutes.studentDashboard);
+        final role = getIt<CacheManager>().getUserRole();
+        if (role == UserRole.admin) {
+          context.go(AppRoutes.adminDashboard);
+        } else if (role == UserRole.mentor) {
+          context.go(AppRoutes.mentorDashboard);
+        } else {
+          context.go(AppRoutes.studentDashboard);
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -70,7 +80,14 @@ class DescriptiveTestResultScreen extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   text: "Back to Dashboard",
                   onTap: () {
-                    context.go(AppRoutes.studentDashboard);
+                    final role = getIt<CacheManager>().getUserRole();
+                    if (role == UserRole.admin) {
+                      context.go(AppRoutes.adminDashboard);
+                    } else if (role == UserRole.mentor) {
+                      context.go(AppRoutes.mentorDashboard);
+                    } else {
+                      context.go(AppRoutes.studentDashboard);
+                    }
                   },
                   fontColor: Colors.white,
                 ),

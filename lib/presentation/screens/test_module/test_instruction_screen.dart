@@ -25,6 +25,7 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../../utils/app_constants.dart';
+import '../../../utils/enums/user_role.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/test_status_dialog.dart';
 
@@ -145,7 +146,16 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.go(AppRoutes.studentDashboard),
+              onPressed: () {
+                final role = getIt<CacheManager>().getUserRole();
+                if (role == UserRole.admin) {
+                  context.go(AppRoutes.adminDashboard);
+                } else if (role == UserRole.mentor) {
+                  context.go(AppRoutes.mentorDashboard);
+                } else {
+                  context.go(AppRoutes.studentDashboard);
+                }
+              },
               child: const Text('Go back to Dashboard'),
             ),
           ],

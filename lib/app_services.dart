@@ -15,6 +15,8 @@ import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
@@ -115,7 +117,7 @@ class AppServices {
     });
   }
 
-  final blocProviders = <BlocProvider>[
+  static final List<BlocProvider> _blocProviders = [
     BlocProvider<AuthBloc>(create: (_) => getIt<AuthBloc>()),
     BlocProvider<QuestionBloc>(create: (_) => getIt<QuestionBloc>()),
     BlocProvider<TestBloc>(create: (_) => getIt<TestBloc>()),
@@ -178,4 +180,6 @@ class AppServices {
       create: (_) => getIt<MentorEvaluationBloc>(),
     ),
   ];
+
+  List<BlocProvider> get blocProviders => _blocProviders;
 }

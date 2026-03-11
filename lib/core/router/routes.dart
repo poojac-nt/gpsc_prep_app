@@ -55,6 +55,7 @@ import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_q
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
+import '../../data/repositories/test_repository.dart';
 import '../../presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
@@ -62,6 +63,8 @@ import '../../presentation/screens/descriptive_test_module/descriptive_test_inst
 import '../../presentation/screens/prelims/prelims_mcq_test_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
+import '../../utils/enums/user_role.dart';
+import '../cache_manager.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -80,7 +83,16 @@ final List<GoRoute> appRoutes = [
         }
 
         // Step 1: Go to dashboard first (ensures proper back button behavior)
-        router.go('/studentDashboard');
+        final role = getIt<CacheManager>().getUserRole();
+        String dashboardRoute = AppRoutes.studentDashboard;
+
+        if (role == UserRole.admin) {
+          dashboardRoute = AppRoutes.adminDashboard;
+        } else if (role == UserRole.mentor) {
+          dashboardRoute = AppRoutes.mentorDashboard;
+        }
+
+        router.go(dashboardRoute);
 
         // Step 2: Wait 300ms so dashboard builds (important!)
         await Future.delayed(const Duration(milliseconds: 300));
@@ -112,20 +124,38 @@ final List<GoRoute> appRoutes = [
           context.pushReplacement('/error?message=Invalid+test+link');
           return;
         }
-        router.go('/studentDashboard');
+        final role = getIt<CacheManager>().getUserRole();
+        String dashboardRoute = AppRoutes.studentDashboard;
+
+        if (role == UserRole.admin) {
+          router.go(AppRoutes.adminDashboard);
+          await Future.delayed(const Duration(milliseconds: 100));
+          router.push(AppRoutes.allTests);
+        } else if (role == UserRole.mentor) {
+          dashboardRoute = AppRoutes.mentorDashboard;
+          router.go(dashboardRoute);
+        } else {
+          router.go(dashboardRoute);
+        }
+
         await Future.delayed(const Duration(milliseconds: 300));
-        debugPrint('🚀 Navigating to test instruction with type=$type, id=$id');
+        debugPrint(
+          '🚀 [DEBUG] Navigating via AppRoutes names: type=$type, id=$id',
+        );
         if (type == 'mcq') {
-          router.push(
-            '/studentDashboard/mcqTestScreen/testInstructionScreen/$id',
+          router.pushNamed(
+            AppRoutes.mcqTestInstructionScreen,
+            extra: TestInstructionScreenArgs(testId: id),
           );
         } else if (type == 'desc') {
-          router.push(
-            '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$id',
+          router.pushNamed(
+            AppRoutes.descriptiveTestInstructionScreen,
+            extra: DescTestInstructionScreenArgs(testId: id),
           );
         } else if (type == 'prelims') {
-          router.push(
-            '/studentDashboard/fullLengthMcqTestScreen/prelimsInstructionsScreen/$id',
+          router.pushNamed(
+            AppRoutes.prelimsInstructionsScreen,
+            extra: PrelimsInstructionScreenArgs(testId: id),
           );
         } else {
           router.pushReplacement('/error?message=Unknown+test+type');
@@ -436,6 +466,7 @@ final List<GoRoute> appRoutes = [
 
   GoRoute(
     path: AppRoutes.descriptiveTestInstructionScreen,
+    name: AppRoutes.descriptiveTestInstructionScreen,
     pageBuilder: (context, state) {
       final args = state.extra as DescTestInstructionScreenArgs;
 
@@ -577,6 +608,7 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.prelimsInstructionsScreen,
+    name: AppRoutes.prelimsInstructionsScreen,
     pageBuilder: (context, state) {
       final args = state.extra as PrelimsInstructionScreenArgs?;
       return _slideTransition(
@@ -657,7 +689,7 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       return _slideTransition(
         BlocProvider(
-          create: (context) => getIt<AllTestBloc>()..add(FetchAllTests()),
+          create: (context) => AllTestBloc(getIt<TestRepository>())..add(FetchAllTests()),
           child: const AllTestScreen(),
         ),
         state,

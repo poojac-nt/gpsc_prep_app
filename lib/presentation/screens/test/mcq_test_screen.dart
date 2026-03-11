@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
@@ -13,6 +15,8 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../../utils/enums/user_role.dart';
 
 class MCQTestScreen extends StatefulWidget {
   const MCQTestScreen({super.key});
@@ -39,7 +43,14 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
       canPop: true,
       onPopInvokedWithResult: (didPop, value) {
         if (didPop) return;
-        context.go(AppRoutes.studentDashboard);
+        final role = getIt<CacheManager>().getUserRole();
+        if (role == UserRole.admin) {
+          context.go(AppRoutes.adminDashboard);
+        } else if (role == UserRole.mentor) {
+          context.go(AppRoutes.mentorDashboard);
+        } else {
+          context.go(AppRoutes.studentDashboard);
+        }
       },
       child: DefaultTabController(
         length: 3,
@@ -136,7 +147,8 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
           onNotification: (ScrollNotification scrollInfo) {
             if (!state.hasReachedMax &&
                 !state.isFetchingMore &&
-                scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                scrollInfo.metrics.pixels >=
+                    scrollInfo.metrics.maxScrollExtent - 200) {
               context.read<DailyTestBloc>().add(LoadMoreTests());
             }
             return true;
@@ -176,7 +188,8 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         onNotification: (ScrollNotification scrollInfo) {
           if (!state.hasReachedMax &&
               !state.isFetchingMore &&
-              scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              scrollInfo.metrics.pixels >=
+                  scrollInfo.metrics.maxScrollExtent - 200) {
             context.read<DailyTestBloc>().add(LoadMoreTests());
           }
           return true;
