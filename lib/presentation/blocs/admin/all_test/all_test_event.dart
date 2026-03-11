@@ -1,10 +1,8 @@
-import 'package:equatable/equatable.dart';
+part of 'all_test_bloc.dart';
 
-abstract class AllTestEvent extends Equatable {
+@immutable
+abstract class AllTestEvent {
   const AllTestEvent();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class FetchAllTests extends AllTestEvent {}

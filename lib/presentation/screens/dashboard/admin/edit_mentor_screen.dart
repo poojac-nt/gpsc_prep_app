@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_text_field.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';

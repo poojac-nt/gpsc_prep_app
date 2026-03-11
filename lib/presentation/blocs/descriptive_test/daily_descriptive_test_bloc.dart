@@ -7,9 +7,11 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:meta/meta.dart';
 
-import 'daily_descriptive_test_event.dart';
-import 'daily_descriptive_test_state.dart';
+part 'daily_descriptive_test_event.dart';
+part 'daily_descriptive_test_state.dart';
 
 class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
   final TestRepository _testRepository;

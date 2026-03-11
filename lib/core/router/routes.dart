@@ -8,7 +8,6 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_difficulty_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_question_types_analytics_screen.dart';
@@ -689,7 +688,9 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       return _slideTransition(
         BlocProvider(
-          create: (context) => AllTestBloc(getIt<TestRepository>())..add(FetchAllTests()),
+          create:
+              (context) =>
+                  AllTestBloc(getIt<TestRepository>())..add(FetchAllTests()),
           child: const AllTestScreen(),
         ),
         state,

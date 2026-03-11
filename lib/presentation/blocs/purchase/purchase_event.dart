@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
+part of 'purchase_bloc.dart';
 
 @immutable
 sealed class PurchaseEvent {}

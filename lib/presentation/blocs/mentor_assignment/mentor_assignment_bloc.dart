@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'mentor_assignment_event.dart';
-import 'mentor_assignment_state.dart';
+import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
+
+part 'mentor_assignment_event.dart';
+part 'mentor_assignment_state.dart';
 
 class MentorAssignmentBloc
     extends Bloc<MentorAssignmentEvent, MentorAssignmentState> {

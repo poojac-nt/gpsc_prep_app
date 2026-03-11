@@ -7,8 +7,6 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';

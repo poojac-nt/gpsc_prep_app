@@ -5,12 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_event.dart';
 import 'package:gpsc_prep_app/presentation/widgets/study_material_widgets.dart';
 
 import '../../../../core/di/di.dart';
 import '../../../blocs/study_material/study_material_bloc.dart';
-import '../../../blocs/study_material/study_material_state.dart';
 
 class StudyMaterialListScreen extends StatefulWidget {
   final String selectedLanguage;

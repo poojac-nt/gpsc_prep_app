@@ -1,6 +1,6 @@
 // study_material_event.dart
 
-import 'package:gpsc_prep_app/utils/enums/language_enum.dart';
+part of 'study_material_bloc.dart';
 
 abstract class StudyMaterialEvent {}
 

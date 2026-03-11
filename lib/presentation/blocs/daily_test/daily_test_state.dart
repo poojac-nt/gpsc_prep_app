@@ -1,9 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
-
-import '../../../core/error/failure.dart';
-import '../../../domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/domain/entities/test_model.dart';
+part of 'daily_test_bloc.dart';
 
 @immutable
 sealed class DailyTestState {}

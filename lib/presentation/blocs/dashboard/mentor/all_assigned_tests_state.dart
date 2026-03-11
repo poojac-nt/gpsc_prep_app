@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
+part of 'all_assigned_tests_bloc.dart';
 
 abstract class AllAssignedTestsState {
   const AllAssignedTestsState();

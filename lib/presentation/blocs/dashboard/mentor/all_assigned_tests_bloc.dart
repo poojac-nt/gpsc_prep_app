@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'all_assigned_tests_event.dart';
-import 'all_assigned_tests_state.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
+
+part 'all_assigned_tests_event.dart';
+part 'all_assigned_tests_state.dart';
 
 class AllAssignedTestsBloc
     extends Bloc<AllAssignedTestsEvent, AllAssignedTestsState> {

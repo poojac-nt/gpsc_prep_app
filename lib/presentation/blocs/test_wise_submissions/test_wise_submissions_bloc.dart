@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'test_wise_submissions_event.dart';
-import 'test_wise_submissions_state.dart';
+import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
+
+part 'test_wise_submissions_event.dart';
+part 'test_wise_submissions_state.dart';
 
 class TestWiseSubmissionsBloc
     extends Bloc<TestWiseSubmissionsEvent, TestWiseSubmissionsState> {

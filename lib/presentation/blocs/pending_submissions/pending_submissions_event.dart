@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+part of 'pending_submissions_bloc.dart';
 
 @immutable
 sealed class PendingSubmissionsEvent {}

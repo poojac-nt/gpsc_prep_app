@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/peer_review_repository.dart';
-import 'submit_peer_review_event.dart';
-import 'submit_peer_review_state.dart';
+import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
+
+part 'submit_peer_review_event.dart';
+part 'submit_peer_review_state.dart';
 
 class SubmitPeerReviewBloc
     extends Bloc<SubmitPeerReviewEvent, SubmitPeerReviewState> {
@@ -33,4 +35,3 @@ class SubmitPeerReviewBloc
   }
 }
 
-class ResetSubmitPeerReviewState extends SubmitPeerReviewEvent {}

@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'test_students_list_event.dart';
-import 'test_students_list_state.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
+
+part 'test_students_list_event.dart';
+part 'test_students_list_state.dart';
 
 class TestStudentsListBloc
     extends Bloc<TestStudentsListEvent, TestStudentsListState> {

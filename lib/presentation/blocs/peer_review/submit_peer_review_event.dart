@@ -1,3 +1,5 @@
+part of 'submit_peer_review_bloc.dart';
+
 abstract class SubmitPeerReviewEvent {
   const SubmitPeerReviewEvent();
 }
@@ -13,3 +15,5 @@ class SubmitPeerReview extends SubmitPeerReviewEvent {
     required this.comment,
   });
 }
+
+class ResetSubmitPeerReviewState extends SubmitPeerReviewEvent {}

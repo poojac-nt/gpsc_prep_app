@@ -1,11 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/purchase_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
 
-import 'purchase_event.dart';
-import 'purchase_state.dart';
+part 'purchase_event.dart';
+part 'purchase_state.dart';
 
 class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
   final PurchaseRepository _repository;

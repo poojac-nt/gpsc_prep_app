@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:gpsc_prep_app/core/error/failure.dart';
-import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
+part of 'purchase_bloc.dart';
 
 @immutable
 sealed class PurchaseState {}

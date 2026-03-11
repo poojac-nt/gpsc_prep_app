@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'pending_submissions_event.dart';
-import 'pending_submissions_state.dart';
+import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
+
+part 'pending_submissions_event.dart';
+part 'pending_submissions_state.dart';
 
 class PendingSubmissionsBloc
     extends Bloc<PendingSubmissionsEvent, PendingSubmissionsState> {

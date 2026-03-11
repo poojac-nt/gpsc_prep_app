@@ -4,8 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';

@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
+import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
 
-import 'edit_mentor_event.dart';
-import 'edit_mentor_state.dart';
+part 'edit_mentor_event.dart';
+part 'edit_mentor_state.dart';
 
 class EditMentorBloc extends Bloc<EditMentorEvent, EditMentorState> {
   final MentorRepository _mentorRepository;

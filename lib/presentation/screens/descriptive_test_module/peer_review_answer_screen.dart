@@ -9,8 +9,6 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/common/pdf_viewer_screen.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';

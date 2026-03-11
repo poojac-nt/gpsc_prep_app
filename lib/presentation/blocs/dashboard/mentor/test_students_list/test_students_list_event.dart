@@ -1,3 +1,5 @@
+part of 'test_students_list_bloc.dart';
+
 abstract class TestStudentsListEvent {
   const TestStudentsListEvent();
 }

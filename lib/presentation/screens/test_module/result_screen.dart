@@ -12,11 +12,9 @@ import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
@@ -29,11 +27,8 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../blocs/daily_test/daily_test_bloc.dart';
-import '../../blocs/daily_test/daily_test_event.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
-import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/prelims/prelims_test_bloc.dart';
-import '../../blocs/prelims/prelims_test_event.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({

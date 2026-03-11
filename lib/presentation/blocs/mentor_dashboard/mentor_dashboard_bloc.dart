@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'mentor_dashboard_event.dart';
-import 'mentor_dashboard_state.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
+
+part 'mentor_dashboard_event.dart';
+part 'mentor_dashboard_state.dart';
 
 class MentorDashboardBloc
     extends Bloc<MentorDashboardEvent, MentorDashboardState> {

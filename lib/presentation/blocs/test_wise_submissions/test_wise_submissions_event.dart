@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
+part of 'test_wise_submissions_bloc.dart';
 
 @immutable
 sealed class TestWiseSubmissionsEvent {}

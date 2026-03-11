@@ -1,5 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
-import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
+part of 'edit_mentor_bloc.dart';
 
 abstract class EditMentorState {}
 

@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
+part of 'pending_submissions_bloc.dart';
 
 @immutable
 sealed class PendingSubmissionsState {}

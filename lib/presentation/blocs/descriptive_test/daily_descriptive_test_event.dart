@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
+part of 'daily_descriptive_test_bloc.dart';
 
 @immutable
 sealed class DailyDescTestEvent {}
@@ -11,6 +9,7 @@ class DailyTestInit extends DailyDescTestEvent {}
 /// Fetch all descriptive tests for the user
 class FetchAllTests extends DailyDescTestEvent {
   final int? courseId;
+
   FetchAllTests({this.courseId});
 }
 

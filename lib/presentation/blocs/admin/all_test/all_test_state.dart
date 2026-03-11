@@ -1,11 +1,8 @@
-import 'package:equatable/equatable.dart';
-import '../../../../domain/entities/all_tests_model.dart';
+part of 'all_test_bloc.dart';
 
-abstract class AllTestState extends Equatable {
+@immutable
+abstract class AllTestState {
   const AllTestState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class AllTestInitial extends AllTestState {}
@@ -16,16 +13,10 @@ class AllTestLoaded extends AllTestState {
   final AllTestsModel allTests;
 
   const AllTestLoaded(this.allTests);
-
-  @override
-  List<Object?> get props => [allTests];
 }
 
 class AllTestError extends AllTestState {
   final String message;
 
   const AllTestError(this.message);
-
-  @override
-  List<Object?> get props => [message];
 }

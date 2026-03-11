@@ -5,11 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:hive/hive.dart';
 
 class MentorListScreen extends StatefulWidget {
   const MentorListScreen({super.key});

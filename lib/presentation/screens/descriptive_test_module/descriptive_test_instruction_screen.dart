@@ -4,10 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -15,7 +12,6 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import '../../../core/di/di.dart';
 import '../../../core/helpers/snack_bar_helper.dart';
 import '../../../utils/app_constants.dart';
-import '../../blocs/descriptive_test/daily_descriptive_test_state.dart';
 
 class DescriptiveTestInstructionScreen extends StatefulWidget {
   final DescTestModel? descTestModel;

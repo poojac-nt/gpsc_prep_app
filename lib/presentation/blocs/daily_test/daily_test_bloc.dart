@@ -1,9 +1,13 @@
 import 'package:bloc/bloc.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
+import 'package:meta/meta.dart';
 
-import 'daily_test_event.dart';
-import 'daily_test_state.dart';
+part 'daily_test_event.dart';
+part 'daily_test_state.dart';
 
 class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
   final TestRepository _testRepository;
@@ -19,7 +23,10 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
   ) async {
     emit(DailyTestFetching());
 
-    final testsResult = await _testRepository.fetchDailyTest(offset: 0, limit: 20);
+    final testsResult = await _testRepository.fetchDailyTest(
+      offset: 0,
+      limit: 20,
+    );
 
     await testsResult.fold(
       (failure) async {
@@ -41,12 +48,14 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
           });
         }
 
-        emit(DailyTestFetched(
-          tests,
-          attemptStateMap,
-          hasReachedMax: tests.length < 20,
-          offset: tests.length,
-        ));
+        emit(
+          DailyTestFetched(
+            tests,
+            attemptStateMap,
+            hasReachedMax: tests.length < 20,
+            offset: tests.length,
+          ),
+        );
       },
     );
   }
@@ -75,11 +84,15 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
       },
       (newTests) async {
         if (newTests.isEmpty) {
-          emit(currentState.copyWith(hasReachedMax: true, isFetchingMore: false));
+          emit(
+            currentState.copyWith(hasReachedMax: true, isFetchingMore: false),
+          );
           return;
         }
 
-        final Map<int, TestAttemptState> attemptStateMap = Map.from(currentState.testResults);
+        final Map<int, TestAttemptState> attemptStateMap = Map.from(
+          currentState.testResults,
+        );
 
         // Parallelize fetching attempt states for newly fetched tests
         final attemptStateFutures = newTests.map(
@@ -94,13 +107,15 @@ class DailyTestBloc extends Bloc<DailyTestEvent, DailyTestState> {
           });
         }
 
-        emit(DailyTestFetched(
-          currentState.dailyTestModel + newTests,
-          attemptStateMap,
-          hasReachedMax: newTests.length < 20,
-          isFetchingMore: false,
-          offset: currentState.offset + newTests.length,
-        ));
+        emit(
+          DailyTestFetched(
+            currentState.dailyTestModel + newTests,
+            attemptStateMap,
+            hasReachedMax: newTests.length < 20,
+            isFetchingMore: false,
+            offset: currentState.offset + newTests.length,
+          ),
+        );
       },
     );
   }

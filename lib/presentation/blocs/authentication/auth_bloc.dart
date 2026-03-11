@@ -11,7 +11,6 @@ import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:image_picker/image_picker.dart';

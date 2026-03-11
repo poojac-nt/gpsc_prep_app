@@ -10,8 +10,7 @@ import 'package:gpsc_prep_app/presentation/widgets/peer_submission_tile.dart';
 import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
-import '../../blocs/peer_review/submit_peer_review_bloc.dart';
-import '../../blocs/peer_review/submit_peer_review_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
 
 class DescriptiveAnswerDetailScreen extends StatefulWidget {
   final DescQuestionModel question;

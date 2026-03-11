@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+part of 'fetch_single_test_bloc.dart';
 
 @immutable
 sealed class FetchSingleTestEvent {}

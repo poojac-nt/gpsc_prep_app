@@ -10,8 +10,6 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';

@@ -15,11 +15,8 @@ import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
 import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 

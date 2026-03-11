@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
+part of 'test_students_list_bloc.dart';
 
 abstract class TestStudentsListState {
   const TestStudentsListState();

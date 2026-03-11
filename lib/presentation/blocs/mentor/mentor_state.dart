@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
+part of 'mentor_bloc.dart';
 
 abstract class MentorState {}
 

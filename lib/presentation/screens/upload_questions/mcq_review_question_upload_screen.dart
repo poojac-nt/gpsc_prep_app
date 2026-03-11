@@ -6,8 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';

@@ -4,10 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_state.dart';
-
 import '../../../core/error/failure.dart';
+
+part 'dashboard_bloc_event.dart';
+part 'dashboard_bloc_state.dart';
 
 class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
   final AnalyticsRepository _analyticsRepository;

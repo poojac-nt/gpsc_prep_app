@@ -6,7 +6,6 @@ import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';

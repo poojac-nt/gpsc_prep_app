@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
+part 'timer_event.dart';
+part 'timer_state.dart';
 
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   TimerBloc() : super(TimerInitial()) {

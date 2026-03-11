@@ -1,9 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+part of 'test_bloc.dart';
 
-import '../../../../../domain/entities/question_language_model.dart';
-
-@immutable
 sealed class TestEvent {}
 
 class SubmitTest extends TestEvent {

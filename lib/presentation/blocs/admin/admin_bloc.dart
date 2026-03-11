@@ -1,7 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/admin_repository.dart';
-import 'admin_event.dart';
-import 'admin_state.dart';
+import 'package:gpsc_prep_app/domain/entities/admin_stats_model.dart';
+import 'package:meta/meta.dart';
+
+part 'admin_event.dart';
+part 'admin_state.dart';
 
 class AdminBloc extends Bloc<AdminEvent, AdminState> {
   final AdminRepository _adminRepository;

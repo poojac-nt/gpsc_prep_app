@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
-import 'mentor_event.dart';
-import 'mentor_state.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
+
+part 'mentor_event.dart';
+part 'mentor_state.dart';
 
 class MentorBloc extends Bloc<MentorEvent, MentorState> {
   final MentorRepository _mentorRepository;

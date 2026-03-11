@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
+part of 'mentor_assignment_bloc.dart';
 
 @immutable
 sealed class MentorAssignmentEvent {}

@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
+part of 'mentor_evaluation_bloc.dart';
 
 abstract class MentorEvaluationState {
   const MentorEvaluationState();

@@ -24,8 +24,6 @@ import 'package:hive/hive.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../utils/enums/user_role.dart';
-import '../../blocs/dashboard/dashboard_bloc_event.dart';
-import '../../blocs/dashboard/dashboard_bloc_state.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
 import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';

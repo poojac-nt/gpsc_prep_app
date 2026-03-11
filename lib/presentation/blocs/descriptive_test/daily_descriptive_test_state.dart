@@ -1,9 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/core/error/failure.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+part of 'daily_descriptive_test_bloc.dart';
 
 @immutable
 sealed class DailyDescTestState {}

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+part of 'mentor_assignment_bloc.dart';
 
 @immutable
 sealed class MentorAssignmentState {}

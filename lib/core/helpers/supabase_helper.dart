@@ -58,7 +58,7 @@ class SupabaseHelper {
 
   SupabaseHelper(this._log, this._snackBar, this._cache);
 
-  late final userId = _cache.user!.id;
+  int? get userId => _cache.user?.id;
 
   /// ===========================================================================
   /// AUTHENTICATION

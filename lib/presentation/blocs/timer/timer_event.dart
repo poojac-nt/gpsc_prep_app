@@ -1,3 +1,5 @@
+part of 'timer_bloc.dart';
+
 sealed class TimerEvent {}
 
 class TimerInit extends TimerEvent {}

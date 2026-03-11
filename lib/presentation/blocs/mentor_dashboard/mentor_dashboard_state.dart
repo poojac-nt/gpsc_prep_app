@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
+part of 'mentor_dashboard_bloc.dart';
 
 abstract class MentorDashboardState {
   const MentorDashboardState();

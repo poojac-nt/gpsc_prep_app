@@ -1,4 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
+part of 'submit_peer_review_bloc.dart';
 
 abstract class SubmitPeerReviewState {
   const SubmitPeerReviewState();
