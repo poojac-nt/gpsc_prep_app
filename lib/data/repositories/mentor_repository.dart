@@ -60,10 +60,6 @@ class MentorRepository {
     );
   }
 
-  Future<Either<Failure, void>> deleteMentor(int userId) async {
-    return await _supabase.deleteMentorAccount(userId);
-  }
-
   Future<Either<Failure, List<SubjectModel>>> fetchSubjects() async {
     return await _supabase.fetchSubjects();
   }

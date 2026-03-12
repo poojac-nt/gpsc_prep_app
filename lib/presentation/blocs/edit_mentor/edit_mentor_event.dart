@@ -21,8 +21,3 @@ class UpdateMentor extends EditMentorEvent {
     this.profileImage,
   });
 }
-
-class DeleteMentor extends EditMentorEvent {
-  final int userId;
-  DeleteMentor(this.userId);
-}

@@ -58,6 +58,7 @@ import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:hive_flutter/adapters.dart';
 
 import '../../presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import '../../presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import '../../presentation/blocs/purchase/purchase_bloc.dart';
 import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
 
@@ -242,6 +243,9 @@ void setupBlocs() {
   );
   getIt.registerFactory<AllTestBloc>(
     () => AllTestBloc(getIt<TestRepository>()),
+  );
+  getIt.registerFactory<MainsTestReviewBloc>(
+    () => MainsTestReviewBloc(getIt<TestRepository>()),
   );
 }
 

@@ -15,6 +15,7 @@ import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
@@ -58,7 +59,7 @@ class SupabaseHelper {
 
   SupabaseHelper(this._log, this._snackBar, this._cache);
 
-  int? get userId => _cache.user?.id;
+  int? get userId => _cache.user!.id;
 
   /// ===========================================================================
   /// AUTHENTICATION
@@ -107,6 +108,18 @@ class SupabaseHelper {
               .single();
       _log.i('[login] User table response: $userResponse');
       final user = UserModel.fromJson(userResponse);
+
+      // Check for mentor deactivation
+      if (user.role == UserRole.mentor && user.isActive == false) {
+        await supabase.auth.signOut();
+        _log.w('[login] Blocked login for deactivated mentor: ${user.email}');
+        return Left(
+          Failure(
+            'Your account has been deactivated. Please contact the administrator.',
+          ),
+        );
+      }
+
       _snackBar.showSuccess('Logged In as ${user.name}');
       return Right(user);
     } catch (e, s) {
@@ -818,6 +831,29 @@ class SupabaseHelper {
       return Right(answers);
     } catch (e) {
       return Left(Failure('Error fetching answers: $e'));
+    }
+  }
+
+  Future<Either<Failure, MainsTestReviewModel>> fetchDescriptiveTestReview(
+    int testId,
+  ) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.fetchStudentTestReview,
+        params: {'p_user_id': userId, 'p_test_id': testId},
+      );
+
+      if (response == null) {
+        return Left(Failure('No review data found for this test.'));
+      }
+
+      final result = MainsTestReviewModel.fromJson(
+        Map<String, dynamic>.from(response),
+      );
+      return Right(result);
+    } catch (e) {
+      _log.e('Error fetching descriptive test review: $e');
+      return Left(Failure('Error fetching review review: ${e.toString()}'));
     }
   }
 
@@ -1741,19 +1777,6 @@ class SupabaseHelper {
       _log.e('Error updating mentor: $e', error: e, s: stack);
 
       return Left(Failure('Error updating mentor: ${e.toString()}'));
-    }
-  }
-
-  Future<Either<Failure, void>> deleteMentorAccount(int userId) async {
-    try {
-      await supabase.from(SupabaseKeys.usersTable).delete().eq('id', userId);
-      _snackBar.showSuccess('Mentor account deleted');
-      _log.i('Mentor account deleted: userId=$userId');
-      return const Right(null);
-    } catch (e) {
-      _snackBar.showError('Error deleting mentor: ${e.toString()}');
-      _log.e('Error deleting mentor: $e', error: e);
-      return Left(Failure('Error deleting mentor: ${e.toString()}'));
     }
   }
 

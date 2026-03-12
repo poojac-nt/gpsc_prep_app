@@ -21,7 +21,8 @@ TestModel _$TestModelFromJson(Map<String, dynamic> json) => TestModel(
           ? null
           : DateTime.parse(json['created_at'] as String),
       courseID: (json['course_id'] as num?)?.toInt(),
-    )..totalAttempt = (json['total_attempts'] as num?)?.toInt();
+      totalAttempt: (json['total_attempts'] as num?)?.toInt(),
+    );
 
 Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'id': instance.id,

@@ -119,26 +119,13 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
         ),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Column(
-        children: [
-          Text(
-            widget.testName,
-            style: TextStyle(
-              color: AppColors.gray900,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            "ASSIGN MENTORS",
-            style: TextStyle(
-              color: AppColors.gray500,
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ],
+      title: Text(
+        widget.testName,
+        style: TextStyle(
+          color: AppColors.gray900,
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

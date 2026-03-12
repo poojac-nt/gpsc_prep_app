@@ -10,6 +10,8 @@ import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:meta/meta.dart';
 
+import '../../../domain/entities/mains_test_review_model.dart';
+
 part 'daily_descriptive_test_event.dart';
 part 'daily_descriptive_test_state.dart';
 
@@ -34,6 +36,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       _fileCache.clear();
       emit(DailyTestInitial());
     });
+    on<FetchReviewForTest>(_fetchReviewForTest);
   }
 
   /// Fetch all tests
@@ -98,7 +101,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         }
 
         // 3. Emit success state with both tests and answers
-        emit(DailyDescTestFetched(tests, answersMap));
+        emit(DailyDescTestFetched(tests, answersMap, {}));
         _log.i("Fetched ${tests.length} descriptive tests successfully.");
       },
     );
@@ -268,6 +271,43 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         emit(DescTestSubmitSuccess("Test submitted successfully!"));
         _log.i("Descriptive test PDF submitted successfully");
       },
+    );
+  }
+
+  Future<void> _fetchReviewForTest(
+    FetchReviewForTest event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    final currentState = state;
+
+    if (currentState is! DailyDescTestFetched) return;
+
+    final reviewModels = Map<int, MainsTestReviewModel?>.from(
+      currentState.reviewsMap,
+    );
+
+    // Prevent duplicate API calls
+    if (reviewModels.containsKey(event.testId)) return;
+
+    final result = await _testRepository.fetchDescriptiveTestReview(
+      event.testId,
+    );
+
+    result.fold(
+      (_) {
+        reviewModels[event.testId] = null;
+      },
+      (model) {
+        reviewModels[event.testId] = model;
+      },
+    );
+
+    emit(
+      DailyDescTestFetched(
+        currentState.dailyTestModel,
+        currentState.answersMap,
+        reviewModels,
+      ),
     );
   }
 }

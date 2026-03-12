@@ -45,6 +45,7 @@ abstract class SupabaseKeys {
   static final String getSubmissionsReport = 'get_submission_report';
   static final String submitMentorEvaluation = 'insert_desc_mentor_review';
   static final String editMentor = 'update_mentor_details';
+  static final String fetchStudentTestReview = 'get_desc_test_review';
 
   ///table
   static final String usersTable = 'users';

@@ -1,16 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/presentation/widgets/section_header.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class StudentEvaluationResultScreen extends StatelessWidget {
+import '../../../core/router/args.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/extensions/padding.dart';
+import '../../widgets/action_button.dart';
+import '../../widgets/section_header.dart';
+
+class StudentEvaluationResultScreen extends StatefulWidget {
   final StudentEvaluationResultScreenArgs args;
 
   const StudentEvaluationResultScreen({super.key, required this.args});
+
+  @override
+  State<StudentEvaluationResultScreen> createState() =>
+      _StudentEvaluationResultScreenState();
+}
+
+class _StudentEvaluationResultScreenState
+    extends State<StudentEvaluationResultScreen> {
+  @override
+  void initState() {
+    context.read<MainsTestReviewBloc>().add(
+      FetchMainsTestReview(widget.args.testId!),
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,41 +44,67 @@ class StudentEvaluationResultScreen extends StatelessWidget {
         title: Text('Evaluation Result', style: AppTexts.titleTextStyle),
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Student Info Card ──
-            _buildStudentInfoCard(),
-            16.hGap,
+      body: BlocBuilder<MainsTestReviewBloc, MainsTestReviewState>(
+        builder: (context, state) {
+          if (state is MainsTestReviewLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is MainsTestReviewError) {
+            return Center(child: Text(state.message));
+          } else if (state is MainsTestReviewLoaded) {
+            final result = state.result;
 
-            // ── Download Evaluated PDF Section ──
-            _buildDownloadPdfSection(),
-            16.hGap,
+            // Find the selected mentor's review or default to the first one
+            final selectedReview = result.mentorReviews.firstWhere(
+              (m) => m.mentorId == widget.args.mentorId,
+              orElse: () => result.mentorReviews.first,
+            );
 
-            // ── Total Score Section ──
-            _buildTotalScoreSection(),
-            16.hGap,
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Student Info Card ──
+                  _buildStudentInfoCard(result, selectedReview),
+                  16.hGap,
 
-            // ── Question-wise Breakdown ──
-            const SectionHeader(
-              title: 'Question-wise Breakdown',
-              padding: EdgeInsets.zero,
-            ),
-            12.hGap,
-            _buildQuestionBreakdown(),
-            16.hGap,
+                  // ── Download Evaluated PDF Section ──
+                  if (selectedReview.reviewedPdfUrl != null)
+                    _buildDownloadPdfSection(selectedReview),
+                  16.hGap,
 
-            // ── Overall Feedback ──
-            _buildOverallFeedback(),
-            24.hGap,
-          ],
-        ).padAll(16.w),
+                  // ── Total Score Section ──
+                  _buildTotalScoreSection(
+                    selectedReview,
+                    result.testTotalMarks,
+                  ),
+                  16.hGap,
+
+                  // ── Question-wise Breakdown ──
+                  const SectionHeader(
+                    title: 'Question-wise Breakdown',
+                    padding: EdgeInsets.zero,
+                  ),
+                  12.hGap,
+                  _buildQuestionBreakdown(selectedReview),
+                  16.hGap,
+
+                  // ── Selected Mentor Feedback ──
+                  _buildOverallFeedback(selectedReview),
+                  24.hGap,
+                ],
+              ).padAll(16.w),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
 
-  Widget _buildStudentInfoCard() {
+  Widget _buildStudentInfoCard(
+    MainsTestReviewModel result,
+    MentorReviewDetail selectedReview,
+  ) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -85,7 +131,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  args.studentName ?? 'Arjun Mehta',
+                  widget.args.studentName ?? 'Student',
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -94,8 +140,17 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                 ),
                 4.hGap,
                 Text(
-                  args.testName ?? 'Prelims Full Test - 05',
+                  result.testName,
                   style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                ),
+                4.hGap,
+                Text(
+                  "Evaluated by: ${selectedReview.mentorName}",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -105,7 +160,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDownloadPdfSection() {
+  Widget _buildDownloadPdfSection(MentorReviewDetail selectedReview) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
@@ -134,7 +189,12 @@ class StudentEvaluationResultScreen extends StatelessWidget {
           ActionButton(
             text: 'Download Evaluated PDF',
             icon: Icons.download_rounded,
-            onTap: () {},
+            onTap: () async {
+              final url = Uri.parse(selectedReview.reviewedPdfUrl!);
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
             backgroundColor: AppColors.primary,
           ),
         ],
@@ -142,7 +202,9 @@ class StudentEvaluationResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTotalScoreSection() {
+  Widget _buildTotalScoreSection(MentorReviewDetail review, int maxMarks) {
+    final totalScore = review.totalMarks;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
@@ -166,7 +228,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: '74 ',
+                  text: '${totalScore.toStringAsFixed(1)} ',
                   style: TextStyle(
                     fontSize: 36.sp,
                     fontWeight: FontWeight.w800,
@@ -174,7 +236,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                   ),
                 ),
                 TextSpan(
-                  text: '/ 150',
+                  text: '/ $maxMarks',
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
@@ -188,7 +250,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4.r),
             child: LinearProgressIndicator(
-              value: 74 / 150,
+              value: maxMarks == 0 ? 0 : totalScore / maxMarks,
               minHeight: 8.h,
               backgroundColor: Colors.grey[100],
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
@@ -199,17 +261,22 @@ class StudentEvaluationResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuestionBreakdown() {
-    final List<Map<String, dynamic>> questions = [
-      {'label': 'Question 01', 'score': 8, 'max': 10},
-      {'label': 'Question 02', 'score': 6.5, 'max': 10},
-      {'label': 'Question 03', 'score': 4, 'max': 10},
-      {'label': 'Question 04', 'score': 9, 'max': 10},
-    ];
+  Widget _buildQuestionBreakdown(MentorReviewDetail review) {
+    final scores = review.questionScores;
+
+    if (scores.isEmpty) {
+      return const Text("Not reviewed yet");
+    }
 
     return Column(
       children:
-          questions.map((q) {
+          scores.asMap().entries.map((entry) {
+            final index = entry.key;
+            final question = entry.value;
+
+            final gained = question.gainedMarks ?? 0;
+            final total = question.totalMarks;
+
             return Container(
               margin: EdgeInsets.only(bottom: 12.h),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
@@ -221,7 +288,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    q['label'],
+                    'Question ${index + 1}',
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
@@ -232,7 +299,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: '${q['score']} ',
+                          text: '$gained ',
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w800,
@@ -240,7 +307,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: '/ ${q['max']}',
+                          text: '/ $total',
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: Colors.grey[400],
@@ -256,7 +323,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOverallFeedback() {
+  Widget _buildOverallFeedback(MentorReviewDetail mentorReview) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
@@ -276,7 +343,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
               ),
               10.wGap,
               Text(
-                'Overall Feedback',
+                'Mentor Feedback',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
@@ -299,7 +366,7 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                 16.wGap,
                 Expanded(
                   child: Text(
-                    '"Arjun, your conceptual clarity in the static portions of Geography and History is impressive. However, you need to focus more on current affairs integration in your answers. Work on your time management as Question 03 seemed rushed. Overall, a solid performance, but there is significant room for improvement in data representation through diagrams."',
+                    mentorReview.feedback ?? "No overall feedback provided.",
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontStyle: FontStyle.italic,
@@ -324,27 +391,29 @@ class StudentEvaluationResultScreen extends StatelessWidget {
                 ),
               ),
               12.wGap,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Dr. Rajesh Kumar',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      mentorReview.mentorName,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'SENIOR MENTOR',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[400],
-                      letterSpacing: 0.5,
+                    Text(
+                      'MENTOR',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[400],
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

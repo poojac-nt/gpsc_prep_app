@@ -52,3 +52,9 @@ class SubmitDescriptiveTestSinglePdf extends DailyDescTestEvent {
 }
 
 class ResetDescTestState extends DailyDescTestEvent {}
+
+class FetchReviewForTest extends DailyDescTestEvent {
+  final int testId;
+
+  FetchReviewForTest(this.testId);
+}

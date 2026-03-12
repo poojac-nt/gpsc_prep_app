@@ -12,7 +12,6 @@ class EditMentorBloc extends Bloc<EditMentorEvent, EditMentorState> {
 
   EditMentorBloc(this._mentorRepository) : super(EditMentorInitial()) {
     on<UpdateMentor>(_onUpdateMentor);
-    on<DeleteMentor>(_onDeleteMentor);
     on<FetchSubjects>(_onFetchSubjects);
   }
 
@@ -44,18 +43,6 @@ class EditMentorBloc extends Bloc<EditMentorEvent, EditMentorState> {
     result.fold(
       (failure) => emit(MentorOperationError(failure.message)),
       (mentor) => emit(MentorUpdateSuccess(mentor)),
-    );
-  }
-
-  Future<void> _onDeleteMentor(
-    DeleteMentor event,
-    Emitter<EditMentorState> emit,
-  ) async {
-    emit(MentorSaving());
-    final result = await _mentorRepository.deleteMentor(event.userId);
-    result.fold(
-      (failure) => emit(MentorOperationError(failure.message)),
-      (_) => emit(MentorDeleteSuccess()),
     );
   }
 }

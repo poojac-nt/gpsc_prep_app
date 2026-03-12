@@ -6,12 +6,13 @@ import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 import '../../domain/entities/desc_test_model.dart';
 import '../../domain/entities/detailed_test_result_model.dart';
+import '../../domain/entities/mains_test_review_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
   final TestModel testModal;
   final String? language;
-  final bool hasPrelimsProgress; // NEW: Indicates if should load saved progress
+  final bool hasPrelimsProgress;
 
   TestScreenArgs({
     required this.isFromResult,
@@ -42,7 +43,7 @@ class ReviewQuestionScreenArgs {
   final String? title;
   final String? url;
   final String? language;
-  final int? courseId; // Updated
+  final int? courseId;
 
   ReviewQuestionScreenArgs({
     required this.isTestUpload,
@@ -142,7 +143,6 @@ class CourseDetailsScreenArgs {
 }
 
 class MentorEvaluationScreenArgs {
-  // Placeholder fields for future backend integration
   final int? studentId;
   final int mentorAssignmentId;
   final int? testId;
@@ -177,10 +177,14 @@ class StudentEvaluationResultScreenArgs {
   final int? testId;
   final String? testName;
   final String? studentName;
+  final int? mentorId;
+  final MainsTestReviewModel? reviewModel;
 
   StudentEvaluationResultScreenArgs({
     this.testId,
     this.testName,
     this.studentName,
+    this.mentorId,
+    this.reviewModel,
   });
 }

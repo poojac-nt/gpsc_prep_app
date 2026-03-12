@@ -26,8 +26,6 @@ class MentorUpdateSuccess extends EditMentorState {
   MentorUpdateSuccess(this.mentor);
 }
 
-class MentorDeleteSuccess extends EditMentorState {}
-
 class MentorOperationError extends EditMentorState {
   final String message;
 

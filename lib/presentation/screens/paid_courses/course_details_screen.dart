@@ -13,6 +13,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -84,7 +85,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           Expanded(
             child: RefreshIndicator(
               color: AppColors.primary,
-              onRefresh: _fetchAttemptStates,
+              onRefresh: () async {
+                await _fetchAttemptStates();
+                if (mounted) {
+                  context.read<DailyDescTestBloc>().add(
+                    FetchAllTests(courseId: widget.courseModel.id),
+                  );
+                }
+              },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.only(
@@ -185,8 +193,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     ),
                     16.hGap,
                     _buildAllTests(),
-
-                    // Test Series List
                   ],
                 ),
               ),
@@ -213,13 +219,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ],
       ),
     );
-  }
-
-  bool _hasNoTests() {
-    final t = widget.courseModel.tests;
-    if (t == null) return true;
-    return (t.prelims == null || t.prelims!.isEmpty) &&
-        (t.descriptive == null || t.descriptive!.isEmpty);
   }
 
   Widget _buildAllTests() {
@@ -264,15 +263,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
               builder: (context, state) {
                 final List<Widget> descItems = [];
-                final bool isFetching = state is DailyDescTestFetching;
                 final Map<int, dynamic> answersMap =
                     (state is DailyDescTestFetched) ? state.answersMap : {};
-
+                final Map<int, MainsTestReviewModel?> reviewModels =
+                    (state is DailyDescTestFetched) ? state.reviewsMap : {};
                 for (int i = 0; i < descriptiveTests.length; i++) {
                   final test = descriptiveTests[i];
                   final hasAnswer = answersMap.containsKey(test.id);
 
-                  // Find purchase to get assessment type
+                  if (hasAnswer && !reviewModels.containsKey(test.id)) {
+                    context.read<DailyDescTestBloc>().add(
+                      FetchReviewForTest(test.id),
+                    );
+                  }
+
                   final purchase = purchases.firstWhere(
                     (p) => p.courseId == widget.courseModel.id,
                     orElse:
@@ -295,7 +299,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         isEnrolled: isEnrolled,
                         assessmentType:
                             isEnrolled ? purchase.assessmentType : null,
-                        isLoading: isFetching,
+                        reviewModel: reviewModels[test.id],
                       ),
                     ),
                   );
@@ -311,6 +315,214 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
+  Widget _buildDescTestItem({
+    required DescTestModel test,
+    required String index,
+    required bool hasAnswer,
+    required bool isEnrolled,
+    AssessmentType? assessmentType,
+    MainsTestReviewModel? reviewModel,
+  }) {
+    const Color badgeColor = Color(0xFF7C3AED);
+    final String badgeLabel =
+        assessmentType != null ? assessmentType.type : 'Descriptive';
+    final String details = "${test.noQuestions} Questions";
+
+    Widget? statusWidget;
+    if (hasAnswer) {
+      String status = "Submitted";
+      Color statusColor = const Color(0xFFD97706); // Amber
+      IconData statusIcon = Icons.pending_actions_rounded;
+
+      if (reviewModel != null && reviewModel.mentorReviews.isNotEmpty) {
+        // Find if any is completed
+        final completedReview = reviewModel.mentorReviews.any(
+          (m) => m.status.toLowerCase() == "completed",
+        );
+        if (completedReview) {
+          status = "Reviewed";
+          statusColor = const Color(0xFF059669); // Green
+          statusIcon = Icons.check_circle_rounded;
+        } else {
+          status = "Under Review";
+        }
+      }
+
+      statusWidget = _buildStatusBadge(
+        icon: statusIcon,
+        label: status,
+        color: statusColor,
+      );
+    }
+
+    return InkWell(
+      onTap: () async {
+        if (!isEnrolled) {
+          getIt<SnackBarHelper>().showError(
+            "Please enroll in the course to access tests.",
+          );
+          return;
+        }
+
+        if (hasAnswer) {
+          if (reviewModel == null || reviewModel.mentorReviews.isEmpty) {
+            getIt<SnackBarHelper>().showSuccess(
+              "Mentor is assigned, soon it will be reviewed and answer available",
+            );
+            return;
+          }
+
+          final reviews = reviewModel.mentorReviews;
+
+          // filter completed mentors
+          final completedMentors =
+              reviews
+                  .where((m) => m.status.toLowerCase() == "completed")
+                  .toList();
+
+          if (completedMentors.isEmpty) {
+            getIt<SnackBarHelper>().showSuccess(
+              "Your test is under review. Result will be available soon.",
+            );
+            return;
+          }
+          if (reviews.length == 1) {
+            await context.push(
+              AppRoutes.studentEvaluationResult,
+              extra: StudentEvaluationResultScreenArgs(
+                testId: test.id,
+                testName: test.name,
+                studentName: getIt<CacheManager>().user?.name ?? 'Student',
+                reviewModel: reviewModel,
+                mentorId: reviews.first.mentorId,
+              ),
+            );
+          } else {
+            // Show bottom sheet for mentor selection
+            _showMentorSelectionSheet(test, reviewModel);
+          }
+          return;
+        }
+
+        await context.push(
+          AppRoutes.descFullQuestions,
+          extra: DescFullQuestionsScreenArgs(
+            testId: test.id,
+            testName: test.name,
+            courseId: widget.courseModel.id,
+          ),
+        );
+
+        if (!mounted) return;
+        context.read<DailyDescTestBloc>().add(
+          FetchAllTests(courseId: widget.courseModel.id),
+        );
+      },
+      borderRadius: BorderRadius.circular(12.r),
+      child: _testItemContainer(
+        index: index,
+        name: test.name,
+        details: details,
+        badgeLabel: badgeLabel,
+        badgeColor: badgeColor,
+        statusWidget: statusWidget,
+        isLocked: !isEnrolled,
+      ),
+    );
+  }
+
+  void _showMentorSelectionSheet(
+    DescTestModel test,
+    MainsTestReviewModel reviewModel,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Select Mentor Review",
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              8.hGap,
+              Text(
+                "This test has been reviewed by multiple mentors. Select whose review you'd like to see.",
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+              ),
+              20.hGap,
+              ...reviewModel.mentorReviews.map(
+                (m) => Container(
+                  margin: EdgeInsets.only(bottom: 12.h),
+                  child: ListTile(
+                    onTap: () {
+                      if (m.status.toLowerCase() == "assigned") {
+                        getIt<SnackBarHelper>().showSuccess(
+                          "This mentor review is still under process.",
+                        );
+                        return;
+                      }
+                      context.pop();
+                      context.push(
+                        AppRoutes.studentEvaluationResult,
+                        extra: StudentEvaluationResultScreenArgs(
+                          testId: test.id,
+                          testName: test.name,
+                          studentName:
+                              getIt<CacheManager>().user?.name ?? 'Student',
+                          reviewModel: reviewModel,
+                          mentorId: m.mentorId,
+                        ),
+                      );
+                    },
+                    tileColor: Colors.grey[100],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary.withAlpha(20),
+                      child: Icon(Icons.person, color: AppColors.primary),
+                    ),
+                    title: Text(
+                      m.mentorName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.sp,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "Status: ${m.status}",
+                      style: TextStyle(fontSize: 12.sp),
+                    ),
+                    trailing: Icon(Icons.arrow_forward_ios, size: 14.sp),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  bool _hasNoTests() {
+    final t = widget.courseModel.tests;
+    if (t == null) return true;
+    return (t.prelims == null || t.prelims!.isEmpty) &&
+        (t.descriptive == null || t.descriptive!.isEmpty);
+  }
+
   Future<void> _navigateToInstruction(TestModel test) async {
     await context.push(
       AppRoutes.prelimsInstructionsScreen,
@@ -318,7 +530,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  // // Bottom Bar
   Widget _bottomBar(bool isEnrolled) {
     final bool isPrelims =
         widget.courseModel.testType?.toLowerCase() == 'prelims';
@@ -615,73 +826,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
   }
 
-  Widget _buildDescTestItem({
-    required DescTestModel test,
-    required String index,
-    required bool hasAnswer,
-    required bool isEnrolled,
-    AssessmentType? assessmentType,
-    bool isLoading = false,
-  }) {
-    const Color badgeColor = Color(0xFF7C3AED);
-    final String badgeLabel =
-        assessmentType != null ? assessmentType.type : 'Descriptive';
-    final String details = "${test.noQuestions} Questions";
-
-    Widget? statusWidget;
-    if (hasAnswer) {
-      statusWidget = _buildStatusBadge(
-        icon: Icons.check_circle_rounded,
-        label: 'Completed',
-        color: const Color(0xFF059669),
-      );
-    }
-
-    return InkWell(
-      onTap: () async {
-        if (!isEnrolled) {
-          getIt<SnackBarHelper>().showError(
-            "Please enroll in the course to access tests.",
-          );
-          return;
-        }
-        if (hasAnswer) {
-          await context.push(
-            AppRoutes.studentEvaluationResult,
-            extra: StudentEvaluationResultScreenArgs(
-              testId: test.id,
-              testName: test.name,
-              studentName: getIt<CacheManager>().user?.name ?? 'Student',
-            ),
-          );
-        }
-        await context.push(
-          AppRoutes.descFullQuestions,
-          extra: DescFullQuestionsScreenArgs(
-            testId: test.id,
-            testName: test.name,
-            courseId: widget.courseModel.id,
-          ),
-        );
-        // Refresh submission status after returning
-        if (!mounted) return;
-        context.read<DailyDescTestBloc>().add(
-          FetchAllTests(courseId: widget.courseModel.id),
-        );
-      },
-      borderRadius: BorderRadius.circular(12.r),
-      child: _testItemContainer(
-        index: index,
-        name: test.name,
-        details: details,
-        badgeLabel: badgeLabel,
-        badgeColor: badgeColor,
-        statusWidget: statusWidget,
-        isLocked: !isEnrolled,
-      ),
-    );
-  }
-
   Widget _testItemContainer({
     required String index,
     required String name,
@@ -693,7 +837,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20.r),
@@ -707,24 +851,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40.w,
-            height: 40.w,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(20),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              index,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w800,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-          16.wGap,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

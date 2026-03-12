@@ -135,51 +135,6 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
     );
   }
 
-  void _handleDelete() {
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            title: Text(
-              'Delete Mentor',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16.sp),
-            ),
-            content: Text(
-              'Are you sure you want to permanently delete this mentor account? This action cannot be undone.',
-              style: TextStyle(fontSize: 13.sp, color: AppColors.gray500),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: AppColors.gray500),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  final id = widget.mentor.user.id;
-                  if (id != null) {
-                    context.read<EditMentorBloc>().add(DeleteMentor(id));
-                  }
-                },
-                child: Text(
-                  'Delete',
-                  style: TextStyle(
-                    color: AppColors.red500,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,9 +164,6 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
         listener: (context, state) {
           if (state is MentorUpdateSuccess) {
             context.pop(true); // pop and signal refresh
-          } else if (state is MentorDeleteSuccess) {
-            // Pop twice — edit screen and list will refresh
-            context.pop(true);
           } else if (state is MentorOperationError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -283,31 +235,6 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
                       text: 'Save Changes',
                       onTap: _handleSave,
                       borderRadius: BorderRadius.circular(14.r),
-                    ),
-                    20.hGap,
-                    Center(
-                      child: GestureDetector(
-                        onTap: isSaving ? null : _handleDelete,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.delete_outline_rounded,
-                              color: AppColors.red500,
-                              size: 18.sp,
-                            ),
-                            6.wGap,
-                            Text(
-                              'Delete Mentor Account',
-                              style: TextStyle(
-                                color: AppColors.red500,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                     20.hGap,
                   ],

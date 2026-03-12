@@ -13,8 +13,9 @@ final class DailyDescTestFetching extends DailyDescTestState {}
 final class DailyDescTestFetched extends DailyDescTestState {
   final List<DescTestModel> dailyTestModel;
   final Map<int, List<DescAnswerModel>> answersMap;
+  final Map<int, MainsTestReviewModel?> reviewsMap;
 
-  DailyDescTestFetched(this.dailyTestModel, this.answersMap);
+  DailyDescTestFetched(this.dailyTestModel, this.answersMap, this.reviewsMap);
 }
 
 /// Failed fetching descriptive tests
