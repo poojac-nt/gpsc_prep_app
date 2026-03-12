@@ -11,5 +11,8 @@ class CoursePayload {
 
   CoursePayload({required this.name, this.description});
 
+  factory CoursePayload.fromJson(Map<String, dynamic> json) =>
+      _$CoursePayloadFromJson(json);
+
   Map<String, dynamic> toJson() => _$CoursePayloadToJson(this);
 }

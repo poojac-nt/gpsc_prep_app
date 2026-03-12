@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
@@ -59,11 +58,8 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             getIt<SnackBarHelper>().showSuccess(
               'Course "${state.course.name}" added!',
             );
-            context.pop({
-              'id': state.course.id,
-              'name': state.course.name,
-              'description': state.course.description,
-            });
+            _courseController.clear();
+            _descriptionController.clear();
           } else if (state is AddCourseFailure) {
             getIt<SnackBarHelper>().showError(state.error);
           }

@@ -181,7 +181,9 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, CourseModel>> createCourses(CoursePayload data) async {
+  Future<Either<Failure, CoursePayload>> createCourses(
+    CoursePayload data,
+  ) async {
     try {
       final jsonData = data.toJson();
 
@@ -191,7 +193,7 @@ class SupabaseHelper {
               .insert(jsonData)
               .select()
               .single();
-      final course = CourseModel.fromJson(result);
+      final course = CoursePayload.fromJson(result);
       return Right(course);
     } catch (e) {
       _snackBar.showError('Error Creating Course: ${e.toString()}');
