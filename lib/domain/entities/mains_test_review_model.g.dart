@@ -33,7 +33,7 @@ MentorReviewDetail _$MentorReviewDetailFromJson(Map<String, dynamic> json) =>
       mentorId: (json['mentor_id'] as num).toInt(),
       mentorName: json['mentor_name'] as String,
       status: json['status'] as String,
-      totalMarks: (json['total_marks'] as num).toInt(),
+      totalMarks: (json['total_marks'] as num?)?.toInt(),
       feedback: json['feedback'] as String?,
       reviewedPdfUrl: json['reviewed_pdf_url'] as String?,
       questionScores: (json['question_scores'] as List<dynamic>)

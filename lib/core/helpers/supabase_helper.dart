@@ -848,7 +848,7 @@ class SupabaseHelper {
       }
 
       final result = MainsTestReviewModel.fromJson(
-        Map<String, dynamic>.from(response),
+        Map<String, dynamic>.from(response as Map),
       );
       return Right(result);
     } catch (e) {

@@ -203,7 +203,7 @@ class _StudentEvaluationResultScreenState
   }
 
   Widget _buildTotalScoreSection(MentorReviewDetail review, int maxMarks) {
-    final totalScore = review.totalMarks;
+    final totalScore = review.totalMarks ?? 0;
 
     return Container(
       width: double.infinity,
@@ -228,7 +228,7 @@ class _StudentEvaluationResultScreenState
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: '${totalScore.toStringAsFixed(1)} ',
+                  text: '$totalScore ',
                   style: TextStyle(
                     fontSize: 36.sp,
                     fontWeight: FontWeight.w800,

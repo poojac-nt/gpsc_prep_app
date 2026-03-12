@@ -363,42 +363,39 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           );
           return;
         }
-
         if (hasAnswer) {
+          // No mentor assigned at all
           if (reviewModel == null || reviewModel.mentorReviews.isEmpty) {
             getIt<SnackBarHelper>().showSuccess(
-              "Mentor is assigned, soon it will be reviewed and answer available",
+              "No mentor has been assigned yet. Please wait.",
             );
             return;
           }
 
           final reviews = reviewModel.mentorReviews;
 
-          // filter completed mentors
-          final completedMentors =
-              reviews
-                  .where((m) => m.status.toLowerCase() == "completed")
-                  .toList();
-
-          if (completedMentors.isEmpty) {
-            getIt<SnackBarHelper>().showSuccess(
-              "Your test is under review. Result will be available soon.",
-            );
-            return;
-          }
           if (reviews.length == 1) {
-            await context.push(
-              AppRoutes.studentEvaluationResult,
-              extra: StudentEvaluationResultScreenArgs(
-                testId: test.id,
-                testName: test.name,
-                studentName: getIt<CacheManager>().user?.name ?? 'Student',
-                reviewModel: reviewModel,
-                mentorId: reviews.first.mentorId,
-              ),
-            );
+            final mentor = reviews.first;
+            final isCompleted = mentor.status.toLowerCase() == "completed";
+            if (isCompleted) {
+              await context.push(
+                AppRoutes.studentEvaluationResult,
+                extra: StudentEvaluationResultScreenArgs(
+                  testId: test.id,
+                  testName: test.name,
+                  studentName: getIt<CacheManager>().user?.name ?? 'Student',
+                  reviewModel: reviewModel,
+                  mentorId: mentor.mentorId,
+                ),
+              );
+            } else {
+              // Assigned but not yet reviewed
+              getIt<SnackBarHelper>().showSuccess(
+                "Your test is assigned to a mentor and is under review. Result will be available soon.",
+              );
+            }
           } else {
-            // Show bottom sheet for mentor selection
+            // 2+ mentors — always show bottom sheet regardless of status
             _showMentorSelectionSheet(test, reviewModel);
           }
           return;
@@ -467,7 +464,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   margin: EdgeInsets.only(bottom: 12.h),
                   child: ListTile(
                     onTap: () {
-                      if (m.status.toLowerCase() == "assigned") {
+                      if (m.status.toLowerCase() != "completed") {
                         getIt<SnackBarHelper>().showSuccess(
                           "This mentor review is still under process.",
                         );

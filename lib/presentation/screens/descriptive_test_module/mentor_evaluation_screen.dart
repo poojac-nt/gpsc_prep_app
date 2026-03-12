@@ -374,6 +374,12 @@ Positives:
       );
       return;
     }
+    if (_feedbackController.text.isEmpty || _evaluatedPdfFile == null) {
+      getIt<SnackBarHelper>().showError(
+        'Please provide feedback and upload evaluated PDF',
+      );
+      return;
+    }
 
     context.read<MentorEvaluationBloc>().add(
       SubmitMentorEvaluation(

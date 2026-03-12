@@ -45,7 +45,7 @@ class MentorReviewDetail {
   final String status;
 
   @JsonKey(name: "total_marks")
-  final int totalMarks;
+  final int? totalMarks;
 
   @JsonKey(name: "feedback")
   final String? feedback;
@@ -63,7 +63,7 @@ class MentorReviewDetail {
     required this.mentorId,
     required this.mentorName,
     required this.status,
-    required this.totalMarks,
+    this.totalMarks,
     this.feedback,
     this.reviewedPdfUrl,
     required this.questionScores,
