@@ -292,7 +292,15 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
         }
       }
     }
+    final Set<int> alreadyAssignedMentorIds = {};
 
+    for (var sub in submissions) {
+      if (selectedSubIds.contains(sub.submissionId)) {
+        for (var mentor in sub.assignedMentors) {
+          alreadyAssignedMentorIds.add(mentor.mentorId);
+        }
+      }
+    }
     AssessmentType? commonAssessmentType;
     for (var sub in submissions) {
       if (selectedSubIds.contains(sub.submissionId)) {
@@ -304,7 +312,8 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     final int maxMentors =
         commonAssessmentType == AssessmentType.double ? 2 : 1;
     final Set<int> selectedMentorIds = {};
-
+    final totalSelected =
+        alreadyAssignedMentorIds.length + selectedMentorIds.length;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -366,7 +375,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Select Mentors (${selectedMentorIds.length}/$maxMentors)",
+                            "Select Mentors ($totalSelected/$maxMentors)",
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.w800,
@@ -461,14 +470,22 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                       constraints: BoxConstraints(maxHeight: 300.h),
                       child: SingleChildScrollView(
                         child: Column(
-                          children: List.generate(
-                            availableMentors.length,
-                            (index) => _buildMentorItem(
+                          children: List.generate(availableMentors.length, (
+                            index,
+                          ) {
+                            final mentor = availableMentors[index];
+                            final bool isAssigned = alreadyAssignedMentorIds
+                                .contains(mentor.mentorId);
+                            final remainingMentors =
+                                maxMentors - alreadyAssignedMentorIds.length;
+                            return _buildMentorItem(
                               availableMentors[index],
                               selectedMentorIds.contains(
                                 availableMentors[index].mentorId,
                               ),
+                              isAssigned,
                               () => setSheetState(() {
+                                if (isAssigned) return;
                                 final int mentorId =
                                     availableMentors[index].mentorId;
                                 if (selectedMentorIds.contains(mentorId)) {
@@ -479,7 +496,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                                     selectedMentorIds.clear();
                                     selectedMentorIds.add(mentorId);
                                   } else if (selectedMentorIds.length <
-                                      maxMentors) {
+                                      remainingMentors) {
                                     selectedMentorIds.add(mentorId);
                                   } else {
                                     // Limit reached for multiple
@@ -494,8 +511,8 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                                   }
                                 }
                               }),
-                            ),
-                          ),
+                            );
+                          }),
                         ),
                       ),
                     ),
@@ -527,46 +544,73 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     );
   }
 
-  Widget _buildMentorItem(Mentor mentor, bool isSelected, VoidCallback onTap) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      decoration: BoxDecoration(
-        color: AppColors.scaffoldColor,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.gray200,
-          width: isSelected ? 1.5 : 1,
+  Widget _buildMentorItem(
+    Mentor mentor,
+    bool isSelected,
+    bool isAssigned,
+    VoidCallback onTap,
+  ) {
+    return Opacity(
+      opacity: isAssigned ? 0.5 : 1,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        decoration: BoxDecoration(
+          color: AppColors.scaffoldColor,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.gray200,
+            width: isSelected ? 1.5 : 1,
+          ),
         ),
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-        leading: CircleAvatar(
-          radius: 18.r,
-          backgroundColor:
-              isSelected ? AppColors.primary : AppColors.primary.withAlpha(25),
-          child: Text(
-            mentor.mentorName[0],
-            style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.primary,
-              fontWeight: FontWeight.bold,
+        child: ListTile(
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          leading: CircleAvatar(
+            radius: 18.r,
+            backgroundColor:
+                isSelected
+                    ? AppColors.primary
+                    : AppColors.primary.withAlpha(25),
+            child: Text(
+              mentor.mentorName[0],
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        title: Text(
-          mentor.mentorName,
-          style: TextStyle(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w700,
-            color: AppColors.gray900,
+          title: Text(
+            mentor.mentorName,
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.gray900,
+            ),
           ),
+          trailing:
+              isAssigned
+                  ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withAlpha(30),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      "Assigned",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.green,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  )
+                  : Icon(
+                    isSelected
+                        ? Icons.check_circle_rounded
+                        : Icons.add_circle_outline_rounded,
+                    color: AppColors.primary,
+                  ),
+          onTap: isAssigned ? null : onTap,
         ),
-        trailing: Icon(
-          isSelected
-              ? Icons.check_circle_rounded
-              : Icons.add_circle_outline_rounded,
-          color: AppColors.primary,
-        ),
-        onTap: onTap,
       ),
     );
   }

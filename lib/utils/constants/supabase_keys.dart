@@ -33,7 +33,7 @@ abstract class SupabaseKeys {
   static final String getTestWithUnassignedSubmission =
       'get_desc_tests_with_unassigned_submissions';
   static final String getUnassignedStudentsForTest =
-      'get_unassigned_students_with_mentors_for_test';
+      'get_pending_test_submissions';
   static final String rpcDescMentorAssignment =
       'rpc_insert_desc_mentor_assignments_bulk';
   static final String mentorDashboard = 'rpc_mentor_dashboard';

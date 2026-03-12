@@ -15,9 +15,14 @@ StudentListWithMentor _$StudentListWithMentorFromJson(
       submittedAt: json['submitted_at'] as String,
       assessmentType:
           $enumDecode(_$AssessmentTypeEnumMap, json['assessment_type']),
-      mentors: (json['mentors'] as List<dynamic>)
-          .map((e) => Mentor.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      mentors: (json['mentors'] as List<dynamic>?)
+              ?.map((e) => Mentor.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      assignedMentors: (json['assigned_mentors'] as List<dynamic>?)
+              ?.map((e) => Mentor.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
 
 Map<String, dynamic> _$StudentListWithMentorToJson(
@@ -29,6 +34,7 @@ Map<String, dynamic> _$StudentListWithMentorToJson(
       'submitted_at': instance.submittedAt,
       'assessment_type': _$AssessmentTypeEnumMap[instance.assessmentType]!,
       'mentors': instance.mentors,
+      'assigned_mentors': instance.assignedMentors,
     };
 
 const _$AssessmentTypeEnumMap = {

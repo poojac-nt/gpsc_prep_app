@@ -15,8 +15,10 @@ class StudentListWithMentor {
   String submittedAt;
   @JsonKey(name: "assessment_type")
   AssessmentType assessmentType;
-  @JsonKey(name: "mentors")
+  @JsonKey(name: "mentors", defaultValue: [])
   List<Mentor> mentors;
+  @JsonKey(name: "assigned_mentors", defaultValue: [])
+  List<Mentor> assignedMentors;
 
   StudentListWithMentor({
     required this.submissionId,
@@ -25,6 +27,7 @@ class StudentListWithMentor {
     required this.submittedAt,
     required this.assessmentType,
     required this.mentors,
+    required this.assignedMentors,
   });
 
   factory StudentListWithMentor.fromJson(Map<String, dynamic> json) =>

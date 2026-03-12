@@ -1479,14 +1479,19 @@ class SupabaseHelper {
         SupabaseKeys.getUnassignedStudentsForTest,
         params: {'p_test_id': testId},
       );
+      if (result == null) {
+        return const Right([]);
+      }
       final submissions =
-          (result as List)
-              .map(
-                (e) => StudentListWithMentor.fromJson(
-                  Map<String, dynamic>.from(e as Map),
-                ),
-              )
-              .toList();
+          (result as List).map((e) {
+            final map = Map<String, dynamic>.from(e as Map);
+
+            // safety for null lists
+            map['assigned_mentors'] ??= [];
+            map['mentors'] ??= [];
+
+            return StudentListWithMentor.fromJson(map);
+          }).toList();
       return Right(submissions);
     } catch (e) {
       _snackBar.showError(
