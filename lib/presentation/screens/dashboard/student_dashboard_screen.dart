@@ -208,7 +208,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 280.h,
+          height: 310.h,
           child: PageView(
             controller: _pageController,
             onPageChanged: (index) {
