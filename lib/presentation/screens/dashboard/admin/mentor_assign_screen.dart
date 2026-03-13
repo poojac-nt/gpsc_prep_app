@@ -26,47 +26,69 @@ class _MentorAssignScreenState extends State<MentorAssignScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
       appBar: _buildAppBar(),
-      body: BlocBuilder<PendingSubmissionsBloc, PendingSubmissionsState>(
-        builder: (context, state) {
-          if (state is PendingSubmissionsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is PendingSubmissionsError) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.r),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.gray500),
-                ),
-              ),
-            );
-          } else if (state is PendingSubmissionsLoaded) {
-            final submissions = state.pendingSubmissions;
-            if (submissions.isEmpty) {
-              return Center(
-                child: Text(
-                  "No pending submissions",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    color: AppColors.gray500,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              );
-            }
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPendingHeader(submissions.length),
-                  _buildTestList(submissions),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          context.read<PendingSubmissionsBloc>().add(FetchPendingSubmissions());
         },
+        child: BlocBuilder<PendingSubmissionsBloc, PendingSubmissionsState>(
+          builder: (context, state) {
+            return CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                if (state is PendingSubmissionsLoading)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: const Center(child: CircularProgressIndicator()),
+                  )
+                else if (state is PendingSubmissionsError)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.r),
+                        child: Text(
+                          state.message,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.gray500),
+                        ),
+                      ),
+                    ),
+                  )
+                else if (state is PendingSubmissionsLoaded)
+                  if (state.pendingSubmissions.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Text(
+                          "No pending submissions",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: AppColors.gray500,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildPendingHeader(state.pendingSubmissions.length),
+                          _buildTestList(state.pendingSubmissions),
+                        ],
+                      ),
+                    )
+                else
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: SizedBox.shrink(),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
