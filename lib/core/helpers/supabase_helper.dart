@@ -15,10 +15,10 @@ import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
-import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
@@ -1089,9 +1089,9 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async {
+  Future<Either<Failure, List<LeaderboardModel>>> getToppers() async {
     try {
-      final result = await supabase.rpc(SupabaseKeys.getPrelimsTopper);
+      final result = await supabase.rpc(SupabaseKeys.getToppers);
 
       final toppers =
           (result as List)

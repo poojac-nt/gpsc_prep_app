@@ -32,6 +32,7 @@ class AnalyticsRepository {
 
   Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async =>
       await _supabase.fetchTrendForUser();
-  Future<Either<Failure, List<LeaderboardModel>>> getPrelimsTopper() async =>
-      await _supabase.getPrelimsTopper();
+
+  Future<Either<Failure, List<LeaderboardModel>>> getToppers() async =>
+      await _supabase.getToppers();
 }

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+
 import '../../../core/error/failure.dart';
 
 part 'dashboard_bloc_event.dart';
@@ -28,7 +29,7 @@ class DashboardBloc extends Bloc<DashboardBlocEvent, DashboardBlocState> {
     try {
       final result = await Future.wait([
         _analyticsRepository.getDashboardAnalytics(),
-        _analyticsRepository.getPrelimsTopper(),
+        _analyticsRepository.getToppers(),
       ]);
       final dashboardAnalytics =
           result[0] as Either<Failure, DashboardAnalytics?>;
