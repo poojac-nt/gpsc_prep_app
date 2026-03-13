@@ -662,20 +662,19 @@ class SupabaseHelper {
     int? courseId,
   }) async {
     try {
-      final query = supabase.from(SupabaseKeys.descTests).select();
+      var query = supabase.from(SupabaseKeys.descTests).select();
 
       if (courseId != null) {
-        query.eq('course_id', courseId);
+        query = query.eq('course_id', courseId);
       } else {
-        query.isFilter('course_id', null);
+        query = query.filter('course_id', 'is', null);
       }
 
       final response = await query.order('id', ascending: false);
-      final result = response.map((e) => DescTestModel.fromJson(e)).toList();
-      if (result.isEmpty) {
-        _log.w('No descriptive tests found');
-        return Right([]);
-      }
+
+      final result =
+          (response as List).map((e) => DescTestModel.fromJson(e)).toList();
+
       return Right(result);
     } catch (e) {
       _log.e('Error in fetching test: $e');

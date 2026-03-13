@@ -67,21 +67,6 @@ class _TestStudentsListScreenState extends State<TestStudentsListScreen>
                 height: 1.2,
               ),
             ),
-            BlocBuilder<TestStudentsListBloc, TestStudentsListState>(
-              builder: (context, state) {
-                if (state is TestStudentsListLoaded) {
-                  return Text(
-                    '${state.submissions.length} Students Enrolled',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.gray500,
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
           ],
         ),
       ),
