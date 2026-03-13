@@ -432,6 +432,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     DescTestModel test,
     MainsTestReviewModel reviewModel,
   ) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -465,7 +466,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   child: ListTile(
                     onTap: () {
                       if (m.status.toLowerCase() != "completed") {
-                        getIt<SnackBarHelper>().showSuccess(
+                        _showOverlaySnackBar(
+                          context,
                           "This mentor review is still under process.",
                         );
                         return;
@@ -955,5 +957,55 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ],
       ),
     );
+  }
+
+  void _showOverlaySnackBar(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            bottom: 50.h,
+            left: 16.w,
+            right: 16.w,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.white, size: 18.sp),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Text(
+                        message,
+                        style: TextStyle(color: Colors.white, fontSize: 13.sp),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Auto dismiss after 3 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
   }
 }
