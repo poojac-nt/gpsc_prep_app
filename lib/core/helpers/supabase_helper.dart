@@ -199,6 +199,8 @@ class SupabaseHelper {
           'bio': data.bio,
           'subject_expertise': data.subjectExpertise,
           'password': data.password,
+          'profile_picture': data.profilePicture,
+          'is_active': true,
         },
       );
 

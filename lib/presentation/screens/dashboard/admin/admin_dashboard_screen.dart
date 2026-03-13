@@ -26,33 +26,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              10.hGap,
-              BlocBuilder<AdminBloc, AdminState>(
-                builder: (context, state) {
-                  String totalMentors = '0';
-                  String totalCourses = '0';
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () async {
+            context.read<AdminBloc>().add(FetchAdminStats());
+          },
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                10.hGap,
+                BlocBuilder<AdminBloc, AdminState>(
+                  builder: (context, state) {
+                    String totalMentors = '0';
+                    String totalCourses = '0';
 
-                  if (state is AdminStatsLoaded) {
-                    totalMentors = state.stats.totalMentors.toString();
-                    totalCourses = state.stats.totalCourses.toString();
-                  }
+                    if (state is AdminStatsLoaded) {
+                      totalMentors = state.stats.totalMentors.toString();
+                      totalCourses = state.stats.totalCourses.toString();
+                    }
 
-                  return _buildPlatformOverview(
-                    totalMentors: totalMentors,
-                    totalCourses: totalCourses,
-                    isLoading: state is AdminStatsLoading,
-                  );
-                },
-              ),
-              20.hGap,
-              _buildCoreManagement(context),
-            ],
+                    return _buildPlatformOverview(
+                      totalMentors: totalMentors,
+                      totalCourses: totalCourses,
+                      isLoading: state is AdminStatsLoading,
+                    );
+                  },
+                ),
+                20.hGap,
+                _buildCoreManagement(context),
+              ],
+            ),
           ),
         ),
       ),

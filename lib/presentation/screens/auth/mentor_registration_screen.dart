@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/custom_text_field.dart';
@@ -134,6 +135,7 @@ class _MentorRegistrationScreenState extends State<MentorRegistrationScreen> {
             getIt<SnackBarHelper>().showSuccess(
               "Mentor registered successfully",
             );
+            context.read<MentorBloc>().add(FetchMentorList());
             context.pop();
           } else if (state is AuthFailure) {
             getIt<SnackBarHelper>().showError(state.message);

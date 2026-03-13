@@ -86,20 +86,24 @@ class _MentorListScreenState extends State<MentorListScreen> {
   }
 
   Widget _buildMentorList(List<MentorModel> mentors) {
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(child: _buildListHeader(mentors.length)),
-        SliverPadding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _buildMentorCard(mentors[index]),
-              childCount: mentors.length,
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async => context.read<MentorBloc>().add(FetchMentorList()),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildListHeader(mentors.length)),
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _buildMentorCard(mentors[index]),
+                childCount: mentors.length,
+              ),
             ),
           ),
-        ),
-        SliverToBoxAdapter(child: 100.hGap),
-      ],
+          SliverToBoxAdapter(child: 100.hGap),
+        ],
+      ),
     );
   }
 

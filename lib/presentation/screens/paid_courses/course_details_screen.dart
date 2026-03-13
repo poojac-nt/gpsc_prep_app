@@ -10,10 +10,10 @@ import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
-import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -663,12 +663,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Future<void> _handleEnrollment(BuildContext context) async {
-    final hasDescriptive =
-        widget.courseModel.tests?.descriptive != null &&
-        widget.courseModel.tests!.descriptive!.isNotEmpty;
-
     AssessmentType? selectedType;
-    if (hasDescriptive) {
+    if (widget.courseModel.testType == 'mains') {
       selectedType = await context.push<AssessmentType>(
         AppRoutes.assessmentTypeSelection,
         extra: AssessmentTypeSelectionScreenArgs(
