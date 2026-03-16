@@ -279,19 +279,24 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     List<StudentListWithMentor> submissions,
     Set<int> selectedSubIds,
   ) {
-    final List<Mentor> availableMentors = [];
-    final Set<int> mentorIdsSeen = {};
+    List<Mentor> availableMentors = [];
+    bool isFirst = true;
 
     for (var sub in submissions) {
       if (selectedSubIds.contains(sub.submissionId)) {
-        for (var mentor in sub.mentors) {
-          if (!mentorIdsSeen.contains(mentor.mentorId)) {
-            availableMentors.add(mentor);
-            mentorIdsSeen.add(mentor.mentorId);
-          }
+        if (isFirst) {
+          availableMentors = List.from(sub.mentors);
+          isFirst = false;
+        } else {
+          // Intersection: keep only mentors that are in the current submission's list
+          final currentSubMentorIds = sub.mentors.map((m) => m.mentorId).toSet();
+          availableMentors.removeWhere(
+            (m) => !currentSubMentorIds.contains(m.mentorId),
+          );
         }
       }
     }
+
     final Set<int> alreadyAssignedMentorIds = {};
 
     for (var sub in submissions) {
@@ -384,7 +389,7 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                           ),
                           4.hGap,
                           Text(
-                            "${availableMentors.length} specialized mentors found • ${commonAssessmentType?.type ?? "Assessment"}",
+                            "${availableMentors.length} mentors available • ${commonAssessmentType?.type ?? "Assessment"}",
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: AppColors.gray500,
