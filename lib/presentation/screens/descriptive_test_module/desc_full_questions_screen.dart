@@ -39,6 +39,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   _Lang _lang = _Lang.en;
   File? _selectedFile;
   final Set<int> _downloadingIndices = {};
+  bool _isDownloadingFull = false;
 
   @override
   void initState() {
@@ -104,6 +105,21 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                       ),
                     ),
                     tooltip: 'Switch Language',
+                  ),
+                if (questions.isNotEmpty)
+                  IconButton(
+                    onPressed: _isDownloadingFull ? null : () => _downloadFullPdf(questions),
+                    icon: _isDownloadingFull 
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : Icon(Icons.download_rounded, color: AppColors.primary),
+                    tooltip: 'Download Full Test PDF',
                   ),
                 SizedBox(width: 8.w),
               ],
@@ -413,6 +429,24 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
     } finally {
       if (mounted) {
         setState(() => _downloadingIndices.remove(index));
+      }
+    }
+  }
+
+  Future<void> _downloadFullPdf(List<DescQuestionModel> questions) async {
+    setState(() => _isDownloadingFull = true);
+    try {
+      await generateFullDescTestPdf(questions, widget.testName);
+      if (mounted) {
+        getIt<SnackBarHelper>().showSuccess('Full Test PDF downloaded successfully');
+      }
+    } catch (e) {
+      if (mounted) {
+        getIt<SnackBarHelper>().showError('Failed to generate full PDF');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDownloadingFull = false);
       }
     }
   }
