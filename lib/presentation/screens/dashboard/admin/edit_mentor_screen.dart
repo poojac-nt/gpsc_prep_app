@@ -12,6 +12,9 @@ import 'package:gpsc_prep_app/presentation/widgets/custom_text_field.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 
 class EditMentorScreen extends StatefulWidget {
   final MentorModel mentor;
@@ -31,6 +34,7 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
   late List<String> _specializations;
   List<SubjectModel> _availableSubjects = [];
   late bool _isActive;
+  late UserRole _currentUserRole;
 
   @override
   void initState() {
@@ -40,6 +44,7 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
     _specializations =
         widget.mentor.subjects.map((s) => s.subjectName).toList();
     _isActive = widget.mentor.user.isActive ?? false;
+    _currentUserRole = getIt<CacheManager>().getUserRole() ?? UserRole.student;
     context.read<EditMentorBloc>().add(FetchSubjects());
   }
 
@@ -228,8 +233,10 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
                       maxLine: 4,
                     ),
                     20.hGap,
-                    _buildAccountStatusCard(),
-                    32.hGap,
+                    if (_currentUserRole == UserRole.admin) ...[
+                      _buildAccountStatusCard(),
+                      32.hGap,
+                    ],
                     ActionButton(
                       isLoading: isSaving,
                       text: 'Save Changes',

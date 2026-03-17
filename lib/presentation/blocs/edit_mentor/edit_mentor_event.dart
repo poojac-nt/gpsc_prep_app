@@ -21,3 +21,8 @@ class UpdateMentor extends EditMentorEvent {
     this.profileImage,
   });
 }
+
+class FetchMentorByUserId extends EditMentorEvent {
+  final int userId;
+  FetchMentorByUserId(this.userId);
+}

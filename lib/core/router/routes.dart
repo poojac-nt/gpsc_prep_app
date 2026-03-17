@@ -419,9 +419,23 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.descAnswerScreen,
     pageBuilder: (context, state) {
-      final descTestModel = state.extra as DescTestModel;
+      final extra = state.extra;
+      DescTestModel descTestModel;
+      bool isUnlocked = false;
+      bool showPeerReview = false;
+      if (extra is Map<String, dynamic>) {
+        descTestModel = extra['descTestModel'] as DescTestModel;
+        isUnlocked = extra['isUnlocked'] as bool? ?? false;
+        showPeerReview = extra['showPeerReview'] as bool? ?? false;
+      } else {
+        descTestModel = extra as DescTestModel;
+      }
       return _slideTransition(
-        DescriptiveAnswersScreen(descTestModel: descTestModel),
+        DescriptiveAnswersScreen(
+          descTestModel: descTestModel,
+          isUnlocked: isUnlocked,
+          showPeerReview: showPeerReview,
+        ),
         state,
       );
     },
@@ -433,11 +447,15 @@ final List<GoRoute> appRoutes = [
       final question = extra['question'] as DescQuestionModel;
       final index = extra['index'] as int;
       final testId = extra['testId'] as int;
+      final isUnlocked = extra['isUnlocked'] as bool? ?? false;
+      final showPeerReview = extra['showPeerReview'] as bool? ?? false;
       return _slideTransition(
         DescriptiveAnswerDetailScreen(
           question: question,
           index: index,
           testId: testId,
+          isUnlocked: isUnlocked,
+          showPeerReview: showPeerReview,
         ),
         state,
       );

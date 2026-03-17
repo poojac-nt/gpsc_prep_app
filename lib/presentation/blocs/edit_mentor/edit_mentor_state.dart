@@ -31,3 +31,11 @@ class MentorOperationError extends EditMentorState {
 
   MentorOperationError(this.message);
 }
+
+class MentorDetailLoading extends EditMentorState {}
+
+class MentorDetailLoaded extends EditMentorState {
+  final MentorModel mentor;
+
+  MentorDetailLoaded(this.mentor);
+}

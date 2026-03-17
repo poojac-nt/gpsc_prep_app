@@ -89,6 +89,7 @@ class _AllAssignedTestsScreenState extends State<AllAssignedTestsScreen> {
                 16.hGap,
                 Expanded(
                   child: RefreshIndicator(
+                    color: AppColors.primary,
                     onRefresh: () async {
                       context.read<AllAssignedTestsBloc>().add(
                         FetchAllAssignedTests(),
@@ -131,6 +132,7 @@ class _AllAssignedTestsScreenState extends State<AllAssignedTestsScreen> {
 
   Widget _buildSubjectFilter() {
     return PopupMenuButton<String>(
+      color: Colors.white,
       icon: Icon(Icons.tune_rounded, color: AppColors.gray900, size: 24.sp),
       onSelected: (String value) {
         setState(() => selectedSubject = value);

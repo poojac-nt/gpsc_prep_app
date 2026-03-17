@@ -22,6 +22,21 @@ class MentorRepository {
     return await _supabase.fetchMentorList();
   }
 
+  Future<Either<Failure, MentorModel>> getMentorByUserId(int userId) async {
+    final result = await _supabase.fetchMentorList();
+    return result.fold(
+      (failure) => Left(failure),
+      (mentors) {
+        try {
+          final mentor = mentors.firstWhere((m) => m.user.id == userId);
+          return Right(mentor);
+        } catch (e) {
+          return Left(Failure('Mentor data not found for user ID: $userId'));
+        }
+      },
+    );
+  }
+
   Future<Either<Failure, MentorModel>> updateMentor({
     required int userId,
     required String name,

@@ -13,6 +13,7 @@ class AnswerWritingCard extends StatelessWidget {
   final VoidCallback onShareTap;
   final bool isUnlocked;
   final bool isAttempted;
+  final VoidCallback? onReviewTap;
 
   const AnswerWritingCard({
     super.key,
@@ -22,6 +23,7 @@ class AnswerWritingCard extends StatelessWidget {
     required this.onShareTap,
     this.isUnlocked = true,
     this.isAttempted = false,
+    this.onReviewTap,
   });
 
   @override
@@ -107,16 +109,15 @@ class AnswerWritingCard extends StatelessWidget {
           // Action Buttons
           Row(
             children: [
-              // Start Test Button
+              // Start Test / Review Button
               Expanded(
                 child: _buildActionButton(
-                  onTap: onStartTestTap,
+                  onTap: isAttempted ? (onReviewTap ?? onStartTestTap) : onStartTestTap,
                   icon:
                       isAttempted
-                          ? Icons.task_alt_outlined
+                          ? Icons.rate_review_outlined
                           : AppIcons.startTest,
-                  label: isAttempted ? "Attempted" : "Start Test",
-                  isDisabled: isAttempted,
+                  label: isAttempted ? "Review" : "Start Test",
                 ),
               ),
               if (isUnlocked) ...[

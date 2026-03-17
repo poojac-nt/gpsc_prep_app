@@ -337,12 +337,9 @@ class _ResultScreenState extends State<ResultScreen> {
               iconSize: 26.sp,
               fontSize: 20.sp,
               prefixIcon: Icons.analytics,
+
               iconColor: Colors.deepPurpleAccent,
-              cards: [
-                20.hGap,
-                AnalyticsBarChart(data: reviewByDifficulty),
-                20.hGap,
-              ],
+              cards: [20.hGap, AnalyticsBarChart(data: reviewByDifficulty)],
             ).padAll(AppPaddings.defaultPadding),
           // Question Type Analysis Module
           if (reviewByQuestionType != null &&
@@ -353,11 +350,7 @@ class _ResultScreenState extends State<ResultScreen> {
               fontSize: 20.sp,
               prefixIcon: Icons.bar_chart,
               iconColor: AppColors.primary,
-              cards: [
-                20.hGap,
-                AnalyticsBarChart(data: reviewByQuestionType),
-                20.hGap,
-              ],
+              cards: [20.hGap, AnalyticsBarChart(data: reviewByQuestionType)],
             ).padAll(AppPaddings.defaultPadding),
           if (reviewBySubject != null && _hasValidData(reviewBySubject))
             TestModule(
@@ -366,11 +359,7 @@ class _ResultScreenState extends State<ResultScreen> {
               fontSize: 20.sp,
               prefixIcon: Icons.stacked_bar_chart,
               iconColor: Colors.brown,
-              cards: [
-                20.hGap,
-                AnalyticsBarChart(data: reviewBySubject),
-                20.hGap,
-              ],
+              cards: [20.hGap, AnalyticsBarChart(data: reviewBySubject)],
             ).padAll(AppPaddings.defaultPadding),
           // Action Buttons
           if (questions != null) ...[

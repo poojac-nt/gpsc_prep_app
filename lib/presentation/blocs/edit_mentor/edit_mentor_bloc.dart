@@ -13,6 +13,19 @@ class EditMentorBloc extends Bloc<EditMentorEvent, EditMentorState> {
   EditMentorBloc(this._mentorRepository) : super(EditMentorInitial()) {
     on<UpdateMentor>(_onUpdateMentor);
     on<FetchSubjects>(_onFetchSubjects);
+    on<FetchMentorByUserId>(_onFetchMentorByUserId);
+  }
+
+  Future<void> _onFetchMentorByUserId(
+    FetchMentorByUserId event,
+    Emitter<EditMentorState> emit,
+  ) async {
+    emit(MentorDetailLoading());
+    final result = await _mentorRepository.getMentorByUserId(event.userId);
+    result.fold(
+      (failure) => emit(MentorOperationError(failure.message)),
+      (mentor) => emit(MentorDetailLoaded(mentor)),
+    );
   }
 
   Future<void> _onFetchSubjects(

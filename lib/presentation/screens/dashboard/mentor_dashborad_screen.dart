@@ -8,6 +8,12 @@ import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:intl/intl.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
+
+import '../../blocs/edit_mentor/edit_mentor_bloc.dart';
 
 class MentorDashboardScreen extends StatefulWidget {
   const MentorDashboardScreen({super.key});
@@ -17,73 +23,104 @@ class MentorDashboardScreen extends StatefulWidget {
 }
 
 class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
+  bool _isProfileLoading = false;
+
   @override
   void initState() {
     super.initState();
     context.read<MentorDashboardBloc>().add(FetchMentorDashboardData());
+    context.read<EditProfileBloc>().add(LoadInitialProfile());
+  }
+
+  Future<void> _onProfileTap() async {
+    final userId = getIt<CacheManager>().getUserId();
+    context.read<EditMentorBloc>().add(FetchMentorByUserId(userId));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldColor,
-      appBar: _buildAppBar(),
-      body: BlocBuilder<MentorDashboardBloc, MentorDashboardState>(
-        builder: (context, state) {
-          if (state is MentorDashboardLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return BlocListener<EditMentorBloc, EditMentorState>(
+      listener: (context, state) {
+        if (state is MentorDetailLoading) {
+          setState(() => _isProfileLoading = true);
+        } else {
+          setState(() => _isProfileLoading = false);
+        }
 
-          if (state is MentorDashboardError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: TextStyle(color: Colors.red, fontSize: 14.sp),
-                  ),
-                  16.hGap,
-                  ElevatedButton(
-                    onPressed:
-                        () => context.read<MentorDashboardBloc>().add(
-                          FetchMentorDashboardData(),
-                        ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
+        if (state is MentorDetailLoaded) {
+          context.push(
+            AppRoutes.editMentor,
+            extra: EditMentorScreenArgs(mentor: state.mentor),
+          );
+        } else if (state is MentorOperationError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load mentor profile: ${state.message}'),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.scaffoldColor,
+        appBar: _buildAppBar(),
+        body: BlocBuilder<MentorDashboardBloc, MentorDashboardState>(
+          builder: (context, state) {
+            if (state is MentorDashboardLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is MentorDashboardLoaded) {
-            final data = state.data;
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<MentorDashboardBloc>().add(
-                  FetchMentorDashboardData(),
-                );
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
+            if (state is MentorDashboardError) {
+              return Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    24.hGap,
-                    _buildStatCards(data),
-                    32.hGap,
-                    _buildLatestAssignedHeader(),
+                    Text(
+                      state.message,
+                      style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                    ),
                     16.hGap,
-                    _buildTestList(data.latestAssignments),
-                    40.hGap,
+                    ElevatedButton(
+                      onPressed:
+                          () => context.read<MentorDashboardBloc>().add(
+                            FetchMentorDashboardData(),
+                          ),
+                      child: const Text('Retry'),
+                    ),
                   ],
                 ),
-              ),
-            );
-          }
+              );
+            }
 
-          return const SizedBox.shrink();
-        },
+            if (state is MentorDashboardLoaded) {
+              final data = state.data;
+              return RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async {
+                  context.read<MentorDashboardBloc>().add(
+                    FetchMentorDashboardData(),
+                  );
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      24.hGap,
+                      _buildStatCards(data),
+                      32.hGap,
+                      _buildLatestAssignedHeader(),
+                      16.hGap,
+                      _buildTestList(data.latestAssignments),
+                      40.hGap,
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -94,21 +131,90 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
       elevation: 0,
       centerTitle: false,
       titleSpacing: 20.w,
-      title: Text(
-        'Mentor Dashboard',
-        style: TextStyle(
-          fontSize: 22.sp,
-          fontWeight: FontWeight.w800,
-          color: AppColors.gray900,
-          letterSpacing: -0.5,
-        ),
+      title: Row(
+        children: [
+          _buildProfileAvatar(),
+          12.wGap,
+          Text(
+            'Mentor Dashboard',
+            style: TextStyle(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w800,
+              color: AppColors.gray900,
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
       ),
       actions: [
         IconButton(
           onPressed: () => showLogoutDialog(context),
           icon: Icon(Icons.logout, size: 24.sp, color: Colors.red),
         ),
+        12.wGap,
       ],
+    );
+  }
+
+  Widget _buildProfileAvatar() {
+    return BlocBuilder<EditProfileBloc, EditProfileState>(
+      builder: (context, state) {
+        String? profilePic;
+        String name = "M";
+
+        if (state is EditProfileLoaded) {
+          profilePic = state.user.profilePicture;
+          name = state.user.name;
+        } else if (state is EditProfileSuccess) {
+          profilePic = state.user.profilePicture;
+          name = state.user.name;
+        } else if (state is EditImageUploaded) {
+          profilePic = state.imageUrl;
+          name = state.user.name;
+        }
+
+        return GestureDetector(
+          onTap: _isProfileLoading ? null : _onProfileTap,
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 8.h),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 18.r,
+                  backgroundColor: AppColors.gray200,
+                  backgroundImage:
+                      profilePic != null && profilePic.isNotEmpty
+                          ? NetworkImage(profilePic)
+                          : null,
+                  child:
+                      (profilePic == null || profilePic.isEmpty)
+                          ? Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : "M",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          )
+                          : null,
+                ),
+                if (_isProfileLoading)
+                  SizedBox(
+                    height: 36.r,
+                    width: 36.r,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

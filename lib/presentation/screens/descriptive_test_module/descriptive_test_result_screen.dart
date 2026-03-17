@@ -70,7 +70,7 @@ class DescriptiveTestResultScreen extends StatelessWidget {
                       ),
                       3.hGap,
                       _buildInstructionTile(
-                        "Please Compare your answers with the model answers provided after 8 pm.",
+                        "Please Compare your answers with the model answers provided after 5 pm.",
                       ),
                     ],
                   ),

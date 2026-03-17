@@ -11,8 +11,15 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 class DescriptiveAnswersScreen extends StatefulWidget {
   final DescTestModel descTestModel;
+  final bool isUnlocked;
+  final bool showPeerReview;
 
-  const DescriptiveAnswersScreen({super.key, required this.descTestModel});
+  const DescriptiveAnswersScreen({
+    super.key,
+    required this.descTestModel,
+    this.isUnlocked = false,
+    required this.showPeerReview,
+  });
 
   @override
   State<DescriptiveAnswersScreen> createState() =>
@@ -33,7 +40,10 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Model Answers', style: AppTexts.titleTextStyle),
+        title: Text(
+          widget.showPeerReview ? 'Peer Review' : 'Model Answers',
+          style: AppTexts.titleTextStyle,
+        ),
         centerTitle: true,
       ),
       body: BlocBuilder<QuestionBloc, QuestionState>(
@@ -58,6 +68,8 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
                         'question': question,
                         'index': index,
                         'testId': widget.descTestModel.id,
+                        'isUnlocked': widget.isUnlocked,
+                        'showPeerReview': widget.showPeerReview,
                       },
                     );
                   },

@@ -4,11 +4,14 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart'
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
+import '../../utils/app_constants.dart';
+
 class QuestionDetailCard extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
   final int commentCount;
   final String selectedLanguage;
+  final bool isModelAnswerUnlocked;
 
   const QuestionDetailCard({
     super.key,
@@ -16,6 +19,7 @@ class QuestionDetailCard extends StatefulWidget {
     required this.index,
     this.commentCount = 0,
     this.selectedLanguage = 'en',
+    this.isModelAnswerUnlocked = false,
   });
 
   @override
@@ -70,38 +74,58 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
           Row(
             children: [
               const Spacer(),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isModelAnswerExpanded = !_isModelAnswerExpanded;
-                  });
-                },
-                child: Row(
+              if (!widget.isModelAnswerUnlocked)
+                Row(
                   children: [
                     Icon(
-                      Icons.check_circle_outline,
-                      color: const Color(0xFF4F46E5),
-                      size: 18.sp,
+                      Icons.lock_outline,
+                      color: AppColors.gray400,
+                      size: 16.sp,
                     ),
                     SizedBox(width: 6.w),
                     Text(
-                      'Model Answer',
+                      'Model Answer (Locked)',
                       style: TextStyle(
-                        color: const Color(0xFF4F46E5),
+                        color: AppColors.gray400,
                         fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Icon(
-                      _isModelAnswerExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      color: const Color(0xFF4F46E5),
-                      size: 20.sp,
-                    ),
                   ],
+                )
+              else
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isModelAnswerExpanded = !_isModelAnswerExpanded;
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: const Color(0xFF4F46E5),
+                        size: 18.sp,
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        'Model Answer',
+                        style: TextStyle(
+                          color: const Color(0xFF4F46E5),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Icon(
+                        _isModelAnswerExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: const Color(0xFF4F46E5),
+                        size: 20.sp,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
           if (_isModelAnswerExpanded) ...[

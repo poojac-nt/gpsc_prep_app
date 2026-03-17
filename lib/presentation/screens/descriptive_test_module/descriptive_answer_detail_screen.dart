@@ -11,17 +11,22 @@ import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 
 class DescriptiveAnswerDetailScreen extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
   final int testId;
+  final bool isUnlocked;
+  final bool showPeerReview;
 
   const DescriptiveAnswerDetailScreen({
     super.key,
     required this.question,
     required this.index,
     required this.testId,
+    required this.isUnlocked,
+    required this.showPeerReview,
   });
 
   @override
@@ -36,9 +41,11 @@ class _DescriptiveAnswerDetailScreenState
   @override
   void initState() {
     super.initState();
-    context.read<PeerReviewBloc>().add(
-      FetchPeerReviews(testId: widget.testId, questionId: widget.question.id),
-    );
+    if (widget.showPeerReview) {
+      context.read<PeerReviewBloc>().add(
+        FetchPeerReviews(testId: widget.testId, questionId: widget.question.id),
+      );
+    }
   }
 
   List<String> get _availableLanguages {
@@ -84,7 +91,9 @@ class _DescriptiveAnswerDetailScreenState
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Question ${widget.index + 1}',
+          widget.showPeerReview
+              ? 'Question ${widget.index + 1}'
+              : 'Model Answer ${widget.index + 1}',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18.sp,
@@ -129,9 +138,12 @@ class _DescriptiveAnswerDetailScreenState
                 index: widget.index,
                 commentCount: 16,
                 selectedLanguage: _currentLanguage,
+                isModelAnswerUnlocked: widget.isUnlocked,
               ),
-              _buildPeerSubmissionsHeader(),
-              _buildPeerSubmissionsList(),
+              if (widget.showPeerReview) ...[
+                _buildPeerSubmissionsHeader(),
+                _buildPeerSubmissionsList(),
+              ],
               SizedBox(height: 30.h),
             ],
           ),

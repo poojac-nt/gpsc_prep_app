@@ -92,8 +92,25 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                                 ),
                               );
                             },
+                    onReviewTap: () {
+                      context.push(
+                        AppRoutes.descAnswerScreen,
+                        extra: {
+                          'descTestModel': test,
+                          'isUnlocked': isAnswerUnlocked(test.createdAt),
+                          'showPeerReview': true,
+                        },
+                      );
+                    },
                     onAnswerModuleTap: () {
-                      context.push(AppRoutes.descAnswerScreen, extra: test);
+                      context.push(
+                        AppRoutes.descAnswerScreen,
+                        extra: {
+                          'descTestModel': test,
+                          'isUnlocked': isAnswerUnlocked(test.createdAt),
+                          'showPeerReview': false,
+                        },
+                      );
                     },
                     onShareTap: () async {
                       final url = DeepLinkGenerator.generateShareableUrl(
