@@ -1718,15 +1718,56 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, MentorModel>> fetchMentorByUserId(int userId) async {
+    try {
+      final response = await supabase.rpc(
+        SupabaseKeys.getMentorList,
+      );
+
+      // Filtering in RPC would be better, but assuming getMentorList returns all,
+      // we filter here for now. However, if there's a specific RPC for single mentor, use it.
+      // Looking at SupabaseKeys, there is no getMentorById.
+      // Let's refine the RPC call if possible or just select directly if table structure allows.
+      // But based on current code, it uses SupabaseKeys.getMentorList which is likely an RPC.
+
+      final mentorsJson = response as List;
+      final mentorJson = mentorsJson.firstWhere(
+        (e) => e['user_data']['id'] == userId,
+        orElse: () => throw Exception('Mentor data not found for user ID: $userId'),
+      );
+
+      return Right(MentorModel.fromJson(mentorJson));
+    } catch (e) {
+      _log.e('Error fetching mentor by user ID $userId: $e', error: e);
+      return Left(Failure('Mentor data not found for user ID: $userId'));
+    }
+  }
+
   Future<Either<Failure, MentorModel>> updateMentorInfo({
     required int userId,
     required String name,
     required String bio,
-    required List<int> subjectExpertise,
+    required List<String> subjectExpertise,
     required bool isActive,
     File? profileImage,
   }) async {
     try {
+      // 1️⃣ Fetch all subjects to convert names to IDs (if needed)
+      final subjectsResult = await fetchSubjects();
+      if (subjectsResult.isLeft) {
+        return Left(subjectsResult.left);
+      }
+
+      final allSubjects = subjectsResult.right;
+      final List<int> subjectIds =
+          subjectExpertise.map((name) {
+            final subject = allSubjects.firstWhere(
+              (s) => s.subjectName == name,
+              orElse: () => throw Exception('Subject "$name" not found'),
+            );
+            return subject.subjectId;
+          }).toList();
+
       String? profilePictureUrl;
 
       // 1️⃣ Upload profile image if provided
@@ -1755,7 +1796,7 @@ class SupabaseHelper {
           'p_user_id': userId,
           'p_name': name,
           'p_bio': bio,
-          'p_subject_ids': subjectExpertise,
+          'p_subject_ids': subjectIds, // Fixed: use subjectIds instead of subjectExpertise
           'p_is_active': isActive,
           'p_profile_picture': profilePictureUrl,
         },

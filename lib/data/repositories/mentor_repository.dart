@@ -23,18 +23,7 @@ class MentorRepository {
   }
 
   Future<Either<Failure, MentorModel>> getMentorByUserId(int userId) async {
-    final result = await _supabase.fetchMentorList();
-    return result.fold(
-      (failure) => Left(failure),
-      (mentors) {
-        try {
-          final mentor = mentors.firstWhere((m) => m.user.id == userId);
-          return Right(mentor);
-        } catch (e) {
-          return Left(Failure('Mentor data not found for user ID: $userId'));
-        }
-      },
-    );
+    return await _supabase.fetchMentorByUserId(userId);
   }
 
   Future<Either<Failure, MentorModel>> updateMentor({
@@ -45,31 +34,11 @@ class MentorRepository {
     required bool isActive,
     File? profileImage,
   }) async {
-    // 1️⃣ Fetch all subjects to convert names to IDs
-    final subjectsResult = await _supabase.fetchSubjects();
-
-    if (subjectsResult.isLeft) {
-      return Left(subjectsResult.left);
-    }
-
-    final allSubjects = subjectsResult.right;
-
-    // 2️⃣ Map specialization names to their IDs
-    final List<int> subjectIds =
-        subjectExpertise.map((name) {
-          final subject = allSubjects.firstWhere(
-            (s) => s.subjectName == name,
-            orElse: () => throw Exception('Subject "$name" not found'),
-          );
-          return subject.subjectId;
-        }).toList();
-
-    // 3️⃣ Call Supabase helper with mapped IDs
     return await _supabase.updateMentorInfo(
       userId: userId,
       name: name,
       bio: bio,
-      subjectExpertise: subjectIds,
+      subjectExpertise: subjectExpertise,
       isActive: isActive,
       profileImage: profileImage,
     );
