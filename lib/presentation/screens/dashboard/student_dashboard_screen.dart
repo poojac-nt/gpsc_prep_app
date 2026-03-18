@@ -22,6 +22,7 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:hive/hive.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../utils/enums/user_role.dart';
@@ -61,6 +62,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     if (currentState is! DashboardAnalyticsFetched) {
       context.read<DashboardBloc>().add(FetchDashboardAnalytics());
     }
+    // Request notification permission
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getIt<FCMService>().requestNotificationPermission();
+    });
   }
 
   @override

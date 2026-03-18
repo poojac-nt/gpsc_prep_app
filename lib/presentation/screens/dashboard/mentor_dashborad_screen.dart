@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:intl/intl.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
@@ -31,6 +32,11 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
     super.initState();
     context.read<MentorDashboardBloc>().add(FetchMentorDashboardData());
     context.read<EditMentorBloc>().add(LoadInitialProfile());
+
+    // Request notification permission
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getIt<FCMService>().requestNotificationPermission();
+    });
   }
 
   Future<void> _onProfileTap() async {

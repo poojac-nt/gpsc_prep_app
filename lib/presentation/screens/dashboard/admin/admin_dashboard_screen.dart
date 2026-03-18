@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -19,6 +21,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   void initState() {
     context.read<AdminBloc>().add(FetchAdminStats());
     super.initState();
+    // Request notification permission
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getIt<FCMService>().requestNotificationPermission();
+    });
   }
 
   @override
