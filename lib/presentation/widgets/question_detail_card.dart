@@ -12,6 +12,7 @@ class QuestionDetailCard extends StatefulWidget {
   final int commentCount;
   final String selectedLanguage;
   final bool isModelAnswerUnlocked;
+  final bool showModelAnswerDirectly;
 
   const QuestionDetailCard({
     super.key,
@@ -20,6 +21,7 @@ class QuestionDetailCard extends StatefulWidget {
     this.commentCount = 0,
     this.selectedLanguage = 'en',
     this.isModelAnswerUnlocked = false,
+    this.showModelAnswerDirectly = false,
   });
 
   @override
@@ -93,7 +95,7 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
                     ),
                   ],
                 )
-              else
+              else if (!widget.showModelAnswerDirectly)
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -125,10 +127,29 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
                       ),
                     ],
                   ),
+                )
+              else
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline,
+                      color: const Color(0xFF4F46E5),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Model Answer',
+                      style: TextStyle(
+                        color: const Color(0xFF4F46E5),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
-          if (_isModelAnswerExpanded) ...[
+          if (_isModelAnswerExpanded || widget.showModelAnswerDirectly) ...[
             SizedBox(height: 20.h),
             Container(
               padding: EdgeInsets.all(16.w),

@@ -163,6 +163,7 @@ abstract class AppRoutes {
   static const String testStudentsList = '/testStudentsList';
   static const String allTests = '/allTests';
   static const String studentEvaluationResult = '/studentEvaluationResult';
+  static const String freeTestReview = '/freeTestReview';
 }
 
 class AdUnitIds {

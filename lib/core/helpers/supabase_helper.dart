@@ -21,6 +21,7 @@ import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_free_test_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
@@ -1546,6 +1547,32 @@ class SupabaseHelper {
 
       return Left(
         Failure('Error Fetching Mentor Dashboard Data: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<Either<Failure, List<DescFreeTestWithUsers>>>
+  fetchSubmittedFreeDescTests() async {
+    try {
+      final result = await supabase.rpc(
+        SupabaseKeys.getSubmittedFreeDescTests,
+      );
+
+      final data =
+          (result as List).map((e) {
+            return DescFreeTestWithUsers.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            );
+          }).toList();
+
+      return Right(data);
+    } catch (e) {
+      _snackBar.showError(
+        'Error Fetching Submitted Free Tests: ${e.toString()}',
+      );
+      _log.e('Error Fetching Submitted Free Tests: $e', error: e);
+      return Left(
+        Failure('Error Fetching Submitted Free Tests: ${e.toString()}'),
       );
     }
   }

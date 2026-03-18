@@ -37,7 +37,26 @@ class PerformanceCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Performance", style: AppTexts.dashboardContainerTitle),
+                  Row(
+                    children: [
+                      Text(
+                        "Performance",
+                        style: AppTexts.dashboardContainerTitle,
+                      ),
+                      5.wGap,
+                      Tooltip(
+                        margin: EdgeInsets.symmetric(horizontal: 15.w),
+                        message:
+                            "This performance only include mcq and prelims test marks",
+                        triggerMode: TooltipTriggerMode.tap,
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          size: 16.sp,
+                          color: AppColors.gray400,
+                        ),
+                      ),
+                    ],
+                  ),
                   5.hGap,
                   Text(
                     "Your learning curve",

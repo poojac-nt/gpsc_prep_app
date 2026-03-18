@@ -109,7 +109,9 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
                     children: [
                       24.hGap,
                       _buildStatCards(data),
-                      32.hGap,
+                      16.hGap,
+                      _buildAllFreeTestsCard(context),
+                      16.hGap,
                       _buildLatestAssignedHeader(),
                       16.hGap,
                       _buildTestList(data.latestAssignments),
@@ -295,6 +297,74 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAllFreeTestsCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.freeTestReview),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12.r),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.description_rounded,
+                color: AppColors.primary,
+                size: 24.sp,
+              ),
+            ),
+            16.wGap,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'All Free Tests',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.gray900,
+                    ),
+                  ),
+                  4.hGap,
+                  Text(
+                    'View and review the complete list of free tests',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.gray500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            8.wGap,
+            Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.primary,
+              size: 24.sp,
+            ),
+          ],
+        ),
       ),
     );
   }

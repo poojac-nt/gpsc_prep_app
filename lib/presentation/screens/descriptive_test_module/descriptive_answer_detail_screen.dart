@@ -139,6 +139,7 @@ class _DescriptiveAnswerDetailScreenState
                 commentCount: 16,
                 selectedLanguage: _currentLanguage,
                 isModelAnswerUnlocked: widget.isUnlocked,
+                showModelAnswerDirectly: !widget.showPeerReview,
               ),
               if (widget.showPeerReview) ...[
                 _buildPeerSubmissionsHeader(),
