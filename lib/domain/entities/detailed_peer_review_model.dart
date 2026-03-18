@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'detailed_peer_review_model.g.dart';
@@ -41,6 +42,8 @@ class Comment {
   int reviewerId;
   @JsonKey(name: "reviewer_name")
   String reviewerName;
+  @JsonKey(name: "reviewer_role")
+  UserRole reviewerRole;
   @JsonKey(name: "time_since_comment")
   String timeSinceComment;
   @JsonKey(name: "time_since_comment_text")
@@ -52,6 +55,7 @@ class Comment {
     required this.createdAt,
     required this.reviewerId,
     required this.reviewerName,
+    required this.reviewerRole,
     required this.timeSinceComment,
     required this.timeSinceCommentText,
   });

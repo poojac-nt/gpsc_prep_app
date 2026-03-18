@@ -34,6 +34,7 @@ Comment _$CommentFromJson(Map<String, dynamic> json) => Comment(
       createdAt: DateTime.parse(json['created_at'] as String),
       reviewerId: (json['reviewer_id'] as num).toInt(),
       reviewerName: json['reviewer_name'] as String,
+      reviewerRole: $enumDecode(_$UserRoleEnumMap, json['reviewer_role']),
       timeSinceComment: json['time_since_comment'] as String,
       timeSinceCommentText: json['time_since_comment_text'] as String,
     );
@@ -44,6 +45,13 @@ Map<String, dynamic> _$CommentToJson(Comment instance) => <String, dynamic>{
       'created_at': instance.createdAt.toIso8601String(),
       'reviewer_id': instance.reviewerId,
       'reviewer_name': instance.reviewerName,
+      'reviewer_role': _$UserRoleEnumMap[instance.reviewerRole]!,
       'time_since_comment': instance.timeSinceComment,
       'time_since_comment_text': instance.timeSinceCommentText,
     };
+
+const _$UserRoleEnumMap = {
+  UserRole.student: 'student',
+  UserRole.mentor: 'mentor',
+  UserRole.admin: 'admin',
+};

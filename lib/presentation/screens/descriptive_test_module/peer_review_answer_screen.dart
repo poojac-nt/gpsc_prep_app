@@ -12,6 +12,7 @@ import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_
 import 'package:gpsc_prep_app/presentation/screens/common/pdf_viewer_screen.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 
 class PeerReviewAnswerScreen extends StatefulWidget {
   final DescQuestionModel question;
@@ -476,6 +477,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
 
     final colors = [
       const Color(0xFF1E293B),
+
       const Color(0xFF8B5CF6),
       const Color(0xFF0F172A),
       const Color(0xFFF43F5E),
@@ -487,6 +489,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
     final avatarColor =
         colors[comment.reviewerName.hashCode.abs() % colors.length];
 
+    final isMentor = comment.reviewerRole == UserRole.mentor;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -517,6 +520,30 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+                  if (isMentor) ...[
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4.r),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Text(
+                        'Mentor',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                   SizedBox(width: 8.w),
                   Text(
                     comment.timeSinceCommentText,
