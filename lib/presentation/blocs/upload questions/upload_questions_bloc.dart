@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_test_upload.dart';
@@ -109,6 +109,7 @@ class UploadQuestionsBloc
       final result = await submitDescTestToSupabase(
         payload: event.payload,
         courseId: event.courseId,
+        availableAt: event.availableAt,
       );
 
       result.fold(

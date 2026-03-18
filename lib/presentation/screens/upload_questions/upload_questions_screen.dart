@@ -40,7 +40,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Upload MCQ Questions',
+          'Upload Test & Questions',
           style: AppTexts.titleTextStyle.copyWith(fontWeight: FontWeight.bold),
         ),
       ),

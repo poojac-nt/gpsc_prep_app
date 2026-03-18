@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,11 +7,13 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
+import 'package:gpsc_prep_app/presentation/widgets/notify_user_timing_widget.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:intl/intl.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
-class DescReviewQuestionUploadScreen extends StatelessWidget {
+class DescReviewQuestionUploadScreen extends StatefulWidget {
   final List<Map<String, dynamic>> payload;
   final int? courseId;
 
@@ -19,6 +22,27 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
     required this.payload,
     this.courseId,
   });
+
+  @override
+  State<DescReviewQuestionUploadScreen> createState() =>
+      _DescReviewQuestionUploadScreenState();
+}
+
+class _DescReviewQuestionUploadScreenState
+    extends State<DescReviewQuestionUploadScreen> {
+  late final NotifyUserTimingController _timingController;
+
+  @override
+  void initState() {
+    super.initState();
+    _timingController = NotifyUserTimingController();
+  }
+
+  @override
+  void dispose() {
+    _timingController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +77,12 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
 
             return Column(
               children: [
+                NotifyUserTimingWidget(controller: _timingController),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: payload.length,
+                    itemCount: widget.payload.length,
                     itemBuilder: (context, index) {
-                      final question = payload[index];
+                      final question = widget.payload[index];
                       return Card(
                         color: Colors.white,
                         margin: const EdgeInsets.all(8),
@@ -138,10 +163,13 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
                         child: ActionButton(
                           isLoading: isUploading,
                           onTap: () {
+                            final availableAt = _timingController.availableAt;
+
                             context.read<UploadQuestionsBloc>().add(
                               DescUploadParsedQuestions(
-                                payload: payload,
-                                courseId: courseId,
+                                payload: widget.payload,
+                                courseId: widget.courseId,
+                                availableAt: availableAt,
                               ),
                             );
                           },
@@ -160,6 +188,7 @@ class DescReviewQuestionUploadScreen extends StatelessWidget {
   }
 
   Widget _buildLabeledText(String label, String? value) {
+
     return Padding(
       padding: EdgeInsets.all(2.sp),
       child: RichText(
