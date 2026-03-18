@@ -665,7 +665,10 @@ class SupabaseHelper {
     int? courseId,
   }) async {
     try {
-      var query = supabase.from(SupabaseKeys.descTests).select();
+      var query = supabase
+          .from(SupabaseKeys.descTests)
+          .select()
+          .lte('available_at', DateTime.now().toUtc().toIso8601String());
 
       if (courseId != null) {
         query = query.eq('course_id', courseId);
@@ -1554,9 +1557,7 @@ class SupabaseHelper {
   Future<Either<Failure, List<DescFreeTestWithUsers>>>
   fetchSubmittedFreeDescTests() async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getSubmittedFreeDescTests,
-      );
+      final result = await supabase.rpc(SupabaseKeys.getSubmittedFreeDescTests);
 
       final data =
           (result as List).map((e) {
