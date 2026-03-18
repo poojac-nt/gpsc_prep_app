@@ -227,7 +227,7 @@ void setupBlocs() {
     () => MentorBloc(getIt<MentorRepository>()),
   );
   getIt.registerLazySingleton<EditMentorBloc>(
-    () => EditMentorBloc(getIt<MentorRepository>()),
+    () => EditMentorBloc(getIt<MentorRepository>(), getIt<CacheManager>()),
   );
   getIt.registerLazySingleton<MentorDashboardBloc>(
     () => MentorDashboardBloc(getIt<MentorRepository>()),

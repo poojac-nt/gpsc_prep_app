@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/data/repositories/mentor_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
@@ -9,11 +10,30 @@ part 'edit_mentor_state.dart';
 
 class EditMentorBloc extends Bloc<EditMentorEvent, EditMentorState> {
   final MentorRepository _mentorRepository;
+  final CacheManager _cacheManager;
 
-  EditMentorBloc(this._mentorRepository) : super(EditMentorInitial()) {
+  EditMentorBloc(this._mentorRepository, this._cacheManager) : super(EditMentorInitial()) {
     on<UpdateMentor>(_onUpdateMentor);
     on<FetchSubjects>(_onFetchSubjects);
     on<FetchMentorByUserId>(_onFetchMentorByUserId);
+    on<LoadInitialProfile>(_onLoadInitialProfile);
+  }
+
+  Future<void> _onLoadInitialProfile(
+    LoadInitialProfile event,
+    Emitter<EditMentorState> emit,
+  ) async {
+    final user = await _cacheManager.getInitUser();
+    if (user != null && user.id != null) {
+      emit(MentorDetailLoading());
+      final result = await _mentorRepository.getMentorByUserId(user.id!);
+      result.fold(
+        (failure) => emit(MentorOperationError(failure.message)),
+        (mentor) => emit(MentorDetailLoaded(mentor)),
+      );
+    } else {
+      emit(MentorOperationError('User Not Found'));
+    }
   }
 
   Future<void> _onFetchMentorByUserId(

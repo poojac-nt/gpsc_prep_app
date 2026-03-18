@@ -22,6 +22,8 @@ class UpdateMentor extends EditMentorEvent {
   });
 }
 
+class LoadInitialProfile extends EditMentorEvent {}
+
 class FetchMentorByUserId extends EditMentorEvent {
   final int userId;
   FetchMentorByUserId(this.userId);

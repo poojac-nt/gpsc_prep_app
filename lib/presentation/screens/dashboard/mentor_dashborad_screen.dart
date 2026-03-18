@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -11,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 
 import '../../blocs/edit_mentor/edit_mentor_bloc.dart';
 
@@ -24,17 +24,25 @@ class MentorDashboardScreen extends StatefulWidget {
 
 class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
   bool _isProfileLoading = false;
+  MentorModel? mentorModel;
 
   @override
   void initState() {
     super.initState();
     context.read<MentorDashboardBloc>().add(FetchMentorDashboardData());
-    context.read<EditProfileBloc>().add(LoadInitialProfile());
+    context.read<EditMentorBloc>().add(LoadInitialProfile());
   }
 
   Future<void> _onProfileTap() async {
-    final userId = getIt<CacheManager>().getUserId();
-    context.read<EditMentorBloc>().add(FetchMentorByUserId(userId));
+    if (mentorModel != null) {
+      context.push(
+        AppRoutes.editMentor,
+        extra: EditMentorScreenArgs(mentor: mentorModel!),
+      );
+    } else {
+      final userId = getIt<CacheManager>().getUserId();
+      context.read<EditMentorBloc>().add(FetchMentorByUserId(userId));
+    }
   }
 
   @override
@@ -46,13 +54,7 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
         } else {
           setState(() => _isProfileLoading = false);
         }
-
-        if (state is MentorDetailLoaded) {
-          context.push(
-            AppRoutes.editMentor,
-            extra: EditMentorScreenArgs(mentor: state.mentor),
-          );
-        } else if (state is MentorOperationError) {
+        if (state is MentorOperationError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to load mentor profile: ${state.message}'),
@@ -157,20 +159,22 @@ class _MentorDashboardScreenState extends State<MentorDashboardScreen> {
   }
 
   Widget _buildProfileAvatar() {
-    return BlocBuilder<EditProfileBloc, EditProfileState>(
+    return BlocBuilder<EditMentorBloc, EditMentorState>(
       builder: (context, state) {
         String? profilePic;
-        String name = "M";
+        String name = "";
 
-        if (state is EditProfileLoaded) {
-          profilePic = state.user.profilePicture;
-          name = state.user.name;
-        } else if (state is EditProfileSuccess) {
-          profilePic = state.user.profilePicture;
-          name = state.user.name;
-        } else if (state is EditImageUploaded) {
-          profilePic = state.imageUrl;
-          name = state.user.name;
+        if (state is MentorDetailLoaded) {
+          mentorModel = state.mentor;
+          profilePic = state.mentor.user.profilePicture;
+          name = state.mentor.user.name;
+        } else if (state is MentorUpdateSuccess) {
+          mentorModel = state.mentor;
+          profilePic = state.mentor.user.profilePicture;
+          name = state.mentor.user.name;
+        } else if (mentorModel != null) {
+          profilePic = mentorModel!.user.profilePicture;
+          name = mentorModel!.user.name;
         }
 
         return GestureDetector(

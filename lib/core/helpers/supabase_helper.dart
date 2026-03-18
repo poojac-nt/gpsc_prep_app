@@ -1720,20 +1720,12 @@ class SupabaseHelper {
 
   Future<Either<Failure, MentorModel>> fetchMentorByUserId(int userId) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getMentorList,
-      );
-
-      // Filtering in RPC would be better, but assuming getMentorList returns all,
-      // we filter here for now. However, if there's a specific RPC for single mentor, use it.
-      // Looking at SupabaseKeys, there is no getMentorById.
-      // Let's refine the RPC call if possible or just select directly if table structure allows.
-      // But based on current code, it uses SupabaseKeys.getMentorList which is likely an RPC.
-
+      final response = await supabase.rpc(SupabaseKeys.getMentorList);
       final mentorsJson = response as List;
       final mentorJson = mentorsJson.firstWhere(
         (e) => e['user_data']['id'] == userId,
-        orElse: () => throw Exception('Mentor data not found for user ID: $userId'),
+        orElse:
+            () => throw Exception('Mentor data not found for user ID: $userId'),
       );
 
       return Right(MentorModel.fromJson(mentorJson));
@@ -1796,7 +1788,8 @@ class SupabaseHelper {
           'p_user_id': userId,
           'p_name': name,
           'p_bio': bio,
-          'p_subject_ids': subjectIds, // Fixed: use subjectIds instead of subjectExpertise
+          'p_subject_ids':
+              subjectIds, // Fixed: use subjectIds instead of subjectExpertise
           'p_is_active': isActive,
           'p_profile_picture': profilePictureUrl,
         },
