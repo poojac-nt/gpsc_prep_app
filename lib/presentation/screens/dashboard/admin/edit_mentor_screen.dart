@@ -69,6 +69,7 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
 
   void _showAddSpecializationDialog() {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
