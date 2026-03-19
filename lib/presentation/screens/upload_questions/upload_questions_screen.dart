@@ -222,7 +222,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: 14.w,
+                  horizontal: 12.w,
                   vertical: 12.h,
                 ),
                 border: OutlineInputBorder(
