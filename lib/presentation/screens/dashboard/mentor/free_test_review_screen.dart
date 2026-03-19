@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_state.dart';
@@ -159,7 +160,6 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                 separatorBuilder: (context, index) => 16.hGap,
                 itemBuilder: (context, index) {
                   final test = submissions[index];
-                  final isUnlocked = isAnswerUnlocked(test.createdAt);
                   final formattedDate = DateFormat(
                     'dd MMM, yyyy',
                   ).format(DateTime.parse(test.createdAt));
@@ -252,15 +252,14 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                               child: _buildActionBtn(
                                 label: 'Answer Key',
                                 isPrimary: true,
-                                isDisabled: !isUnlocked,
                                 onTap: () {
                                   context.push(
                                     AppRoutes.descAnswerScreen,
-                                    extra: {
-                                      'descTestModel': test,
-                                      'isUnlocked': isUnlocked,
-                                      'showPeerReview': false,
-                                    },
+                                    extra: DescriptiveAnswersScreenArgs(
+                                      descTestModel: test,
+                                      isUnlocked: true,
+                                      showPeerReview: false,
+                                    ),
                                   );
                                 },
                               ),
@@ -273,11 +272,11 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                                 onTap: () {
                                   context.push(
                                     AppRoutes.descAnswerScreen,
-                                    extra: {
-                                      'descTestModel': test,
-                                      'isUnlocked': isUnlocked,
-                                      'showPeerReview': true,
-                                    },
+                                    extra: DescriptiveAnswersScreenArgs(
+                                      descTestModel: test,
+                                      isUnlocked: true,
+                                      showPeerReview: true,
+                                    ),
                                   );
                                 },
                               ),
@@ -331,29 +330,25 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
   Widget _buildActionBtn({
     required String label,
     required bool isPrimary,
-    bool isDisabled = false,
     required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: isDisabled ? null : onTap,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
-          color:
-              isDisabled
-                  ? AppColors.gray100
-                  : (isPrimary ? AppColors.primary : Colors.white),
+          color: isPrimary ? AppColors.primary : Colors.white,
           borderRadius: BorderRadius.circular(14.r),
           border:
-              isPrimary || isDisabled
+              isPrimary
                   ? null
                   : Border.all(
                     color: AppColors.primary.withAlpha(100),
                     width: 1.5,
                   ),
           boxShadow:
-              isPrimary && !isDisabled
+              isPrimary
                   ? [
                     BoxShadow(
                       color: AppColors.primary.withAlpha(60),
@@ -369,10 +364,7 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w800,
-              color:
-                  isDisabled
-                      ? AppColors.gray400
-                      : (isPrimary ? Colors.white : AppColors.primary),
+              color: isPrimary ? Colors.white : AppColors.primary,
             ),
           ),
         ),

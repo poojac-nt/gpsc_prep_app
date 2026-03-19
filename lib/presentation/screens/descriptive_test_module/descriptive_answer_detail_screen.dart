@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/peer_submission_tile.dart';
@@ -11,23 +12,11 @@ import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
-import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 
 class DescriptiveAnswerDetailScreen extends StatefulWidget {
-  final DescQuestionModel question;
-  final int index;
-  final int testId;
-  final bool isUnlocked;
-  final bool showPeerReview;
+  final DescriptiveAnswerDetailScreenArgs args;
 
-  const DescriptiveAnswerDetailScreen({
-    super.key,
-    required this.question,
-    required this.index,
-    required this.testId,
-    required this.isUnlocked,
-    required this.showPeerReview,
-  });
+  const DescriptiveAnswerDetailScreen({super.key, required this.args});
 
   @override
   State<DescriptiveAnswerDetailScreen> createState() =>
@@ -41,17 +30,20 @@ class _DescriptiveAnswerDetailScreenState
   @override
   void initState() {
     super.initState();
-    if (widget.showPeerReview) {
+    if (widget.args.showPeerReview) {
       context.read<PeerReviewBloc>().add(
-        FetchPeerReviews(testId: widget.testId, questionId: widget.question.id),
+        FetchPeerReviews(
+          testId: widget.args.testId,
+          questionId: widget.args.question.id,
+        ),
       );
     }
   }
 
   List<String> get _availableLanguages {
     final langs = <String>['en'];
-    if (widget.question.questionHi != null) langs.add('hi');
-    if (widget.question.questionGj != null) langs.add('gj');
+    if (widget.args.question.questionHi != null) langs.add('hi');
+    if (widget.args.question.questionGj != null) langs.add('gj');
     return langs;
   }
 
@@ -91,9 +83,9 @@ class _DescriptiveAnswerDetailScreenState
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.showPeerReview
-              ? 'Question ${widget.index + 1}'
-              : 'Model Answer ${widget.index + 1}',
+          widget.args.showPeerReview
+              ? 'Question ${widget.args.index + 1}'
+              : 'Model Answer ${widget.args.index + 1}',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18.sp,
@@ -120,8 +112,8 @@ class _DescriptiveAnswerDetailScreenState
           if (state is SubmitPeerReviewSuccess) {
             context.read<PeerReviewBloc>().add(
               FetchPeerReviews(
-                testId: widget.testId,
-                questionId: widget.question.id,
+                testId: widget.args.testId,
+                questionId: widget.args.question.id,
               ),
             );
             // Reset state to avoid repeated refreshing if this screen rebuilds
@@ -134,14 +126,13 @@ class _DescriptiveAnswerDetailScreenState
           child: Column(
             children: [
               QuestionDetailCard(
-                question: widget.question,
-                index: widget.index,
+                question: widget.args.question,
+                index: widget.args.index,
                 commentCount: 16,
                 selectedLanguage: _currentLanguage,
-                isModelAnswerUnlocked: widget.isUnlocked,
-                showModelAnswerDirectly: !widget.showPeerReview,
+                showModelAnswerDirectly: !widget.args.showPeerReview,
               ),
-              if (widget.showPeerReview) ...[
+              if (widget.args.showPeerReview) ...[
                 _buildPeerSubmissionsHeader(),
                 _buildPeerSubmissionsList(),
               ],
@@ -242,12 +233,12 @@ class _DescriptiveAnswerDetailScreenState
                 onReviewPressed: () {
                   context.push(
                     AppRoutes.peerReviewAnswer,
-                    extra: {
-                      'question': widget.question,
-                      'index': widget.index,
-                      'userName': review.fullName,
-                      'answerId': review.answerId,
-                    },
+                    extra: PeerReviewAnswerScreenArgs(
+                      question: widget.args.question,
+                      index: widget.args.index,
+                      userName: review.fullName,
+                      answerId: review.answerId,
+                    ),
                   );
                 },
               );

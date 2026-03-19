@@ -4,6 +4,7 @@ import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
+import '../../domain/entities/desc_question_model.dart';
 import '../../domain/entities/desc_test_model.dart';
 import '../../domain/entities/detailed_test_result_model.dart';
 import '../../domain/entities/mains_test_review_model.dart';
@@ -186,5 +187,47 @@ class StudentEvaluationResultScreenArgs {
     this.studentName,
     this.mentorId,
     this.reviewModel,
+  });
+}
+
+class DescriptiveAnswersScreenArgs {
+  final DescTestModel descTestModel;
+  final bool isUnlocked;
+  final bool showPeerReview;
+
+  DescriptiveAnswersScreenArgs({
+    required this.descTestModel,
+    this.isUnlocked = false,
+    required this.showPeerReview,
+  });
+}
+
+class DescriptiveAnswerDetailScreenArgs {
+  final DescQuestionModel question;
+  final int index;
+  final int testId;
+  final bool isUnlocked;
+  final bool showPeerReview;
+
+  DescriptiveAnswerDetailScreenArgs({
+    required this.question,
+    required this.index,
+    required this.testId,
+    this.isUnlocked = false,
+    this.showPeerReview = false,
+  });
+}
+
+class PeerReviewAnswerScreenArgs {
+  final DescQuestionModel question;
+  final int index;
+  final String userName;
+  final int answerId;
+
+  PeerReviewAnswerScreenArgs({
+    required this.question,
+    required this.index,
+    required this.userName,
+    required this.answerId,
   });
 }

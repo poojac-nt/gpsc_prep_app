@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -10,16 +11,9 @@ import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class DescriptiveAnswersScreen extends StatefulWidget {
-  final DescTestModel descTestModel;
-  final bool isUnlocked;
-  final bool showPeerReview;
+  final DescriptiveAnswersScreenArgs args;
 
-  const DescriptiveAnswersScreen({
-    super.key,
-    required this.descTestModel,
-    this.isUnlocked = false,
-    required this.showPeerReview,
-  });
+  const DescriptiveAnswersScreen({super.key, required this.args});
 
   @override
   State<DescriptiveAnswersScreen> createState() =>
@@ -30,7 +24,7 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
   @override
   void initState() {
     context.read<QuestionBloc>().add(
-      LoadDescQuestion(widget.descTestModel.id, "en"),
+      LoadDescQuestion(widget.args.descTestModel.id, "en"),
     );
     super.initState();
   }
@@ -41,7 +35,7 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          widget.showPeerReview ? 'Peer Review' : 'Model Answers',
+          widget.args.showPeerReview ? 'Peer Review' : 'Model Answers',
           style: AppTexts.titleTextStyle,
         ),
         centerTitle: true,
@@ -64,13 +58,13 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
                   onTap: () {
                     context.push(
                       AppRoutes.descAnswerDetail,
-                      extra: {
-                        'question': question,
-                        'index': index,
-                        'testId': widget.descTestModel.id,
-                        'isUnlocked': widget.isUnlocked,
-                        'showPeerReview': widget.showPeerReview,
-                      },
+                      extra: DescriptiveAnswerDetailScreenArgs(
+                        question: question,
+                        index: index,
+                        testId: widget.args.descTestModel.id,
+                        isUnlocked: widget.args.isUnlocked,
+                        showPeerReview: widget.args.showPeerReview,
+                      ),
                     );
                   },
                 );

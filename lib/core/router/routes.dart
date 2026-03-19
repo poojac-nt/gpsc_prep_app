@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
@@ -425,65 +423,22 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.descAnswerScreen,
     pageBuilder: (context, state) {
-      final extra = state.extra;
-      DescTestModel descTestModel;
-      bool isUnlocked = false;
-      bool showPeerReview = false;
-      if (extra is Map<String, dynamic>) {
-        descTestModel = extra['descTestModel'] as DescTestModel;
-        isUnlocked = extra['isUnlocked'] as bool? ?? false;
-        showPeerReview = extra['showPeerReview'] as bool? ?? false;
-      } else {
-        descTestModel = extra as DescTestModel;
-      }
-      return _slideTransition(
-        DescriptiveAnswersScreen(
-          descTestModel: descTestModel,
-          isUnlocked: isUnlocked,
-          showPeerReview: showPeerReview,
-        ),
-        state,
-      );
+      final args = state.extra as DescriptiveAnswersScreenArgs;
+      return _slideTransition(DescriptiveAnswersScreen(args: args), state);
     },
   ),
   GoRoute(
     path: AppRoutes.descAnswerDetail,
     pageBuilder: (context, state) {
-      final extra = state.extra as Map<String, dynamic>;
-      final question = extra['question'] as DescQuestionModel;
-      final index = extra['index'] as int;
-      final testId = extra['testId'] as int;
-      final isUnlocked = extra['isUnlocked'] as bool? ?? false;
-      final showPeerReview = extra['showPeerReview'] as bool? ?? false;
-      return _slideTransition(
-        DescriptiveAnswerDetailScreen(
-          question: question,
-          index: index,
-          testId: testId,
-          isUnlocked: isUnlocked,
-          showPeerReview: showPeerReview,
-        ),
-        state,
-      );
+      final args = state.extra as DescriptiveAnswerDetailScreenArgs;
+      return _slideTransition(DescriptiveAnswerDetailScreen(args: args), state);
     },
   ),
   GoRoute(
     path: AppRoutes.peerReviewAnswer,
     pageBuilder: (context, state) {
-      final extra = state.extra as Map<String, dynamic>;
-      final question = extra['question'] as DescQuestionModel;
-      final index = extra['index'] as int;
-      final userName = extra['userName'] as String;
-      final answerId = extra['answerId'] as int;
-      return _slideTransition(
-        PeerReviewAnswerScreen(
-          question: question,
-          index: index,
-          userName: userName,
-          answerId: answerId,
-        ),
-        state,
-      );
+      final args = state.extra as PeerReviewAnswerScreenArgs;
+      return _slideTransition(PeerReviewAnswerScreen(args: args), state);
     },
   ),
 

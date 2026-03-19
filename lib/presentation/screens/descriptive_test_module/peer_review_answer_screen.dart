@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
@@ -15,18 +16,9 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 
 class PeerReviewAnswerScreen extends StatefulWidget {
-  final DescQuestionModel question;
-  final int index;
-  final String userName;
-  final int answerId;
+  final PeerReviewAnswerScreenArgs args;
 
-  const PeerReviewAnswerScreen({
-    super.key,
-    required this.question,
-    required this.index,
-    required this.userName,
-    required this.answerId,
-  });
+  const PeerReviewAnswerScreen({super.key, required this.args});
 
   @override
   State<PeerReviewAnswerScreen> createState() => _PeerReviewAnswerScreenState();
@@ -42,7 +34,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
     _feedbackController = TextEditingController();
     _feedbackController.addListener(_updateWordCount);
     context.read<DetailedPeerReviewBloc>().add(
-      FetchDetailedPeerReview(answerId: widget.answerId),
+      FetchDetailedPeerReview(answerId: widget.args.answerId),
     );
   }
 
@@ -90,7 +82,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
               ),
             ),
             Text(
-              'by ${widget.userName}',
+              'by ${widget.args.userName}',
               style: TextStyle(
                 color: Colors.black45,
                 fontSize: 12.sp,
@@ -112,7 +104,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
                 );
                 // Refresh data
                 context.read<DetailedPeerReviewBloc>().add(
-                  FetchDetailedPeerReview(answerId: widget.answerId),
+                  FetchDetailedPeerReview(answerId: widget.args.answerId),
                 );
               } else if (state is SubmitPeerReviewError) {
                 ScaffoldMessenger.of(
@@ -354,7 +346,7 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
-                      '1/${widget.question.pages ?? 1} Pages',
+                      '1/${widget.args.question.pages ?? 1} Pages',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11.sp,

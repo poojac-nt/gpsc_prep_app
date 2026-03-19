@@ -4,14 +4,12 @@ import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart'
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
-import '../../utils/app_constants.dart';
-
 class QuestionDetailCard extends StatefulWidget {
   final DescQuestionModel question;
   final int index;
   final int commentCount;
   final String selectedLanguage;
-  final bool isModelAnswerUnlocked;
+
   final bool showModelAnswerDirectly;
 
   const QuestionDetailCard({
@@ -20,7 +18,7 @@ class QuestionDetailCard extends StatefulWidget {
     required this.index,
     this.commentCount = 0,
     this.selectedLanguage = 'en',
-    this.isModelAnswerUnlocked = false,
+
     this.showModelAnswerDirectly = false,
   });
 
@@ -76,26 +74,7 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
           Row(
             children: [
               const Spacer(),
-              if (!widget.isModelAnswerUnlocked)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.lock_outline,
-                      color: AppColors.gray400,
-                      size: 16.sp,
-                    ),
-                    SizedBox(width: 6.w),
-                    Text(
-                      'Model Answer (Locked)',
-                      style: TextStyle(
-                        color: AppColors.gray400,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                )
-              else if (!widget.showModelAnswerDirectly)
+              if (!widget.showModelAnswerDirectly)
                 GestureDetector(
                   onTap: () {
                     setState(() {

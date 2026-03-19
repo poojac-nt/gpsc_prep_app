@@ -95,21 +95,21 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                     onReviewTap: () {
                       context.push(
                         AppRoutes.descAnswerScreen,
-                        extra: {
-                          'descTestModel': test,
-                          'isUnlocked': isAnswerUnlocked(test.createdAt),
-                          'showPeerReview': true,
-                        },
+                        extra: DescriptiveAnswersScreenArgs(
+                          descTestModel: test,
+                          isUnlocked: isAnswerUnlocked(test.createdAt),
+                          showPeerReview: true,
+                        ),
                       );
                     },
                     onAnswerModuleTap: () {
                       context.push(
                         AppRoutes.descAnswerScreen,
-                        extra: {
-                          'descTestModel': test,
-                          'isUnlocked': isAnswerUnlocked(test.createdAt),
-                          'showPeerReview': false,
-                        },
+                        extra: DescriptiveAnswersScreenArgs(
+                          descTestModel: test,
+                          isUnlocked: isAnswerUnlocked(test.createdAt),
+                          showPeerReview: false,
+                        ),
                       );
                     },
                     onShareTap: () async {
