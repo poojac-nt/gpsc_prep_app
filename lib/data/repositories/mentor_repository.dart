@@ -10,9 +10,10 @@ import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
 import 'package:gpsc_prep_app/domain/entities/pending_submission.dart';
 import 'package:gpsc_prep_app/domain/entities/student_list_with_mentor.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/subject_model.dart';
-import 'package:gpsc_prep_app/domain/entities/submission_report_model.dart';
-import 'package:gpsc_prep_app/domain/entities/mentor_free_test_list_model.dart';
+
+import '../../domain/entities/submission_report_model.dart';
 
 class MentorRepository {
   final SupabaseHelper _supabase;
@@ -89,7 +90,7 @@ class MentorRepository {
     evaluatedPdfFile: evaluatedPdfFile,
   );
 
-  Future<Either<Failure, List<DescFreeTestWithUsers>>>
+  Future<Either<Failure, List<DescTestModel>>>
   fetchSubmittedFreeDescTests() async =>
       await _supabase.fetchSubmittedFreeDescTests();
 }

@@ -22,6 +22,7 @@ import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/all_assigned_tests_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
@@ -180,6 +181,9 @@ class AppServices {
     ),
     BlocProvider<MainsTestReviewBloc>(
       create: (_) => getIt<MainsTestReviewBloc>(),
+    ),
+    BlocProvider<FreeTestReviewBloc>(
+      create: (_) => getIt<FreeTestReviewBloc>(),
     ),
   ];
 

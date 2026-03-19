@@ -2,38 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
-import 'package:gpsc_prep_app/domain/entities/mentor_free_test_list_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_state.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:intl/intl.dart';
 
-class FreeTestReviewScreen extends StatelessWidget {
+class FreeTestReviewScreen extends StatefulWidget {
   const FreeTestReviewScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create:
-          (context) => FreeTestReviewBloc(getIt())..add(FetchFreeTestReviews()),
-      child: const FreeTestReviewView(),
-    );
-  }
+  State<FreeTestReviewScreen> createState() => _FreeTestReviewScreenState();
 }
 
-class FreeTestReviewView extends StatefulWidget {
-  const FreeTestReviewView({super.key});
-
+class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
   @override
-  State<FreeTestReviewView> createState() => _FreeTestReviewViewState();
-}
+  void initState() {
+    super.initState();
+    context.read<FreeTestReviewBloc>().add(FetchFreeTestReviews());
+  }
 
-class _FreeTestReviewViewState extends State<FreeTestReviewView> {
   bool isAnswerUnlocked(String createdAtString) {
     try {
       final createdAtUtc = DateTime.parse(createdAtString).toUtc();
@@ -48,8 +37,6 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
       final nowUtc = DateTime.now().toUtc();
       return nowUtc.isAfter(unlockTimeUtc);
     } catch (e) {
-      getIt<LogHelper>().e("Error parsing createdAt: $e");
-      getIt<SnackBarHelper>().showError("Error parsing createdAt: $e");
       return false;
     }
   }
@@ -57,13 +44,18 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Free Test Submissions', style: AppTexts.titleTextStyle),
-        backgroundColor: AppColors.scaffoldColor,
+        title: Text('Free Test Reviews', style: AppTexts.titleTextStyle),
+        backgroundColor: const Color(0xFFF8FAFC),
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: AppColors.gray900),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.gray900,
+            size: 20.sp,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -72,63 +64,86 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
           if (state is FreeTestReviewLoading ||
               state is FreeTestReviewInitial) {
             return Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 3,
+              ),
             );
           }
 
           if (state is FreeTestReviewError) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: TextStyle(color: Colors.red, fontSize: 14.sp),
-                  ),
-                  16.hGap,
-                  ElevatedButton(
-                    onPressed:
-                        () => context.read<FreeTestReviewBloc>().add(
-                          FetchFreeTestReviews(),
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline_rounded,
+                      color: Colors.red.shade300,
+                      size: 48.sp,
+                    ),
+                    16.hGap,
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.gray700,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                    24.hGap,
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
-                    child: const Text('Retry'),
-                  ),
-                ],
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 32.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      onPressed:
+                          () => context.read<FreeTestReviewBloc>().add(
+                            FetchFreeTestReviews(),
+                          ),
+                      child: const Text(
+                        'Try Again',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           if (state is FreeTestReviewLoaded) {
-            if (state.submissions.isEmpty) {
+            final submissions = state.submissions;
+            if (submissions.isEmpty) {
               return Center(
-                child: Text(
-                  'No free test submissions found.',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.gray500,
-                  ),
-                ),
-              );
-            }
-
-            // Flatten the list to get all submissions as separate items
-            final List<Map<String, dynamic>> flatSubmissions = [];
-            for (var testGroup in state.submissions) {
-              for (var user in testGroup.users) {
-                flatSubmissions.add({'test': testGroup, 'user': user});
-              }
-            }
-
-            if (flatSubmissions.isEmpty) {
-              return Center(
-                child: Text(
-                  'No user submissions found for free tests.',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.gray500,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.assignment_turned_in_outlined,
+                      color: AppColors.gray200,
+                      size: 64.sp,
+                    ),
+                    16.hGap,
+                    Text(
+                      'No submissions for review',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray500,
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -139,28 +154,26 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
                 context.read<FreeTestReviewBloc>().add(FetchFreeTestReviews());
               },
               child: ListView.separated(
-                padding: EdgeInsets.all(20.w),
-                itemCount: flatSubmissions.length,
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                itemCount: submissions.length,
                 separatorBuilder: (context, index) => 16.hGap,
                 itemBuilder: (context, index) {
-                  final item = flatSubmissions[index];
-                  final DescFreeTestWithUsers testGroup = item['test'];
-                  final SubmittedUser user = item['user'];
-
-                  final isUnlocked = isAnswerUnlocked(
-                    testGroup.createdAt.toIso8601String(),
-                  );
+                  final test = submissions[index];
+                  final isUnlocked = isAnswerUnlocked(test.createdAt);
+                  final formattedDate = DateFormat(
+                    'dd MMM, yyyy',
+                  ).format(DateTime.parse(test.createdAt));
 
                   return Container(
-                    padding: EdgeInsets.all(16.r),
+                    padding: EdgeInsets.all(20.r),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.r),
+                      borderRadius: BorderRadius.circular(24.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(5),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: AppColors.primary.withAlpha(8),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
@@ -169,35 +182,40 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
                       children: [
                         Row(
                           children: [
-                            CircleAvatar(
-                              radius: 20.r,
-                              backgroundColor: AppColors.primary.withAlpha(20),
+                            Container(
+                              padding: EdgeInsets.all(10.r),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(15),
+                                borderRadius: BorderRadius.circular(14.r),
+                              ),
                               child: Icon(
-                                Icons.person_rounded,
+                                Icons.description_outlined,
                                 color: AppColors.primary,
-                                size: 20.sp,
+                                size: 22.sp,
                               ),
                             ),
-                            12.wGap,
+                            16.wGap,
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    user.userName,
+                                    test.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w800,
                                       color: AppColors.gray900,
                                     ),
                                   ),
                                   4.hGap,
                                   Text(
-                                    testGroup.name,
+                                    'Published on $formattedDate',
                                     style: TextStyle(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12.sp,
                                       color: AppColors.gray500,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
@@ -205,138 +223,63 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
                             ),
                           ],
                         ),
+
                         16.hGap,
-                        const Divider(color: AppColors.gray100, height: 1),
-                        12.hGap,
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.format_list_numbered,
-                                  size: 14.sp,
-                                  color: AppColors.gray400,
-                                ),
-                                4.wGap,
-                                Text(
-                                  '${testGroup.noQuestions} Questions',
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color: AppColors.gray500,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                            _buildInfoChip(
+                              Icons.quiz_outlined,
+                              '${test.noQuestions} Questions',
+                              const Color(0xFFF1F5F9),
+                              const Color(0xFF475569),
                             ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.grade_rounded,
-                                  size: 14.sp,
-                                  color: AppColors.gray400,
-                                ),
-                                4.wGap,
-                                Text(
-                                  '${testGroup.totalMarks} Marks',
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color: AppColors.gray500,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                            12.wGap,
+                            _buildInfoChip(
+                              Icons.stars_outlined,
+                              '${test.totalMarks} Marks',
+                              const Color(0xFFF0FDF4),
+                              const Color(0xFF166534),
                             ),
                           ],
                         ),
-                        16.hGap,
+                        20.hGap,
+                        const Divider(color: Color(0xFFE2E8F0), height: 1),
+                        15.hGap,
                         Row(
                           children: [
                             Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: AppColors.primary,
-                                  elevation: 0,
-                                  padding: EdgeInsets.symmetric(vertical: 10.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    side: BorderSide(
-                                      color: AppColors.primary,
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  final testModel = DescTestModel(
-                                    id: testGroup.testId,
-                                    name: testGroup.name,
-                                    totalMarks: testGroup.totalMarks,
-                                    noQuestions: testGroup.noQuestions,
-                                    createdAt:
-                                        testGroup.createdAt.toIso8601String(),
-                                  );
+                              child: _buildActionBtn(
+                                label: 'Answer Key',
+                                isPrimary: true,
+                                isDisabled: !isUnlocked,
+                                onTap: () {
                                   context.push(
                                     AppRoutes.descAnswerScreen,
                                     extra: {
-                                      'descTestModel': testModel,
+                                      'descTestModel': test,
                                       'isUnlocked': isUnlocked,
-                                      'showPeerReview': true,
-                                      'peerUserId':
-                                          user.userId, // Passing student ID if backend uses it
+                                      'showPeerReview': false,
                                     },
                                   );
                                 },
-                                child: Text(
-                                  'Review',
-                                  style: TextStyle(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
                               ),
                             ),
                             12.wGap,
                             Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  padding: EdgeInsets.symmetric(vertical: 10.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
-                                ),
-                                onPressed:
-                                    isUnlocked
-                                        ? () {
-                                          final testModel = DescTestModel(
-                                            id: testGroup.testId,
-                                            name: testGroup.name,
-                                            totalMarks: testGroup.totalMarks,
-                                            noQuestions: testGroup.noQuestions,
-                                            createdAt:
-                                                testGroup.createdAt
-                                                    .toIso8601String(),
-                                          );
-                                          context.push(
-                                            AppRoutes.descAnswerScreen,
-                                            extra: {
-                                              'descTestModel': testModel,
-                                              'isUnlocked': isUnlocked,
-                                              'showPeerReview': false,
-                                            },
-                                          );
-                                        }
-                                        : null,
-                                child: Text(
-                                  'Answer Key',
-                                  style: TextStyle(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                              child: _buildActionBtn(
+                                label: 'Review',
+                                isPrimary: false,
+                                onTap: () {
+                                  context.push(
+                                    AppRoutes.descAnswerScreen,
+                                    extra: {
+                                      'descTestModel': test,
+                                      'isUnlocked': isUnlocked,
+                                      'showPeerReview': true,
+                                    },
+                                  );
+                                },
                               ),
                             ),
                           ],
@@ -351,6 +294,88 @@ class _FreeTestReviewViewState extends State<FreeTestReviewView> {
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(
+    IconData icon,
+    String label,
+    Color bgColor,
+    Color textColor,
+  ) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.sp, color: textColor),
+          6.wGap,
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: textColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionBtn({
+    required String label,
+    required bool isPrimary,
+    bool isDisabled = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: isDisabled ? null : onTap,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        decoration: BoxDecoration(
+          color:
+              isDisabled
+                  ? AppColors.gray100
+                  : (isPrimary ? AppColors.primary : Colors.white),
+          borderRadius: BorderRadius.circular(14.r),
+          border:
+              isPrimary || isDisabled
+                  ? null
+                  : Border.all(
+                    color: AppColors.primary.withAlpha(100),
+                    width: 1.5,
+                  ),
+          boxShadow:
+              isPrimary && !isDisabled
+                  ? [
+                    BoxShadow(
+                      color: AppColors.primary.withAlpha(60),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                  : null,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w800,
+              color:
+                  isDisabled
+                      ? AppColors.gray400
+                      : (isPrimary ? Colors.white : AppColors.primary),
+            ),
+          ),
+        ),
       ),
     );
   }

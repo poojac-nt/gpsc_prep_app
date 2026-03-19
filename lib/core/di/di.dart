@@ -30,6 +30,7 @@ import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/all_assigned_tests_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
@@ -240,6 +241,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<MentorEvaluationBloc>(
     () => MentorEvaluationBloc(getIt<MentorRepository>()),
+  );
+  getIt.registerLazySingleton<FreeTestReviewBloc>(
+    () => FreeTestReviewBloc(getIt<MentorRepository>()),
   );
   getIt.registerFactory<AllTestBloc>(
     () => AllTestBloc(getIt<TestRepository>()),

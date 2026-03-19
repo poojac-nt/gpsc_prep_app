@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:gpsc_prep_app/domain/entities/mentor_free_test_list_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 
 abstract class FreeTestReviewState extends Equatable {
   const FreeTestReviewState();
@@ -13,7 +13,7 @@ class FreeTestReviewInitial extends FreeTestReviewState {}
 class FreeTestReviewLoading extends FreeTestReviewState {}
 
 class FreeTestReviewLoaded extends FreeTestReviewState {
-  final List<DescFreeTestWithUsers> submissions;
+  final List<DescTestModel> submissions;
 
   const FreeTestReviewLoaded(this.submissions);
 

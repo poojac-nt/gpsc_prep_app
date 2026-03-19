@@ -21,7 +21,6 @@ import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
-import 'package:gpsc_prep_app/domain/entities/mentor_free_test_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_test_submissions.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
@@ -1554,16 +1553,19 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DescFreeTestWithUsers>>>
+  Future<Either<Failure, List<DescTestModel>>>
   fetchSubmittedFreeDescTests() async {
     try {
       final result = await supabase.rpc(SupabaseKeys.getSubmittedFreeDescTests);
 
       final data =
           (result as List).map((e) {
-            return DescFreeTestWithUsers.fromJson(
-              Map<String, dynamic>.from(e as Map),
-            );
+            final map = Map<String, dynamic>.from(e as Map);
+            // Map test_id to id for DescTestModel compatibility
+            if (map.containsKey('test_id')) {
+              map['id'] = map['test_id'];
+            }
+            return DescTestModel.fromJson(map);
           }).toList();
 
       return Right(data);
