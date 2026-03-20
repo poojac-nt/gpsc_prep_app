@@ -10,6 +10,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../core/router/args.dart';
 import '../../blocs/add_course/course_bloc.dart';
+import '../../blocs/purchase/purchase_bloc.dart';
 
 class PaidCourseListScreen extends StatefulWidget {
   const PaidCourseListScreen({super.key});
@@ -22,6 +23,7 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
   @override
   void initState() {
     context.read<CourseBloc>().add(FetchCoursesRequested());
+    context.read<PurchaseBloc>().add(FetchPurchases());
     super.initState();
   }
 
@@ -52,16 +54,34 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
             return const Center(child: Text("No courses found"));
           }
 
-          return Skeletonizer(
-            enabled: isLoading,
-            child: ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-              itemCount: courses.length,
-              separatorBuilder: (context, index) => 10.hGap,
-              itemBuilder: (context, index) {
-                return PaidCourseListCard(courseModel: courses[index]);
-              },
-            ),
+          return BlocBuilder<PurchaseBloc, PurchaseState>(
+            builder: (context, purchaseState) {
+              final enrolledCourseIds =
+                  (purchaseState is PurchaseFetched)
+                      ? purchaseState.purchases.map((p) => p.courseId).toSet()
+                      : (purchaseState is PurchaseSuccess)
+                      ? purchaseState.purchases.map((p) => p.courseId).toSet()
+                      : <int>{};
+
+              return Skeletonizer(
+                enabled: isLoading,
+                child: ListView.separated(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 10.h,
+                  ),
+                  itemCount: courses.length,
+                  separatorBuilder: (context, index) => 10.hGap,
+                  itemBuilder: (context, index) {
+                    final course = courses[index];
+                    return PaidCourseListCard(
+                      courseModel: course,
+                      isEnrolled: enrolledCourseIds.contains(course.id),
+                    );
+                  },
+                ),
+              );
+            },
           );
         },
       ),
@@ -84,8 +104,13 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
 
 class PaidCourseListCard extends StatelessWidget {
   final CourseModel courseModel;
+  final bool isEnrolled;
 
-  const PaidCourseListCard({super.key, required this.courseModel});
+  const PaidCourseListCard({
+    super.key,
+    required this.courseModel,
+    this.isEnrolled = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -108,26 +133,33 @@ class PaidCourseListCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header pill
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color:
-                      isPrelims
-                          ? AppColors.green100.withAlpha(150)
-                          : const Color(0xFFF3E8FF), // Purple 100
-                  borderRadius: BorderRadius.circular(100.r),
-                ),
-                child: Text(
-                  courseModel.testType ?? "Course",
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        isPrelims
-                            ? AppColors.green800.withAlpha(160)
-                            : const Color(0xFF7E22CE), // Purple 700
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          isPrelims
+                              ? AppColors.green100.withAlpha(150)
+                              : const Color(0xFFF3E8FF), // Purple 100
+                      borderRadius: BorderRadius.circular(100.r),
+                    ),
+                    child: Text(
+                      courseModel.testType ?? "Course",
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isPrelims
+                                ? AppColors.green800.withAlpha(160)
+                                : const Color(0xFF7E22CE), // Purple 700
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
               12.hGap,
               Text(
@@ -190,7 +222,7 @@ class PaidCourseListCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          "View Details",
+                          isEnrolled ? "Enrolled" : "View Details",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12.sp,
@@ -199,7 +231,9 @@ class PaidCourseListCard extends StatelessWidget {
                         ),
                         6.wGap,
                         Icon(
-                          Icons.arrow_forward_rounded,
+                          isEnrolled
+                              ? Icons.check_circle_rounded
+                              : Icons.arrow_forward_rounded,
                           color: Colors.white,
                           size: 14.sp,
                         ),

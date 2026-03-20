@@ -154,139 +154,161 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
               onRefresh: () async {
                 context.read<FreeTestReviewBloc>().add(FetchFreeTestReviews());
               },
-              child: ListView.separated(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                itemCount: submissions.length,
-                separatorBuilder: (context, index) => 16.hGap,
-                itemBuilder: (context, index) {
-                  final test = submissions[index];
-                  final formattedDate = DateFormat(
-                    'dd MMM, yyyy',
-                  ).format(DateTime.parse(test.createdAt));
-
-                  return Container(
-                    padding: EdgeInsets.all(20.r),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withAlpha(8),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10.r),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withAlpha(15),
-                                borderRadius: BorderRadius.circular(14.r),
-                              ),
-                              child: Icon(
-                                Icons.description_outlined,
-                                color: AppColors.primary,
-                                size: 22.sp,
-                              ),
-                            ),
-                            16.wGap,
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    test.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.gray900,
-                                    ),
-                                  ),
-                                  4.hGap,
-                                  Text(
-                                    'Published on $formattedDate',
-                                    style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color: AppColors.gray500,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        16.hGap,
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            _buildInfoChip(
-                              Icons.quiz_outlined,
-                              '${test.noQuestions} Questions',
-                              const Color(0xFFF1F5F9),
-                              const Color(0xFF475569),
-                            ),
-                            12.wGap,
-                            _buildInfoChip(
-                              Icons.stars_outlined,
-                              '${test.totalMarks} Marks',
-                              const Color(0xFFF0FDF4),
-                              const Color(0xFF166534),
-                            ),
-                          ],
-                        ),
-                        20.hGap,
-                        const Divider(color: Color(0xFFE2E8F0), height: 1),
-                        15.hGap,
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildActionBtn(
-                                label: 'Answer Key',
-                                isPrimary: true,
-                                onTap: () {
-                                  context.push(
-                                    AppRoutes.descAnswerScreen,
-                                    extra: DescriptiveAnswersScreenArgs(
-                                      descTestModel: test,
-                                      isUnlocked: true,
-                                      showPeerReview: false,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            12.wGap,
-                            Expanded(
-                              child: _buildActionBtn(
-                                label: 'Review',
-                                isPrimary: false,
-                                onTap: () {
-                                  context.push(
-                                    AppRoutes.descAnswerScreen,
-                                    extra: DescriptiveAnswersScreenArgs(
-                                      descTestModel: test,
-                                      isUnlocked: true,
-                                      showPeerReview: true,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (!state.hasReachedMax &&
+                      !state.isFetchingMore &&
+                      scrollInfo.metrics.pixels >=
+                          scrollInfo.metrics.maxScrollExtent - 200) {
+                    context
+                        .read<FreeTestReviewBloc>()
+                        .add(LoadMoreFreeTestReviews());
+                  }
+                  return true;
                 },
+                child: ListView.separated(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 16.h,
+                  ),
+                  itemCount: submissions.length + (state.isFetchingMore ? 1 : 0),
+                  separatorBuilder: (context, index) => 16.hGap,
+                  itemBuilder: (context, index) {
+                    if (index == submissions.length) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final test = submissions[index];
+                    final formattedDate = DateFormat(
+                      'dd MMM, yyyy',
+                    ).format(DateTime.parse(test.createdAt));
+
+                    return Container(
+                      padding: EdgeInsets.all(20.r),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withAlpha(8),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(10.r),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withAlpha(15),
+                                  borderRadius: BorderRadius.circular(14.r),
+                                ),
+                                child: Icon(
+                                  Icons.description_outlined,
+                                  color: AppColors.primary,
+                                  size: 22.sp,
+                                ),
+                              ),
+                              16.wGap,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      test.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.gray900,
+                                      ),
+                                    ),
+                                    4.hGap,
+                                    Text(
+                                      'Published on $formattedDate',
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        color: AppColors.gray500,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          16.hGap,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              _buildInfoChip(
+                                Icons.quiz_outlined,
+                                '${test.noQuestions} Questions',
+                                const Color(0xFFF1F5F9),
+                                const Color(0xFF475569),
+                              ),
+                              12.wGap,
+                              _buildInfoChip(
+                                Icons.stars_outlined,
+                                '${test.totalMarks} Marks',
+                                const Color(0xFFF0FDF4),
+                                const Color(0xFF166534),
+                              ),
+                            ],
+                          ),
+                          20.hGap,
+                          const Divider(color: Color(0xFFE2E8F0), height: 1),
+                          15.hGap,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildActionBtn(
+                                  label: 'Answer Key',
+                                  isPrimary: true,
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.descAnswerScreen,
+                                      extra: DescriptiveAnswersScreenArgs(
+                                        descTestModel: test,
+                                        isUnlocked: true,
+                                        showPeerReview: false,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              12.wGap,
+                              Expanded(
+                                child: _buildActionBtn(
+                                  label: 'Review',
+                                  isPrimary: false,
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.descAnswerScreen,
+                                      extra: DescriptiveAnswersScreenArgs(
+                                        descTestModel: test,
+                                        isUnlocked: true,
+                                        showPeerReview: true,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             );
           }

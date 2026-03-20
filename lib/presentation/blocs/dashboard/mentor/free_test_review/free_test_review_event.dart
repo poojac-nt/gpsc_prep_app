@@ -8,3 +8,5 @@ abstract class FreeTestReviewEvent extends Equatable {
 }
 
 class FetchFreeTestReviews extends FreeTestReviewEvent {}
+
+class LoadMoreFreeTestReviews extends FreeTestReviewEvent {}

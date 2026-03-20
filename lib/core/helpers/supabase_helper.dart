@@ -1553,10 +1553,15 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<DescTestModel>>>
-  fetchSubmittedFreeDescTests() async {
+  Future<Either<Failure, List<DescTestModel>>> fetchSubmittedFreeDescTests({
+    int offset = 0,
+    int limit = 20,
+  }) async {
     try {
-      final result = await supabase.rpc(SupabaseKeys.getSubmittedFreeDescTests);
+      final result = await supabase.rpc(
+        SupabaseKeys.getSubmittedFreeDescTests,
+        params: {'p_offset': offset, 'p_limit': limit},
+      );
 
       final data =
           (result as List).map((e) {

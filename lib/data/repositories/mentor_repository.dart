@@ -90,7 +90,11 @@ class MentorRepository {
     evaluatedPdfFile: evaluatedPdfFile,
   );
 
-  Future<Either<Failure, List<DescTestModel>>>
-  fetchSubmittedFreeDescTests() async =>
-      await _supabase.fetchSubmittedFreeDescTests();
+  Future<Either<Failure, List<DescTestModel>>> fetchSubmittedFreeDescTests({
+    int offset = 0,
+    int limit = 20,
+  }) async => await _supabase.fetchSubmittedFreeDescTests(
+    offset: offset,
+    limit: limit,
+  );
 }
