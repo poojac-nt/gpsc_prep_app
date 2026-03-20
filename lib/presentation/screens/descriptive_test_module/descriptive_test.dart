@@ -20,6 +20,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../widgets/action_button.dart';
 import '../../widgets/bordered_container.dart';
+import '../../widgets/dialogs/confirmation_dialog.dart';
 import '../dashboard/widgets/custom_progress_bar.dart';
 
 class DescriptiveTestScreen extends StatefulWidget {
@@ -312,26 +313,16 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                             final shouldOverwrite = await showDialog<bool>(
                               context: context,
                               builder:
-                                  (context) => AlertDialog(
-                                    title: const Text("Overwrite Files?"),
-                                    content: const Text(
-                                      "You have already selected files. Selecting new files will overwrite the existing ones. Do you want to continue?",
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed:
-                                            () => Navigator.of(
-                                              context,
-                                            ).pop(false),
-                                        child: const Text("Cancel"),
-                                      ),
-                                      TextButton(
-                                        onPressed:
-                                            () =>
-                                                Navigator.of(context).pop(true),
-                                        child: const Text("Overwrite"),
-                                      ),
-                                    ],
+                                  (context) => ConfirmationDialog(
+                                    title: "Replace existing files?",
+                                    description:
+                                        "You have already picked some files. If you select new ones, the old ones will be removed. Do you want to do this?",
+                                    primaryButtonText: "Replace",
+                                    onPrimaryPressed:
+                                        () => Navigator.of(context).pop(true),
+                                    secondaryButtonText: "Cancel",
+                                    onSecondaryPressed:
+                                        () => Navigator.of(context).pop(false),
                                   ),
                             );
 

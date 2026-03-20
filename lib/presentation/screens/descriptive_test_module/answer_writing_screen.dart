@@ -31,10 +31,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
   @override
   void initState() {
     super.initState();
-    final currentState = context.read<DailyDescTestBloc>().state;
-    if (currentState is! DailyDescTestFetched) {
-      context.read<DailyDescTestBloc>().add(FetchAllTests());
-    }
+    context.read<DailyDescTestBloc>().add(FetchAllTests());
   }
 
   @override
