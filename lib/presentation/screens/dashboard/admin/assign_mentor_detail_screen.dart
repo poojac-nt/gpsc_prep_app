@@ -84,20 +84,30 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
                 ),
               );
             }
-            return Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: 100.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      10.hGap,
-                      _buildSubmissionList(submissions, selectedIds),
-                    ],
-                  ),
-                ),
-                _buildFloatingButton(submissions, selectedIds),
-              ],
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  10.hGap,
+                  _buildSubmissionList(submissions, selectedIds),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+      bottomNavigationBar: BlocBuilder<
+        TestWiseSubmissionsBloc,
+        TestWiseSubmissionsState
+      >(
+        builder: (context, state) {
+          if (state is TestWiseSubmissionsLoaded &&
+              state.studentsWithMentors.isNotEmpty) {
+            return _buildFloatingButton(
+              state.studentsWithMentors,
+              state.selectedSubmissionIds,
             );
           }
           return const SizedBox.shrink();
@@ -686,54 +696,54 @@ class _AssignMentorDetailScreenState extends State<AssignMentorDetailScreen> {
     Set<int> selectedIds,
   ) {
     final bool isActive = selectedIds.isNotEmpty;
-    return Positioned(
-      bottom: 24.h,
-      left: 20.w,
-      right: 20.w,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 300),
-        opacity: isActive ? 1.0 : 0.6,
-        child: Container(
-          height: 56.h,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withAlpha(60),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap:
-                  isActive
-                      ? () =>
-                          _showMentorSelectionSheet(submissions, selectedIds)
-                      : null,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: isActive ? 1.0 : 0.6,
+          child: Container(
+            height: 56.h,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(16.r),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.person_add_rounded,
-                      color: Colors.white,
-                      size: 24.sp,
-                    ),
-                    12.wGap,
-                    Text(
-                      "Assign Mentors",
-                      style: TextStyle(
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withAlpha(60),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap:
+                    isActive
+                        ? () =>
+                            _showMentorSelectionSheet(submissions, selectedIds)
+                        : null,
+                borderRadius: BorderRadius.circular(16.r),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.person_add_rounded,
                         color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
+                        size: 24.sp,
                       ),
-                    ),
-                  ],
+                      12.wGap,
+                      Text(
+                        "Assign Mentors",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
