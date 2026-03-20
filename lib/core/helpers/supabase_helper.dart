@@ -741,7 +741,7 @@ class SupabaseHelper {
 
       for (var file in files) {
         final fileName =
-            "${testId}_${questionId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}";
+            "${testId}_${questionId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}";
         final filePath = "answers/$fileName";
 
         await supabase.storage

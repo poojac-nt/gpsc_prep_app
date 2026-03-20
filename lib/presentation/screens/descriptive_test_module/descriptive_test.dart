@@ -612,6 +612,9 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                       child: ActionButton(
                         text: hasAnswers ? "Discard" : "Leave",
                         onTap: () {
+                          context.read<DailyDescTestBloc>().add(
+                            FetchAllTests(),
+                          );
                           Navigator.of(context).pop(true);
                         },
                         backgroundColor: Colors.red,
