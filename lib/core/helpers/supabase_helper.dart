@@ -740,9 +740,10 @@ class SupabaseHelper {
       List<String> publicUrls = [];
 
       for (var file in files) {
+        final extension = file.path.split('.').last;
         final fileName =
-            "${testId}_${questionId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}";
-        final filePath = "answers/$fileName";
+            "${testId}_${questionId}_${_cache.getUserId()}_${DateTime.now().millisecondsSinceEpoch}.$extension";
+        final filePath = "answers/$fileName".toLowerCase().replaceAll(' ', '');
 
         await supabase.storage
             .from(SupabaseKeys.answers)

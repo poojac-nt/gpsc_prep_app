@@ -42,20 +42,20 @@ final class DescTestSubmitSuccess extends DailyDescTestState {
   DescTestSubmitSuccess(this.message);
 }
 
-/// 🔑 Ongoing test session state (text answers + pdf answers in memory)
+/// 🔑 Ongoing test session state (text answers + file answers in memory)
 final class DailyDescTestInProgress extends DailyDescTestState {
   final Map<int, String> answers; // text answers
-  final Map<int, File?> pdfCache; // pdf answers
+  final Map<int, List<File>> fileCache; // file answers (PDFs/images)
 
-  DailyDescTestInProgress({required this.answers, required this.pdfCache});
+  DailyDescTestInProgress({required this.answers, required this.fileCache});
 
   DailyDescTestInProgress copyWith({
     Map<int, String>? answers,
-    Map<int, File?>? pdfCache,
+    Map<int, List<File>>? fileCache,
   }) {
     return DailyDescTestInProgress(
       answers: answers ?? this.answers,
-      pdfCache: pdfCache ?? this.pdfCache,
+      fileCache: fileCache ?? this.fileCache,
     );
   }
 }
@@ -67,7 +67,7 @@ final class DailyDescTestMessage extends DailyDescTestInProgress {
   DailyDescTestMessage({
     required this.message,
     required super.answers,
-    required super.pdfCache,
+    required super.fileCache,
   });
 }
 

@@ -125,7 +125,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         DailyDescTestMessage(
           message: message,
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     } else {
@@ -133,7 +133,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       emit(
         DailyDescTestInProgress(
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     }
@@ -160,7 +160,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         DailyDescTestMessage(
           message: message,
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     } else {
@@ -168,7 +168,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       emit(
         DailyDescTestInProgress(
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     }
@@ -182,7 +182,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     emit(
       DailyDescTestInProgress(
         answers: Map.from(_answers),
-        pdfCache: Map.from(_fileCache),
+        fileCache: Map.from(_fileCache),
       ),
     );
     _log.i("Removed answer for question ${event.questionId}.");
