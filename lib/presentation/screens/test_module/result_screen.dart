@@ -48,7 +48,11 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
+    final isInternetAvailable =
+        context.read<ConnectivityBloc>().state is ConnectivityOnline;
+    if (isInternetAvailable) {
+      context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
+    }
   }
 
   @override
@@ -88,35 +92,55 @@ class _ResultScreenState extends State<ResultScreen> {
                 builder: (context, testCubitState) {
                   return BlocBuilder<ResultBloc, ResultState>(
                     builder: (context, resultState) {
+                      final isOnline =
+                          context.read<ConnectivityBloc>().state
+                              is ConnectivityOnline;
                       final serverResult = testBlocState.serverResult;
                       final data = _TestResultData(
                         correct:
-                            serverResult?.correctAnswers ??
-                            testCubitState.correctAnswers ??
-                            0,
+                            isOnline
+                                ? (serverResult?.correctAnswers ??
+                                    testCubitState.correctAnswers ??
+                                    0)
+                                : (testCubitState.correctAnswers ?? 0),
                         incorrect:
-                            serverResult?.inCorrectAnswers ??
-                            testCubitState.inCorrectAnswers ??
-                            0,
+                            isOnline
+                                ? (serverResult?.inCorrectAnswers ??
+                                    testCubitState.inCorrectAnswers ??
+                                    0)
+                                : (testCubitState.inCorrectAnswers ?? 0),
                         skipped:
-                            serverResult?.notAttemptedQuestions ??
-                            testCubitState.notAttemptedQuestions ??
-                            0,
+                            isOnline
+                                ? (serverResult?.notAttemptedQuestions ??
+                                    testCubitState.notAttemptedQuestions ??
+                                    0)
+                                : (testCubitState.notAttemptedQuestions ?? 0),
                         attempted:
-                            serverResult?.attemptedQuestions ??
-                            testCubitState.attemptedQuestions ??
-                            0,
+                            isOnline
+                                ? (serverResult?.attemptedQuestions ??
+                                    testCubitState.attemptedQuestions ??
+                                    0)
+                                : (testCubitState.attemptedQuestions ?? 0),
                         total:
-                            serverResult?.totalQuestions ??
-                            testCubitState.totalQuestions ??
-                            0,
+                            isOnline
+                                ? (serverResult?.totalQuestions ??
+                                    testCubitState.totalQuestions ??
+                                    0)
+                                : (testCubitState.totalQuestions ?? 0),
                         score:
-                            serverResult?.score ?? testCubitState.score ?? 0.0,
+                            isOnline
+                                ? (serverResult?.score ??
+                                    testCubitState.score ??
+                                    0.0)
+                                : (testCubitState.score ?? 0.0),
                         userRank:
-                            serverResult?.userRank ??
-                            testCubitState.userRank ??
-                            0,
-                        topScore: serverResult?.topScore ?? 0.0,
+                            isOnline
+                                ? (serverResult?.userRank ??
+                                    testCubitState.userRank ??
+                                    0)
+                                : (testCubitState.userRank ?? 0),
+                        topScore:
+                            isOnline ? (serverResult?.topScore ?? 0.0) : 0.0,
                       );
 
                       return _buildSummaryBody(
@@ -128,10 +152,18 @@ class _ResultScreenState extends State<ResultScreen> {
                         testCubitState.selectedOption,
                         testCubitState.batchResults,
                         testCubitState.timePerQuestion,
-                        testBlocState.serverResult!.difficultyWiseReview,
-                        testBlocState.serverResult!.questionTypeReview,
-                        testBlocState.serverResult!.subjectWiseReview,
-                        testBlocState.serverResult,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result!.difficultyWiseReview
+                            : null,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result!.questionTypeReview
+                            : null,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result!.subjectWiseReview
+                            : null,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result
+                            : null,
                       );
                     },
                   );
