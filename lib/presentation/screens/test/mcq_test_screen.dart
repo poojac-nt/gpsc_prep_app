@@ -149,7 +149,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                     scrollInfo.metrics.maxScrollExtent - 200) {
               context.read<DailyTestBloc>().add(LoadMoreTests());
             }
-            return true;
+            return false;
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -190,7 +190,7 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
                   scrollInfo.metrics.maxScrollExtent - 200) {
             context.read<DailyTestBloc>().add(LoadMoreTests());
           }
-          return true;
+          return false;
         },
         child: ListView.builder(
           padding: EdgeInsets.all(AppPaddings.appPaddingInt),
