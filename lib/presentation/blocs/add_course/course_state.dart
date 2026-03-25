@@ -8,7 +8,7 @@ class CourseInitial extends CourseState {}
 class CourseLoading extends CourseState {}
 
 class AddCourseSuccess extends CourseState {
-  final CourseModel course;
+  final CoursePayload course;
 
   AddCourseSuccess(this.course);
 }

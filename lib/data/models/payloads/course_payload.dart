@@ -23,5 +23,8 @@ class CoursePayload {
     this.priceDual,
   });
 
+  factory CoursePayload.fromJson(Map<String, dynamic> json) =>
+      _$CoursePayloadFromJson(json);
+
   Map<String, dynamic> toJson() => _$CoursePayloadToJson(this);
 }

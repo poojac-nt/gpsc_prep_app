@@ -9,7 +9,7 @@ class CourseRepository {
 
   CourseRepository(this._supabaseHelper);
 
-  Future<Either<Failure, CourseModel>> createCourse(
+  Future<Either<Failure, CoursePayload>> createCourse(
     CoursePayload payload,
   ) async {
     return await _supabaseHelper.createCourses(payload);
