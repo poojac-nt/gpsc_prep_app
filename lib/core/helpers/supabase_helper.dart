@@ -354,7 +354,6 @@ class SupabaseHelper {
   /// COURSES
   /// ===========================================================================
 
-  Future<Either<Failure, CourseModel>> createCourses(CoursePayload data) async {
   Future<Either<Failure, CoursePayload>> createCourses(
     CoursePayload data,
   ) async {
