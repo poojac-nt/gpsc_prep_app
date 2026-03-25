@@ -9,12 +9,14 @@ part of 'user_model.dart';
 UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
       id: (json['id'] as num?)?.toInt(),
       authID: json['auth_id'] as String,
-      role: const UserRoleConverter().fromJson(json['role'] as String),
+      role: const UserRoleConverter().fromJson(json['role']),
       name: json['full_name'] as String,
       email: json['user_email'] as String,
       address: json['address'] as String?,
       number: (json['number'] as num?)?.toInt(),
       profilePicture: json['profile_picture'] as String?,
+      bio: json['bio'] as String?,
+      isActive: json['is_active'] as bool?,
     );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
@@ -26,4 +28,6 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'address': instance.address,
       'number': instance.number,
       'profile_picture': instance.profilePicture,
+      'bio': instance.bio,
+      'is_active': instance.isActive,
     };

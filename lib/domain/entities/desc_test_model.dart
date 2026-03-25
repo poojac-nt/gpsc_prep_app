@@ -14,6 +14,10 @@ class DescTestModel {
   int totalMarks;
   @JsonKey(name: "created_at")
   String createdAt;
+  @JsonKey(name: "course_id")
+  int? courseID;
+  @JsonKey(name: "total_attempts")
+  int? totalAttempt;
 
   DescTestModel({
     required this.id,
@@ -21,8 +25,12 @@ class DescTestModel {
     required this.totalMarks,
     required this.noQuestions,
     required this.createdAt,
+    this.courseID,
+    this.totalAttempt,
   });
 
   factory DescTestModel.fromJson(Map<String, dynamic> json) =>
       _$DescTestModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DescTestModelToJson(this);
 }

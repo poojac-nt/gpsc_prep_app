@@ -1,10 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+part of 'test_bloc.dart';
 
-import '../../../../../core/error/failure.dart';
-import '../../../../../domain/entities/question_language_model.dart';
-
-@immutable
 sealed class TestState {}
 
 final class TestInitial extends TestState {}

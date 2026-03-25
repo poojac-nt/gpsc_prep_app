@@ -1,5 +1,6 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 
 import '../../core/error/failure.dart';
@@ -15,8 +16,11 @@ class AuthRepository {
     String password,
   ) async => await _supabase.login(email, password);
 
-  Future<Either<Failure, UserModel>> createUser(UserPayload data) async =>
-      await _supabase.createUser(data);
+  Future<Either<Failure, UserModel>> createStudent(UserPayload data) async =>
+      await _supabase.createStudent(data);
+
+  Future<Either<Failure, MentorModel>> createMentor(UserPayload data) async =>
+      await _supabase.createMentorByAdmin(data);
 
   Future<bool> doesUserExist(String email) async =>
       await _supabase.doesUserExist(email);

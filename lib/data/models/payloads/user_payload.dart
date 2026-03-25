@@ -20,6 +20,10 @@ class UserPayload {
   final int? number;
   @JsonKey(name: "profile_picture", includeIfNull: false)
   final String? profilePicture;
+  @JsonKey(name: "subject_expertise", includeIfNull: false)
+  final List<String>? subjectExpertise;
+  @JsonKey(name: "bio", includeIfNull: false)
+  final String? bio;
 
   UserPayload({
     this.authID,
@@ -30,6 +34,8 @@ class UserPayload {
     this.address,
     this.number,
     this.profilePicture,
+    this.subjectExpertise,
+    this.bio,
   });
 
   Map<String, dynamic> toJson() => _$UserPayloadToJson(this);

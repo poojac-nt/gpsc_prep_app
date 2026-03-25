@@ -1,8 +1,6 @@
 // study_material_state.dart
 
-import 'package:gpsc_prep_app/core/error/failure.dart';
-import 'package:gpsc_prep_app/domain/entities/study_material_model.dart';
-import 'package:gpsc_prep_app/domain/entities/test_without_material_model.dart';
+part of 'study_material_bloc.dart';
 
 abstract class StudyMaterialState {}
 

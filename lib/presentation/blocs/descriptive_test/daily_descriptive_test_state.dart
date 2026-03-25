@@ -1,9 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/core/error/failure.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+part of 'daily_descriptive_test_bloc.dart';
 
 @immutable
 sealed class DailyDescTestState {}
@@ -18,8 +13,9 @@ final class DailyDescTestFetching extends DailyDescTestState {}
 final class DailyDescTestFetched extends DailyDescTestState {
   final List<DescTestModel> dailyTestModel;
   final Map<int, List<DescAnswerModel>> answersMap;
+  final Map<int, MainsTestReviewModel?> reviewsMap;
 
-  DailyDescTestFetched(this.dailyTestModel, this.answersMap);
+  DailyDescTestFetched(this.dailyTestModel, this.answersMap, this.reviewsMap);
 }
 
 /// Failed fetching descriptive tests
@@ -46,20 +42,20 @@ final class DescTestSubmitSuccess extends DailyDescTestState {
   DescTestSubmitSuccess(this.message);
 }
 
-/// 🔑 Ongoing test session state (text answers + pdf answers in memory)
+/// 🔑 Ongoing test session state (text answers + file answers in memory)
 final class DailyDescTestInProgress extends DailyDescTestState {
   final Map<int, String> answers; // text answers
-  final Map<int, File?> pdfCache; // pdf answers
+  final Map<int, List<File>> fileCache; // file answers (PDFs/images)
 
-  DailyDescTestInProgress({required this.answers, required this.pdfCache});
+  DailyDescTestInProgress({required this.answers, required this.fileCache});
 
   DailyDescTestInProgress copyWith({
     Map<int, String>? answers,
-    Map<int, File?>? pdfCache,
+    Map<int, List<File>>? fileCache,
   }) {
     return DailyDescTestInProgress(
       answers: answers ?? this.answers,
-      pdfCache: pdfCache ?? this.pdfCache,
+      fileCache: fileCache ?? this.fileCache,
     );
   }
 }
@@ -71,7 +67,7 @@ final class DailyDescTestMessage extends DailyDescTestInProgress {
   DailyDescTestMessage({
     required this.message,
     required super.answers,
-    required super.pdfCache,
+    required super.fileCache,
   });
 }
 

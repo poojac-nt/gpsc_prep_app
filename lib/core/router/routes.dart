@@ -4,21 +4,36 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_difficulty_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_question_types_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/all_subjects_analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/analytics_screen/analytics_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/free_test_review_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_full_questions_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answer_detail_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answers_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_test_result_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/mentor_evaluation_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/student_evaluation_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/paid_courses/assessment_type_selection_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/omr_answer_screen.dart';
@@ -38,12 +53,16 @@ import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_q
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
+import '../../data/repositories/test_repository.dart';
+import '../../presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
 import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
 import '../../presentation/screens/prelims/prelims_mcq_test_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
+import '../../utils/enums/user_role.dart';
+import '../cache_manager.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -62,7 +81,16 @@ final List<GoRoute> appRoutes = [
         }
 
         // Step 1: Go to dashboard first (ensures proper back button behavior)
-        router.go('/studentDashboard');
+        final role = getIt<CacheManager>().getUserRole();
+        String dashboardRoute = AppRoutes.studentDashboard;
+
+        if (role == UserRole.admin) {
+          dashboardRoute = AppRoutes.adminDashboard;
+        } else if (role == UserRole.mentor) {
+          dashboardRoute = AppRoutes.mentorDashboard;
+        }
+
+        router.go(dashboardRoute);
 
         // Step 2: Wait 300ms so dashboard builds (important!)
         await Future.delayed(const Duration(milliseconds: 300));
@@ -94,20 +122,38 @@ final List<GoRoute> appRoutes = [
           context.pushReplacement('/error?message=Invalid+test+link');
           return;
         }
-        router.go('/studentDashboard');
+        final role = getIt<CacheManager>().getUserRole();
+        String dashboardRoute = AppRoutes.studentDashboard;
+
+        if (role == UserRole.admin) {
+          router.go(AppRoutes.adminDashboard);
+          await Future.delayed(const Duration(milliseconds: 100));
+          router.push(AppRoutes.allTests);
+        } else if (role == UserRole.mentor) {
+          dashboardRoute = AppRoutes.mentorDashboard;
+          router.go(dashboardRoute);
+        } else {
+          router.go(dashboardRoute);
+        }
+
         await Future.delayed(const Duration(milliseconds: 300));
-        debugPrint('🚀 Navigating to test instruction with type=$type, id=$id');
+        debugPrint(
+          '🚀 [DEBUG] Navigating via AppRoutes names: type=$type, id=$id',
+        );
         if (type == 'mcq') {
-          router.push(
-            '/studentDashboard/mcqTestScreen/testInstructionScreen/$id',
+          router.pushNamed(
+            AppRoutes.mcqTestInstructionScreen,
+            extra: TestInstructionScreenArgs(testId: id),
           );
         } else if (type == 'desc') {
-          router.push(
-            '/studentDashboard/descriptiveTestScreen/descriptiveTestInstructionScreen/$id',
+          router.pushNamed(
+            AppRoutes.descriptiveTestInstructionScreen,
+            extra: DescTestInstructionScreenArgs(testId: id),
           );
         } else if (type == 'prelims') {
-          router.push(
-            '/studentDashboard/fullLengthMcqTestScreen/prelimsInstructionsScreen/$id',
+          router.pushNamed(
+            AppRoutes.prelimsInstructionsScreen,
+            extra: PrelimsInstructionScreenArgs(testId: id),
           );
         } else {
           router.pushReplacement('/error?message=Unknown+test+type');
@@ -125,6 +171,11 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.registrationScreen,
     pageBuilder:
         (context, state) => _slideTransition(RegistrationScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.mentorRegistration,
+    pageBuilder:
+        (context, state) => _slideTransition(MentorRegistrationScreen(), state),
   ),
   GoRoute(
     // AppRoutes.studentDashboard is '/studentDashboard'
@@ -150,8 +201,14 @@ final List<GoRoute> appRoutes = [
                   state,
                 );
               }
+              final args = state.extra as DescTestInstructionScreenArgs?;
               return _slideTransition(
-                DescriptiveTestInstructionScreen(testId: testId),
+                DescriptiveTestInstructionScreen(
+                  testId: args?.testId ?? testId,
+                  descTestModel: args?.dailyTestModel,
+                  courseId: args?.courseId,
+                  isFromCourse: args?.isFromCourse ?? false,
+                ),
                 state,
               );
             },
@@ -196,6 +253,35 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.mentorDashboard,
     pageBuilder:
         (context, state) => _slideTransition(MentorDashboardScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.mentorEvaluation,
+    pageBuilder: (context, state) {
+      final args = state.extra as MentorEvaluationScreenArgs;
+      return _slideTransition(MentorEvaluationScreen(args: args), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allAssignedTests,
+    pageBuilder:
+        (context, state) => _slideTransition(AllAssignedTestsScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.freeTestReview,
+    pageBuilder:
+        (context, state) => _slideTransition(FreeTestReviewScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.testStudentsList,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      final testId = extra?['testId'] as int? ?? 0;
+      final testName = extra?['testName'] as String? ?? "";
+      return _slideTransition(
+        TestStudentsListScreen(testId: testId, testName: testName),
+        state,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.login,
@@ -337,16 +423,28 @@ final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoutes.descAnswerScreen,
     pageBuilder: (context, state) {
-      final descTestModel = state.extra as DescTestModel;
-      return _slideTransition(
-        DescriptiveAnswersScreen(descTestModel: descTestModel),
-        state,
-      );
+      final args = state.extra as DescriptiveAnswersScreenArgs;
+      return _slideTransition(DescriptiveAnswersScreen(args: args), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.descAnswerDetail,
+    pageBuilder: (context, state) {
+      final args = state.extra as DescriptiveAnswerDetailScreenArgs;
+      return _slideTransition(DescriptiveAnswerDetailScreen(args: args), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.peerReviewAnswer,
+    pageBuilder: (context, state) {
+      final args = state.extra as PeerReviewAnswerScreenArgs;
+      return _slideTransition(PeerReviewAnswerScreen(args: args), state);
     },
   ),
 
   GoRoute(
     path: AppRoutes.descriptiveTestInstructionScreen,
+    name: AppRoutes.descriptiveTestInstructionScreen,
     pageBuilder: (context, state) {
       final args = state.extra as DescTestInstructionScreenArgs;
 
@@ -354,12 +452,27 @@ final List<GoRoute> appRoutes = [
         DescriptiveTestInstructionScreen(
           descTestModel: args.dailyTestModel,
           testId: args.testId,
+          courseId: args.courseId,
+          isFromCourse: args.isFromCourse,
         ),
         state,
       );
     },
   ),
-
+  GoRoute(
+    path: AppRoutes.descFullQuestions,
+    pageBuilder: (context, state) {
+      final args = state.extra as DescFullQuestionsScreenArgs;
+      return _slideTransition(
+        DescFullQuestionsScreen(
+          testId: args.testId,
+          testName: args.testName,
+          courseId: args.courseId,
+        ),
+        state,
+      );
+    },
+  ),
   GoRoute(
     path: AppRoutes.uploadStudyMaterial,
     pageBuilder: (context, state) {
@@ -473,6 +586,7 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.prelimsInstructionsScreen,
+    name: AppRoutes.prelimsInstructionsScreen,
     pageBuilder: (context, state) {
       final args = state.extra as PrelimsInstructionScreenArgs?;
       return _slideTransition(
@@ -501,6 +615,72 @@ final List<GoRoute> appRoutes = [
         CourseDetailsScreen(courseModel: args.courseModel),
         state,
       );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.mentorAssign,
+    pageBuilder:
+        (context, state) => _slideTransition(const MentorAssignScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.mentorList,
+    pageBuilder:
+        (context, state) => _slideTransition(const MentorListScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.editMentor,
+    pageBuilder: (context, state) {
+      final args = state.extra as EditMentorScreenArgs;
+      return _slideTransition(EditMentorScreen(mentor: args.mentor), state);
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.adminDashboard,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const AdminDashboardScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.assignMentorDetail,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      final testName = extra?['testName'] as String? ?? "";
+      final testId = extra?['testId'] as int? ?? 0;
+      return _slideTransition(
+        AssignMentorDetailScreen(testName: testName, testId: testId),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.assessmentTypeSelection,
+    pageBuilder: (context, state) {
+      final args = state.extra as AssessmentTypeSelectionScreenArgs;
+      return _slideTransition(
+        AssessmentTypeSelectionScreen(courseModel: args.courseModel),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.allTests,
+    pageBuilder: (context, state) {
+      return _slideTransition(
+        BlocProvider(
+          create:
+              (context) =>
+                  AllTestBloc(getIt<TestRepository>())..add(FetchAllTests()),
+          child: const AllTestScreen(),
+        ),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.studentEvaluationResult,
+    pageBuilder: (context, state) {
+      final args = state.extra as StudentEvaluationResultScreenArgs;
+      return _slideTransition(StudentEvaluationResultScreen(args: args), state);
     },
   ),
 ];

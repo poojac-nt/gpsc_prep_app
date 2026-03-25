@@ -8,8 +8,20 @@ class CoursePayload {
   final String name;
   @JsonKey(name: "description")
   final String? description;
+  @JsonKey(name: "single_assessment_price")
+  final int? priceSingle;
+  @JsonKey(name: "dual_assessment_price")
+  final int? priceDual;
+  @JsonKey(name: "test_type")
+  final String testType;
 
-  CoursePayload({required this.name, this.description});
+  CoursePayload({
+    required this.name,
+    this.description,
+    required this.testType,
+    this.priceSingle,
+    this.priceDual,
+  });
 
   factory CoursePayload.fromJson(Map<String, dynamic> json) =>
       _$CoursePayloadFromJson(json);

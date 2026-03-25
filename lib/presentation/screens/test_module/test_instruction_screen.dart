@@ -14,18 +14,15 @@ import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_state.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_state.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
-import 'package:intl/intl.dart';
 
 import '../../../utils/app_constants.dart';
+import '../../../utils/enums/user_role.dart';
 import '../../widgets/action_button.dart';
 import '../../widgets/test_status_dialog.dart';
 
@@ -146,7 +143,16 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.go(AppRoutes.studentDashboard),
+              onPressed: () {
+                final role = getIt<CacheManager>().getUserRole();
+                if (role == UserRole.admin) {
+                  context.go(AppRoutes.adminDashboard);
+                } else if (role == UserRole.mentor) {
+                  context.go(AppRoutes.mentorDashboard);
+                } else {
+                  context.go(AppRoutes.studentDashboard);
+                }
+              },
               child: const Text('Go back to Dashboard'),
             ),
           ],
@@ -325,9 +331,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     required bool isLimitReached,
   }) {
     String createdAtStr = testResult.createdAt!;
-    String formattedDate = DateFormat(
-      'dd-MM-yyyy',
-    ).format(createdAtStr.toLocalDateTime());
+    String formattedDate = createdAtStr.toFormattedDate();
 
     int hoursRemaining = createdAtStr.hoursRemaining(12);
 

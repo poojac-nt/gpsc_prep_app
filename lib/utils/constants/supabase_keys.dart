@@ -24,8 +24,30 @@ abstract class SupabaseKeys {
   static final String getAccuracyTrend = 'get_accuracy_trends';
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
-  static final String getPrelimsTopper = 'get_top_3_prelims_users';
+  static final String getToppers = 'get_top_3_prelims_and_mains_users';
   static final String getCoursesWithTests = 'fetch_courses_with_tests';
+  static final String peerReview = 'get_question_peer_submission';
+  static final String detailedPeerReviewPerUser = 'get_answer_with_comments';
+  static final String insertPeerReview = 'insert_peer_review';
+  static final String submitDescTest = 'submit_descriptive_test';
+  static final String getTestWithUnassignedSubmission =
+      'get_desc_tests_with_unassigned_submissions';
+  static final String getUnassignedStudentsForTest =
+      'get_pending_test_submissions';
+  static final String rpcDescMentorAssignment =
+      'rpc_insert_desc_mentor_assignments_bulk';
+  static final String mentorDashboard = 'rpc_mentor_dashboard';
+  static final String mentorSubmission = 'rpc_mentor_submissions';
+  static final String getAdminDashboardStats = 'get_admin_stats';
+  static final String getMentorList = 'get_mentors_with_subjects';
+  static final String fetchMentorTestSubmissions =
+      'rpc_mentor_test_submissions';
+  static final String getSubmissionsReport = 'get_submission_report';
+  static final String submitMentorEvaluation = 'insert_desc_mentor_review';
+  static final String editMentor = 'update_mentor_details';
+  static final String fetchStudentTestReview = 'get_desc_test_review';
+  static final String getSubmittedFreeDescTests =
+      'get_submitted_free_desc_tests';
 
   ///table
   static final String usersTable = 'users';
@@ -36,10 +58,16 @@ abstract class SupabaseKeys {
   static final String config = 'config';
   static final String descTests = 'desc_tests';
   static final String descTestResult = 'desc_test_detailed_results';
+  static final String descTestSubmissions = 'desc_test_submissions';
   static final String testDetailedResults = 'test_detailed_results';
   static final String studyMaterial = 'study_material';
   static final String userTests = 'user_tests';
   static final String courseTable = 'courses';
+  static final String subjects = 'subjects';
+  static final String package = 'package';
+  static final String userPurchase = 'user_purchase';
+  static final String descMentorAssignment = 'desc_mentor_assignment';
+  static final String peerReviewTable = 'peer_review';
 
   ///columns
   static final String email = 'user_email';
@@ -53,4 +81,5 @@ abstract class SupabaseKeys {
   ///Buckets
   static final String answers = 'answers';
   static final String profilePicture = 'profile-picture';
+  static final String mentorReview = 'mentor_review';
 }

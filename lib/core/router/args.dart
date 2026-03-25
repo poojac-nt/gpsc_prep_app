@@ -1,16 +1,19 @@
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
+import '../../domain/entities/desc_question_model.dart';
 import '../../domain/entities/desc_test_model.dart';
 import '../../domain/entities/detailed_test_result_model.dart';
+import '../../domain/entities/mains_test_review_model.dart';
 
 class TestScreenArgs {
   final bool isFromResult;
   final TestModel testModal;
   final String? language;
-  final bool hasPrelimsProgress; // NEW: Indicates if should load saved progress
+  final bool hasPrelimsProgress;
 
   TestScreenArgs({
     required this.isFromResult,
@@ -41,7 +44,7 @@ class ReviewQuestionScreenArgs {
   final String? title;
   final String? url;
   final String? language;
-  final int? courseId; // Updated
+  final int? courseId;
 
   ReviewQuestionScreenArgs({
     required this.isTestUpload,
@@ -64,8 +67,27 @@ class DescReviewQuestionScreenArgs {
 class DescTestInstructionScreenArgs {
   final DescTestModel? dailyTestModel;
   final int? testId;
+  final int? courseId;
+  final bool isFromCourse;
 
-  DescTestInstructionScreenArgs({this.dailyTestModel, this.testId});
+  DescTestInstructionScreenArgs({
+    this.dailyTestModel,
+    this.testId,
+    this.courseId,
+    this.isFromCourse = false,
+  });
+}
+
+class DescFullQuestionsScreenArgs {
+  final int testId;
+  final String testName;
+  final int? courseId;
+
+  DescFullQuestionsScreenArgs({
+    required this.testId,
+    required this.testName,
+    this.courseId,
+  });
 }
 
 class DescTestScreenArgs {
@@ -117,5 +139,95 @@ class OMRScreenArgs {
 
 class CourseDetailsScreenArgs {
   final CourseModel courseModel;
+
   CourseDetailsScreenArgs({required this.courseModel});
+}
+
+class MentorEvaluationScreenArgs {
+  final int? studentId;
+  final int mentorAssignmentId;
+  final int? testId;
+  final int? submissionId;
+  final String? studentName;
+  final String? testName;
+  final bool? isChecked;
+
+  MentorEvaluationScreenArgs({
+    this.studentId,
+    required this.mentorAssignmentId,
+    this.testId,
+    this.submissionId,
+    this.studentName,
+    this.testName,
+    this.isChecked,
+  });
+}
+
+class AssessmentTypeSelectionScreenArgs {
+  final CourseModel courseModel;
+
+  AssessmentTypeSelectionScreenArgs({required this.courseModel});
+}
+
+class EditMentorScreenArgs {
+  final MentorModel mentor;
+  EditMentorScreenArgs({required this.mentor});
+}
+
+class StudentEvaluationResultScreenArgs {
+  final int? testId;
+  final String? testName;
+  final String? studentName;
+  final int? mentorId;
+  final MainsTestReviewModel? reviewModel;
+
+  StudentEvaluationResultScreenArgs({
+    this.testId,
+    this.testName,
+    this.studentName,
+    this.mentorId,
+    this.reviewModel,
+  });
+}
+
+class DescriptiveAnswersScreenArgs {
+  final DescTestModel descTestModel;
+  final bool isUnlocked;
+  final bool showPeerReview;
+
+  DescriptiveAnswersScreenArgs({
+    required this.descTestModel,
+    this.isUnlocked = false,
+    required this.showPeerReview,
+  });
+}
+
+class DescriptiveAnswerDetailScreenArgs {
+  final DescQuestionModel question;
+  final int index;
+  final int testId;
+  final bool isUnlocked;
+  final bool showPeerReview;
+
+  DescriptiveAnswerDetailScreenArgs({
+    required this.question,
+    required this.index,
+    required this.testId,
+    this.isUnlocked = false,
+    this.showPeerReview = false,
+  });
+}
+
+class PeerReviewAnswerScreenArgs {
+  final DescQuestionModel question;
+  final int index;
+  final String userName;
+  final int answerId;
+
+  PeerReviewAnswerScreenArgs({
+    required this.question,
+    required this.index,
+    required this.userName,
+    required this.answerId,
+  });
 }

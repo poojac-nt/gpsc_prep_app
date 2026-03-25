@@ -42,6 +42,8 @@ class DescQuestionModel {
 
   @JsonKey(name: "pages")
   final int? pages;
+  @JsonKey(name: "question_order")
+  final int questionOrder;
 
   DescQuestionModel({
     required this.id,
@@ -56,6 +58,7 @@ class DescQuestionModel {
     required this.subjectName,
     required this.topicName,
     required this.pages,
+    required this.questionOrder,
   });
 
   factory DescQuestionModel.fromJson(Map<String, dynamic> json) =>

@@ -1,10 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
-import '../../../domain/entities/result_model.dart';
+part 'prelims_test_event.dart';
+part 'prelims_test_state.dart';
 
 class PrelimsTestBloc extends Bloc<PrelimsTestEvent, PrelimsTestState> {
   final TestRepository _testRepository;

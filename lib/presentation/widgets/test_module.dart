@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -25,6 +25,7 @@ class TestModule extends StatelessWidget {
     this.cards = const <Widget>[],
     this.testType = TestType.mcq,
     this.trailing,
+    this.header,
   });
 
   final String title;
@@ -39,6 +40,7 @@ class TestModule extends StatelessWidget {
   final List<Widget> cards;
   final TestType testType;
   final Widget? trailing;
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +48,7 @@ class TestModule extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (header != null) ...[header!, showShareButton ? 0.hGap : 8.hGap],
           Row(
             children: [
               if (prefixIcon != null) ...[
@@ -66,13 +69,19 @@ class TestModule extends StatelessWidget {
               if (showShareButton)
                 IconButton(
                   tooltip: "Share Test",
-                  icon: const Icon(AppIcons.shareTest),
+                  icon: Icon(
+                    Icons.share_outlined,
+                    size: 20.sp,
+                    color: AppColors.primary,
+                  ),
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(),
                   onPressed: () {
                     _handleShare(context, testType);
                   },
-                )
-              else if (trailing != null)
-                trailing!,
+                ),
+              if (trailing != null) trailing!,
             ],
           ),
           if (subtitle != null && subtitle!.isNotEmpty) ...[

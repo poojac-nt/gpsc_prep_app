@@ -1,11 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
-import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_state.dart';
-
 import '../../../core/error/failure.dart';
 import '../../../domain/entities/attempted_question_stats_model.dart';
+
+part 'pie_chart_event.dart';
+part 'pie_chart_state.dart';
 
 class PieChartBloc extends Bloc<PieChartEvent, PieChartState> {
   final AnalyticsRepository _analyticsRepository;

@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
+part of 'daily_descriptive_test_bloc.dart';
 
 @immutable
 sealed class DailyDescTestEvent {}
@@ -9,7 +7,11 @@ sealed class DailyDescTestEvent {}
 class DailyTestInit extends DailyDescTestEvent {}
 
 /// Fetch all descriptive tests for the user
-class FetchAllTests extends DailyDescTestEvent {}
+class FetchAllTests extends DailyDescTestEvent {
+  final int? courseId;
+
+  FetchAllTests({this.courseId});
+}
 
 /// Add or update a text answer for a specific question
 class AddTextAnswer extends DailyDescTestEvent {
@@ -42,4 +44,17 @@ class AddFilesAnswer extends DailyDescTestEvent {
   AddFilesAnswer({required this.questionId, required this.files});
 }
 
+class SubmitDescriptiveTestSinglePdf extends DailyDescTestEvent {
+  final int testId;
+  final File file;
+
+  SubmitDescriptiveTestSinglePdf({required this.testId, required this.file});
+}
+
 class ResetDescTestState extends DailyDescTestEvent {}
+
+class FetchReviewForTest extends DailyDescTestEvent {
+  final int testId;
+
+  FetchReviewForTest(this.testId);
+}

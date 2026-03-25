@@ -7,9 +7,13 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:meta/meta.dart';
 
-import 'daily_descriptive_test_event.dart';
-import 'daily_descriptive_test_state.dart';
+import '../../../domain/entities/mains_test_review_model.dart';
+
+part 'daily_descriptive_test_event.dart';
+part 'daily_descriptive_test_state.dart';
 
 class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
   final TestRepository _testRepository;
@@ -26,11 +30,13 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     on<AddFilesAnswer>(_addFilesAnswer);
     on<RemoveAnswer>(_removeAnswer);
     on<SubmitDescTest>(_submitDescTest);
+    on<SubmitDescriptiveTestSinglePdf>(_submitDescriptiveTestSinglePdf);
     on<ResetDescTestState>((event, emit) {
       _answers.clear();
       _fileCache.clear();
       emit(DailyTestInitial());
     });
+    on<FetchReviewForTest>(_fetchReviewForTest);
   }
 
   /// Fetch all tests
@@ -41,7 +47,9 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     emit(DailyDescTestFetching());
 
     // 1. Fetch all descriptive tests
-    final testsResult = await _testRepository.fetchDailyDescTest();
+    final testsResult = await _testRepository.fetchDailyDescTest(
+      courseId: event.courseId,
+    );
 
     await testsResult.fold(
       (failure) async {
@@ -58,20 +66,42 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         }
         final answersMap = <int, List<DescAnswerModel>>{};
 
-        for (final test in tests) {
-          final answersResult = await _testRepository.fetchAnswersForTest(
-            test.id,
-          );
+        // Fetch all submissions from desc_test_submissions (e.g. PDF submissions)
+        final submissionsResult =
+            await _testRepository.fetchDescriptiveTestSubmissions();
+        submissionsResult.fold((_) {}, (submittedIds) {
+          for (final id in submittedIds) {
+            answersMap[id] = [
+              DescAnswerModel(
+                userId: 0,
+                testId: id,
+                questionId: 0,
+                answer: 'Submitted',
+              ),
+            ];
+          }
+        });
 
-          answersResult.fold((_) {}, (ansList) {
-            if (ansList.isNotEmpty) {
-              answersMap[test.id] = ansList;
+        // If courseId is null, also fetch detailed answers test-by-test
+        if (event.courseId == null) {
+          for (final test in tests) {
+            // Only fetch if not already in answersMap from submissions
+            if (!answersMap.containsKey(test.id)) {
+              final answersResult = await _testRepository.fetchAnswersForTest(
+                test.id,
+              );
+
+              answersResult.fold((_) {}, (ansList) {
+                if (ansList.isNotEmpty) {
+                  answersMap[test.id] = ansList;
+                }
+              });
             }
-          });
+          }
         }
 
         // 3. Emit success state with both tests and answers
-        emit(DailyDescTestFetched(tests, answersMap));
+        emit(DailyDescTestFetched(tests, answersMap, {}));
         _log.i("Fetched ${tests.length} descriptive tests successfully.");
       },
     );
@@ -95,7 +125,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         DailyDescTestMessage(
           message: message,
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     } else {
@@ -103,7 +133,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       emit(
         DailyDescTestInProgress(
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     }
@@ -130,7 +160,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         DailyDescTestMessage(
           message: message,
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     } else {
@@ -138,7 +168,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       emit(
         DailyDescTestInProgress(
           answers: Map.from(_answers),
-          pdfCache: Map.from(_fileCache),
+          fileCache: Map.from(_fileCache),
         ),
       );
     }
@@ -152,7 +182,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     emit(
       DailyDescTestInProgress(
         answers: Map.from(_answers),
-        pdfCache: Map.from(_fileCache),
+        fileCache: Map.from(_fileCache),
       ),
     );
     _log.i("Removed answer for question ${event.questionId}.");
@@ -220,5 +250,64 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       _log.e("Error submitting descriptive test: $e");
       emit(DescTestSubmitFailed(Failure(e.toString())));
     }
+  }
+
+  Future<void> _submitDescriptiveTestSinglePdf(
+    SubmitDescriptiveTestSinglePdf event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    emit(DescTestSubmit());
+    final result = await _testRepository.submitDescriptiveTestPdf(
+      testId: event.testId,
+      file: event.file,
+    );
+
+    result.fold(
+      (failure) {
+        _log.e("Failed to submit descriptive test PDF: $failure");
+        emit(DescTestSubmitFailed(failure));
+      },
+      (_) {
+        emit(DescTestSubmitSuccess("Test submitted successfully!"));
+        _log.i("Descriptive test PDF submitted successfully");
+      },
+    );
+  }
+
+  Future<void> _fetchReviewForTest(
+    FetchReviewForTest event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    final currentState = state;
+
+    if (currentState is! DailyDescTestFetched) return;
+
+    final reviewModels = Map<int, MainsTestReviewModel?>.from(
+      currentState.reviewsMap,
+    );
+
+    // Prevent duplicate API calls
+    if (reviewModels.containsKey(event.testId)) return;
+
+    final result = await _testRepository.fetchDescriptiveTestReview(
+      event.testId,
+    );
+
+    result.fold(
+      (_) {
+        reviewModels[event.testId] = null;
+      },
+      (model) {
+        reviewModels[event.testId] = model;
+      },
+    );
+
+    emit(
+      DailyDescTestFetched(
+        currentState.dailyTestModel,
+        currentState.answersMap,
+        reviewModels,
+      ),
+    );
   }
 }

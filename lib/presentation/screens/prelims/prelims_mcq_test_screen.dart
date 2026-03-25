@@ -6,14 +6,13 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
-import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../utils/enums/user_role.dart';
 import '../../blocs/prelims/prelims_test_bloc.dart';
 
 class PrelimsMcqTestScreen extends StatefulWidget {
@@ -41,7 +40,14 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
         canPop: true,
         onPopInvokedWithResult: (canPop, _) {
           if (canPop) return;
-          context.go(AppRoutes.studentDashboard);
+          final role = getIt<CacheManager>().getUserRole();
+          if (role == UserRole.admin) {
+            context.go(AppRoutes.adminDashboard);
+          } else if (role == UserRole.mentor) {
+            context.go(AppRoutes.mentorDashboard);
+          } else {
+            context.go(AppRoutes.studentDashboard);
+          }
         },
         child: RefreshIndicator(
           color: AppColors.primary,

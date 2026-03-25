@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+part of 'daily_test_bloc.dart';
 
 @immutable
 sealed class DailyTestEvent {}

@@ -7,14 +7,14 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
-import 'package:hive/hive.dart';
-
+import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
-
+import 'package:hive/hive.dart';
 import '../analytics/analytics_bloc.dart';
 import '../detailed_analytics/detailed_analytics_bloc.dart';
+
+part 'test_event.dart';
+part 'test_state.dart';
 
 class TestBloc extends Bloc<TestEvent, TestState> {
   final TestRepository _testRepository;

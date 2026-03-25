@@ -21,10 +21,10 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:hive/hive.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../blocs/dashboard/dashboard_bloc_event.dart';
-import '../../blocs/dashboard/dashboard_bloc_state.dart';
+import '../../../utils/enums/user_role.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
 import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';
@@ -38,7 +38,8 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
-  String leaderBoardTestTitle = 'Prelims FLT';
+  final PageController _pageController = PageController();
+  int _leaderboardIndex = 0;
 
   Color _getRankColor(int rank) {
     switch (rank) {
@@ -60,13 +61,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     if (currentState is! DashboardAnalyticsFetched) {
       context.read<DashboardBloc>().add(FetchDashboardAnalytics());
     }
+    // Request notification permission
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getIt<FCMService>().requestNotificationPermission();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final user = getIt<CacheManager>().user;
     return Scaffold(
-      drawer: SelectionDrawer(),
+      drawer:
+          getIt<CacheManager>().getUserRole() == UserRole.admin
+              ? null
+              : SelectionDrawer(),
       drawerEdgeDragWidth: 150,
       appBar: AppBar(
         title: Text(
@@ -179,7 +187,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             LastSnapshotCard(lastTest: state.dashboardAnalytics.lastTest),
             10.hGap,
             state.leaderboardData.isNotEmpty
-                ? leaderboardSection(state.leaderboardData)
+                ? _buildLeaderboardCarousel(state.leaderboardData)
                 : SizedBox.shrink(),
           ],
         ).padAll(20),
@@ -187,7 +195,64 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  DashboardContainer leaderboardSection(List<LeaderboardModel> leaders) {
+  Widget _buildLeaderboardCarousel(List<LeaderboardModel> allLeaders) {
+    final prelimsLeaders =
+        allLeaders
+            .where((l) => l.testType.toLowerCase().contains('prelim'))
+            .toList();
+    final mainsLeaders =
+        allLeaders
+            .where((l) => l.testType.toLowerCase().contains('main'))
+            .toList();
+
+    final pages = <Widget>[
+      leaderboardSection("Prelims Leaderboard", prelimsLeaders),
+      leaderboardSection("Mains Leaderboard", mainsLeaders),
+    ];
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 310.h,
+          child: PageView(
+            clipBehavior: Clip.none,
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _leaderboardIndex = index;
+              });
+            },
+            children: pages,
+          ),
+        ),
+        10.hGap,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            pages.length,
+            (index) => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: EdgeInsets.symmetric(horizontal: 4.w),
+              height: 8.h,
+              width: _leaderboardIndex == index ? 24.w : 8.w,
+              decoration: BoxDecoration(
+                color:
+                    _leaderboardIndex == index
+                        ? AppColors.primary
+                        : AppColors.gray200,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  DashboardContainer leaderboardSection(
+    String title,
+    List<LeaderboardModel> leaders,
+  ) {
     return DashboardContainer(
       child: Column(
         children: [
@@ -199,114 +264,90 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 size: 25.sp,
               ),
               10.wGap,
-              Text(
-                "Prelims Leaderboard",
-                style: AppTexts.dashboardContainerTitle,
-              ),
-              Spacer(),
-              // GestureDetector(
-              //   onTap: () {},
-              //   child: Text(
-              //     "See all",
-              //     style: AppTexts.dashboardSmallTexts.copyWith(
-              //       color: AppColors.primary,
-              //     ),
-              //   ),
-              // ),
+              Text(title, style: AppTexts.dashboardContainerTitle),
             ],
           ),
           10.hGap,
-          // Container(
-          //   decoration: BoxDecoration(
-          //     borderRadius: BorderRadius.circular(10.r),
-          //     color: Colors.grey.shade200,
-          //     border: Border.all(color: Colors.black26, width: 0.2),
-          //   ),
-          //   padding: EdgeInsets.symmetric(vertical: 5.h),
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //     children: [
-          //       _buildTabToggle("Prelims", leaderBoardTestTitle, (val) {
-          //         setState(() {
-          //           leaderBoardTestTitle = val;
-          //           leaders = leaders;
-          //         });
-          //       }),
-          //       // _buildTabToggle("Mains", leaderBoardTestTitle, (val) {
-          //       //   // setState(() {
-          //       //   //   leaderBoardTestTitle = val;
-          //       //   //   leaders = mainsLeaders;
-          //       //   // });
-          //       // }),
-          //     ],
-          //   ),
-          // ),
-          // 5.hGap,
-          Divider(color: Colors.grey, thickness: 0.7),
-          ListView.builder(
-            itemCount: leaders.length,
-            shrinkWrap: true,
-            scrollDirection: Axis.vertical,
-            itemBuilder: (context, index) {
-              final profilePicture = leaders[index].profilePicture;
-              return Material(
-                color: Colors.transparent,
-                child: ListTile(
-                  tileColor:
-                      index == 0 ? Color(0xffCB8C08).withAlpha(15) : null,
-                  shape:
-                      index == 0
-                          ? RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(60.r),
-                          )
-                          : null,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20.w),
-                  leading: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "#${leaders[index].rank}",
-                        style: TextStyle(
-                          color: _getRankColor(leaders[index].rank),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                          fontStyle: FontStyle.italic,
+          const Divider(color: Colors.grey, thickness: 0.7),
+          Expanded(
+            child:
+                leaders.isEmpty
+                    ? Center(
+                      child: Text(
+                        "No rankings available yet",
+                        style: AppTexts.dashboardSmallTexts.copyWith(
+                          color: AppColors.gray400,
                         ),
                       ),
-                      10.wGap,
-                      CircleAvatar(
-                        backgroundColor:
-                            profilePicture == null
-                                ? Colors.blueAccent.withAlpha(40)
-                                : Colors.transparent,
-                        backgroundImage:
-                            profilePicture != null
-                                ? NetworkImage(profilePicture)
-                                : null,
-                        child:
-                            profilePicture == null
-                                ? Icon(
-                                  Icons.person,
-                                  color: Colors.grey.shade600,
-                                  size: 20.sp,
-                                )
-                                : null,
-                      ),
-                    ],
-                  ),
-                  title: Text(
-                    leaders[index].studentName,
-                    style: AppTexts.dashboardMediumTitle.copyWith(
-                      fontSize: 15.sp,
+                    )
+                    : ListView.builder(
+                      itemCount: leaders.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final profilePicture = leaders[index].profilePicture;
+                        return Material(
+                          color: Colors.transparent,
+                          child: ListTile(
+                            tileColor:
+                                index == 0
+                                    ? const Color(0xffCB8C08).withAlpha(15)
+                                    : null,
+                            shape:
+                                index == 0
+                                    ? RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(60.r),
+                                    )
+                                    : null,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                            ),
+                            leading: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "#${leaders[index].rank}",
+                                  style: TextStyle(
+                                    color: _getRankColor(leaders[index].rank),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.sp,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                10.wGap,
+                                CircleAvatar(
+                                  backgroundColor:
+                                      profilePicture == null
+                                          ? Colors.blueAccent.withAlpha(40)
+                                          : Colors.transparent,
+                                  backgroundImage:
+                                      profilePicture != null
+                                          ? NetworkImage(profilePicture)
+                                          : null,
+                                  child:
+                                      profilePicture == null
+                                          ? Icon(
+                                            Icons.person,
+                                            color: Colors.grey.shade600,
+                                            size: 20.sp,
+                                          )
+                                          : null,
+                                ),
+                              ],
+                            ),
+                            title: Text(
+                              leaders[index].studentName,
+                              style: AppTexts.dashboardMediumTitle.copyWith(
+                                fontSize: 15.sp,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${leaders[index].totalMarks} marks',
+                              style: AppTexts.dashboardSmallTexts,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  subtitle: Text(
-                    '${leaders[index].totalMarks} marks',
-                    style: AppTexts.dashboardSmallTexts,
-                  ),
-                ),
-              );
-            },
           ),
         ],
       ),
@@ -479,42 +520,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       log.w('⚠️ Found detailed results but no summary result to sync.');
     }
   }
-}
-
-Widget _buildTabToggle(
-  String label,
-  String currentValue,
-  Function(String) onTap,
-) {
-  bool isSelected = currentValue == label;
-  return GestureDetector(
-    onTap: () => onTap(label),
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 33.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow:
-            isSelected
-                ? [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(25),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-                : [],
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.bold,
-          color: isSelected ? Colors.white : Colors.grey[500],
-        ),
-      ),
-    ),
-  );
 }
 
 class StartTestCard extends StatelessWidget {

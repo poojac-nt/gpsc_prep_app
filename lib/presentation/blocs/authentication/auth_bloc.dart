@@ -11,7 +11,6 @@ import 'package:gpsc_prep_app/data/repositories/authentiction_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogOutRequested>(_logOutRequest);
     on<LoadUserFromCache>(_loadUserFromCache);
     on<CreateUserRequested>(_createUser);
+    on<CreateMentorRequested>(_createMentor);
     on<DeleteUserRequested>(_onDeleteUserRequested);
     on<PickImage>(_onPickAndUploadImage);
     on<ResetPasswordRequested>(_onResetPassword);
@@ -82,7 +82,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthAccountCreateError('Email is Already Registered'));
       return;
     }
-    final result = await _authRepository.createUser(event.userPayload);
+    final result = await _authRepository.createStudent(event.userPayload);
 
     result.fold((failure) => emit(AuthAccountCreateError(failure.message)), (
       user,
@@ -90,6 +90,57 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _cache.setUser(user);
       emit(AuthAccountCreated(user));
     });
+  }
+
+  Future<void> _createMentor(
+    CreateMentorRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthCreatingAccount());
+    try {
+      final userExist = await _authRepository.doesUserExist(
+        event.userPayload.email,
+      );
+      if (userExist) {
+        _snackBar.showError('Email is Already Registered');
+        emit(AuthAccountCreateError('Email is Already Registered'));
+        return;
+      }
+
+      String? profilePictureUrl;
+      if (event.profileImage != null) {
+        emit(ImageUploading());
+        final fileName = 'mentor_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        await _supabase.storage
+            .from(SupabaseKeys.profilePicture)
+            .upload('uploads/$fileName', event.profileImage!);
+
+        profilePictureUrl = _supabase.storage
+            .from(SupabaseKeys.profilePicture)
+            .getPublicUrl('uploads/$fileName');
+      }
+
+      final updatedPayload = UserPayload(
+        name: event.userPayload.name,
+        email: event.userPayload.email,
+        password: event.userPayload.password,
+        role: event.userPayload.role,
+        bio: event.userPayload.bio,
+        subjectExpertise: event.userPayload.subjectExpertise,
+        profilePicture: profilePictureUrl,
+      );
+
+      final result = await _authRepository.createMentor(updatedPayload);
+
+      result.fold((failure) => emit(AuthAccountCreateError(failure.message)), (
+        mentor,
+      ) {
+        // Since createMentor returns MentorModel, we might want a new state or just use the user part
+        emit(AuthAccountCreated(mentor.user));
+      });
+    } catch (e) {
+      emit(AuthAccountCreateError("An unexpected error occurred. $e"));
+    }
   }
 
   Future<void> _onPickAndUploadImage(
@@ -124,8 +175,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
+      await _cache.clearUser(); // Clear cache FIRST
       await _supabase.auth.signOut();
-      _cache.clearUser();
       getIt<DashboardBloc>().add(DashBoardInitial());
       getIt<AnalyticsBloc>().add(ResetAnalyticsEvent());
       getIt<DetailedAnalyticsBloc>().add(ResetDetailedAnalyticsEvent());
@@ -143,7 +194,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final deleted = await _authRepository.deleteUser();
       if (deleted == true) {
-        _cache.clearUser();
+        await _cache.clearUser();
         emit(DeleteUserSuccess());
       }
     } catch (e) {

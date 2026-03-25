@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,15 +11,14 @@ import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/connectivity_handler_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:gpsc_prep_app/utils/services/ad_service.dart';
+import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -96,20 +94,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _navigateBasedOnUserRole() {
     if (!mounted) return;
-    context.read<DashboardBloc>().add(FetchDashboardAnalytics());
-    context.read<DailyTestBloc>().add(FetchTests());
-    context.read<DailyDescTestBloc>().add(FetchAllTests());
 
     final role = getIt<CacheManager>().getUserRole();
     switch (role) {
       case UserRole.student:
+        context.read<DashboardBloc>().add(FetchDashboardAnalytics());
+        context.read<DailyTestBloc>().add(FetchTests());
+        context.read<DailyDescTestBloc>().add(FetchAllTests());
         context.go(AppRoutes.studentDashboard);
         break;
       case UserRole.mentor:
+        context.read<MentorDashboardBloc>().add(FetchMentorDashboardData());
         context.go(AppRoutes.mentorDashboard);
         break;
       case UserRole.admin:
-        context.go(AppRoutes.studentDashboard);
+        context.go(AppRoutes.adminDashboard);
         break;
       default:
         context.go(AppRoutes.login);

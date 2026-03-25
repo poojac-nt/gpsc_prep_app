@@ -85,4 +85,19 @@ class Validator {
 
     return null;
   }
+
+  static String? validatePrice(String? value, {String? fieldName}) {
+    final name = fieldName ?? 'Price';
+    if (value == null || value.trim().isEmpty) {
+      return '$name is required';
+    }
+    final price = int.tryParse(value);
+    if (price == null) {
+      return 'Please enter a valid number for $name';
+    }
+    if (price < 0) {
+      return '$name cannot be negative';
+    }
+    return null;
+  }
 }

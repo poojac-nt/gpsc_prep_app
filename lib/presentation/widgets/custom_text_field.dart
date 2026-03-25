@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -36,32 +37,40 @@ class CustomTextField extends StatelessWidget {
         obscureText: isPassword ? true : false,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey),
-          isDense: true,
+          fillColor: Colors.grey[50], // Very subtle background
+          filled: true,
+          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+          isDense: false,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 14.h,
+          ),
           enabled: !isLoading,
           labelStyle: TextStyle(color: Colors.black),
-          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+          prefixIcon:
+              prefixIcon != null
+                  ? Icon(prefixIcon, size: 20.sp, color: Colors.grey[600])
+                  : null,
           suffixIcon: suffixIcon,
-          prefixIconColor: Colors.grey.shade700,
           errorBorder: OutlineInputBorder(
-            borderRadius: AppBorders.borderRadius,
-            borderSide: BorderSide(color: Colors.grey, width: 1),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.red[300]!, width: 1),
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: AppBorders.borderRadius,
-            borderSide: BorderSide(color: Colors.grey, width: 1),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.red[400]!, width: 1.5),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: AppBorders.borderRadius,
-            borderSide: BorderSide(color: Colors.grey, width: 1),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
           ),
           disabledBorder: OutlineInputBorder(
-            borderRadius: AppBorders.borderRadius,
-            borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: Colors.grey[100]!, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: AppBorders.borderRadius,
-            borderSide: BorderSide(color: Colors.black, width: 2),
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: AppColors.primary, width: 1.5),
           ),
         ),
         cursorColor: Colors.black,

@@ -1,8 +1,5 @@
-import 'package:flutter/cupertino.dart';
-import 'package:gpsc_prep_app/core/error/failure.dart';
-import 'package:gpsc_prep_app/domain/entities/attempted_question_stats_model.dart';
+part of 'pie_chart_bloc.dart';
 
-@immutable
 sealed class PieChartState {}
 
 class PieChartInitial extends PieChartState {}

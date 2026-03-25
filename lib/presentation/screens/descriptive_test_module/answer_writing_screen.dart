@@ -6,21 +6,19 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
-import 'package:gpsc_prep_app/icons/icons.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_state.dart';
-import 'package:gpsc_prep_app/presentation/screens/prelims/widgets/test_card.dart';
-import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
-import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
+import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/widgets/answer_writing_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../core/cache_manager.dart';
 import '../../../domain/entities/desc_test_model.dart';
 import '../../../domain/entities/test_model.dart';
-import '../../widgets/bordered_container.dart';
+import '../../../utils/enums/user_role.dart';
+import '../prelims/widgets/test_card.dart';
 
 class AnswerWritingScreen extends StatefulWidget {
   const AnswerWritingScreen({super.key});
@@ -33,10 +31,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
   @override
   void initState() {
     super.initState();
-    final currentState = context.read<DailyDescTestBloc>().state;
-    if (currentState is! DailyDescTestFetched) {
-      context.read<DailyDescTestBloc>().add(FetchAllTests());
-    }
+    context.read<DailyDescTestBloc>().add(FetchAllTests());
   }
 
   @override
@@ -46,7 +41,14 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.go(AppRoutes.studentDashboard);
+            final role = getIt<CacheManager>().getUserRole();
+            if (role == UserRole.admin) {
+              context.go(AppRoutes.adminDashboard);
+            } else if (role == UserRole.mentor) {
+              context.go(AppRoutes.mentorDashboard);
+            } else {
+              context.go(AppRoutes.studentDashboard);
+            }
           },
         ),
         title: Text('Writing Practice', style: AppTexts.titleTextStyle),
@@ -54,7 +56,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
       body: BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
         builder: (context, state) {
           if (state is DailyDescTestFetching) {
-            return Center(child: _buildWhenLoading());
+            return _buildWhenLoading();
           }
           if (state is DailyDescTestFetchFailed) {
             return Center(child: Text(state.failure.toString()));
@@ -72,118 +74,56 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 itemBuilder: (context, index) {
                   final test = descTests[index];
                   final hasAnswer = state.answersMap.containsKey(test.id);
-                  return GestureDetector(
-                    onTap: () {
-                      if (hasAnswer) {
-                        showDialog(
-                          context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: Text(
-                                  "Answer Already Submitted",
-                                  style: AppTexts.titleTextStyle,
+                  return AnswerWritingCard(
+                    descTestModel: test,
+                    isUnlocked: isAnswerUnlocked(test.createdAt),
+                    isAttempted: hasAnswer,
+                    onStartTestTap:
+                        hasAnswer
+                            ? () {}
+                            : () {
+                              context.push(
+                                AppRoutes.descriptiveTestInstructionScreen,
+                                extra: DescTestInstructionScreenArgs(
+                                  dailyTestModel: test,
                                 ),
-                                content: Text(
-                                  "If you submit again, your previous answer will be overwritten.",
-                                  style: AppTexts.subTitle,
-                                ),
-                                actions: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IntrinsicWidth(
-                                        child: ActionButton(
-                                          text: "Cancel",
-                                          onTap: () {
-                                            context.pop(); // close dialog
-                                          },
-                                        ),
-                                      ),
-                                      10.wGap,
-                                      IntrinsicWidth(
-                                        child: ActionButton(
-                                          text: "Submit Again",
-                                          onTap: () {
-                                            context.pop(); // close dialog first
-                                            context.push(
-                                              AppRoutes
-                                                  .descriptiveTestInstructionScreen,
-                                              extra:
-                                                  DescTestInstructionScreenArgs(
-                                                    dailyTestModel: test,
-                                                  ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                        );
-                      } else {
-                        context.push(
-                          AppRoutes.descriptiveTestInstructionScreen,
-                          extra: DescTestInstructionScreenArgs(
-                            dailyTestModel: test,
-                          ),
-                        );
-                      }
+                              );
+                            },
+                    onReviewTap: () {
+                      context.push(
+                        AppRoutes.descAnswerScreen,
+                        extra: DescriptiveAnswersScreenArgs(
+                          descTestModel: test,
+                          isUnlocked: isAnswerUnlocked(test.createdAt),
+                          showPeerReview: true,
+                        ),
+                      );
                     },
-                    child: TestCard(
-                      descTestModel: test,
-                      showFooter: false,
-                      trailing:
-                          isAnswerUnlocked(test.createdAt)
-                              ? Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      context.push(
-                                        AppRoutes.descAnswerScreen,
-                                        extra: test,
-                                      );
-                                    },
-                                    icon: Icon(
-                                      AppIcons.descAnsIcon,
-                                      size: 25.sp,
-                                      color: AppColors.primary,
-                                    ),
-                                    tooltip: "Answer Module",
-                                  ),
-                                  Text(
-                                    "Answer Module",
-                                    style: TextStyle(fontSize: 10.sp),
-                                  ),
-                                ],
-                              )
-                              : null,
-                    ).padSymmetric(vertical: 6.h),
-                  );
+                    onAnswerModuleTap: () {
+                      context.push(
+                        AppRoutes.descAnswerScreen,
+                        extra: DescriptiveAnswersScreenArgs(
+                          descTestModel: test,
+                          isUnlocked: isAnswerUnlocked(test.createdAt),
+                          showPeerReview: false,
+                        ),
+                      );
+                    },
+                    onShareTap: () async {
+                      final url = DeepLinkGenerator.generateShareableUrl(
+                        testId: test.id,
+                        testType: TestType.desc,
+                      );
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          text: "Check out this ${test.name} Test! 🚀\n$url",
+                          subject: 'GPSC Prep Test Share',
+                        ),
+                      );
+                    },
+                  ).padSymmetric(vertical: 8.h);
                 },
               ),
-              // 10.hGap,
-              // TestModule(
-              //   title: 'My Submissions',
-              //   subtitle: 'Track your Submitted Answers',
-              //   prefixIcon: Icons.file_upload_outlined,
-              //   cards: [
-              //     ActionButton(text: 'View All Submissions', onTap: () {}),
-              //     5.hGap,
-              //     Row(
-              //       mainAxisAlignment: MainAxisAlignment.center,
-              //       children: [
-              //         Column(
-              //           children: [
-              //             Text('5 Pending Reviews'),
-              //             Text('12 Reviewed'),
-              //           ],
-              //         ),
-              //       ],
-              //     ),
-              //   ],
-              // ),
             );
           }
           return Container();
@@ -200,17 +140,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Available Tests', style: AppTexts.heading),
-                  IntrinsicWidth(
-                    child: ActionButton(text: 'Generate Test', onTap: () {}),
-                  ),
-                ],
-              ),
-              10.hGap,
-
               /// Daily Tests Section
               ...List.generate(
                 3,
@@ -244,40 +173,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 showFooter: false,
               ),
               10.hGap,
-
-              /// Offline Mode Section
-              TestModule(
-                title: 'Offline Mode',
-                subtitle: 'Download tests for offline Practice',
-                prefixIcon: Icons.file_download_outlined,
-                cards: [
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_download_outlined),
-                        10.wGap,
-                        Text('Download PDF Test', style: AppTexts.title),
-                      ],
-                    ),
-                  ),
-                  10.hGap,
-                  BorderedContainer(
-                    borderColor: AppColors.accentColor,
-                    padding: EdgeInsets.all(5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.file_upload_outlined),
-                        10.wGap,
-                        Text('Upload Answers', style: AppTexts.title),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ],
           ).padAll(AppPaddings.appPaddingInt),
         ),
@@ -287,7 +182,7 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
 
   bool isAnswerUnlocked(String createdAtString) {
     try {
-      final createdAtUtc = DateTime.parse(createdAtString);
+      final createdAtUtc = DateTime.parse(createdAtString).toUtc();
       final unlockTimeUtc = DateTime.utc(
         createdAtUtc.year,
         createdAtUtc.month,
@@ -297,11 +192,12 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
       );
 
       final nowUtc = DateTime.now().toUtc();
+
       return nowUtc.isAfter(unlockTimeUtc);
     } catch (e) {
       getIt<LogHelper>().e("Error parsing createdAt: $e");
       getIt<SnackBarHelper>().showError("Error parsing createdAt: $e");
-      return false; // Default to locked if parsing fails
+      return false;
     }
   }
 }

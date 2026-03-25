@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
+part of 'pie_chart_bloc.dart';
 
-@immutable
 sealed class PieChartEvent {}
 
 class FetchPerformanceSummary extends PieChartEvent {

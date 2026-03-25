@@ -1,9 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:bloc/bloc.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/core/error/failure.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
-import 'fetch_single_test_event.dart';
-import 'fetch_single_test_state.dart';
+part 'fetch_single_test_event.dart';
+part 'fetch_single_test_state.dart';
 
 class FetchSingleTestBloc
     extends Bloc<FetchSingleTestEvent, FetchSingleTestState> {

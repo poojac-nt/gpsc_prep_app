@@ -130,6 +130,9 @@ abstract class AppRoutes {
       '/descriptiveTestInstructionScreen';
   static const String descReviewQuestion = '/descReviewQuestion';
   static const String descAnswerScreen = '/descAnswerScreen';
+  static const String descAnswerDetail = '/descAnswerDetail';
+  static const String peerReviewAnswer = '/peerReviewAnswer';
+  static const String descFullQuestions = '/descFullQuestions';
   static const String uploadStudyMaterial = '/uploadStudyMaterial';
   static const String languageSelection = '/languageSelection';
   static const String studyMaterial = '/studyMaterial';
@@ -148,6 +151,19 @@ abstract class AppRoutes {
   static const String addCourse = '/addCourse';
   static const String courseList = '/courseList';
   static const String courseDetails = '/courseDetails';
+  static const String mentorRegistration = '/mentorRegistration';
+  static const String mentorList = '/mentorList';
+  static const String editMentor = '/editMentor';
+  static const String mentorEvaluation = '/mentorEvaluation';
+  static const String mentorAssign = '/mentorAssign';
+  static const String adminDashboard = '/adminDashboard';
+  static const String assignMentorDetail = '/assignMentorDetail';
+  static const String assessmentTypeSelection = '/assessmentTypeSelection';
+  static const String allAssignedTests = '/allAssignedTests';
+  static const String testStudentsList = '/testStudentsList';
+  static const String allTests = '/allTests';
+  static const String studentEvaluationResult = '/studentEvaluationResult';
+  static const String freeTestReview = '/freeTestReview';
 }
 
 class AdUnitIds {

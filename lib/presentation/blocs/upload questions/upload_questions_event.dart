@@ -38,8 +38,13 @@ class DescParseUploadFile extends UploadQuestionsEvent {
 class DescUploadParsedQuestions extends UploadQuestionsEvent {
   final List<Map<String, dynamic>> payload;
   final int? courseId;
+  final DateTime? availableAt;
 
-  DescUploadParsedQuestions({required this.payload, this.courseId});
+  DescUploadParsedQuestions({
+    required this.payload,
+    this.courseId,
+    this.availableAt,
+  });
 }
 
 class FetchCoursesRequested extends UploadQuestionsEvent {}

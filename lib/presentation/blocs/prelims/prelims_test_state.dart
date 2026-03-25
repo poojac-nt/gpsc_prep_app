@@ -1,8 +1,4 @@
-import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
-import 'package:gpsc_prep_app/domain/entities/result_model.dart';
-import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-
-import '../../../core/error/failure.dart';
+part of 'prelims_test_bloc.dart';
 
 sealed class PrelimsTestState {}
 

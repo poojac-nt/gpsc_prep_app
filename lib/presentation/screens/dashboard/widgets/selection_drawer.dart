@@ -1,14 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 
 class SelectionDrawer extends StatelessWidget {
   SelectionDrawer({super.key});
@@ -71,25 +70,18 @@ class SelectionDrawer extends StatelessWidget {
                         onTap: () => context.push(AppRoutes.languageSelection),
                       ),
                     ],
-                    if (!isStudent) ...[
+                    if (isMentor) ...[
                       _buildMenuItem(
                         context,
                         icon: Icons.file_upload_outlined,
-                        title: 'Upload Test',
-                        onTap: () => context.push(AppRoutes.addQuestionScreen),
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.library_add_outlined,
-                        title: 'Add Course',
-                        onTap: () => context.push(AppRoutes.addCourse),
+                        title: 'Mentor Dashboard',
+                        onTap: () => context.push(AppRoutes.mentorDashboard),
                       ),
                       _buildMenuItem(
                         context,
                         icon: Icons.file_upload_outlined,
-                        title: 'Upload Study Material',
-                        onTap:
-                            () => context.push(AppRoutes.uploadStudyMaterial),
+                        title: 'Mentor Evaluation',
+                        onTap: () => context.push(AppRoutes.mentorEvaluation),
                       ),
                     ],
                   ],
@@ -197,7 +189,7 @@ class SelectionDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
-                    "UPSC Aspirant",
+                    "Account Type: ${cache.getUserRole()?.name.toUpperCase() ?? ''}",
                     style: TextStyle(
                       fontSize: 10.sp,
                       color: AppColors.primary,
@@ -269,112 +261,6 @@ class SelectionDrawer extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  void showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24.r),
-          ),
-          elevation: 0,
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withAlpha(10),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.logout_rounded,
-                    size: 32.sp,
-                    color: Colors.redAccent,
-                  ),
-                ),
-                16.hGap,
-                Text(
-                  "Log Out",
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                8.hGap,
-                Text(
-                  "Are you sure you want to log out of your account?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.grey.shade600,
-                    height: 1.5,
-                  ),
-                ),
-                24.hGap,
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                            side: BorderSide(color: Colors.grey.shade200),
-                          ),
-                        ),
-                        child: Text(
-                          "Cancel",
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ),
-                    12.wGap,
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          context.read<AuthBloc>().add(LogOutRequested());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                        child: Text(
-                          "Log Out",
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

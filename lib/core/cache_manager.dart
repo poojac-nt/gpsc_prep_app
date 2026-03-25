@@ -46,9 +46,9 @@ class CacheManager {
     return jsonDecode(jsonString);
   }
 
-  void clearUser() {
+  Future<void> clearUser() async {
     _user = null;
-    _prefs.clear();
+    await _prefs.clear();
   }
 
   String get appVersion => _appVersion;

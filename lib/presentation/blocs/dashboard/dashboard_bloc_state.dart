@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:gpsc_prep_app/domain/entities/dashboard_analytics.dart';
-import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
-
-import '../../../core/error/failure.dart';
+part of 'dashboard_bloc.dart';
 
 @immutable
 sealed class DashboardBlocState {}

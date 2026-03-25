@@ -5,6 +5,7 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
@@ -13,6 +14,7 @@ import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 
 import '../../core/error/failure.dart';
+import '../../domain/entities/all_tests_model.dart';
 import '../../domain/entities/question_model.dart';
 
 class TestRepository {
@@ -53,8 +55,9 @@ class TestRepository {
     int testId,
   ) async => await _supabase.fetchTestAttemptState(testId);
 
-  Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest() async =>
-      await _supabase.fetchDescriptiveTests();
+  Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest({
+    int? courseId,
+  }) async => await _supabase.fetchDescriptiveTests(courseId: courseId);
 
   Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
     int testId,
@@ -82,6 +85,12 @@ class TestRepository {
     questionId: questionId,
   );
 
+  Future<Either<Failure, void>> submitDescriptiveTestPdf({
+    required int testId,
+    required File file,
+  }) async =>
+      await _supabase.submitDescriptiveTestPdf(testId: testId, file: file);
+
   Future<Either<Failure, List<OptionMatrixModel>>> optionMatrixForQuestion({
     required int testId,
   }) {
@@ -94,8 +103,19 @@ class TestRepository {
   Future<Either<Failure, void>> updateUserTestStatus({
     required int testId,
     required String status,
-  }) async => await _supabase.upsertUserTest(testId: testId, status: status);
+  }) async =>
+      await _supabase.updateUserTestStatus(testId: testId, status: status);
 
   Future<Either<Failure, void>> deleteUserTest({required int testId}) async =>
       await _supabase.deleteUserTest(testId: testId);
+
+  Future<Either<Failure, List<int>>> fetchDescriptiveTestSubmissions() async =>
+      await _supabase.fetchDescriptiveTestSubmissions();
+
+  Future<Either<Failure, AllTestsModel>> fetchAllTests() async =>
+      await _supabase.fetchAllTests();
+
+  Future<Either<Failure, MainsTestReviewModel>> fetchDescriptiveTestReview(
+    int testId,
+  ) async => await _supabase.fetchDescriptiveTestReview(testId);
 }

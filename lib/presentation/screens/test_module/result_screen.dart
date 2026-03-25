@@ -12,11 +12,9 @@ import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_event.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_state.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit_state.dart';
@@ -29,11 +27,8 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../blocs/daily_test/daily_test_bloc.dart';
-import '../../blocs/daily_test/daily_test_event.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
-import '../../blocs/dashboard/dashboard_bloc_event.dart';
 import '../../blocs/prelims/prelims_test_bloc.dart';
-import '../../blocs/prelims/prelims_test_event.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -53,7 +48,11 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
+    final isInternetAvailable =
+        context.read<ConnectivityBloc>().state is ConnectivityOnline;
+    if (isInternetAvailable) {
+      context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
+    }
   }
 
   @override
@@ -93,35 +92,55 @@ class _ResultScreenState extends State<ResultScreen> {
                 builder: (context, testCubitState) {
                   return BlocBuilder<ResultBloc, ResultState>(
                     builder: (context, resultState) {
+                      final isOnline =
+                          context.read<ConnectivityBloc>().state
+                              is ConnectivityOnline;
                       final serverResult = testBlocState.serverResult;
                       final data = _TestResultData(
                         correct:
-                            serverResult?.correctAnswers ??
-                            testCubitState.correctAnswers ??
-                            0,
+                            isOnline
+                                ? (serverResult?.correctAnswers ??
+                                    testCubitState.correctAnswers ??
+                                    0)
+                                : (testCubitState.correctAnswers ?? 0),
                         incorrect:
-                            serverResult?.inCorrectAnswers ??
-                            testCubitState.inCorrectAnswers ??
-                            0,
+                            isOnline
+                                ? (serverResult?.inCorrectAnswers ??
+                                    testCubitState.inCorrectAnswers ??
+                                    0)
+                                : (testCubitState.inCorrectAnswers ?? 0),
                         skipped:
-                            serverResult?.notAttemptedQuestions ??
-                            testCubitState.notAttemptedQuestions ??
-                            0,
+                            isOnline
+                                ? (serverResult?.notAttemptedQuestions ??
+                                    testCubitState.notAttemptedQuestions ??
+                                    0)
+                                : (testCubitState.notAttemptedQuestions ?? 0),
                         attempted:
-                            serverResult?.attemptedQuestions ??
-                            testCubitState.attemptedQuestions ??
-                            0,
+                            isOnline
+                                ? (serverResult?.attemptedQuestions ??
+                                    testCubitState.attemptedQuestions ??
+                                    0)
+                                : (testCubitState.attemptedQuestions ?? 0),
                         total:
-                            serverResult?.totalQuestions ??
-                            testCubitState.totalQuestions ??
-                            0,
+                            isOnline
+                                ? (serverResult?.totalQuestions ??
+                                    testCubitState.totalQuestions ??
+                                    0)
+                                : (testCubitState.totalQuestions ?? 0),
                         score:
-                            serverResult?.score ?? testCubitState.score ?? 0.0,
+                            isOnline
+                                ? (serverResult?.score ??
+                                    testCubitState.score ??
+                                    0.0)
+                                : (testCubitState.score ?? 0.0),
                         userRank:
-                            serverResult?.userRank ??
-                            testCubitState.userRank ??
-                            0,
-                        topScore: serverResult?.topScore ?? 0.0,
+                            isOnline
+                                ? (serverResult?.userRank ??
+                                    testCubitState.userRank ??
+                                    0)
+                                : (testCubitState.userRank ?? 0),
+                        topScore:
+                            isOnline ? (serverResult?.topScore ?? 0.0) : 0.0,
                       );
 
                       return _buildSummaryBody(
@@ -133,10 +152,18 @@ class _ResultScreenState extends State<ResultScreen> {
                         testCubitState.selectedOption,
                         testCubitState.batchResults,
                         testCubitState.timePerQuestion,
-                        testBlocState.serverResult!.difficultyWiseReview,
-                        testBlocState.serverResult!.questionTypeReview,
-                        testBlocState.serverResult!.subjectWiseReview,
-                        testBlocState.serverResult,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result!.difficultyWiseReview
+                            : null,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result!.questionTypeReview
+                            : null,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result!.subjectWiseReview
+                            : null,
+                        isOnline && resultState is ResultDataSuccess
+                            ? resultState.result
+                            : null,
                       );
                     },
                   );
@@ -342,12 +369,9 @@ class _ResultScreenState extends State<ResultScreen> {
               iconSize: 26.sp,
               fontSize: 20.sp,
               prefixIcon: Icons.analytics,
+
               iconColor: Colors.deepPurpleAccent,
-              cards: [
-                20.hGap,
-                AnalyticsBarChart(data: reviewByDifficulty),
-                20.hGap,
-              ],
+              cards: [20.hGap, AnalyticsBarChart(data: reviewByDifficulty)],
             ).padAll(AppPaddings.defaultPadding),
           // Question Type Analysis Module
           if (reviewByQuestionType != null &&
@@ -358,11 +382,7 @@ class _ResultScreenState extends State<ResultScreen> {
               fontSize: 20.sp,
               prefixIcon: Icons.bar_chart,
               iconColor: AppColors.primary,
-              cards: [
-                20.hGap,
-                AnalyticsBarChart(data: reviewByQuestionType),
-                20.hGap,
-              ],
+              cards: [20.hGap, AnalyticsBarChart(data: reviewByQuestionType)],
             ).padAll(AppPaddings.defaultPadding),
           if (reviewBySubject != null && _hasValidData(reviewBySubject))
             TestModule(
@@ -371,11 +391,7 @@ class _ResultScreenState extends State<ResultScreen> {
               fontSize: 20.sp,
               prefixIcon: Icons.stacked_bar_chart,
               iconColor: Colors.brown,
-              cards: [
-                20.hGap,
-                AnalyticsBarChart(data: reviewBySubject),
-                20.hGap,
-              ],
+              cards: [20.hGap, AnalyticsBarChart(data: reviewBySubject)],
             ).padAll(AppPaddings.defaultPadding),
           // Action Buttons
           if (questions != null) ...[

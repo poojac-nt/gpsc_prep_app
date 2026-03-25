@@ -13,9 +13,7 @@ import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/test/test_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_event.dart';
-import 'package:gpsc_prep_app/presentation/blocs/timer/timer_state.dart';
+import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/custom_progress_bar.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/question/question_cubit_state.dart';
@@ -36,9 +34,8 @@ import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../domain/entities/test_model.dart';
+import '../../../utils/enums/user_role.dart';
 import '../../blocs/pie_chart/pie_chart_bloc.dart';
-import '../../blocs/pie_chart/pie_chart_state.dart';
-import '../../blocs/timer/timer_bloc.dart';
 import '../../widgets/pie_chart.dart';
 import 'cubit/test/test_cubit_state.dart';
 
@@ -124,7 +121,7 @@ class _TestScreenState extends State<TestScreen> {
         }
       },
       child: PopScope(
-        canPop: false,
+        canPop: widget.isFromResult,
         child: Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
@@ -315,7 +312,14 @@ class _TestScreenState extends State<TestScreen> {
                 _buildAutoSubmitDialog(context, state);
               } else if (questionCubitState is McqQuestionCubitLoaded &&
                   questionCubitState.isQuitTest) {
-                context.go(AppRoutes.studentDashboard);
+                final role = getIt<CacheManager>().getUserRole();
+                if (role == UserRole.admin) {
+                  context.go(AppRoutes.adminDashboard);
+                } else if (role == UserRole.mentor) {
+                  context.go(AppRoutes.mentorDashboard);
+                } else {
+                  context.go(AppRoutes.studentDashboard);
+                }
               } else {
                 Environment.isDevelopment
                     ? null

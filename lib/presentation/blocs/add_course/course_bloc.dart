@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:meta/meta.dart';
 
 part 'course_event.dart';
 part 'course_state.dart';
@@ -20,7 +21,13 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
   ) async {
     emit(CourseLoading());
     final result = await _courseRepository.createCourse(
-      CoursePayload(name: event.name, description: event.description),
+      CoursePayload(
+        name: event.name,
+        description: event.description,
+        testType: event.testType,
+        priceSingle: event.priceSingle,
+        priceDual: event.priceDual,
+      ),
     );
 
     result.fold(

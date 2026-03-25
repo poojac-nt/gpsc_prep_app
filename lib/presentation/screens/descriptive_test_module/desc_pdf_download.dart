@@ -380,6 +380,305 @@ Future<String> generateDescTestPdf(
   }
 }
 
+Future<String> generateFullDescTestPdf(
+  List<DescQuestionModel> questions,
+  String testName,
+) async {
+  final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
+  final baseFont = pw.Font.ttf(base);
+
+  final pdf = pw.Document(
+    pageMode: PdfPageMode.fullscreen,
+    theme: pw.ThemeData.withFont(
+      base: baseFont,
+      fontFallback: [baseFont, pw.Font.symbol()],
+    ),
+  );
+
+  // Load logo
+  final logoData = await rootBundle.load('assets/images/logo_without_bg.png');
+  final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+
+  final telegramLogo = pw.MemoryImage(
+    (await rootBundle.load(
+      'assets/images/telegram_logo.png',
+    )).buffer.asUint8List(),
+  );
+  final gmailLogo = pw.MemoryImage(
+    (await rootBundle.load(
+      'assets/images/gmail_logo.png',
+    )).buffer.asUint8List(),
+  );
+  final xLogo = pw.MemoryImage(
+    (await rootBundle.load('assets/images/x_logo.png')).buffer.asUint8List(),
+  );
+
+  pw.Widget borderedPage(pw.Widget child) {
+    return pw.Container(
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.black, width: 1),
+      ),
+      padding: const pw.EdgeInsets.all(16),
+      child: child,
+    );
+  }
+
+  pw.Widget buildFooter() {
+    return pw.Positioned(
+      bottom: 20,
+      left: 0,
+      right: 0,
+      child: pw.Container(
+        alignment: pw.Alignment.center,
+        margin: const pw.EdgeInsets.only(top: 10),
+        child: pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+          children: [
+            pw.Text(
+              'Click here to Join us:',
+              style: pw.TextStyle(
+                fontSize: 9.5,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+            pw.Row(
+              children: [
+                pw.Image(telegramLogo, width: 10, height: 10),
+                pw.SizedBox(width: 4),
+                pw.UrlLink(
+                  destination: 'https://t.me/starics_prep',
+                  child: pw.Text(
+                    '@starics_prep',
+                    style: pw.TextStyle(
+                      color: PdfColors.blue,
+                      decoration: pw.TextDecoration.underline,
+                      fontSize: 9.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+            pw.Row(
+              children: [
+                pw.Image(gmailLogo, width: 10, height: 10),
+                pw.SizedBox(width: 4),
+                pw.UrlLink(
+                  destination: 'mailto:star.ics89@gmail.com',
+                  child: pw.Text(
+                    'star.ics89@gmail.com',
+                    style: pw.TextStyle(
+                      color: PdfColors.blue,
+                      decoration: pw.TextDecoration.underline,
+                      fontSize: 9.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+            pw.Row(
+              children: [
+                pw.Image(xLogo, width: 10, height: 10),
+                pw.SizedBox(width: 4),
+                pw.UrlLink(
+                  destination: 'https://x.com/star_ics89',
+                  child: pw.Text(
+                    '@star_ics89',
+                    style: pw.TextStyle(
+                      color: PdfColors.blue,
+                      decoration: pw.TextDecoration.underline,
+                      fontSize: 9.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  for (int i = 0; i < questions.length; i++) {
+    final question = questions[i];
+    final index = i + 1;
+
+    // --- Page 1 ---
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) {
+          return borderedPage(
+            pw.Stack(
+              children: [
+                pw.Center(
+                  child: pw.Opacity(
+                    opacity: 0.1,
+                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                  ),
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "Question $index",
+                      style: pw.TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    ..._parseMarkdownToPdfWidgets(
+                      question.questionEn.questionTxt,
+                    ),
+                    if (question.questionHi?.questionTxt != null &&
+                        question.questionHi!.questionTxt.isNotEmpty) ...[
+                      pw.SizedBox(height: 10),
+                      ..._parseMarkdownToPdfWidgets(
+                        question.questionHi!.questionTxt,
+                      ),
+                    ],
+                    if (question.questionGj?.questionTxt != null &&
+                        question.questionGj!.questionTxt.isNotEmpty) ...[
+                      pw.SizedBox(height: 10),
+                      ..._parseMarkdownToPdfWidgets(
+                        question.questionGj!.questionTxt,
+                      ),
+                    ],
+                  ],
+                ),
+                buildFooter(),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    // --- Extra pages ---
+    for (int j = 1; j < (question.pages ?? 1); j++) {
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return borderedPage(
+              pw.Stack(
+                children: [
+                  pw.Center(
+                    child: pw.Opacity(
+                      opacity: 0.1,
+                      child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                    ),
+                  ),
+                  buildFooter(),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    }
+  }
+
+  // --- Save PDF ---
+  final bytes = await pdf.save();
+  final safeFileName = "${testName.toSafeFileName()}_FullTest.pdf";
+  String filePath;
+
+  try {
+    if (Platform.isAndroid) {
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      // ✅ Android 10+ (Scoped Storage)
+      if (sdkInt >= 29) {
+        final tempDir = await getTemporaryDirectory();
+        final tempPath = "${tempDir.path}/$safeFileName";
+        final tempFile = File(tempPath);
+        await tempFile.writeAsBytes(bytes);
+
+        final mediaStore = MediaStore();
+        MediaStore.appFolder = "StarICS";
+
+        final saveInfo = await mediaStore.saveFile(
+          tempFilePath: tempPath,
+          dirType: DirType.download,
+          dirName: DirName.download,
+          relativePath: "StarICS/",
+        );
+
+        if (saveInfo == null) {
+          throw Exception("Failed to save PDF to MediaStore");
+        }
+
+        String? realPath;
+        try {
+          realPath = await mediaStore.getFilePathFromUri(
+            uriString: saveInfo.uri.toString(),
+          );
+        } catch (e) {
+          getIt<LogHelper>().e("Could not resolve file path: $e");
+        }
+
+        if (realPath != null && await File(realPath).exists()) {
+          filePath = realPath;
+          await openFileManager(
+            androidConfig: AndroidConfig(
+              folderPath: realPath,
+              folderType: AndroidFolderType.download,
+            ),
+          );
+        } else {
+          filePath = saveInfo.uri.toString();
+          await openFileManager(
+            androidConfig: AndroidConfig(
+              folderPath: filePath,
+              folderType: AndroidFolderType.download,
+            ),
+          );
+        }
+        return filePath;
+      } else {
+        // ✅ Android 9 and below – direct /Download/StarICS
+        final downloadsDir = Directory("/storage/emulated/0/Download/StarICS");
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+        filePath = "${downloadsDir.path}/$safeFileName";
+        final file = File(filePath);
+        await file.writeAsBytes(bytes);
+        await openFileManager(
+          androidConfig: AndroidConfig(
+            folderPath: filePath,
+            folderType: AndroidFolderType.download,
+          ),
+        );
+        return filePath;
+      }
+    } else {
+      // ✅ iOS or other platforms
+      final dir = await getApplicationDocumentsDirectory();
+      filePath = "${dir.path}/$safeFileName";
+      final file = File(filePath);
+      await file.writeAsBytes(bytes);
+      await openFileManager(
+        androidConfig: AndroidConfig(
+          folderPath: filePath,
+          folderType: AndroidFolderType.download,
+        ),
+      );
+      return filePath;
+    }
+  } catch (e) {
+    getIt<LogHelper>().e("Error generating full Desc PDF: $e");
+    final fallbackDir = await getTemporaryDirectory();
+    filePath = "${fallbackDir.path}/$safeFileName";
+    await File(filePath).writeAsBytes(bytes);
+    return filePath;
+  }
+}
+
 /// --- Markdown Parsing Helpers (unchanged) ---
 List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
   final lines = markdownText.split('\n');
