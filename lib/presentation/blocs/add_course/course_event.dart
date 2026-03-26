@@ -1,5 +1,3 @@
-import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
-
 part of 'course_bloc.dart';
 
 @immutable

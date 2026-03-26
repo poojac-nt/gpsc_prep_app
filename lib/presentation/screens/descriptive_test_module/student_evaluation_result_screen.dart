@@ -262,7 +262,10 @@ class _StudentEvaluationResultScreenState
   }
 
   Widget _buildQuestionBreakdown(MentorReviewDetail review) {
-    final scores = review.questionScores;
+    final scores = [...review.questionScores]
+      ..sort(
+        (a, b) => (a.questionOrder ?? 0).compareTo(b.questionOrder ?? 0),
+      );
 
     if (scores.isEmpty) {
       return const Text("Not reviewed yet");

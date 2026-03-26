@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:meta/meta.dart';
 
 part 'course_event.dart';

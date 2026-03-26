@@ -87,10 +87,14 @@ class QuestionScoreModel {
   @JsonKey(name: "total_marks")
   final int totalMarks;
 
+  @JsonKey(name: "order")
+  final int? questionOrder;
+
   QuestionScoreModel({
     required this.questionId,
     this.gainedMarks,
     required this.totalMarks,
+    this.questionOrder,
   });
 
   factory QuestionScoreModel.fromJson(Map<String, dynamic> json) =>
