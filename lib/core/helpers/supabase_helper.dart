@@ -1821,7 +1821,7 @@ class SupabaseHelper {
 
       // 2️⃣ Call RPC to update mentor
       final response = await supabase.rpc(
-        'update_mentor_details',
+        SupabaseKeys.editMentor,
         params: {
           'p_user_id': userId,
           'p_name': name,
@@ -1860,7 +1860,7 @@ class SupabaseHelper {
 
   Future<Either<Failure, AllTestsModel>> fetchAllTests() async {
     try {
-      final response = await supabase.rpc('fetch_all_tests_grouped');
+      final response = await supabase.rpc(SupabaseKeys.getAllTests);
 
       if (response == null) {
         throw Exception('Empty response from fetch_all_tests_grouped');

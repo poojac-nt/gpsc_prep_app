@@ -48,6 +48,7 @@ abstract class SupabaseKeys {
   static final String fetchStudentTestReview = 'get_desc_test_review';
   static final String getSubmittedFreeDescTests =
       'get_submitted_free_desc_tests';
+  static final String getAllTests = 'fetch_all_tests_grouped';
 
   ///table
   static final String usersTable = 'users';

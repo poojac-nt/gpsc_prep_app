@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -96,7 +97,7 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
         name: "Premium Course Name ${index + 1}",
         description:
             "This is a detailed description of the premium course for demonstration purposes in skeleton loading.",
-        testType: index % 2 == 0 ? "Prelims" : "Mains",
+        testType: CourseTestType.mains,
       ),
     );
   }
@@ -114,7 +115,7 @@ class PaidCourseListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isPrelims = courseModel.testType?.toLowerCase() == 'prelims';
+    final bool isPrelims = courseModel.testType == CourseTestType.prelims;
 
     return ElevatedContainer(
       borderRadius: 20.r,
@@ -148,7 +149,7 @@ class PaidCourseListCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Text(
-                      courseModel.testType ?? "Course",
+                      courseModel.testType?.displayName ?? 'Prelims',
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.bold,

@@ -10,7 +10,7 @@ CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => CourseModel(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       description: json['description'] as String,
-      testType: json['test_type'] as String?,
+      testType: $enumDecodeNullable(_$CourseTestTypeEnumMap, json['test_type']),
       priceSingle: (json['single_assessment_price'] as num?)?.toInt(),
       priceDual: (json['dual_assessment_price'] as num?)?.toInt(),
       tests: json['tests'] == null
@@ -23,11 +23,16 @@ Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
       'id': instance.id,
       'name': instance.name,
       'description': instance.description,
-      'test_type': instance.testType,
+      'test_type': _$CourseTestTypeEnumMap[instance.testType],
       'single_assessment_price': instance.priceSingle,
       'dual_assessment_price': instance.priceDual,
       'tests': instance.tests,
     };
+
+const _$CourseTestTypeEnumMap = {
+  CourseTestType.prelims: 'prelims',
+  CourseTestType.mains: 'mains',
+};
 
 CourseTestsModel _$CourseTestsModelFromJson(Map<String, dynamic> json) =>
     CourseTestsModel(

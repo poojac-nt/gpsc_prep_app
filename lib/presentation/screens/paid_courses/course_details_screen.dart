@@ -20,6 +20,7 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -531,7 +532,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   Widget _bottomBar(bool isEnrolled) {
     final bool isPrelims =
-        widget.courseModel.testType?.toLowerCase() == 'prelims';
+        widget.courseModel.testType == CourseTestType.prelims;
     final bool hasPrice = widget.courseModel.priceSingle != null;
     final bool showPrice = !isEnrolled && isPrelims && hasPrice;
 
@@ -664,7 +665,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   Future<void> _handleEnrollment(BuildContext context) async {
     AssessmentType? selectedType;
-    if (widget.courseModel.testType == 'mains') {
+    if (widget.courseModel.testType == CourseTestType.mains) {
       selectedType = await context.push<AssessmentType>(
         AppRoutes.assessmentTypeSelection,
         extra: AssessmentTypeSelectionScreenArgs(

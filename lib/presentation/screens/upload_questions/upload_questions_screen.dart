@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -81,10 +82,8 @@ class _UploadQuestionsState extends State<UploadQuestions> {
         builder: (context, state) {
           final isLoading =
               state is ParseFileInProgress || state is CoursesLoading;
-          final testType = _selectedCourse?.testType?.toString().toLowerCase();
-
-          final isMains = testType == 'mains';
-          final isPrelims = testType == 'prelims';
+          final isMains = _selectedCourse?.testType == CourseTestType.mains;
+          final isPrelims = _selectedCourse?.testType == CourseTestType.prelims;
           return SingleChildScrollView(
             padding: EdgeInsets.all(AppPaddings.defaultPadding),
             child: Column(
@@ -218,6 +217,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
             ),
             8.hGap,
             DropdownButtonFormField<int?>(
+              isExpanded: true,
               dropdownColor: Colors.white,
               decoration: InputDecoration(
                 isDense: true,
@@ -244,7 +244,11 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                 ..._courses.map((e) {
                   return DropdownMenuItem<int?>(
                     value: e.id,
-                    child: Text(e.name),
+                    child: Text(
+                      e.name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   );
                 }),
               ],

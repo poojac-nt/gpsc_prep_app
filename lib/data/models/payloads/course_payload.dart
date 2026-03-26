@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'course_payload.g.dart';
@@ -13,7 +14,7 @@ class CoursePayload {
   @JsonKey(name: "dual_assessment_price")
   final int? priceDual;
   @JsonKey(name: "test_type")
-  final String testType;
+  final CourseTestType testType;
 
   CoursePayload({
     required this.name,
