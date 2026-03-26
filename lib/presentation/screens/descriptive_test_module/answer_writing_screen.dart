@@ -28,10 +28,32 @@ class AnswerWritingScreen extends StatefulWidget {
 }
 
 class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     context.read<DailyDescTestBloc>().add(FetchAllTests());
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      context.read<DailyDescTestBloc>().add(LoadMoreDescTests());
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
   }
 
   @override
@@ -69,9 +91,19 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 return context.read<DailyDescTestBloc>().add(FetchAllTests());
               },
               child: ListView.builder(
+                controller: _scrollController,
                 padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-                itemCount: descTests.length,
+                itemCount:
+                    state.hasReachedMax ? descTests.length : descTests.length + 1,
                 itemBuilder: (context, index) {
+                  if (index >= descTests.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
                   final test = descTests[index];
                   final hasAnswer = state.answersMap.containsKey(test.id);
                   return AnswerWritingCard(

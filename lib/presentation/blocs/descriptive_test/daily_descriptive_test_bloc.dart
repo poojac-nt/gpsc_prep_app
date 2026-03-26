@@ -37,6 +37,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
       emit(DailyTestInitial());
     });
     on<FetchReviewForTest>(_fetchReviewForTest);
+    on<LoadMoreDescTests>(_loadMoreDescTests);
   }
 
   /// Fetch all tests
@@ -46,9 +47,13 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
   ) async {
     emit(DailyDescTestFetching());
 
-    // 1. Fetch all descriptive tests
+    final bool isDailyTest = event.courseId == null;
+
+    // 1. Fetch descriptive tests (paginated if daily test)
     final testsResult = await _testRepository.fetchDailyDescTest(
       courseId: event.courseId,
+      offset: isDailyTest ? 0 : null,
+      limit: isDailyTest ? 20 : null,
     );
 
     await testsResult.fold(
@@ -82,7 +87,7 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
           }
         });
 
-        // If courseId is null, also fetch detailed answers test-by-test
+        // If courseId is null, also fetch detailed answers test-by-test for the FETCHED tests
         if (event.courseId == null) {
           for (final test in tests) {
             // Only fetch if not already in answersMap from submissions
@@ -101,8 +106,85 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
         }
 
         // 3. Emit success state with both tests and answers
-        emit(DailyDescTestFetched(tests, answersMap, {}));
+        emit(
+          DailyDescTestFetched(
+            tests,
+            answersMap,
+            {},
+            hasReachedMax: isDailyTest ? tests.length < 20 : true,
+            offset: isDailyTest ? tests.length : 0,
+          ),
+        );
         _log.i("Fetched ${tests.length} descriptive tests successfully.");
+      },
+    );
+  }
+
+  Future<void> _loadMoreDescTests(
+    LoadMoreDescTests event,
+    Emitter<DailyDescTestState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! DailyDescTestFetched ||
+        currentState.hasReachedMax ||
+        currentState.isFetchingMore) {
+      return;
+    }
+
+    emit(currentState.copyWith(isFetchingMore: true));
+
+    final bool isDailyTest = event.courseId == null;
+
+    final testsResult = await _testRepository.fetchDailyDescTest(
+      courseId: event.courseId,
+      offset: currentState.offset,
+      limit: isDailyTest ? 20 : null,
+    );
+
+    await testsResult.fold(
+      (failure) async {
+        emit(currentState.copyWith(isFetchingMore: false));
+        _log.e("Failed to load more tests: $failure");
+      },
+      (newTests) async {
+        if (newTests.isEmpty) {
+          emit(
+            currentState.copyWith(hasReachedMax: true, isFetchingMore: false),
+          );
+          return;
+        }
+
+        final answersMap = Map<int, List<DescAnswerModel>>.from(
+          currentState.answersMap,
+        );
+
+        // Fetch detailed answers for newly fetched tests
+        if (event.courseId == null) {
+          for (final test in newTests) {
+            if (!answersMap.containsKey(test.id)) {
+              final answersResult = await _testRepository.fetchAnswersForTest(
+                test.id,
+              );
+
+              answersResult.fold((_) {}, (ansList) {
+                if (ansList.isNotEmpty) {
+                  answersMap[test.id] = ansList;
+                }
+              });
+            }
+          }
+        }
+
+        emit(
+          currentState.copyWith(
+            dailyTestModel: currentState.dailyTestModel + newTests,
+            answersMap: answersMap,
+            hasReachedMax: isDailyTest ? newTests.length < 20 : true,
+            isFetchingMore: false,
+            offset: currentState.offset + newTests.length,
+          ),
+        );
+        _log.i("Loaded ${newTests.length} more tests.");
       },
     );
   }

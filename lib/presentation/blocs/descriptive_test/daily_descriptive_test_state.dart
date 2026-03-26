@@ -14,8 +14,36 @@ final class DailyDescTestFetched extends DailyDescTestState {
   final List<DescTestModel> dailyTestModel;
   final Map<int, List<DescAnswerModel>> answersMap;
   final Map<int, MainsTestReviewModel?> reviewsMap;
+  final bool hasReachedMax;
+  final bool isFetchingMore;
+  final int offset;
 
-  DailyDescTestFetched(this.dailyTestModel, this.answersMap, this.reviewsMap);
+  DailyDescTestFetched(
+    this.dailyTestModel,
+    this.answersMap,
+    this.reviewsMap, {
+    this.hasReachedMax = false,
+    this.isFetchingMore = false,
+    this.offset = 0,
+  });
+
+  DailyDescTestFetched copyWith({
+    List<DescTestModel>? dailyTestModel,
+    Map<int, List<DescAnswerModel>>? answersMap,
+    Map<int, MainsTestReviewModel?>? reviewsMap,
+    bool? hasReachedMax,
+    bool? isFetchingMore,
+    int? offset,
+  }) {
+    return DailyDescTestFetched(
+      dailyTestModel ?? this.dailyTestModel,
+      answersMap ?? this.answersMap,
+      reviewsMap ?? this.reviewsMap,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      isFetchingMore: isFetchingMore ?? this.isFetchingMore,
+      offset: offset ?? this.offset,
+    );
+  }
 }
 
 /// Failed fetching descriptive tests

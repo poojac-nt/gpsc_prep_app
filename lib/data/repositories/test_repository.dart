@@ -57,7 +57,13 @@ class TestRepository {
 
   Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest({
     int? courseId,
-  }) async => await _supabase.fetchDescriptiveTests(courseId: courseId);
+    int? offset,
+    int? limit,
+  }) async => await _supabase.fetchDescriptiveTests(
+    courseId: courseId,
+    offset: offset,
+    limit: limit,
+  );
 
   Future<Either<Failure, List<DescAnswerModel>>> fetchAnswersForTest(
     int testId,
