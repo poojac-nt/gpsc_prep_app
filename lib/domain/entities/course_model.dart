@@ -2,6 +2,8 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
+
 part 'course_model.g.dart';
 
 @JsonSerializable()
@@ -13,7 +15,7 @@ class CourseModel {
   @JsonKey(name: "description")
   String description;
   @JsonKey(name: "test_type")
-  String? testType;
+  CourseTestType? testType;
 
   @JsonKey(name: "single_assessment_price")
   int? priceSingle;

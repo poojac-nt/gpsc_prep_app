@@ -59,6 +59,7 @@ QuestionScoreModel _$QuestionScoreModelFromJson(Map<String, dynamic> json) =>
       questionId: (json['question_id'] as num).toInt(),
       gainedMarks: (json['gained_marks'] as num?)?.toInt(),
       totalMarks: (json['total_marks'] as num).toInt(),
+      questionOrder: (json['order'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$QuestionScoreModelToJson(QuestionScoreModel instance) =>
@@ -66,4 +67,5 @@ Map<String, dynamic> _$QuestionScoreModelToJson(QuestionScoreModel instance) =>
       'question_id': instance.questionId,
       'gained_marks': instance.gainedMarks,
       'total_marks': instance.totalMarks,
+      'order': instance.questionOrder,
     };

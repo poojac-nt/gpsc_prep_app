@@ -58,3 +58,8 @@ class FetchReviewForTest extends DailyDescTestEvent {
 
   FetchReviewForTest(this.testId);
 }
+
+class LoadMoreDescTests extends DailyDescTestEvent {
+  final int? courseId;
+  LoadMoreDescTests({this.courseId});
+}

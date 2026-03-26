@@ -83,12 +83,15 @@ class _EditMentorScreenState extends State<EditMentorScreen> {
             ),
           );
         }
+        final sortedSubjects = List<SubjectModel>.from(_availableSubjects)
+          ..sort((a, b) => a.subjectName.compareTo(b.subjectName));
+
         return ListView.separated(
           padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
-          itemCount: _availableSubjects.length,
+          itemCount: sortedSubjects.length,
           separatorBuilder: (_, _) => const Divider(),
           itemBuilder: (context, index) {
-            final subjectName = _availableSubjects[index].subjectName;
+            final subjectName = sortedSubjects[index].subjectName;
             final isSelected = _specializations.contains(subjectName);
             return ListTile(
               title: Text(

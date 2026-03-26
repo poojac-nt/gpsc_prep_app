@@ -8,6 +8,7 @@ import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/services/validator.dart';
 
 class AddCourseScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceSingleController = TextEditingController();
   final TextEditingController _priceDualController = TextEditingController();
-  String _selectedTestType = 'Prelims'; // Default value
+  CourseTestType _selectedTestType = CourseTestType.prelims; // Default value
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final CourseBloc _bloc;
 
@@ -52,7 +53,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         AddCourseRequested(
           name: courseName,
           description: description.isNotEmpty ? description : null,
-          testType: _selectedTestType.toLowerCase(),
+          testType: _selectedTestType,
           priceSingle: priceSingle,
           priceDual: priceDual,
         ),
@@ -72,6 +73,11 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             );
             _courseController.clear();
             _descriptionController.clear();
+            _priceSingleController.clear();
+            _priceDualController.clear();
+            setState(() {
+              _selectedTestType = CourseTestType.prelims;
+            });
           } else if (state is AddCourseFailure) {
             getIt<SnackBarHelper>().showError(state.error);
           }
@@ -133,7 +139,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               ),
                             ),
                             16.hGap,
-                            DropdownButtonFormField<String>(
+                            DropdownButtonFormField<CourseTestType>(
                               initialValue: _selectedTestType,
                               dropdownColor: Colors.white,
                               onChanged:
@@ -150,16 +156,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                 label: 'Test Type',
                                 hint: null,
                               ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'Prelims',
-                                  child: Text('Prelims'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'Mains',
-                                  child: Text('Mains'),
-                                ),
-                              ],
+                              items:
+                                  CourseTestType.values.map((type) {
+                                    return DropdownMenuItem(
+                                      value: type,
+                                      child: Text(type.displayName),
+                                    );
+                                  }).toList(),
                             ),
                             16.hGap,
                             TextFormField(
@@ -185,12 +188,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               decoration: _inputDecoration(
                                 label: 'Price (Dual Assessment)',
                                 hint:
-                                    _selectedTestType == 'Mains'
+                                    _selectedTestType == CourseTestType.mains
                                         ? 'Enter price (e.g., 800)'
                                         : 'Enter price (optional)',
                               ),
                               validator: (value) {
-                                if (_selectedTestType == 'Mains') {
+                                if (_selectedTestType == CourseTestType.mains) {
                                   return Validator.validatePrice(
                                     value,
                                     fieldName: 'Price (Dual Assessment)',

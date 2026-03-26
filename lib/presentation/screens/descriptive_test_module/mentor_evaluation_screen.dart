@@ -365,7 +365,10 @@ Positives:
           _scoreErrors[i] = false;
         });
       }
-      scores[question.questionId.toString()] = marks;
+      scores[question.questionId.toString()] = {
+        'score': marks,
+        'order': question.questionOrder,
+      };
     }
 
     if (hasError) {

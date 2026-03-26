@@ -38,6 +38,7 @@ class _MentorRegistrationScreenState extends State<MentorRegistrationScreen> {
   File? _profileImage;
   final List<SubjectModel> _selectedSubjects = [];
   final List<SubjectModel> _customSubjects = [];
+  bool _showAllSubjects = false;
 
   @override
   void initState() {
@@ -277,56 +278,103 @@ class _MentorRegistrationScreenState extends State<MentorRegistrationScreen> {
                         subjects = state.subjects;
                       }
                       final allSubjects = [...subjects, ..._customSubjects];
+                      final bool hasMore = allSubjects.length > 10;
+                      final displayedSubjects =
+                          (hasMore && !_showAllSubjects)
+                              ? allSubjects.take(10).toList()
+                              : allSubjects;
 
-                      return Wrap(
-                        spacing: 8.w,
-                        runSpacing: 8.h,
-                        children:
-                            allSubjects.map((subject) {
-                              final isSelected = _selectedSubjects.any(
-                                (s) => s.subjectName == subject.subjectName,
-                              );
-                              return FilterChip(
-                                label: Text(subject.subjectName),
-                                selected: isSelected,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      _selectedSubjects.add(subject);
-                                    } else {
-                                      _selectedSubjects.removeWhere(
-                                        (s) =>
-                                            s.subjectName ==
-                                            subject.subjectName,
-                                      );
-                                    }
-                                  });
-                                },
-                                selectedColor: AppColors.primary.withAlpha(10),
-                                checkmarkColor: AppColors.primary,
-                                labelStyle: TextStyle(
-                                  color:
-                                      isSelected
-                                          ? AppColors.primary
-                                          : Colors.grey[700],
-                                  fontSize: 12.sp,
-                                  fontWeight:
-                                      isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            spacing: 8.w,
+                            runSpacing: 8.h,
+                            children:
+                                displayedSubjects.map((subject) {
+                                  final isSelected = _selectedSubjects.any(
+                                    (s) => s.subjectName == subject.subjectName,
+                                  );
+                                  return FilterChip(
+                                    label: Text(subject.subjectName),
+                                    selected: isSelected,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          _selectedSubjects.add(subject);
+                                        } else {
+                                          _selectedSubjects.removeWhere(
+                                            (s) =>
+                                                s.subjectName ==
+                                                subject.subjectName,
+                                          );
+                                        }
+                                      });
+                                    },
+                                    selectedColor: AppColors.primary.withAlpha(
+                                      10,
+                                    ),
+                                    checkmarkColor: AppColors.primary,
+                                    labelStyle: TextStyle(
+                                      color:
+                                          isSelected
+                                              ? AppColors.primary
+                                              : Colors.grey[700],
+                                      fontSize: 12.sp,
+                                      fontWeight:
+                                          isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                    ),
+                                    backgroundColor: Colors.grey[50],
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.r),
+                                      side: BorderSide(
+                                        color:
+                                            isSelected
+                                                ? AppColors.primary
+                                                : Colors.grey[200]!,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                          if (hasMore) ...[
+                            8.hGap,
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _showAllSubjects = !_showAllSubjects;
+                                });
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 4.h),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _showAllSubjects
+                                          ? "Show Less"
+                                          : "Show More (${allSubjects.length - 10} more)",
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Icon(
+                                      _showAllSubjects
+                                          ? Icons.keyboard_arrow_up
+                                          : Icons.keyboard_arrow_down,
+                                      color: AppColors.primary,
+                                      size: 18.sp,
+                                    ),
+                                  ],
                                 ),
-                                backgroundColor: Colors.grey[50],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20.r),
-                                  side: BorderSide(
-                                    color:
-                                        isSelected
-                                            ? AppColors.primary
-                                            : Colors.grey[200]!,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                              ),
+                            ),
+                          ],
+                        ],
                       );
                     },
                   ),

@@ -354,7 +354,6 @@ class SupabaseHelper {
   /// COURSES
   /// ===========================================================================
 
-  Future<Either<Failure, CourseModel>> createCourses(CoursePayload data) async {
   Future<Either<Failure, CoursePayload>> createCourses(
     CoursePayload data,
   ) async {
@@ -665,9 +664,11 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests({
     int? courseId,
+    int? offset,
+    int? limit,
   }) async {
     try {
-      var query = supabase
+      dynamic query = supabase
           .from(SupabaseKeys.descTests)
           .select()
           .lte('available_at', DateTime.now().toUtc().toIso8601String());
@@ -676,6 +677,10 @@ class SupabaseHelper {
         query = query.eq('course_id', courseId);
       } else {
         query = query.filter('course_id', 'is', null);
+      }
+
+      if (offset != null && limit != null) {
+        query = query.range(offset, offset + limit - 1);
       }
 
       final response = await query.order('id', ascending: false);
@@ -1822,7 +1827,7 @@ class SupabaseHelper {
 
       // 2️⃣ Call RPC to update mentor
       final response = await supabase.rpc(
-        'update_mentor_details',
+        SupabaseKeys.editMentor,
         params: {
           'p_user_id': userId,
           'p_name': name,
@@ -1861,7 +1866,7 @@ class SupabaseHelper {
 
   Future<Either<Failure, AllTestsModel>> fetchAllTests() async {
     try {
-      final response = await supabase.rpc('fetch_all_tests_grouped');
+      final response = await supabase.rpc(SupabaseKeys.getAllTests);
 
       if (response == null) {
         throw Exception('Empty response from fetch_all_tests_grouped');
