@@ -17,7 +17,7 @@ final _supabase = getIt<SupabaseHelper>().supabase;
 Future<Either<Failure, List<Map<String, dynamic>>>>
 parseDescUploadFile() async {
   try {
-    final pickedFileResult = await FilePicker.platform.pickFiles(
+    final pickedFileResult = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx'],
       withData: true,

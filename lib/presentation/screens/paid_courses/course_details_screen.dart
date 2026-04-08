@@ -18,9 +18,9 @@ import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descript
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
-import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -433,7 +433,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     DescTestModel test,
     MainsTestReviewModel reviewModel,
   ) {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,

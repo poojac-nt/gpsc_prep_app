@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.2.0+26
+version: 1.2.0+27
 
 environment:
   sdk: ^3.7.2
@@ -33,47 +33,48 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  bloc: ^9.1.0
+  cupertino_icons: ^1.0.9
+  bloc: ^9.2.0
   flutter_bloc: ^9.1.1
   flutter_screenutil: ^5.9.3
-  shared_preferences: ^2.5.3
-  go_router: ^17.0.0
-  supabase_flutter: ^2.10.3
-  get_it: ^9.1.1
-  logger: ^2.6.2
+  shared_preferences: ^2.5.5
+  go_router: ^17.2.0
+  supabase_flutter: ^2.12.2
+  get_it: ^9.2.1
+  logger: ^2.7.0
   either_dart: ^1.0.0
   json_annotation: ^4.9.0
   image_picker: ^1.2.1
   markdown_widget: ^2.3.2+8
-  file_picker: ^10.3.7
+  file_picker: ^11.0.2
   csv: ^6.0.0
   excel: ^4.0.6
-  skeletonizer: ^2.1.1
-  connectivity_plus: ^7.0.0
+  skeletonizer: ^2.1.3
+  connectivity_plus: ^7.1.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
-  firebase_core: ^4.2.1
-  firebase_messaging: ^16.0.4
+  firebase_core: ^4.6.0
+  firebase_messaging: ^16.1.3
   cached_network_image: ^3.4.1
-  pdf: ^3.11.3
-  markdown: ^7.3.0
+  pdf: ^3.12.0
+  markdown: ^7.3.1
   open_file_manager: ^2.0.1
   permission_handler: ^12.0.1
-  device_info_plus: ^12.3.0
-  package_info_plus: ^9.0.0
+  device_info_plus: ^12.4.0
+  package_info_plus: ^9.0.1
   url_launcher: ^6.3.2
-  google_mobile_ads: ^6.0.0
+  google_mobile_ads: ^7.0.0
   intl: ^0.20.2
-  share_plus: ^12.0.1
+  share_plus: ^12.0.2
   media_store_plus: ^0.1.3
-  fl_chart: ^1.1.1
+  fl_chart: ^1.2.0
   http: ^1.6.0
   pub_semver: ^2.2.0
   meta: ^1.17.0
-  flutter_local_notifications: ^20.0.0
+  flutter_local_notifications: ^21.0.0
   flutter_pdfview: ^1.4.4
+  in_app_purchase: ^3.2.3
 
 
 dev_dependencies:

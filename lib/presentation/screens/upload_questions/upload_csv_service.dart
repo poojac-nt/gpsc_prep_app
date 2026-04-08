@@ -29,7 +29,7 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
   required bool isTestUpload,
 }) async {
   try {
-    final pickedFileResult = await FilePicker.platform.pickFiles(
+    final pickedFileResult = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx'],
       withData: false,
