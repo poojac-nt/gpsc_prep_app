@@ -4,6 +4,8 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 
+import '../../domain/entities/product_model.dart';
+
 class CourseRepository {
   final SupabaseHelper _supabaseHelper;
 
@@ -17,5 +19,9 @@ class CourseRepository {
 
   Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
     return await _supabaseHelper.fetchCourses();
+  }
+
+  Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
+    return await _supabaseHelper.fetchProducts();
   }
 }

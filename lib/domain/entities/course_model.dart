@@ -1,8 +1,8 @@
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-import 'package:json_annotation/json_annotation.dart';
-
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'course_model.g.dart';
 
@@ -16,11 +16,10 @@ class CourseModel {
   String description;
   @JsonKey(name: "test_type")
   CourseTestType? testType;
-
-  @JsonKey(name: "single_assessment_price")
-  int? priceSingle;
-  @JsonKey(name: "dual_assessment_price")
-  int? priceDual;
+  @JsonKey(name: "single_product")
+  ProductModel singleProduct;
+  @JsonKey(name: "dual_product")
+  ProductModel? dualProduct;
 
   @JsonKey(name: "tests")
   final CourseTestsModel? tests;
@@ -29,10 +28,10 @@ class CourseModel {
     required this.id,
     required this.name,
     required this.description,
-    this.testType,
-    this.priceSingle,
-    this.priceDual,
-    this.tests,
+    required this.testType,
+    required this.singleProduct,
+    required this.tests,
+    this.dualProduct,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) =>

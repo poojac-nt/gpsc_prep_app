@@ -11,11 +11,14 @@ CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => CourseModel(
       name: json['name'] as String,
       description: json['description'] as String,
       testType: $enumDecodeNullable(_$CourseTestTypeEnumMap, json['test_type']),
-      priceSingle: (json['single_assessment_price'] as num?)?.toInt(),
-      priceDual: (json['dual_assessment_price'] as num?)?.toInt(),
+      singleProduct:
+          ProductModel.fromJson(json['single_product'] as Map<String, dynamic>),
       tests: json['tests'] == null
           ? null
           : CourseTestsModel.fromJson(json['tests'] as Map<String, dynamic>),
+      dualProduct: json['dual_product'] == null
+          ? null
+          : ProductModel.fromJson(json['dual_product'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
@@ -24,8 +27,8 @@ Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
       'name': instance.name,
       'description': instance.description,
       'test_type': _$CourseTestTypeEnumMap[instance.testType],
-      'single_assessment_price': instance.priceSingle,
-      'dual_assessment_price': instance.priceDual,
+      'single_product': instance.singleProduct,
+      'dual_product': instance.dualProduct,
       'tests': instance.tests,
     };
 

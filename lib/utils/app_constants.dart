@@ -171,3 +171,9 @@ class AdUnitIds {
       'ca-app-pub-4018950905393948/9479145944';
   static const String bannerUnitId = 'ca-app-pub-4018950905393948/8301827460';
 }
+
+abstract class IapProductIds {
+  /// The single hardcoded Play Store consumable product ID used for all courses.
+  static const String productId =
+      'price_tier_1'; // TODO: replace with your actual ID
+}

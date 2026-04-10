@@ -10,6 +10,7 @@ import '../../../domain/entities/course_model.dart';
 
 class AssessmentTypeSelectionScreen extends StatefulWidget {
   final CourseModel courseModel;
+
   const AssessmentTypeSelectionScreen({super.key, required this.courseModel});
 
   @override
@@ -62,7 +63,7 @@ class _AssessmentTypeSelectionScreenState
                   _buildOptionCard(
                     type: AssessmentType.single,
                     title: "Single Assessment",
-                    price: widget.courseModel.priceSingle ?? 0,
+                    price: widget.courseModel.singleProduct.price ?? 0,
                     description:
                         "Your answers will be evaluated once by a verified mentor with detailed feedback.",
                     icon: Icons.person_outline_rounded,
@@ -71,7 +72,7 @@ class _AssessmentTypeSelectionScreenState
                   _buildOptionCard(
                     type: AssessmentType.double,
                     title: "Double Assessment",
-                    price: widget.courseModel.priceDual ?? 0,
+                    price: widget.courseModel.dualProduct?.price ?? 0,
                     description:
                         "Get your answers reviewed by two different mentors for more comprehensive insights.",
                     icon: Icons.people_outline_rounded,

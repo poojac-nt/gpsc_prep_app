@@ -43,9 +43,7 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
         builder: (context, state) {
           final bool isLoading = state is CourseLoading;
           final List<CourseModel> courses =
-              state is FetchCoursesSuccess
-                  ? state.courses
-                  : _generateDummyCourses();
+              state is FetchCoursesSuccess ? state.courses : [];
 
           if (state is FetchCoursesFailure) {
             return Center(child: Text(state.error));
@@ -85,19 +83,6 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
             },
           );
         },
-      ),
-    );
-  }
-
-  List<CourseModel> _generateDummyCourses() {
-    return List.generate(
-      3,
-      (index) => CourseModel(
-        id: index,
-        name: "Premium Course Name ${index + 1}",
-        description:
-            "This is a detailed description of the premium course for demonstration purposes in skeleton loading.",
-        testType: CourseTestType.mains,
       ),
     );
   }
@@ -179,7 +164,7 @@ class PaidCourseListCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (courseModel.priceSingle != null)
+                  if (courseModel.singleProduct.price > 0)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -192,7 +177,7 @@ class PaidCourseListCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "₹${courseModel.priceSingle}",
+                          "₹${courseModel.singleProduct.price}",
                           style: TextStyle(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w900,

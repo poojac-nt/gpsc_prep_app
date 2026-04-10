@@ -10,8 +10,8 @@ UserPurchasePayload _$UserPurchasePayloadFromJson(Map<String, dynamic> json) =>
     UserPurchasePayload(
       userId: (json['user_id'] as num).toInt(),
       courseId: (json['course_id'] as num).toInt(),
-      assessmentType:
-          $enumDecode(_$AssessmentTypeEnumMap, json['assessment_type']),
+      productId: json['product_id'] as String,
+      purchaseToken: json['purchase_token'] as String,
     );
 
 Map<String, dynamic> _$UserPurchasePayloadToJson(
@@ -19,10 +19,6 @@ Map<String, dynamic> _$UserPurchasePayloadToJson(
     <String, dynamic>{
       'user_id': instance.userId,
       'course_id': instance.courseId,
-      'assessment_type': _$AssessmentTypeEnumMap[instance.assessmentType]!,
+      'product_id': instance.productId,
+      'purchase_token': instance.purchaseToken,
     };
-
-const _$AssessmentTypeEnumMap = {
-  AssessmentType.single: 'single',
-  AssessmentType.double: 'double',
-};

@@ -47,7 +47,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../data/models/payloads/verify_purchase_response.dart';
 import '../../domain/entities/all_tests_model.dart';
+import '../../domain/entities/product_model.dart';
 import '../../domain/entities/study_material_model.dart';
 import 'log_helper.dart';
 
@@ -192,7 +194,7 @@ class SupabaseHelper {
       }
 
       final response = await supabase.functions.invoke(
-        'create-mentor',
+        SupabaseKeys.createMentor,
         body: {
           'full_name': data.name,
           'email': data.email,
@@ -294,7 +296,7 @@ class SupabaseHelper {
         throw Exception("User not logged in");
       }
       final response = await supabase.functions.invoke(
-        'delete_user',
+        SupabaseKeys.deleteUser,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -771,6 +773,25 @@ class SupabaseHelper {
     } catch (e) {
       _log.e("File upload failed: $e");
       return Left(Failure("File upload failed: ${e.toString()}"));
+    }
+  }
+
+  /// ===========================================================================
+  /// PRODUCTS
+  /// ===========================================================================
+
+  Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
+    try {
+      final result = await supabase
+          .from(SupabaseKeys.productsTable)
+          .select('*');
+      final products =
+          (result as List).map((e) => ProductModel.fromJson(e)).toList();
+      return Right(products);
+    } catch (e) {
+      _snackBar.showError('Error Fetching Products: ${e.toString()}');
+      _log.e('Error Fetching Products: $e', error: e);
+      return Left(Failure('Error Fetching Products: ${e.toString()}'));
     }
   }
 
@@ -1432,26 +1453,33 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, UserPurchaseModel>> purchaseCourse({
+  Future<Either<Failure, VerifyPurchaseResponse>> verifyPurchase({
     required UserPurchasePayload payload,
   }) async {
     try {
-      final result =
-          await supabase
-              .from(SupabaseKeys.userPurchase)
-              .insert({
-                'user_id': userId,
-                'course_id': payload.courseId,
-                'assessment_type': payload.assessmentType.name,
-              })
-              .select()
-              .single();
-      final purchase = UserPurchaseModel.fromJson(result);
-      return Right(purchase);
+      final response = await supabase.functions.invoke(
+        SupabaseKeys.verifyPurchase,
+        body: payload.toJson(),
+      );
+
+      if (response.status >= 400) {
+        final errorData = response.data;
+        return Left(
+          Failure(
+            errorData is Map
+                ? errorData['error'] ?? 'Verification failed'
+                : errorData.toString(),
+          ),
+        );
+      }
+
+      final result = response.data as Map<String, dynamic>;
+      final verifyResponse = VerifyPurchaseResponse.fromJson(result);
+      return Right(verifyResponse);
     } catch (e) {
-      _snackBar.showError('Error Purchasing Course: ${e.toString()}');
-      _log.e('Error Purchasing Course :$e', error: e);
-      return Left(Failure('Error Purchasing Course: ${e.toString()}'));
+      _snackBar.showError('Error Verifying Purchase: ${e.toString()}');
+      _log.e('Error Verifying Purchase: $e', error: e);
+      return Left(Failure('Error Verifying Purchase: ${e.toString()}'));
     }
   }
 

@@ -62,6 +62,7 @@ import '../../presentation/blocs/descriptive_test/daily_descriptive_test_bloc.da
 import '../../presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import '../../presentation/blocs/purchase/purchase_bloc.dart';
 import '../../presentation/screens/test_module/cubit/question/question_cubit.dart';
+import '../../utils/services/iap_service.dart';
 
 final getIt = GetIt.instance;
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -95,6 +96,10 @@ void setupHelpers() {
 
   getIt.registerLazySingleton<FCMService>(
     () => FCMService(getIt<SupabaseHelper>()),
+  );
+
+  getIt.registerLazySingleton<IapService>(
+    () => IapService(getIt<LogHelper>()),
   );
 }
 
@@ -210,7 +215,7 @@ void setupBlocs() {
     () => SubmitPeerReviewBloc(getIt<PeerReviewRepository>()),
   );
   getIt.registerLazySingleton<PurchaseBloc>(
-    () => PurchaseBloc(getIt<PurchaseRepository>()),
+    () => PurchaseBloc(getIt<PurchaseRepository>(), getIt<IapService>()),
   );
   getIt.registerLazySingleton<PendingSubmissionsBloc>(
     () => PendingSubmissionsBloc(getIt<MentorRepository>()),

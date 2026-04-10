@@ -1,5 +1,5 @@
-import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:json_annotation/json_annotation.dart';
+
 
 part 'user_purchase_payload.g.dart';
 
@@ -9,14 +9,16 @@ class UserPurchasePayload {
   int userId;
   @JsonKey(name: "course_id")
   int courseId;
-  @JsonKey(name: "assessment_type")
-  AssessmentType assessmentType;
+  @JsonKey(name: "product_id")
+  String productId;
+  @JsonKey(name: "purchase_token")
+  String purchaseToken;
 
   UserPurchasePayload({
     required this.userId,
-
     required this.courseId,
-    required this.assessmentType,
+    required this.productId,
+    required this.purchaseToken,
   });
 
   factory UserPurchasePayload.fromJson(Map<String, dynamic> json) =>

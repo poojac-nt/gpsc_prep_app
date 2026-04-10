@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:meta/meta.dart';
 
@@ -14,6 +15,7 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
   CourseBloc(this._courseRepository) : super(CourseInitial()) {
     on<AddCourseRequested>(_onAddCourseRequested);
     on<FetchCoursesRequested>(_onFetchCoursesRequested);
+    on<FetchProductsRequested>(_onFetchProductsRequested);
   }
 
   Future<void> _onAddCourseRequested(
@@ -47,6 +49,19 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     result.fold(
       (failure) => emit(FetchCoursesFailure(failure.message)),
       (course) => emit(FetchCoursesSuccess(course)),
+    );
+  }
+
+  Future<void> _onFetchProductsRequested(
+    FetchProductsRequested event,
+    Emitter<CourseState> emit,
+  ) async {
+    emit(CourseLoading());
+    final result = await _courseRepository.fetchProducts();
+
+    result.fold(
+      (failure) => emit(FetchProductsFailure(failure.message)),
+      (products) => emit(FetchProductsSuccess(products)),
     );
   }
 }
