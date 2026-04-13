@@ -26,7 +26,7 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
+    // context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
   }
 
   @override
@@ -52,7 +52,7 @@ class _PrelimsMcqTestScreenState extends State<PrelimsMcqTestScreen> {
         child: RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
-            context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
+            // context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
           },
           child: BlocConsumer<PrelimsTestBloc, PrelimsTestState>(
             listener: (context, state) {},

@@ -4,6 +4,8 @@ import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_test_upload.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:meta/meta.dart';
 
 part 'upload_questions_event.dart';
@@ -23,6 +25,7 @@ class UploadQuestionsBloc
     on<DescParseUploadFile>(_onDescParseUploadFile);
     on<DescUploadParsedQuestions>(_onDescUploadParsedQuestions);
     on<FetchCoursesRequested>(_onFetchCoursesRequested);
+    on<FetchProductsRequested>(_onFetchProductsRequested);
   }
 
   /// Handles parsing of the file (CSV/XLSX)
@@ -42,6 +45,9 @@ class UploadQuestionsBloc
             parsedPayload: parsedPayload,
             isTestUpload: event.isTestUpload,
             courseId: event.courseId,
+            priceSingle: event.priceSingle,
+            priceDual: event.priceDual,
+            testType: event.testType,
           ),
         ),
       );
@@ -63,6 +69,9 @@ class UploadQuestionsBloc
         isTestUpload: event.isTestUpload,
         availableAt: event.availableAt,
         courseId: event.courseId,
+        priceSingle: event.priceSingle,
+        priceDual: event.priceDual,
+        testType: event.testType,
       );
 
       result.fold(
@@ -90,6 +99,9 @@ class UploadQuestionsBloc
           DescParseFileSuccess(
             parsedPayload: parsedPayload,
             courseId: event.courseId,
+            priceSingle: event.priceSingle,
+            priceDual: event.priceDual,
+            testType: event.testType,
           ),
         ),
       );
@@ -110,6 +122,9 @@ class UploadQuestionsBloc
         payload: event.payload,
         courseId: event.courseId,
         availableAt: event.availableAt,
+        priceSingle: event.priceSingle,
+        priceDual: event.priceDual,
+        testType: event.testType,
       );
 
       result.fold(
@@ -130,6 +145,18 @@ class UploadQuestionsBloc
     result.fold(
       (failure) => emit(CoursesLoadFailure(failure.message)),
       (courses) => emit(CoursesLoaded(courses)),
+    );
+  }
+
+  Future<void> _onFetchProductsRequested(
+    FetchProductsRequested event,
+    Emitter<UploadQuestionsState> emit,
+  ) async {
+    emit(ProductsLoading());
+    final result = await _courseRepository.fetchProducts();
+    result.fold(
+      (failure) => emit(ProductsLoadFailure(failure.message)),
+      (products) => emit(ProductsLoaded(products)),
     );
   }
 }

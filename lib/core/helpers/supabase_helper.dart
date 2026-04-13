@@ -426,15 +426,22 @@ class SupabaseHelper {
   }) async {
     try {
       final response = await supabase
-          .from(SupabaseKeys.testsTable)
-          .select()
-          .inFilter('test_type', ['dtmcq', 'mcq'])
-          .lte('available_at', DateTime.now().toUtc().toIso8601String())
-          .order('available_at', ascending: false)
-          .order('created_at', ascending: false)
+          .rpc(SupabaseKeys.testWithoutCourseMCQ)
           .range(offset, offset + limit - 1);
 
-      final result = response.map((e) => TestModel.fromJson(e)).toList();
+      if (response.isEmpty) {
+        return const Right([]);
+      }
+
+      final List<TestModel> result =
+          (response as List<dynamic>).map((e) {
+            try {
+              return TestModel.fromJson(e as Map<String, dynamic>);
+            } catch (parseError) {
+              _log.e('Parse error for item: $e', s: StackTrace.current);
+              rethrow;
+            }
+          }).toList();
 
       _log.i('Fetched tests: ${result.length} (offset: $offset)');
       return Right(result);
@@ -666,26 +673,13 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests({
     int? courseId,
-    int? offset,
-    int? limit,
+    int offset = 0,
+    int limit = 20,
   }) async {
     try {
-      dynamic query = supabase
-          .from(SupabaseKeys.descTests)
-          .select()
-          .lte('available_at', DateTime.now().toUtc().toIso8601String());
-
-      if (courseId != null) {
-        query = query.eq('course_id', courseId);
-      } else {
-        query = query.filter('course_id', 'is', null);
-      }
-
-      if (offset != null && limit != null) {
-        query = query.range(offset, offset + limit - 1);
-      }
-
-      final response = await query.order('id', ascending: false);
+      final response = await supabase
+          .rpc(SupabaseKeys.descTestWithoutCourse)
+          .range(offset, offset + limit - 1);
 
       final result =
           (response as List).map((e) => DescTestModel.fromJson(e)).toList();

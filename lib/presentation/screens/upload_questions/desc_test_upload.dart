@@ -10,6 +10,7 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 
 final _log = getIt<LogHelper>();
 final _supabase = getIt<SupabaseHelper>().supabase;
@@ -194,6 +195,9 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
   required List<Map<String, dynamic>> payload,
   int? courseId,
   DateTime? availableAt,
+  int? priceSingle,
+  int? priceDual,
+  CourseTestType? testType,
 }) async {
   try {
     final rpcResult = await _supabase.rpc(
@@ -202,6 +206,9 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
         'p_course_id': courseId,
         'payload': payload,
         'p_available_at': availableAt?.toIso8601String(),
+        'p_single_price_id': priceSingle,
+        'p_double_price_id': priceDual,
+        'p_course_type': testType?.name,
       },
     );
 

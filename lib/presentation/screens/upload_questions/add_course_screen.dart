@@ -3,14 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
-import 'package:gpsc_prep_app/utils/services/validator.dart';
-import 'package:gpsc_prep_app/domain/entities/product_model.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class AddCourseScreen extends StatefulWidget {
   const AddCourseScreen({super.key});
@@ -155,7 +154,8 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                         if (value != null) {
                                           setState(() {
                                             _selectedTestType = value;
-                                            if (value == CourseTestType.prelims) {
+                                            if (value ==
+                                                CourseTestType.prelims) {
                                               _selectedDualProduct = null;
                                             }
                                           });
@@ -175,7 +175,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                             ),
                             16.hGap,
                             DropdownButtonFormField<ProductModel>(
-                              value: _selectedSingleProduct,
+                              initialValue: _selectedSingleProduct,
                               dropdownColor: Colors.white,
                               onChanged:
                                   isLoading
@@ -210,7 +210,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                             ),
                             16.hGap,
                             DropdownButtonFormField<ProductModel>(
-                              value:
+                              initialValue:
                                   _selectedTestType == CourseTestType.prelims
                                       ? null
                                       : _selectedDualProduct,

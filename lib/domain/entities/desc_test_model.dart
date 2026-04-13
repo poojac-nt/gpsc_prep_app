@@ -14,8 +14,6 @@ class DescTestModel {
   int totalMarks;
   @JsonKey(name: "created_at")
   String createdAt;
-  @JsonKey(name: "course_id")
-  int? courseID;
   @JsonKey(name: "total_attempts")
   int? totalAttempt;
 
@@ -25,7 +23,7 @@ class DescTestModel {
     required this.totalMarks,
     required this.noQuestions,
     required this.createdAt,
-    this.courseID,
+
     this.totalAttempt,
   });
 

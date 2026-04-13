@@ -21,9 +21,9 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_s
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/free_test_review_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/free_test_review_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_full_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answer_detail_screen.dart';
@@ -363,6 +363,9 @@ final List<GoRoute> appRoutes = [
           url: args.url,
           language: args.language,
           courseId: args.courseId,
+          priceSingle: args.priceSingle,
+          priceDual: args.priceDual,
+          testType: args.testType,
         ),
         state,
       );
@@ -376,6 +379,9 @@ final List<GoRoute> appRoutes = [
         DescReviewQuestionUploadScreen(
           payload: args.payload,
           courseId: args.courseId,
+          priceSingle: args.priceSingle,
+          priceDual: args.priceDual,
+          testType: args.testType,
         ),
         state,
       );

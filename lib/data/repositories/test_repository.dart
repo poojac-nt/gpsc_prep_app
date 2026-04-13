@@ -5,8 +5,8 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_answer_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
-import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
+import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/option_matrix_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
@@ -57,8 +57,8 @@ class TestRepository {
 
   Future<Either<Failure, List<DescTestModel>>> fetchDailyDescTest({
     int? courseId,
-    int? offset,
-    int? limit,
+    int offset = 0,
+    int limit = 20,
   }) async => await _supabase.fetchDescriptiveTests(
     courseId: courseId,
     offset: offset,

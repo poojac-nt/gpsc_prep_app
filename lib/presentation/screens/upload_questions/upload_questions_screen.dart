@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -7,10 +6,12 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class UploadQuestions extends StatefulWidget {
@@ -22,11 +23,13 @@ class UploadQuestions extends StatefulWidget {
 
 class _UploadQuestionsState extends State<UploadQuestions> {
   late UploadQuestionsBloc uploadQuestionsBloc;
+  List<ProductModel> _products = [];
 
   @override
   void initState() {
     uploadQuestionsBloc = context.read<UploadQuestionsBloc>();
     uploadQuestionsBloc.add(FetchCoursesRequested());
+    uploadQuestionsBloc.add(FetchProductsRequested());
     super.initState();
   }
 
@@ -58,6 +61,9 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                 payload: state.parsedPayload,
                 isFromStudyMaterial: false,
                 courseId: state.courseId,
+                priceSingle: state.priceSingle,
+                priceDual: state.priceDual,
+                testType: state.testType,
               ),
             );
           }
@@ -67,6 +73,9 @@ class _UploadQuestionsState extends State<UploadQuestions> {
               extra: DescReviewQuestionScreenArgs(
                 payload: state.parsedPayload,
                 courseId: state.courseId,
+                priceSingle: state.priceSingle,
+                priceDual: state.priceDual,
+                testType: state.testType,
               ),
             );
           }
@@ -76,6 +85,14 @@ class _UploadQuestionsState extends State<UploadQuestions> {
             });
           }
           if (state is CoursesLoadFailure) {
+            getIt<SnackBarHelper>().showError(state.errorMessage);
+          }
+          if (state is ProductsLoaded) {
+            setState(() {
+              _products = state.products;
+            });
+          }
+          if (state is ProductsLoadFailure) {
             getIt<SnackBarHelper>().showError(state.errorMessage);
           }
         },
@@ -306,13 +323,28 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                   text: 'Test with Questions',
                   icon: Icons.quiz_outlined,
                   backgroundColor: AppColors.primary,
-                  onTap: () {
-                    context.read<UploadQuestionsBloc>().add(
-                      McqParseUploadFile(
-                        isTestUpload: true,
-                        courseId: _selectedCourse?.id,
-                      ),
+                  onTap: () async {
+                    if (_selectedCourse == null) {
+                      uploadQuestionsBloc.add(
+                        McqParseUploadFile(isTestUpload: true, courseId: null),
+                      );
+                      return;
+                    }
+
+                    final prices = await _showPriceSelectionDialog(
+                      isDescriptive: false,
                     );
+                    if (prices != null) {
+                      uploadQuestionsBloc.add(
+                        McqParseUploadFile(
+                          isTestUpload: true,
+                          courseId: _selectedCourse?.id,
+                          priceSingle: prices['single'],
+                          priceDual: prices['dual'],
+                          testType: _selectedCourse?.testType,
+                        ),
+                      );
+                    }
                   },
                 ),
               ],
@@ -320,6 +352,127 @@ class _UploadQuestionsState extends State<UploadQuestions> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<Map<String, int?>?> _showPriceSelectionDialog({
+    required bool isDescriptive,
+  }) async {
+    ProductModel? selectedSingle;
+    ProductModel? selectedDual;
+
+    return await showDialog<Map<String, int?>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              title: Text(
+                'Select Assessment Prices',
+                style: AppTexts.subTitle.copyWith(fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<ProductModel>(
+                    initialValue: selectedSingle,
+                    dropdownColor: Colors.white,
+                    decoration: InputDecoration(
+                      labelText: 'Single Assessment',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    items:
+                        _products.map((p) {
+                          return DropdownMenuItem(
+                            value: p,
+                            child: Text('${p.title} (₹${p.price})'),
+                          );
+                        }).toList(),
+                    onChanged: (val) {
+                      setDialogState(() {
+                        selectedSingle = val;
+                        if (selectedDual == val) {
+                          selectedDual = null;
+                        }
+                      });
+                    },
+                  ),
+                  if (isDescriptive) ...[
+                    16.hGap,
+                    DropdownButtonFormField<ProductModel>(
+                      initialValue: selectedDual,
+                      dropdownColor: Colors.white,
+                      decoration: InputDecoration(
+                        labelText: 'Dual Assessment',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      items:
+                          _products
+                              .where((p) => p.id != selectedSingle?.id)
+                              .map((p) {
+                                return DropdownMenuItem(
+                                  value: p,
+                                  child: Text('${p.title} (₹${p.price})'),
+                                );
+                              })
+                              .toList(),
+                      onChanged: (val) {
+                        setDialogState(() {
+                          selectedDual = val;
+                        });
+                      },
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (selectedSingle == null) {
+                      getIt<SnackBarHelper>().showError(
+                        'Please select at least single assessment price',
+                      );
+                      return;
+                    }
+                    if (isDescriptive && selectedDual == null) {
+                      getIt<SnackBarHelper>().showError(
+                        'Please select dual assessment price',
+                      );
+                      return;
+                    }
+                    Navigator.pop(context, {
+                      'single': selectedSingle?.id,
+                      'dual': selectedDual?.id,
+                    });
+                  },
+                  child: Text(
+                    'Continue',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -366,10 +519,27 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                 text: 'Upload Descriptive Test',
                 icon: Icons.upload_file,
                 backgroundColor: AppColors.primary,
-                onTap: () {
-                  context.read<UploadQuestionsBloc>().add(
-                    DescParseUploadFile(courseId: _selectedCourse?.id),
+                onTap: () async {
+                  if (_selectedCourse == null) {
+                    uploadQuestionsBloc.add(
+                      DescParseUploadFile(courseId: null),
+                    );
+                    return;
+                  }
+
+                  final prices = await _showPriceSelectionDialog(
+                    isDescriptive: true,
                   );
+                  if (prices != null) {
+                    uploadQuestionsBloc.add(
+                      DescParseUploadFile(
+                        courseId: _selectedCourse?.id,
+                        priceSingle: prices['single'],
+                        priceDual: prices['dual'],
+                        testType: _selectedCourse?.testType,
+                      ),
+                    );
+                  }
                 },
               ),
             ),

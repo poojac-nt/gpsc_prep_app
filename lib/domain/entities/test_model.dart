@@ -23,10 +23,9 @@ class TestModel {
   DateTime? availableAt;
   @JsonKey(name: "created_at")
   DateTime? createdAt;
-  @JsonKey(name: "course_id")
-  int? courseID;
   @JsonKey(name: "total_attempts")
   int? totalAttempt;
+
   TestModel({
     required this.id,
     required this.name,
@@ -37,7 +36,6 @@ class TestModel {
     this.omrLink,
     this.availableAt,
     this.createdAt,
-    this.courseID,
     this.totalAttempt,
   });
 
