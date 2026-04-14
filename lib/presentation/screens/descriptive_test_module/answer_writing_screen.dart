@@ -94,7 +94,9 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 controller: _scrollController,
                 padding: EdgeInsets.all(AppPaddings.appPaddingInt),
                 itemCount:
-                    state.hasReachedMax ? descTests.length : descTests.length + 1,
+                    state.hasReachedMax
+                        ? descTests.length
+                        : descTests.length + 1,
                 itemBuilder: (context, index) {
                   if (index >= descTests.length) {
                     return const Center(
@@ -128,16 +130,6 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                           descTestModel: test,
                           isUnlocked: isAnswerUnlocked(test.createdAt),
                           showPeerReview: true,
-                        ),
-                      );
-                    },
-                    onAnswerModuleTap: () {
-                      context.push(
-                        AppRoutes.descAnswerScreen,
-                        extra: DescriptiveAnswersScreenArgs(
-                          descTestModel: test,
-                          isUnlocked: isAnswerUnlocked(test.createdAt),
-                          showPeerReview: false,
                         ),
                       );
                     },

@@ -20,6 +20,9 @@ AllTestsModel _$AllTestsModelFromJson(Map<String, dynamic> json) =>
       mains: (json['mains'] as List<dynamic>)
           .map((e) => DescTestModel.fromJson(e as Map<String, dynamic>))
           .toList(),
+      courses: (json['courses'] as List<dynamic>?)
+          ?.map((e) => CourseModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$AllTestsModelToJson(AllTestsModel instance) =>
@@ -28,4 +31,5 @@ Map<String, dynamic> _$AllTestsModelToJson(AllTestsModel instance) =>
       'prelims': instance.prelims.map((e) => e.toJson()).toList(),
       'descriptive': instance.descriptive.map((e) => e.toJson()).toList(),
       'mains': instance.mains.map((e) => e.toJson()).toList(),
+      'courses': instance.courses?.map((e) => e.toJson()).toList(),
     };

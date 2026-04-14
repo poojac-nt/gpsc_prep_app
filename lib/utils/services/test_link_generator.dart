@@ -32,4 +32,10 @@ class DeepLinkGenerator {
   }) {
     return '$_baseUrl/openMaterial?id=$studyMaterialId&language=$languageCode';
   }
+
+  static String generateCourseLink({
+    required int courseId,
+  }) {
+    return '$_baseUrl/openCourse?id=$courseId';
+  }
 }
