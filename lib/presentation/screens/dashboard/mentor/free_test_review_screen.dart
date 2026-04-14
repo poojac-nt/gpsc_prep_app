@@ -160,9 +160,9 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                       !state.isFetchingMore &&
                       scrollInfo.metrics.pixels >=
                           scrollInfo.metrics.maxScrollExtent - 200) {
-                    context
-                        .read<FreeTestReviewBloc>()
-                        .add(LoadMoreFreeTestReviews());
+                    context.read<FreeTestReviewBloc>().add(
+                      LoadMoreFreeTestReviews(),
+                    );
                   }
                   return true;
                 },
@@ -171,7 +171,8 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                     horizontal: 20.w,
                     vertical: 16.h,
                   ),
-                  itemCount: submissions.length + (state.isFetchingMore ? 1 : 0),
+                  itemCount:
+                      submissions.length + (state.isFetchingMore ? 1 : 0),
                   separatorBuilder: (context, index) => 16.hGap,
                   itemBuilder: (context, index) {
                     if (index == submissions.length) {
@@ -271,25 +272,8 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                             children: [
                               Expanded(
                                 child: _buildActionBtn(
-                                  label: 'Answer Key',
-                                  isPrimary: true,
-                                  onTap: () {
-                                    context.push(
-                                      AppRoutes.descAnswerScreen,
-                                      extra: DescriptiveAnswersScreenArgs(
-                                        descTestModel: test,
-                                        isUnlocked: true,
-                                        showPeerReview: false,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              12.wGap,
-                              Expanded(
-                                child: _buildActionBtn(
                                   label: 'Review',
-                                  isPrimary: false,
+                                  isPrimary: true,
                                   onTap: () {
                                     context.push(
                                       AppRoutes.descAnswerScreen,

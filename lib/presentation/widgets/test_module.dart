@@ -26,6 +26,7 @@ class TestModule extends StatelessWidget {
     this.testType = TestType.mcq,
     this.trailing,
     this.header,
+    this.onShareTap,
   });
 
   final String title;
@@ -41,6 +42,7 @@ class TestModule extends StatelessWidget {
   final TestType testType;
   final Widget? trailing;
   final Widget? header;
+  final VoidCallback? onShareTap;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +79,7 @@ class TestModule extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                   constraints: const BoxConstraints(),
-                  onPressed: () {
+                  onPressed: onShareTap ?? () {
                     _handleShare(context, testType);
                   },
                 ),
@@ -96,16 +98,28 @@ class TestModule extends StatelessWidget {
 
   Future<void> _handleShare(BuildContext context, TestType testType) async {
     try {
+      final bool isDescriptiveType =
+          testType == TestType.desc || testType == TestType.mains;
+
+      final id =
+          (isDescriptiveType && descTestModel != null)
+              ? descTestModel!.id
+              : testModel!.id;
+
+      final name =
+          (isDescriptiveType && descTestModel != null)
+              ? descTestModel!.name
+              : testModel!.name;
+
       final shareableUrl = DeepLinkGenerator.generateShareableUrl(
-        testId: testType == TestType.desc ? descTestModel!.id : testModel!.id,
+        testId: id,
         testType: testType,
       );
 
       final uri = Uri.parse(shareableUrl);
       await SharePlus.instance.share(
         ShareParams(
-          text:
-              "Check out this ${testType == TestType.desc ? descTestModel!.name : testModel!.name} Test! 🚀\n$uri",
+          text: "Check out this $name Test! 🚀\n$uri",
           subject: 'GPSC Prep Test Share',
         ),
       );

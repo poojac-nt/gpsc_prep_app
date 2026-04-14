@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'test_model.dart';
 import 'desc_test_model.dart';
@@ -18,11 +19,15 @@ class AllTestsModel {
   @JsonKey(name: "mains")
   final List<DescTestModel> mains;
 
+  @JsonKey(name: "courses")
+  final List<CourseModel>? courses;
+
   AllTestsModel({
     required this.mcq,
     required this.prelims,
     required this.descriptive,
     required this.mains,
+    this.courses,
   });
 
   factory AllTestsModel.fromJson(Map<String, dynamic> json) =>
