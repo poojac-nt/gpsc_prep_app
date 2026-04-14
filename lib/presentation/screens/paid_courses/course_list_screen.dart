@@ -12,6 +12,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/router/args.dart';
 import '../../blocs/add_course/course_bloc.dart';
 import '../../blocs/purchase/purchase_bloc.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 
 class PaidCourseListScreen extends StatefulWidget {
   const PaidCourseListScreen({super.key});
@@ -160,6 +161,19 @@ class PaidCourseListCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: "Share Course",
+                    icon: Icon(
+                      Icons.share_outlined,
+                      size: 20.sp,
+                      color: AppColors.primary,
+                    ),
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _handleShare(context),
+                  ),
                 ],
               ),
               12.hGap,
@@ -248,5 +262,9 @@ class PaidCourseListCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleShare(BuildContext context) async {
+    await ShareHelper.shareCourse(courseModel);
   }
 }

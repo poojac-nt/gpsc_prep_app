@@ -9,21 +9,19 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 class AnswerWritingCard extends StatelessWidget {
   final DescTestModel descTestModel;
   final VoidCallback onStartTestTap;
-  final VoidCallback onAnswerModuleTap;
   final VoidCallback onShareTap;
   final bool isUnlocked;
   final bool isAttempted;
-  final VoidCallback? onReviewTap;
+  final VoidCallback onReviewTap;
 
   const AnswerWritingCard({
     super.key,
     required this.descTestModel,
     required this.onStartTestTap,
-    required this.onAnswerModuleTap,
     required this.onShareTap,
     this.isUnlocked = true,
     this.isAttempted = false,
-    this.onReviewTap,
+    required this.onReviewTap,
   });
 
   @override
@@ -112,25 +110,21 @@ class AnswerWritingCard extends StatelessWidget {
               // Start Test / Review Button
               Expanded(
                 child: _buildActionButton(
-                  onTap: isAttempted ? (onReviewTap ?? onStartTestTap) : onStartTestTap,
-                  icon:
-                      isAttempted
-                          ? Icons.rate_review_outlined
-                          : AppIcons.startTest,
-                  label: isAttempted ? "Review" : "Start Test",
+                  onTap: onStartTestTap,
+                  icon: AppIcons.startTest,
+                  label: "Start Test",
+                  isDisabled: isAttempted,
                 ),
               ),
-              if (isUnlocked) ...[
-                10.wGap,
-                // Answer Key Button
-                Expanded(
-                  child: _buildActionButton(
-                    onTap: onAnswerModuleTap,
-                    icon: AppIcons.descAnsIcon,
-                    label: "Answer Key",
-                  ),
+              10.wGap,
+              // Answer Key Button
+              Expanded(
+                child: _buildActionButton(
+                  onTap: onReviewTap,
+                  icon: Icons.rate_review_outlined,
+                  label: "Review",
                 ),
-              ],
+              ),
             ],
           ),
         ],

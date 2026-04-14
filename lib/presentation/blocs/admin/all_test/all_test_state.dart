@@ -1,6 +1,5 @@
 part of 'all_test_bloc.dart';
 
-@immutable
 abstract class AllTestState {
   const AllTestState();
 }

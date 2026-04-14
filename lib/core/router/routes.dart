@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
+import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
@@ -150,14 +152,66 @@ final List<GoRoute> appRoutes = [
             AppRoutes.descriptiveTestInstructionScreen,
             extra: DescTestInstructionScreenArgs(testId: id),
           );
-        } else if (type == 'prelims') {
-          router.pushNamed(
-            AppRoutes.prelimsInstructionsScreen,
-            extra: PrelimsInstructionScreenArgs(testId: id),
-          );
         } else {
           router.pushReplacement('/error?message=Unknown+test+type');
         }
+      });
+
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    },
+  ),
+
+  // Handle /openCourse?id=123 link
+  GoRoute(
+    path: '/openCourse',
+    builder: (context, state) {
+      final id = int.tryParse(state.uri.queryParameters['id'] ?? '');
+      debugPrint('🔗 Deep link received: openCourse id=$id');
+      final router = GoRouter.of(context);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (id == null) {
+          context.pushReplacement('/error?message=Invalid+course+link');
+          return;
+        }
+        final role = getIt<CacheManager>().getUserRole();
+        String dashboardRoute = AppRoutes.studentDashboard;
+
+        if (role == UserRole.admin) {
+          router.go(AppRoutes.adminDashboard);
+          await Future.delayed(const Duration(milliseconds: 100));
+          router.push(AppRoutes.allTests);
+        } else if (role == UserRole.mentor) {
+          dashboardRoute = AppRoutes.mentorDashboard;
+          router.go(dashboardRoute);
+        } else {
+          router.go(dashboardRoute);
+        }
+
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // Push the course list screen first if not admin
+        if (role != UserRole.admin) {
+          router.push(AppRoutes.courseList);
+        }
+
+        final courseRepo = getIt<CourseRepository>();
+        final result = await courseRepo.fetchCourses();
+        result.fold(
+          (failure) => getIt<SnackBarHelper>().showError(
+            "Failed to load course details",
+          ),
+          (courses) {
+            try {
+              final course = courses.firstWhere((c) => c.id == id);
+              router.push(
+                AppRoutes.courseDetails,
+                extra: CourseDetailsScreenArgs(courseModel: course),
+              );
+            } catch (e) {
+              getIt<SnackBarHelper>().showError("Course not found");
+            }
+          },
+        );
       });
 
       return const Scaffold(body: Center(child: CircularProgressIndicator()));

@@ -9,17 +9,14 @@ class QuestionDetailCard extends StatefulWidget {
   final int index;
   final int commentCount;
   final String selectedLanguage;
-
-  final bool showModelAnswerDirectly;
-
+  final bool isUnlocked;
   const QuestionDetailCard({
     super.key,
     required this.question,
     required this.index,
     this.commentCount = 0,
     this.selectedLanguage = 'en',
-
-    this.showModelAnswerDirectly = false,
+    this.isUnlocked = true,
   });
 
   @override
@@ -74,61 +71,60 @@ class _QuestionDetailCardState extends State<QuestionDetailCard> {
           Row(
             children: [
               const Spacer(),
-              if (!widget.showModelAnswerDirectly)
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isModelAnswerExpanded = !_isModelAnswerExpanded;
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline,
-                        color: const Color(0xFF4F46E5),
-                        size: 18.sp,
-                      ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        'Model Answer',
-                        style: TextStyle(
-                          color: const Color(0xFF4F46E5),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w700,
+              GestureDetector(
+                onTap: () {
+                  if (!widget.isUnlocked) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Model answer is locked and will be available soon.',
                         ),
                       ),
-                      Icon(
-                        _isModelAnswerExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: const Color(0xFF4F46E5),
-                        size: 20.sp,
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Row(
+                    );
+                    return;
+                  }
+                  setState(() {
+                    _isModelAnswerExpanded = !_isModelAnswerExpanded;
+                  });
+                },
+                child: Row(
                   children: [
                     Icon(
                       Icons.check_circle_outline,
-                      color: const Color(0xFF4F46E5),
+                      color:
+                          widget.isUnlocked
+                              ? const Color(0xFF4F46E5)
+                              : Colors.grey,
                       size: 18.sp,
                     ),
                     SizedBox(width: 6.w),
                     Text(
                       'Model Answer',
                       style: TextStyle(
-                        color: const Color(0xFF4F46E5),
+                        color:
+                            widget.isUnlocked
+                                ? const Color(0xFF4F46E5)
+                                : Colors.grey,
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    Icon(
+                      _isModelAnswerExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color:
+                          widget.isUnlocked
+                              ? const Color(0xFF4F46E5)
+                              : Colors.grey,
+                      size: 20.sp,
+                    ),
                   ],
                 ),
+              ),
             ],
           ),
-          if (_isModelAnswerExpanded || widget.showModelAnswerDirectly) ...[
+          if (_isModelAnswerExpanded) ...[
             SizedBox(height: 20.h),
             Container(
               padding: EdgeInsets.all(16.w),

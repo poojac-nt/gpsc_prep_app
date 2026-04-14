@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/domain/entities/all_tests_model.dart';
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 
 class AllTestScreen extends StatefulWidget {
   const AllTestScreen({super.key});
@@ -54,7 +56,14 @@ class _AllTestScreenState extends State<AllTestScreen> {
   }
 
   Widget _buildFilters() {
-    final filters = ['All', 'Prelims', 'MCQ', 'Mains', 'Descriptive'];
+    final filters = [
+      'All',
+      'Prelims',
+      'MCQ',
+      'Mains',
+      'Descriptive',
+      'Courses',
+    ];
     return Container(
       height: 60.h,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -134,10 +143,15 @@ class _AllTestScreenState extends State<AllTestScreen> {
           allTests.mains
               .map((e) => _TestItemData(test: e, type: TestType.mains))
               .toList();
+    } else if (_selectedFilter == 'Courses') {
+      tests =
+          allTests.courses?.map((e) => _TestItemData(test: e)).toList() ?? [];
     }
 
     if (tests.isEmpty) {
-      return const Center(child: Text('No tests found'));
+      final message =
+          _selectedFilter == 'Courses' ? 'No courses found' : 'No tests found';
+      return Center(child: Text(message));
     }
 
     return ListView.separated(
@@ -152,22 +166,38 @@ class _AllTestScreenState extends State<AllTestScreen> {
   }
 
   Widget _buildTestCard(_TestItemData data) {
-    final String name = data.test.name;
-    final int attempts = data.test.totalAttempt ?? 0;
+    if (data.test is CourseModel) {
+      final course = data.test as CourseModel;
+      return TestModule(
+        title: course.name,
+        fontSize: 16.sp,
+        showShareButton: true,
+        onShareTap: () async {
+          await ShareHelper.shareCourse(course);
+        },
+      );
+    }
+
+    final dynamic test = data.test;
+    final String name = test.name ?? "";
+    final int attempts =
+        (test is TestModel)
+            ? (test.totalAttempt ?? 0)
+            : (test is DescTestModel ? (test.totalAttempt ?? 0) : 0);
 
     final bool showShare =
         data.type != TestType.prelims && data.type != TestType.mains;
+
     final bool showTag = _selectedFilter == 'All';
 
     return TestModule(
       header: showTag ? _buildTypeTag(data) : null,
       title: name,
       fontSize: 16.sp,
-      testType: data.type,
+      testType: data.type!,
       showShareButton: showShare,
-      testModel: data.test is TestModel ? data.test as TestModel : null,
-      descTestModel:
-          data.test is DescTestModel ? data.test as DescTestModel : null,
+      testModel: test is TestModel ? test : null,
+      descTestModel: test is DescTestModel ? test : null,
       cards: [
         showShare ? 4.hGap : 8.hGap,
         _buildInfoTag(
@@ -199,7 +229,7 @@ class _AllTestScreenState extends State<AllTestScreen> {
 
   Widget _buildTypeTag(_TestItemData data) {
     Color color;
-    String label = data.type.name.toUpperCase();
+    String label = data.type!.name.toUpperCase();
     switch (data.type) {
       case TestType.mcq:
         color = Colors.blue;
@@ -213,6 +243,9 @@ class _AllTestScreenState extends State<AllTestScreen> {
       case TestType.mains:
         color = Colors.teal;
         break;
+      case null:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
@@ -235,7 +268,7 @@ class _AllTestScreenState extends State<AllTestScreen> {
 
 class _TestItemData {
   final dynamic test;
-  final TestType type;
+  final TestType? type;
 
-  _TestItemData({required this.test, required this.type});
+  _TestItemData({required this.test, this.type});
 }
