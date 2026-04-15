@@ -21,6 +21,12 @@ class CourseRepository {
     return await _supabaseHelper.fetchCourses();
   }
 
+  Future<Either<Failure, CourseModel>> fetchCourseWithTests(
+    int courseId,
+  ) async {
+    return await _supabaseHelper.fetchCourseWithTests(courseId: courseId);
+  }
+
   Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
     return await _supabaseHelper.fetchProducts();
   }

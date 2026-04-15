@@ -14,13 +14,15 @@ import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_course_details/fetch_course_details_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+
+import '../../../domain/entities/desc_answer_model.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -39,8 +41,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   void initState() {
     super.initState();
     _fetchAttemptStates();
-    context.read<DailyDescTestBloc>().add(
-      FetchAllTests(courseId: widget.courseModel.id),
+    context.read<FetchCourseDetailsBloc>().add(
+      FetchCourseTestsAndResults(widget.courseModel.id),
     );
     context.read<PurchaseBloc>().add(FetchPurchases());
   }
@@ -76,7 +78,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           "Course Details",
           style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
         ),
-        centerTitle: true,
         elevation: 0,
         backgroundColor: AppColors.scaffoldColor,
         surfaceTintColor: Colors.transparent,
@@ -105,8 +106,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 onRefresh: () async {
                   await _fetchAttemptStates();
                   if (mounted) {
-                    context.read<DailyDescTestBloc>().add(
-                      FetchAllTests(courseId: widget.courseModel.id),
+                    context.read<FetchCourseDetailsBloc>().add(
+                      FetchCourseTestsAndResults(widget.courseModel.id),
                     );
                   }
                 },
@@ -259,22 +260,26 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         if (descriptiveTests.isNotEmpty) {
           final prelimCount = prelims.length;
           items.add(
-            BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
+            BlocBuilder<FetchCourseDetailsBloc, FetchCourseDetailsState>(
               builder: (context, state) {
+                if (state is FetchCourseDetailsLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
+                }
                 final List<Widget> descItems = [];
-                final Map<int, dynamic> answersMap =
-                    (state is DailyDescTestFetched) ? state.answersMap : {};
+                final Map<int, List<DescAnswerModel>> answersMap =
+                    (state is FetchCourseDetailsSuccess)
+                        ? state.answersMap
+                        : {};
                 final Map<int, MainsTestReviewModel?> reviewModels =
-                    (state is DailyDescTestFetched) ? state.reviewsMap : {};
+                    (state is FetchCourseDetailsSuccess)
+                        ? state.reviewsMap
+                        : {};
+
                 for (int i = 0; i < descriptiveTests.length; i++) {
                   final test = descriptiveTests[i];
                   final hasAnswer = answersMap.containsKey(test.id);
-
-                  if (hasAnswer && !reviewModels.containsKey(test.id)) {
-                    context.read<DailyDescTestBloc>().add(
-                      FetchReviewForTest(test.id),
-                    );
-                  }
 
                   final purchase = purchaseState.purchases.firstWhere(
                     (p) => p.courseId == widget.courseModel.id,
@@ -410,8 +415,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         );
 
         if (!mounted) return;
-        context.read<DailyDescTestBloc>().add(
-          FetchAllTests(courseId: widget.courseModel.id),
+        context.read<FetchCourseDetailsBloc>().add(
+          FetchCourseTestsAndResults(widget.courseModel.id),
         );
       },
       borderRadius: BorderRadius.circular(12.r),
@@ -705,10 +710,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final payload = UserPurchasePayload(
       userId: getIt<CacheManager>().user?.id ?? 0,
       courseId: widget.courseModel.id,
-      productId: '', // Placeholder, populated in PurchaseBloc after native purchase
-      purchaseToken: '', // Placeholder, populated in PurchaseBloc after native purchase
+      productId:
+          '', // Placeholder, populated in PurchaseBloc after native purchase
+      purchaseToken:
+          '', // Placeholder, populated in PurchaseBloc after native purchase
     );
-
 
     // Select the product ID from the course model based on the assessment type.
     final String? productId =

@@ -379,13 +379,36 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
     try {
-      final rpcResponse = await supabase.rpc(SupabaseKeys.getCoursesWithTests);
+      final rpcResponse = await supabase.rpc(
+        SupabaseKeys.getCoursesListWithTests,
+      );
 
       final List<dynamic> courseList = rpcResponse as List;
 
       final courses = courseList.map((e) => CourseModel.fromJson(e)).toList();
 
       return Right(courses);
+    } catch (e) {
+      _snackBar.showError('Error fetching courses: ${e.toString()}');
+      _log.e('[Fetch Courses] Error: $e', error: e);
+      return Left(Failure('Error fetching courses: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, CourseModel>> fetchCourseWithTests({
+    required int courseId,
+    int offset = 0,
+    int limit = 20,
+  }) async {
+    try {
+      final rpcResponse = await supabase
+          .rpc(
+            SupabaseKeys.getCourseWithTests,
+            params: {'p_course_id': courseId},
+          )
+          .range(offset, offset + limit - 1);
+
+      return Right(CourseModel.fromJson(rpcResponse));
     } catch (e) {
       _snackBar.showError('Error fetching courses: ${e.toString()}');
       _log.e('[Fetch Courses] Error: $e', error: e);

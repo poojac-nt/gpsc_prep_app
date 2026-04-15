@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'desc_test_model.g.dart';
@@ -16,6 +17,10 @@ class DescTestModel {
   String createdAt;
   @JsonKey(name: "total_attempts")
   int? totalAttempt;
+  @JsonKey(name: "single_assessment_price")
+  ProductModel? singleProduct;
+  @JsonKey(name: "double_assessment_price")
+  ProductModel? dualProduct;
 
   DescTestModel({
     required this.id,

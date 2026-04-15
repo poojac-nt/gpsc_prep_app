@@ -1,3 +1,4 @@
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -25,6 +26,10 @@ class TestModel {
   DateTime? createdAt;
   @JsonKey(name: "total_attempts")
   int? totalAttempt;
+  @JsonKey(name: "single_assessment_price")
+  ProductModel? singleProduct;
+  @JsonKey(name: "double_assessment_price")
+  ProductModel? dualProduct;
 
   TestModel({
     required this.id,
@@ -37,6 +42,8 @@ class TestModel {
     this.availableAt,
     this.createdAt,
     this.totalAttempt,
+    this.singleProduct,
+    this.dualProduct,
   });
 
   factory TestModel.fromJson(Map<String, dynamic> json) =>

@@ -25,7 +25,8 @@ abstract class SupabaseKeys {
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
   static final String getToppers = 'get_top_3_prelims_and_mains_users';
-  static final String getCoursesWithTests = 'fetch_courses_with_tests_products';
+  static final String getCoursesListWithTests =
+      'fetch_courses_with_tests_products';
   static final String peerReview = 'get_question_peer_submission';
   static final String detailedPeerReviewPerUser = 'get_answer_with_comments';
   static final String insertPeerReview = 'insert_peer_review';
@@ -51,6 +52,7 @@ abstract class SupabaseKeys {
   static final String getAllTests = 'fetch_all_tests_grouped';
   static final String testWithoutCourseMCQ = 'test_without_course_mcq';
   static final String descTestWithoutCourse = 'test_without_course_desc';
+  static final String getCourseWithTests = 'get_course_with_tests';
 
   ///table
   static final String usersTable = 'users';

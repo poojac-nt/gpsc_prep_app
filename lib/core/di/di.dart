@@ -21,8 +21,7 @@ import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/bar_chart/bar_chart_bloc.dart';
@@ -31,12 +30,17 @@ import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/all_assigned_tests_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/free_test_review/free_test_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_course_details/fetch_course_details_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
@@ -49,12 +53,9 @@ import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_b
 import 'package:gpsc_prep_app/presentation/blocs/subject/subject_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_list/test_students_list_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
-import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -98,9 +99,7 @@ void setupHelpers() {
     () => FCMService(getIt<SupabaseHelper>()),
   );
 
-  getIt.registerLazySingleton<IapService>(
-    () => IapService(getIt<LogHelper>()),
-  );
+  getIt.registerLazySingleton<IapService>(() => IapService(getIt<LogHelper>()));
 }
 
 void setupRepositories() {
@@ -255,6 +254,12 @@ void setupBlocs() {
   );
   getIt.registerFactory<MainsTestReviewBloc>(
     () => MainsTestReviewBloc(getIt<TestRepository>()),
+  );
+  getIt.registerFactory<FetchCourseDetailsBloc>(
+    () => FetchCourseDetailsBloc(
+      getIt<CourseRepository>(),
+      getIt<TestRepository>(),
+    ),
   );
 }
 

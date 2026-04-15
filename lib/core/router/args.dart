@@ -3,6 +3,7 @@ import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 
 import '../../domain/entities/desc_question_model.dart';
 import '../../domain/entities/desc_test_model.dart';
@@ -45,6 +46,9 @@ class ReviewQuestionScreenArgs {
   final String? url;
   final String? language;
   final int? courseId;
+  final int? priceSingle;
+  final int? priceDual;
+  final CourseTestType? testType;
 
   ReviewQuestionScreenArgs({
     required this.isTestUpload,
@@ -54,14 +58,26 @@ class ReviewQuestionScreenArgs {
     this.url,
     this.language,
     this.courseId,
+    this.priceSingle,
+    this.priceDual,
+    this.testType,
   });
 }
 
 class DescReviewQuestionScreenArgs {
   List<Map<String, dynamic>> payload;
   final int? courseId;
+  final int? priceSingle;
+  final int? priceDual;
+  final CourseTestType? testType;
 
-  DescReviewQuestionScreenArgs({required this.payload, this.courseId});
+  DescReviewQuestionScreenArgs({
+    required this.payload,
+    this.courseId,
+    this.priceSingle,
+    this.priceDual,
+    this.testType,
+  });
 }
 
 class DescTestInstructionScreenArgs {
