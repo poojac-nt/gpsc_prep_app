@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
@@ -1479,6 +1480,10 @@ class SupabaseHelper {
         body: payload.toJson(),
       );
 
+      _log.i("STATUS: ${response.status}");
+      _log.i("RAW TYPE: ${response.data.runtimeType}");
+      _log.i("RAW DATA: ${response.data}");
+
       if (response.status >= 400) {
         final errorData = response.data;
         return Left(
@@ -1490,8 +1495,20 @@ class SupabaseHelper {
         );
       }
 
-      final result = response.data as Map<String, dynamic>;
+      final dynamic rawData = response.data;
+
+      Map<String, dynamic> result;
+
+      if (rawData is String) {
+        result = jsonDecode(rawData);
+      } else if (rawData is Map<String, dynamic>) {
+        result = rawData;
+      } else {
+        throw Exception('Unexpected response format: ${rawData.runtimeType}');
+      }
+
       final verifyResponse = VerifyPurchaseResponse.fromJson(result);
+
       return Right(verifyResponse);
     } catch (e) {
       _snackBar.showError('Error Verifying Purchase: ${e.toString()}');

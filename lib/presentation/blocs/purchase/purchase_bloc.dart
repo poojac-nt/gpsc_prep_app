@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
@@ -34,14 +34,11 @@ class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
     // Subscribe to the IAP purchase stream for the lifetime of this bloc.
     // Each update is forwarded as an internal event so it goes through
     // the standard BLoC event queue (thread-safe, testable).
-    _iapSubscription = _iapService.purchaseStream.listen(
-      (updates) {
-        for (final d in updates) {
-          add(_OnIapPurchaseUpdate(d));
-        }
-      },
-      onError: (Object e) => _log.e('PurchaseBloc: IAP stream error — $e'),
-    );
+    _iapSubscription = _iapService.purchaseStream.listen((updates) {
+      for (final d in updates) {
+        add(_OnIapPurchaseUpdate(d));
+      }
+    }, onError: (Object e) => _log.e('PurchaseBloc: IAP stream error — $e'));
   }
 
   @override
@@ -103,7 +100,6 @@ class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
     );
   }
 
-
   // ─────────────────────────────────────────────────────────────────────────
   // IAP handlers
   // ─────────────────────────────────────────────────────────────────────────
@@ -119,20 +115,24 @@ class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
     final available = await _iapService.isAvailable();
     if (!available) {
       _log.e('IapService is not available on this device');
-      emit(IapPurchaseFailed(
-        message: 'In-App Purchase is not available on this device.',
-        purchases: currentPurchases,
-      ));
+      emit(
+        IapPurchaseFailed(
+          message: 'In-App Purchase is not available on this device.',
+          purchases: currentPurchases,
+        ),
+      );
       return;
     }
 
     // 2. Fetch the product from Play Store.
     final product = await _iapService.getProductDetails(event.productId);
     if (product == null) {
-      emit(IapPurchaseFailed(
-        message: 'Product not found. Please contact support.',
-        purchases: currentPurchases,
-      ));
+      emit(
+        IapPurchaseFailed(
+          message: 'Product not found. Please contact support.',
+          purchases: currentPurchases,
+        ),
+      );
       return;
     }
 
@@ -146,10 +146,12 @@ class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
     } catch (e) {
       _log.e('buyConsumable threw: $e');
       _pendingIapPayload = null;
-      emit(IapPurchaseFailed(
-        message: 'Failed to initiate purchase. Please try again.',
-        purchases: currentPurchases,
-      ));
+      emit(
+        IapPurchaseFailed(
+          message: 'Failed to initiate purchase. Please try again.',
+          purchases: currentPurchases,
+        ),
+      );
     }
   }
 
@@ -162,80 +164,122 @@ class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
 
     switch (details.status) {
       case PurchaseStatus.purchased:
-        // Acknowledge the purchase on the platform side first.
-        await _iapService.completePurchase(details);
+        _log.i('IAP: PURCHASE DETECTED');
 
         final payload = _pendingIapPayload;
         if (payload == null) {
-          // Spurious callback (e.g. leftover from a previous session) — ignore.
-          _log.w('IAP: purchased callback received with no pending payload.');
+          _log.w('IAP: purchased callback with NULL payload');
           return;
         }
 
-        // 1. Enrich the payload with actual IAP details.
-        payload.productId = details.productID;
-        payload.purchaseToken = details.verificationData.serverVerificationData;
+        try {
+          // 1️⃣ Attach purchase data
+          payload.productId = details.productID;
+          payload.purchaseToken =
+              details.verificationData.serverVerificationData;
 
-        // 2. Call the backend to verify the purchase.
-        final result = await _repository.insertUserPurchase(payload: payload);
+          _log.i('IAP: CALLING BACKEND');
 
-        result.fold(
-          (failure) {
-            _log.e('IAP: Backend verification failed: $failure');
-            emit(IapPurchaseFailed(
-              message:
-                  'Verification failed. Please contact support.',
-              purchases: currentPurchases,
-            ));
-          },
-          (verifyResponse) {
-            _pendingIapPayload = null;
-            if (verifyResponse.isValid) {
-              _log.i(
-                'IAP: Verification success for course ${verifyResponse.courseId}',
+          // 2️⃣ Call backend
+          final result = await _repository.insertUserPurchase(payload: payload);
+
+          await result.fold(
+            (failure) async {
+              _log.e('IAP: Backend verification failed: $failure');
+
+              emit(
+                IapPurchaseFailed(
+                  message:
+                      'Verification failed. Please contact support.$failure',
+                  purchases: currentPurchases,
+                ),
               );
-              // 1. Trigger a background refresh to get the full enrolment list.
-              add(FetchPurchases());
-              // 2. Emit success immediately so the UI can show the success state/message.
-              emit(IapPurchaseSuccess(purchases: currentPurchases));
-            } else {
-              _log.e('IAP: Verification failed (isValid=false)');
-              emit(IapPurchaseFailed(
-                message:
-                    'Purchase verification failed. Please contact support.',
-                purchases: currentPurchases,
-              ));
-            }
-          },
-        );
+            },
+            (verifyResponse) async {
+              _pendingIapPayload = null;
 
+              if (verifyResponse.isValid) {
+                _log.i(
+                  'IAP: Verification SUCCESS for course ${verifyResponse.courseId}',
+                );
 
+                // Refresh purchases
+                add(FetchPurchases());
+
+                emit(IapPurchaseSuccess(purchases: currentPurchases));
+              } else {
+                _log.e('IAP: Verification FAILED (isValid=false)');
+
+                emit(
+                  IapPurchaseFailed(
+                    message: 'Purchase verification failed.',
+                    purchases: currentPurchases,
+                  ),
+                );
+              }
+            },
+          );
+        } catch (e) {
+          _log.e('IAP: Exception during verification: $e');
+
+          emit(
+            IapPurchaseFailed(
+              message: 'Something went wrong during verification.',
+              purchases: currentPurchases,
+            ),
+          );
+        }
+
+        // 3️⃣ COMPLETE PURCHASE (AFTER EVERYTHING)
+        if (details.pendingCompletePurchase) {
+          _log.i('IAP: Completing purchase');
+          await _iapService.completePurchase(details);
+        }
+
+        break;
 
       case PurchaseStatus.error:
         _log.e('IAP: Purchase error — ${details.error}');
-        await _iapService.completePurchase(details);
+
         _pendingIapPayload = null;
-        if (state is IapPurchasing || state is IapPurchaseFailed) {
-          emit(IapPurchaseFailed(
+
+        emit(
+          IapPurchaseFailed(
             message:
                 details.error?.message ?? 'Purchase failed. Please try again.',
             purchases: currentPurchases,
-          ));
+          ),
+        );
+
+        if (details.pendingCompletePurchase) {
+          await _iapService.completePurchase(details);
         }
+
+        break;
 
       case PurchaseStatus.canceled:
         _log.i('IAP: Purchase cancelled by user');
+
         _pendingIapPayload = null;
-        if (state is IapPurchasing) {
-          emit(IapPurchaseFailed(
+
+        emit(
+          IapPurchaseFailed(
             message: 'Purchase was cancelled.',
             purchases: currentPurchases,
-          ));
-        }
+          ),
+        );
+
+        break;
 
       case PurchaseStatus.pending:
+        _log.i('IAP: Purchase pending...');
+        break;
+
       case PurchaseStatus.restored:
-        // No action needed for consumables.
+        _log.i('IAP: Purchase restored');
+
+        // Optional: you can verify restored purchases as well
+        // For now, just log
         break;
     }
   }
