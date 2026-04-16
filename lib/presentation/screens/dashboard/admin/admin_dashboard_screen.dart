@@ -267,6 +267,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           iconColor: const Color(0xff8b5cf6),
           onTap: () => context.push(AppRoutes.allTests),
         ),
+        12.hGap,
+        _buildManagementItem(
+          context,
+          title: 'Add Product',
+          subtitle: 'Create new in-app products',
+          icon: Icons.shopping_bag_outlined,
+          iconBgColor: const Color(0xffecfdf5),
+          iconColor: const Color(0xff10b981),
+          onTap: () => context.push(AppRoutes.addProduct),
+        ),
       ],
     );
   }

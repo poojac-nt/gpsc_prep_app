@@ -18,6 +18,7 @@ import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_scre
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/add_product_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
@@ -742,6 +743,10 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as StudentEvaluationResultScreenArgs;
       return _slideTransition(StudentEvaluationResultScreen(args: args), state);
     },
+  ),
+  GoRoute(
+    path: AppRoutes.addProduct,
+    pageBuilder: (context, state) => _slideTransition(const AddProductScreen(), state),
   ),
 ];
 

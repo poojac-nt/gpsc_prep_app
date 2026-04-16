@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
+import 'package:gpsc_prep_app/data/models/payloads/product_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/admin_stats_model.dart';
@@ -800,9 +801,7 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
     try {
-      final result = await supabase
-          .from(SupabaseKeys.productsTable)
-          .select('*');
+      final result = await supabase.from(SupabaseKeys.productsTable).select('*');
       final products =
           (result as List).map((e) => ProductModel.fromJson(e)).toList();
       return Right(products);
@@ -810,6 +809,33 @@ class SupabaseHelper {
       _snackBar.showError('Error Fetching Products: ${e.toString()}');
       _log.e('Error Fetching Products: $e', error: e);
       return Left(Failure('Error Fetching Products: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, ProductModel>> createProduct(
+    ProductPayload payload,
+  ) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.productsTable)
+              .insert({
+                'title': payload.title,
+                'product_id': payload.productId,
+                'price': payload.price,
+                'description': payload.description,
+                'is_active': payload.isActive,
+              })
+              .select()
+              .single();
+
+      _log.i('Product created successfully: $response');
+      _snackBar.showSuccess('Product "${payload.title}" added successfully!');
+      return Right(ProductModel.fromJson(response));
+    } catch (e) {
+      _log.e('Error creating product: $e');
+      _snackBar.showError('Failed to add product');
+      return Left(Failure('Error creating product: ${e.toString()}'));
     }
   }
 
