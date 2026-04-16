@@ -28,7 +28,8 @@ class DescTestModel {
     required this.totalMarks,
     required this.noQuestions,
     required this.createdAt,
-
+    this.dualProduct,
+    this.singleProduct,
     this.totalAttempt,
   });
 

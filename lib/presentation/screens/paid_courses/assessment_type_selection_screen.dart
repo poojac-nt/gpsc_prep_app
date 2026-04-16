@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
-import '../../../domain/entities/course_model.dart';
-
 class AssessmentTypeSelectionScreen extends StatefulWidget {
-  final CourseModel courseModel;
+  final AssessmentTypeSelectionScreenArgs args;
 
-  const AssessmentTypeSelectionScreen({super.key, required this.courseModel});
+  const AssessmentTypeSelectionScreen({super.key, required this.args});
 
   @override
   State<AssessmentTypeSelectionScreen> createState() =>
@@ -24,6 +23,13 @@ class _AssessmentTypeSelectionScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Prefer test-level prices when available, fall back to course-level.
+    final singlePrice = widget.args.testSingleProduct?.price ??
+        widget.args.courseModel.singleProduct.price;
+    final dualPrice = widget.args.testDualProduct?.price ??
+        widget.args.courseModel.dualProduct?.price ??
+        0;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -63,7 +69,7 @@ class _AssessmentTypeSelectionScreenState
                   _buildOptionCard(
                     type: AssessmentType.single,
                     title: "Single Assessment",
-                    price: widget.courseModel.singleProduct.price ?? 0,
+                    price: singlePrice,
                     description:
                         "Your answers will be evaluated once by a verified mentor with detailed feedback.",
                     icon: Icons.person_outline_rounded,
@@ -72,7 +78,7 @@ class _AssessmentTypeSelectionScreenState
                   _buildOptionCard(
                     type: AssessmentType.double,
                     title: "Double Assessment",
-                    price: widget.courseModel.dualProduct?.price ?? 0,
+                    price: dualPrice,
                     description:
                         "Get your answers reviewed by two different mentors for more comprehensive insights.",
                     icon: Icons.people_outline_rounded,

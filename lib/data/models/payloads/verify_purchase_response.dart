@@ -9,6 +9,8 @@ class VerifyPurchaseResponse {
   bool isValid;
   @JsonKey(name: "course_id")
   int courseId;
+  @JsonKey(name: "test_ids")
+  List<String> testIds;
   @JsonKey(name: "assessment_type")
   AssessmentType assessmentType;
   @JsonKey(name: "is_active")
@@ -17,6 +19,7 @@ class VerifyPurchaseResponse {
   VerifyPurchaseResponse({
     required this.isValid,
     required this.courseId,
+    required this.testIds,
     required this.assessmentType,
     required this.isActive,
   });

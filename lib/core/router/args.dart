@@ -1,5 +1,6 @@
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
 import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
@@ -182,7 +183,15 @@ class MentorEvaluationScreenArgs {
 class AssessmentTypeSelectionScreenArgs {
   final CourseModel courseModel;
 
-  AssessmentTypeSelectionScreenArgs({required this.courseModel});
+  /// If set, uses test-level prices instead of course-level prices.
+  final ProductModel? testSingleProduct;
+  final ProductModel? testDualProduct;
+
+  AssessmentTypeSelectionScreenArgs({
+    required this.courseModel,
+    this.testSingleProduct,
+    this.testDualProduct,
+  });
 }
 
 class EditMentorScreenArgs {

@@ -10,6 +10,14 @@ sealed class PurchaseState {
 
   bool isCourseEnrolled(int courseId) =>
       purchases.any((p) => p.courseId == courseId);
+
+  /// Check if a specific test within a course is accessible.
+  /// A test is accessible if the user is enrolled in the full course
+  /// OR if any individual purchase for the course includes this testId.
+  bool isTestAccessible(int courseId, int testId) {
+    return isCourseEnrolled(courseId) ||
+        purchases.any((p) => p.courseId == courseId && p.isTestUnlocked(testId));
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

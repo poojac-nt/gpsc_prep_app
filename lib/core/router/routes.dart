@@ -718,7 +718,7 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       final args = state.extra as AssessmentTypeSelectionScreenArgs;
       return _slideTransition(
-        AssessmentTypeSelectionScreen(courseModel: args.courseModel),
+        AssessmentTypeSelectionScreen(args: args),
         state,
       );
     },

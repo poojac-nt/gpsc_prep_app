@@ -11,6 +11,7 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
@@ -236,21 +237,26 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return BlocBuilder<PurchaseBloc, PurchaseState>(
       builder: (context, purchaseState) {
-        final bool isEnrolled = purchaseState.purchases.any(
-          (p) => p.courseId == widget.courseModel.id,
-        );
+        final int courseId = widget.courseModel.id;
 
         final tests = widget.courseModel.tests;
+
         final List<Widget> items = [];
         final prelims = tests?.prelims ?? [];
         for (int i = 0; i < prelims.length; i++) {
+          final test = prelims[i];
+
+          final bool isAccessible = purchaseState.isTestAccessible(
+            courseId,
+            test.id,
+          );
           items.add(
             Padding(
               padding: EdgeInsets.only(bottom: 12.h),
               child: _buildTestItem(
-                test: prelims[i],
+                test: test,
                 index: '${i + 1}',
-                isEnrolled: isEnrolled,
+                isAccessible: isAccessible,
               ),
             ),
           );
@@ -259,6 +265,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         final descriptiveTests = tests?.descriptive ?? [];
         if (descriptiveTests.isNotEmpty) {
           final prelimCount = prelims.length;
+
           items.add(
             BlocBuilder<FetchCourseDetailsBloc, FetchCourseDetailsState>(
               builder: (context, state) {
@@ -281,13 +288,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   final test = descriptiveTests[i];
                   final hasAnswer = answersMap.containsKey(test.id);
 
+                  final bool isAccessible = purchaseState.isTestAccessible(
+                    courseId,
+                    test.id,
+                  );
+
+                  // Find the matching purchase to get assessmentType.
                   final purchase = purchaseState.purchases.firstWhere(
-                    (p) => p.courseId == widget.courseModel.id,
+                    (p) => p.courseId == courseId && p.isTestUnlocked(test.id),
                     orElse:
                         () => UserPurchaseModel(
                           id: 0,
                           userId: 0,
                           courseId: 0,
+                          testIds: '',
                           assessmentType: AssessmentType.single,
                           createdAt: '',
                         ),
@@ -300,9 +314,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         test: test,
                         index: '${prelimCount + i + 1}',
                         hasAnswer: hasAnswer,
-                        isEnrolled: isEnrolled,
+                        isAccessible: isAccessible,
                         assessmentType:
-                            isEnrolled ? purchase.assessmentType : null,
+                            isAccessible ? purchase.assessmentType : null,
                         reviewModel: reviewModels[test.id],
                       ),
                     ),
@@ -323,7 +337,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required DescTestModel test,
     required String index,
     required bool hasAnswer,
-    required bool isEnrolled,
+    required bool isAccessible,
     AssessmentType? assessmentType,
     MainsTestReviewModel? reviewModel,
   }) {
@@ -361,9 +375,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return InkWell(
       onTap: () async {
-        if (!isEnrolled) {
-          getIt<SnackBarHelper>().showError(
-            "Please enroll in the course to access tests.",
+        if (!isAccessible) {
+          // Trigger individual test purchase for descriptive
+          _handleTestPurchase(
+            context,
+            testId: test.id,
+            singleProduct: test.singleProduct,
+            dualProduct: test.dualProduct,
+            isDescriptive: true,
           );
           return;
         }
@@ -427,7 +446,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
         statusWidget: statusWidget,
-        isLocked: !isEnrolled,
+        isLocked: !isAccessible,
+        price: !isAccessible ? test.singleProduct?.price : null,
       ),
     );
   }
@@ -707,11 +727,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     if (selectedType == null) return;
     if (!mounted) return;
 
+    // Collect all test IDs for whole-course purchase.
+    final allTestIds = <int>[
+      ...?widget.courseModel.tests?.prelims?.map((t) => t.id),
+      ...?widget.courseModel.tests?.descriptive?.map((t) => t.id),
+    ];
+
     final payload = UserPurchasePayload(
       userId: getIt<CacheManager>().user?.id ?? 0,
       courseId: widget.courseModel.id,
-      productId:
-          '', // Placeholder, populated in PurchaseBloc after native purchase
+      testIds: allTestIds,
+      productId: '',
+      // Placeholder, populated in PurchaseBloc after native purchase
       purchaseToken:
           '', // Placeholder, populated in PurchaseBloc after native purchase
     );
@@ -732,10 +759,56 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
   }
 
+  /// Handles purchasing an individual test (prelims or descriptive).
+  Future<void> _handleTestPurchase(
+    BuildContext context, {
+    required int testId,
+    required ProductModel? singleProduct,
+    required ProductModel? dualProduct,
+    required bool isDescriptive,
+  }) async {
+    AssessmentType? selectedType;
+
+    if (isDescriptive) {
+      selectedType = await context.push<AssessmentType>(
+        AppRoutes.assessmentTypeSelection,
+        extra: AssessmentTypeSelectionScreenArgs(
+          courseModel: widget.courseModel,
+          testSingleProduct: singleProduct,
+          testDualProduct: dualProduct,
+        ),
+      );
+      if (selectedType == null) return;
+    } else {
+      selectedType = AssessmentType.single;
+    }
+
+    if (!mounted) return;
+
+    final payload = UserPurchasePayload(
+      userId: getIt<CacheManager>().user?.id ?? 0,
+      courseId: widget.courseModel.id,
+      testIds: [testId],
+      productId: '',
+      purchaseToken: '',
+    );
+
+    final String? productId =
+        (selectedType == AssessmentType.double)
+            ? dualProduct?.productId
+            : singleProduct?.productId;
+
+    if (productId != null && productId.isNotEmpty) {
+      context.read<PurchaseBloc>().add(
+        InitiateIapPurchase(productId: productId, backendPayload: payload),
+      );
+    }
+  }
+
   Widget _buildTestItem({
     required TestModel test,
     required String index,
-    required bool isEnrolled,
+    required bool isAccessible,
   }) {
     final bool isPrelims = test.testType == TestType.prelims;
     final Color badgeColor =
@@ -750,7 +823,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         attemptState.attemptsDone >= attemptState.maxAttempts;
     final bool hasAttempted =
         attemptState != null && attemptState.attemptsDone > 0;
-
+    debugPrint('=== TEST: ${test.name}');
+    debugPrint('isAccessible: $isAccessible');
+    debugPrint('singleProduct: ${test.singleProduct}');
+    debugPrint('price: ${test.singleProduct?.price}');
     Widget? statusWidget;
     if (isCompleted) {
       statusWidget = _buildStatusBadge(
@@ -779,9 +855,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return InkWell(
       onTap: () async {
-        if (!isEnrolled) {
-          getIt<SnackBarHelper>().showError(
-            "Please enroll in the course to access tests.",
+        if (!isAccessible) {
+          // Trigger individual test purchase for prelims (direct)
+          _handleTestPurchase(
+            context,
+            testId: test.id,
+            singleProduct: test.singleProduct,
+            dualProduct: test.dualProduct,
+            isDescriptive: false,
           );
           return;
         }
@@ -813,7 +894,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
         statusWidget: statusWidget,
-        isLocked: !isEnrolled,
+        isLocked: !isAccessible,
+        price: !isAccessible ? test.singleProduct?.price : null,
       ),
     );
   }
@@ -872,6 +954,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required Color badgeColor,
     Widget? statusWidget,
     bool isLocked = false,
+    int? price,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -943,11 +1026,30 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
           12.wGap,
           isLocked
-              ? Icon(
-                Icons.lock_person_rounded,
-                color: AppColors.gray400,
-                size: 22.sp,
-              )
+              ? (price != null && price > 0
+                  ? Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      'Buy ₹$price',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                  : Icon(
+                    Icons.lock_person_rounded,
+                    color: AppColors.gray400,
+                    size: 22.sp,
+                  ))
               : Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: AppColors.gray400,
