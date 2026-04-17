@@ -304,6 +304,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           testIds: '',
                           assessmentType: AssessmentType.single,
                           createdAt: '',
+                          isActive: true,
                         ),
                   );
 

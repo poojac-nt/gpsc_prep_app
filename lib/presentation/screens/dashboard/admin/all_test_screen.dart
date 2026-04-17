@@ -168,6 +168,10 @@ class _AllTestScreenState extends State<AllTestScreen> {
   Widget _buildTestCard(_TestItemData data) {
     if (data.test is CourseModel) {
       final course = data.test as CourseModel;
+      final int totalTests =
+          (course.tests?.prelims?.length ?? 0) +
+          (course.tests?.descriptive?.length ?? 0);
+
       return TestModule(
         title: course.name,
         fontSize: 16.sp,
@@ -175,6 +179,14 @@ class _AllTestScreenState extends State<AllTestScreen> {
         onShareTap: () async {
           await ShareHelper.shareCourse(course);
         },
+        cards: [
+          4.hGap,
+          _buildInfoTag(
+            Icons.assignment_outlined,
+            '$totalTests Tests',
+            Colors.blueGrey,
+          ),
+        ],
       );
     }
 
