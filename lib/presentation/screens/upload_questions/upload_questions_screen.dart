@@ -358,8 +358,27 @@ class _UploadQuestionsState extends State<UploadQuestions> {
   Future<Map<String, int?>?> _showPriceSelectionDialog({
     required bool isDescriptive,
   }) async {
+    final bool isFreeCourse =
+        _selectedCourse?.singleProduct.productId == 'price_tier_free';
+
     ProductModel? selectedSingle;
     ProductModel? selectedDual;
+
+    final freeProduct =
+        isFreeCourse
+            ? _products.cast<ProductModel?>().firstWhere(
+              (p) => p?.productId == 'price_tier_free',
+              orElse: () => null,
+            )
+            : null;
+
+    if (isFreeCourse && freeProduct != null) {
+      selectedSingle = freeProduct;
+      selectedDual = freeProduct;
+    }
+
+    final List<ProductModel> filteredProducts =
+        isFreeCourse && freeProduct != null ? [freeProduct] : _products;
 
     return await showDialog<Map<String, int?>>(
       context: context,
@@ -379,7 +398,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<ProductModel>(
-                    initialValue: selectedSingle,
+                    value: selectedSingle,
                     dropdownColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Single Assessment',
@@ -388,25 +407,28 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                       ),
                     ),
                     items:
-                        _products.map((p) {
+                        filteredProducts.map((p) {
                           return DropdownMenuItem(
                             value: p,
                             child: Text('${p.title} (₹${p.price})'),
                           );
                         }).toList(),
-                    onChanged: (val) {
-                      setDialogState(() {
-                        selectedSingle = val;
-                        if (selectedDual == val) {
-                          selectedDual = null;
-                        }
-                      });
-                    },
+                    onChanged:
+                        isFreeCourse
+                            ? null
+                            : (val) {
+                              setDialogState(() {
+                                selectedSingle = val;
+                                if (selectedDual == val) {
+                                  selectedDual = null;
+                                }
+                              });
+                            },
                   ),
                   if (isDescriptive) ...[
                     16.hGap,
                     DropdownButtonFormField<ProductModel>(
-                      initialValue: selectedDual,
+                      value: selectedDual,
                       dropdownColor: Colors.white,
                       decoration: InputDecoration(
                         labelText: 'Dual Assessment',
@@ -415,8 +437,8 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                         ),
                       ),
                       items:
-                          _products
-                              .where((p) => p.id != selectedSingle?.id)
+                          filteredProducts
+                              .where((p) => p.id != selectedSingle?.id || isFreeCourse)
                               .map((p) {
                                 return DropdownMenuItem(
                                   value: p,
@@ -424,11 +446,14 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                                 );
                               })
                               .toList(),
-                      onChanged: (val) {
-                        setDialogState(() {
-                          selectedDual = val;
-                        });
-                      },
+                      onChanged:
+                          isFreeCourse
+                              ? null
+                              : (val) {
+                                setDialogState(() {
+                                  selectedDual = val;
+                                });
+                              },
                     ),
                   ],
                 ],

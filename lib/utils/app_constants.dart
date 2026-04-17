@@ -171,3 +171,7 @@ class AdUnitIds {
       'ca-app-pub-4018950905393948/9479145944';
   static const String bannerUnitId = 'ca-app-pub-4018950905393948/8301827460';
 }
+
+class ProductIds {
+  static const freeCourse = 'price_tier_free';
+}

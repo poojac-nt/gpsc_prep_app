@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -12,7 +13,6 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/router/args.dart';
 import '../../blocs/add_course/course_bloc.dart';
 import '../../blocs/purchase/purchase_bloc.dart';
-import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 
 class PaidCourseListScreen extends StatefulWidget {
   const PaidCourseListScreen({super.key});
@@ -57,28 +57,34 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
           return BlocBuilder<PurchaseBloc, PurchaseState>(
             builder: (context, purchaseState) {
               final enrolledCourseIds =
-                  (purchaseState is PurchaseFetched)
-                      ? purchaseState.purchases.map((p) => p.courseId).toSet()
-                      : (purchaseState is PurchaseSuccess)
-                      ? purchaseState.purchases.map((p) => p.courseId).toSet()
-                      : <int>{};
+                  purchaseState.purchases
+                      .where((p) => p.isActive)
+                      .map((p) => p.courseId)
+                      .toSet();
 
-              return Skeletonizer(
-                enabled: isLoading,
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 10.h,
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<CourseBloc>().add(FetchCoursesRequested());
+                  context.read<PurchaseBloc>().add(FetchPurchases());
+                },
+                child: Skeletonizer(
+                  enabled: isLoading,
+                  child: ListView.separated(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w,
+                      vertical: 10.h,
+                    ),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: courses.length,
+                    separatorBuilder: (context, index) => 10.hGap,
+                    itemBuilder: (context, index) {
+                      final course = courses[index];
+                      return PaidCourseListCard(
+                        courseModel: course,
+                        isEnrolled: enrolledCourseIds.contains(course.id),
+                      );
+                    },
                   ),
-                  itemCount: courses.length,
-                  separatorBuilder: (context, index) => 10.hGap,
-                  itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return PaidCourseListCard(
-                      courseModel: course,
-                      isEnrolled: enrolledCourseIds.contains(course.id),
-                    );
-                  },
                 ),
               );
             },
@@ -178,7 +184,26 @@ class PaidCourseListCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (courseModel.singleProduct.price > 0)
+                  if (courseModel.singleProduct.productId == 'price_tier_free')
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.green100,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        "FREE",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.green800,
+                        ),
+                      ),
+                    )
+                  else if (courseModel.singleProduct.price > 0)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

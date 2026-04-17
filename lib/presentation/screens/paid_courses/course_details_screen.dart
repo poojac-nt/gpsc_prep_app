@@ -85,12 +85,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       ),
       body: BlocListener<PurchaseBloc, PurchaseState>(
         listener: (context, state) {
-          // if (state is IapPurchaseSuccess) {
-          //   getIt<SnackBarHelper>().showSuccess(
-          //     'Payment successful! You are now enrolled.',
-          //   );
-          // } else
-          if (state is IapPurchaseFailed &&
+          if (state is IapPurchaseSuccess) {
+            getIt<SnackBarHelper>().showSuccess(
+              'Payment successful! You are now enrolled.',
+            );
+          } else if (state is IapPurchaseFailed &&
               state.message != 'Purchase was cancelled.') {
             getIt<SnackBarHelper>().showError(state.message);
           } else if (state is PurchaseFailed) {
@@ -219,8 +218,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ),
             BlocBuilder<PurchaseBloc, PurchaseState>(
               builder: (context, state) {
-                final bool isEnrolled = state.purchases.any(
-                  (p) => p.courseId == widget.courseModel.id,
+                final bool isEnrolled = state.isCourseEnrolled(
+                  widget.courseModel.id,
                 );
                 final bool isIapLoading = state is IapPurchasing;
                 return _bottomBar(isEnrolled, isLoading: isIapLoading);
@@ -342,13 +341,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     AssessmentType? assessmentType,
     MainsTestReviewModel? reviewModel,
   }) {
+    final bool isCourseFree =
+        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
     const Color badgeColor = Color(0xFF7C3AED);
     final String badgeLabel =
         assessmentType != null ? assessmentType.type : 'Descriptive';
     final String details = "${test.noQuestions} Questions";
 
     Widget? statusWidget;
-    if (hasAnswer) {
+    if (isAccessible && hasAnswer) {
       String status = "Submitted";
       Color statusColor = const Color(0xFFD97706); // Amber
       IconData statusIcon = Icons.pending_actions_rounded;
@@ -375,70 +376,65 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
 
     return InkWell(
-      onTap: () async {
-        if (!isAccessible) {
-          // Trigger individual test purchase for descriptive
-          _handleTestPurchase(
-            context,
-            testId: test.id,
-            singleProduct: test.singleProduct,
-            dualProduct: test.dualProduct,
-            isDescriptive: true,
-          );
-          return;
-        }
-        if (hasAnswer) {
-          // No mentor assigned at all
-          if (reviewModel == null || reviewModel.mentorReviews.isEmpty) {
-            getIt<SnackBarHelper>().showSuccess(
-              "No mentor has been assigned yet. Please wait.",
-            );
-            return;
-          }
+      onTap:
+          isAccessible
+              ? () async {
+                if (hasAnswer) {
+                  // No mentor assigned at all
+                  if (reviewModel == null ||
+                      reviewModel.mentorReviews.isEmpty) {
+                    getIt<SnackBarHelper>().showSuccess(
+                      "No mentor has been assigned yet. Please wait.",
+                    );
+                    return;
+                  }
 
-          final reviews = reviewModel.mentorReviews;
+                  final reviews = reviewModel.mentorReviews;
 
-          if (reviews.length == 1) {
-            final mentor = reviews.first;
-            final isCompleted = mentor.status.toLowerCase() == "completed";
-            if (isCompleted) {
-              await context.push(
-                AppRoutes.studentEvaluationResult,
-                extra: StudentEvaluationResultScreenArgs(
-                  testId: test.id,
-                  testName: test.name,
-                  studentName: getIt<CacheManager>().user?.name ?? 'Student',
-                  reviewModel: reviewModel,
-                  mentorId: mentor.mentorId,
-                ),
-              );
-            } else {
-              // Assigned but not yet reviewed
-              getIt<SnackBarHelper>().showSuccess(
-                "Your test is assigned to a mentor and is under review. Result will be available soon.",
-              );
-            }
-          } else {
-            // 2+ mentors — always show bottom sheet regardless of status
-            _showMentorSelectionSheet(test, reviewModel);
-          }
-          return;
-        }
+                  if (reviews.length == 1) {
+                    final mentor = reviews.first;
+                    final isCompleted =
+                        mentor.status.toLowerCase() == "completed";
+                    if (isCompleted) {
+                      await context.push(
+                        AppRoutes.studentEvaluationResult,
+                        extra: StudentEvaluationResultScreenArgs(
+                          testId: test.id,
+                          testName: test.name,
+                          studentName:
+                              getIt<CacheManager>().user?.name ?? 'Student',
+                          reviewModel: reviewModel,
+                          mentorId: mentor.mentorId,
+                        ),
+                      );
+                    } else {
+                      // Assigned but not yet reviewed
+                      getIt<SnackBarHelper>().showSuccess(
+                        "Your test is assigned to a mentor and is under review. Result will be available soon.",
+                      );
+                    }
+                  } else {
+                    // 2+ mentors — always show bottom sheet regardless of status
+                    _showMentorSelectionSheet(test, reviewModel);
+                  }
+                  return;
+                }
 
-        await context.push(
-          AppRoutes.descFullQuestions,
-          extra: DescFullQuestionsScreenArgs(
-            testId: test.id,
-            testName: test.name,
-            courseId: widget.courseModel.id,
-          ),
-        );
+                await context.push(
+                  AppRoutes.descFullQuestions,
+                  extra: DescFullQuestionsScreenArgs(
+                    testId: test.id,
+                    testName: test.name,
+                    courseId: widget.courseModel.id,
+                  ),
+                );
 
-        if (!mounted) return;
-        context.read<FetchCourseDetailsBloc>().add(
-          FetchCourseTestsAndResults(widget.courseModel.id),
-        );
-      },
+                if (!mounted) return;
+                context.read<FetchCourseDetailsBloc>().add(
+                  FetchCourseTestsAndResults(widget.courseModel.id),
+                );
+              }
+              : null,
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(
         index: index,
@@ -448,7 +444,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeColor: badgeColor,
         statusWidget: statusWidget,
         isLocked: !isAccessible,
-        price: !isAccessible ? test.singleProduct?.price : null,
+        price:
+            (!isAccessible && !isCourseFree) ? test.singleProduct?.price : null,
+        onBuyTap: () {
+          _handleTestPurchase(
+            context,
+            testId: test.id,
+            singleProduct: test.singleProduct,
+            dualProduct: test.dualProduct,
+            isDescriptive: true,
+          );
+        },
       ),
     );
   }
@@ -554,9 +560,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Widget _bottomBar(bool isEnrolled, {bool isLoading = false}) {
+    final bool isFree =
+        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
+    final bool hasPrice = widget.courseModel.singleProduct.price > 0 || isFree;
     final bool isPrelims =
         widget.courseModel.testType == CourseTestType.prelims;
-    final bool hasPrice = widget.courseModel.singleProduct.price > 0;
     final bool showPrice = !isEnrolled && isPrelims && hasPrice;
 
     return Container(
@@ -592,9 +600,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        "₹${widget.courseModel.singleProduct.price}",
+                        isFree
+                            ? "Free Access"
+                            : "₹${widget.courseModel.singleProduct.price}",
                         style: TextStyle(
-                          fontSize: 22.sp,
+                          fontSize: isFree ? 18.sp : 22.sp,
                           fontWeight: FontWeight.w900,
                           color: const Color(0xFF111827),
                         ),
@@ -698,7 +708,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                                   ),
                                 )
                                 : Text(
-                                  "Enroll Now",
+                                  isFree ? "Enroll for Free" : "Enroll Now",
                                   style: TextStyle(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.bold,
@@ -750,13 +760,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ? widget.courseModel.dualProduct?.productId
             : widget.courseModel.singleProduct.productId;
 
+    payload.productId = productId ?? '';
+    payload.assessmentType = selectedType;
+
+    if (productId == ProductIds.freeCourse) {
+      context.read<PurchaseBloc>().add(PurchaseCourse(payload));
+      return;
+    }
+
     if (productId != null && productId.isNotEmpty) {
       context.read<PurchaseBloc>().add(
         InitiateIapPurchase(productId: productId, backendPayload: payload),
       );
-    } else {
-      // For now, legacy free-enrol remains commented out as per your direction.
-      // context.read<PurchaseBloc>().add(PurchaseCourse(payload));
     }
   }
 
@@ -784,20 +799,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       selectedType = AssessmentType.single;
     }
 
-    if (!mounted) return;
+    final String? productId =
+        (selectedType == AssessmentType.double)
+            ? dualProduct?.productId
+            : singleProduct?.productId;
 
     final payload = UserPurchasePayload(
       userId: getIt<CacheManager>().user?.id ?? 0,
       courseId: widget.courseModel.id,
       testIds: [testId],
-      productId: '',
+      productId: productId ?? '',
       purchaseToken: '',
+      assessmentType: selectedType,
     );
 
-    final String? productId =
-        (selectedType == AssessmentType.double)
-            ? dualProduct?.productId
-            : singleProduct?.productId;
+    if (productId == ProductIds.freeCourse) {
+      context.read<PurchaseBloc>().add(PurchaseCourse(payload));
+      return;
+    }
 
     if (productId != null && productId.isNotEmpty) {
       context.read<PurchaseBloc>().add(
@@ -811,6 +830,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required String index,
     required bool isAccessible,
   }) {
+    final bool isCourseFree =
+        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
     final bool isPrelims = test.testType == TestType.prelims;
     final Color badgeColor =
         isPrelims ? const Color(0xFF059669) : AppColors.primary;
@@ -829,64 +850,58 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     debugPrint('singleProduct: ${test.singleProduct}');
     debugPrint('price: ${test.singleProduct?.price}');
     Widget? statusWidget;
-    if (isCompleted) {
-      statusWidget = _buildStatusBadge(
-        icon: Icons.check_circle_rounded,
-        label: 'Completed',
-        color: const Color(0xFF059669),
-      );
-    } else if (hasAttempted) {
-      if (attemptState.canRetry) {
+    if (isAccessible) {
+      if (isCompleted) {
         statusWidget = _buildStatusBadge(
-          icon: Icons.replay_rounded,
-          label:
-              'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry available',
-          color: const Color(0xFFD97706),
+          icon: Icons.check_circle_rounded,
+          label: 'Completed',
+          color: const Color(0xFF059669),
         );
-      } else {
-        final remaining = _formatRemainingTime(attemptState.retryAvailableAt);
-        statusWidget = _buildStatusBadge(
-          icon: Icons.hourglass_top_rounded,
-          label:
-              'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry after $remaining',
-          color: const Color(0xFFD97706),
-        );
+      } else if (hasAttempted) {
+        if (attemptState.canRetry) {
+          statusWidget = _buildStatusBadge(
+            icon: Icons.replay_rounded,
+            label:
+                'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry available',
+            color: const Color(0xFFD97706),
+          );
+        } else {
+          final remaining = _formatRemainingTime(attemptState.retryAvailableAt);
+          statusWidget = _buildStatusBadge(
+            icon: Icons.hourglass_top_rounded,
+            label:
+                'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry after $remaining',
+            color: const Color(0xFFD97706),
+          );
+        }
       }
     }
 
     return InkWell(
-      onTap: () async {
-        if (!isAccessible) {
-          // Trigger individual test purchase for prelims (direct)
-          _handleTestPurchase(
-            context,
-            testId: test.id,
-            singleProduct: test.singleProduct,
-            dualProduct: test.dualProduct,
-            isDescriptive: false,
-          );
-          return;
-        }
-        if (isCompleted) {
-          // Navigate to result screen
-          await context.push(
-            AppRoutes.resultScreen,
-            extra: ResultScreenArgs(isFromTest: false, testModal: test),
-          );
-          _fetchAttemptStates();
-        } else if (hasAttempted && !attemptState.canRetry) {
-          // In cooldown — show last result
-          await context.push(
-            AppRoutes.resultScreen,
-            extra: ResultScreenArgs(isFromTest: false, testModal: test),
-          );
-          _fetchAttemptStates();
-        } else {
-          await _navigateToInstruction(test);
-          if (!mounted) return;
-          _fetchAttemptStates();
-        }
-      },
+      onTap:
+          isAccessible
+              ? () async {
+                if (isCompleted) {
+                  // Navigate to result screen
+                  await context.push(
+                    AppRoutes.resultScreen,
+                    extra: ResultScreenArgs(isFromTest: false, testModal: test),
+                  );
+                  _fetchAttemptStates();
+                } else if (hasAttempted && !attemptState.canRetry) {
+                  // In cooldown — show last result
+                  await context.push(
+                    AppRoutes.resultScreen,
+                    extra: ResultScreenArgs(isFromTest: false, testModal: test),
+                  );
+                  _fetchAttemptStates();
+                } else {
+                  await _navigateToInstruction(test);
+                  if (!mounted) return;
+                  _fetchAttemptStates();
+                }
+              }
+              : null,
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(
         index: index,
@@ -897,6 +912,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         statusWidget: statusWidget,
         isLocked: !isAccessible,
         price: !isAccessible ? test.singleProduct?.price : null,
+        onBuyTap: () {
+          _handleTestPurchase(
+            context,
+            testId: test.id,
+            singleProduct: test.singleProduct,
+            dualProduct: test.dualProduct,
+            isDescriptive: false,
+          );
+        },
       ),
     );
   }
@@ -956,6 +980,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     Widget? statusWidget,
     bool isLocked = false,
     int? price,
+    VoidCallback? onBuyTap,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -1028,21 +1053,25 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           12.wGap,
           isLocked
               ? (price != null && price > 0
-                  ? Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 6.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      'Buy ₹$price',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  ? InkWell(
+                    onTap: onBuyTap,
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        'Buy ₹$price',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   )

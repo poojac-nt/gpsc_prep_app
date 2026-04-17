@@ -8,7 +8,6 @@ import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/data/repositories/purchase_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
-import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/services/iap_service.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
@@ -76,26 +75,16 @@ class PurchaseBloc extends Bloc<PurchaseEvent, PurchaseState> {
     final currentPurchases = state.purchases;
     emit(PurchasePurchasing(purchases: currentPurchases));
 
-    final result = await _repository.insertUserPurchase(payload: event.payload);
+    final result = await _repository.freePurchase(payload: event.payload);
     result.fold(
       (failure) {
-        _log.e('Failed to purchase course: $failure');
+        _log.e('Failed to enroll in free course: $failure');
         emit(PurchaseFailed(failure: failure, purchases: currentPurchases));
       },
-      (verifyResponse) {
-        _log.i('Course purchased/verified: ${verifyResponse.courseId}');
-        if (verifyResponse.isValid) {
-          // Trigger a background refresh to get the full enrolment list.
-          add(FetchPurchases());
-          emit(PurchaseSuccess(purchases: currentPurchases));
-        } else {
-          emit(
-            PurchaseFailed(
-              failure: Failure('Purchase verification failed.'),
-              purchases: currentPurchases,
-            ),
-          );
-        }
+      (purchase) {
+        _log.i('Successfully enrolled in free course: ${purchase.courseId}');
+        add(FetchPurchases());
+        emit(PurchaseSuccess(purchases: currentPurchases));
       },
     );
   }

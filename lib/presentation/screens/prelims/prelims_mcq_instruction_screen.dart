@@ -312,13 +312,13 @@ class _PrelimsMcqInstructionScreenState
                         color: _hasProgress ? Colors.grey : Colors.black87,
                         Icons.upload_file,
                         () {
-                          context.pushReplacement(
-                            AppRoutes.omrScreen,
-                            extra: OMRScreenArgs(
-                              testModal: testModel,
-                              language: selectedLanguage,
-                            ),
-                          );
+                          if (_hasProgress) {
+                            getIt<SnackBarHelper>().showError(
+                              "You have an active test session. Please finish or discard it before submitting an OMR.",
+                            );
+                            return;
+                          }
+                          _handleOmrSubmit(testModel);
                         },
                       ),
                     ),
@@ -468,6 +468,36 @@ class _PrelimsMcqInstructionScreenState
     } catch (error) {
       getIt<LogHelper>().e("Error fetching test result: $error");
     }
+  }
+
+  Future<void> _handleOmrSubmit(TestModel dailyTestModel) async {
+    final supabaseHelper = getIt<SupabaseHelper>();
+    try {
+      final testResult = await supabaseHelper.fetchResultForSingleMcqTest(
+        testId: dailyTestModel.id,
+      );
+      final result = testResult.right;
+      if (result == null) {
+        _navigateToOmr(dailyTestModel);
+        return;
+      }
+      final isEligibleForRetest = _checkRetestEligibility(result.createdAt);
+      if (isEligibleForRetest) {
+        _navigateToOmr(dailyTestModel);
+      } else {
+        bool isLimitReached = result.attemptNo! >= 2;
+        showAlreadyGivenTestDialog(result, isLimitReached: isLimitReached);
+      }
+    } catch (error) {
+      getIt<LogHelper>().e("Error fetching test result: $error");
+    }
+  }
+
+  void _navigateToOmr(TestModel testModel) {
+    context.pushReplacement(
+      AppRoutes.omrScreen,
+      extra: OMRScreenArgs(testModal: testModel, language: selectedLanguage),
+    );
   }
 
   void showAlreadyGivenTestDialog(

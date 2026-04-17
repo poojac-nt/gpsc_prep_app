@@ -17,4 +17,8 @@ class PurchaseRepository {
 
   Future<Either<Failure, List<UserPurchaseModel>>>
   fetchUserPurchasedCourses() async => await _supabase.fetchUserPurchase();
+
+  Future<Either<Failure, UserPurchaseModel>> freePurchase({
+    required UserPurchasePayload payload,
+  }) async => await _supabase.freePurchase(payload: payload);
 }

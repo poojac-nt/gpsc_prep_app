@@ -2,12 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/user_role.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/presentation/widgets/dialogs/logout_dialog.dart';
 
 class SelectionDrawer extends StatelessWidget {
   SelectionDrawer({super.key});
@@ -182,21 +183,25 @@ class SelectionDrawer extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 4.hGap,
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(30),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Text(
-                    "Account Type: ${cache.getUserRole()?.name.toUpperCase() ?? ''}",
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                if (Environment.flavor == Flavor.development)
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 2.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withAlpha(30),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Text(
+                      "Account Type: ${cache.getUserRole()?.name.toUpperCase() ?? ''}",
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

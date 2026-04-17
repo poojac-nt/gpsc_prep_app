@@ -42,7 +42,7 @@ class UserPurchaseModel {
 
   /// Returns true if this purchase unlocks the given test.
   bool isTestUnlocked(int testId) {
-    return purchasedTestIdList.contains(testId);
+    return isActive && purchasedTestIdList.contains(testId);
   }
 
   factory UserPurchaseModel.fromJson(Map<String, dynamic> json) =>

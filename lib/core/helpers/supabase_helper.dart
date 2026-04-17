@@ -1544,6 +1544,34 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, UserPurchaseModel>> freePurchase({
+    required UserPurchasePayload payload,
+  }) async {
+    try {
+      final response =
+          await supabase
+              .from('user_purchase')
+              .insert({
+                'user_id': userId,
+                'course_id': payload.courseId,
+                'product_id': payload.productId,
+                'purchase_token':
+                    'free_purchase_${DateTime.now().millisecondsSinceEpoch}',
+                'test_ids': payload.testIds.join(','),
+                'is_active': true,
+                'assessment_type': payload.assessmentType?.name,
+              })
+              .select()
+              .single();
+
+      return Right(UserPurchaseModel.fromJson(response));
+    } catch (e) {
+      _snackBar.showError('Error Verifying Purchase: ${e.toString()}');
+      _log.e('Error Verifying Purchase: $e', error: e);
+      return Left(Failure('Error Verifying Purchase: ${e.toString()}'));
+    }
+  }
+
   /// ===========================================================================
   /// Mentor Assign Flows
   /// ===========================================================================
