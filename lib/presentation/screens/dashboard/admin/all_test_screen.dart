@@ -33,24 +33,45 @@ class _AllTestScreenState extends State<AllTestScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          _buildFilters(),
-          Expanded(
-            child: BlocBuilder<AllTestBloc, AllTestState>(
-              builder: (context, state) {
-                if (state is AllTestLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is AllTestLoaded) {
-                  return _buildTestList(state.allTests);
-                } else if (state is AllTestError) {
-                  return Center(child: Text(state.message));
-                }
-                return const SizedBox.shrink();
-              },
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          context.read<AllTestBloc>().add(FetchAllTests());
+        },
+        child: Column(
+          children: [
+            _buildFilters(),
+            Expanded(
+              child: BlocBuilder<AllTestBloc, AllTestState>(
+                builder: (context, state) {
+                  if (state is AllTestLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is AllTestLoaded) {
+                    return _buildTestList(state.allTests);
+                  } else if (state is AllTestError) {
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          child: Center(child: Text(state.message)),
+                        ),
+                      ],
+                    );
+                  }
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
