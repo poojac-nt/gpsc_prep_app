@@ -8,15 +8,30 @@ sealed class PurchaseState {
 
   const PurchaseState({required this.purchases});
 
-  bool isCourseEnrolled(int courseId) =>
-      purchases.any((p) => p.courseId == courseId && p.isActive);
+  bool isCourseEnrolled(int courseId) {
+    return purchases.any(
+      (p) =>
+          p.courseId == courseId &&
+          p.isActive &&
+          (p.testIds == '0' || p.testIds.contains('0')),
+    );
+  }
 
   /// Check if a specific test within a course is accessible.
   /// A test is accessible if the user is enrolled in the full course
   /// OR if any individual purchase for the course includes this testId.
   bool isTestAccessible(int courseId, int testId) {
-    return purchases
-        .any((p) => p.courseId == courseId && p.isTestUnlocked(testId));
+    return purchases.any((p) {
+      if (p.courseId != courseId || !p.isActive) return false;
+
+      // ✅ FULL COURSE ACCESS
+      if (p.testIds == '0' || p.testIds.contains('0')) {
+        return true;
+      }
+
+      // ✅ SINGLE TEST ACCESS
+      return p.isTestUnlocked(testId);
+    });
   }
 }
 
@@ -42,6 +57,7 @@ final class PurchaseFetched extends PurchaseState {
 /// Failed to fetch purchases.
 final class PurchaseFetchFailed extends PurchaseState {
   final Failure failure;
+
   const PurchaseFetchFailed({required this.failure, required super.purchases});
 }
 
@@ -62,6 +78,7 @@ final class PurchaseSuccess extends PurchaseState {
 /// Failed to purchase (legacy backend-only flow).
 final class PurchaseFailed extends PurchaseState {
   final Failure failure;
+
   const PurchaseFailed({required this.failure, required super.purchases});
 }
 
@@ -82,5 +99,6 @@ final class IapPurchaseSuccess extends PurchaseState {
 /// IAP payment failed, was cancelled, or the backend insert failed.
 final class IapPurchaseFailed extends PurchaseState {
   final String message;
+
   const IapPurchaseFailed({required this.message, required super.purchases});
 }

@@ -738,16 +738,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     if (selectedType == null) return;
     if (!mounted) return;
 
-    // Collect all test IDs for whole-course purchase.
-    final allTestIds = <int>[
-      ...?widget.courseModel.tests?.prelims?.map((t) => t.id),
-      ...?widget.courseModel.tests?.descriptive?.map((t) => t.id),
-    ];
-
     final payload = UserPurchasePayload(
       userId: getIt<CacheManager>().user?.id ?? 0,
       courseId: widget.courseModel.id,
-      testIds: allTestIds,
+      testIds: [0],
       productId: '',
       // Placeholder, populated in PurchaseBloc after native purchase
       purchaseToken:
