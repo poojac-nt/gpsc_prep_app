@@ -51,7 +51,6 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
 
     // 1. Fetch descriptive tests (paginated if daily test)
     final testsResult = await _testRepository.fetchDailyDescTest(
-      courseId: event.courseId,
       offset: 0,
       limit: 20,
     );
@@ -136,7 +135,6 @@ class DailyDescTestBloc extends Bloc<DailyDescTestEvent, DailyDescTestState> {
     final bool isDailyTest = event.courseId == null;
 
     final testsResult = await _testRepository.fetchDailyDescTest(
-      courseId: event.courseId,
       offset: currentState.offset,
       limit: 20,
     );

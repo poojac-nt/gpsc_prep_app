@@ -697,7 +697,6 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests({
-    int? courseId,
     int offset = 0,
     int limit = 20,
   }) async {
@@ -801,7 +800,9 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
     try {
-      final result = await supabase.from(SupabaseKeys.productsTable).select('*');
+      final result = await supabase
+          .from(SupabaseKeys.productsTable)
+          .select('*');
       final products =
           (result as List).map((e) => ProductModel.fromJson(e)).toList();
       return Right(products);

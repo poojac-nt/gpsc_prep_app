@@ -15,6 +15,7 @@ UserPurchaseModel _$UserPurchaseModelFromJson(Map<String, dynamic> json) =>
       assessmentType:
           $enumDecode(_$AssessmentTypeEnumMap, json['assessment_type']),
       createdAt: json['created_at'] as String,
+      isActive: json['is_active'] as bool,
     );
 
 Map<String, dynamic> _$UserPurchaseModelToJson(UserPurchaseModel instance) =>
@@ -25,6 +26,7 @@ Map<String, dynamic> _$UserPurchaseModelToJson(UserPurchaseModel instance) =>
       'test_ids': instance.testIds,
       'assessment_type': _$AssessmentTypeEnumMap[instance.assessmentType]!,
       'created_at': instance.createdAt,
+      'is_active': instance.isActive,
     };
 
 const _$AssessmentTypeEnumMap = {

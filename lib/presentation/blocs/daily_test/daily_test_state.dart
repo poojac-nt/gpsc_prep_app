@@ -45,8 +45,6 @@ class DailyTestFetchFailed extends DailyTestState {
   DailyTestFetchFailed(this.failure);
 }
 
-class DailyTestResultFetching extends DailyTestState {}
-
 class DailyTestResultFetchingFailed extends DailyTestState {
   final Failure failure;
 

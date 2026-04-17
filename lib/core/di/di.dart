@@ -47,7 +47,6 @@ import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.da
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/study_material/study_material_bloc.dart';
@@ -195,9 +194,6 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<DetailedAnalyticsBloc>(
     () => DetailedAnalyticsBloc(repository: getIt<AnalyticsRepository>()),
-  );
-  getIt.registerLazySingleton<PrelimsTestBloc>(
-    () => PrelimsTestBloc(getIt<TestRepository>()),
   );
   getIt.registerLazySingleton<CourseBloc>(
     () => CourseBloc(getIt<CourseRepository>()),

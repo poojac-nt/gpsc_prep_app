@@ -1,10 +1,6 @@
-// study_material_event.dart
-
 part of 'study_material_bloc.dart';
 
 abstract class StudyMaterialEvent {}
-
-class LoadStudyMaterials extends StudyMaterialEvent {}
 
 class UploadStudyMaterial extends StudyMaterialEvent {
   final String title;

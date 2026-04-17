@@ -17,6 +17,8 @@ class UserPurchaseModel {
   AssessmentType assessmentType;
   @JsonKey(name: "created_at")
   String createdAt;
+  @JsonKey(name: "is_active")
+  bool isActive;
 
   UserPurchaseModel({
     required this.id,
@@ -25,6 +27,7 @@ class UserPurchaseModel {
     required this.testIds,
     required this.assessmentType,
     required this.createdAt,
+    required this.isActive,
   });
 
   /// Returns the list of purchased test IDs from the comma-separated string.

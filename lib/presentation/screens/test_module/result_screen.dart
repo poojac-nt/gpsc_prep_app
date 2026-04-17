@@ -28,7 +28,6 @@ import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../blocs/daily_test/daily_test_bloc.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
-import '../../blocs/prelims/prelims_test_bloc.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
@@ -65,8 +64,6 @@ class _ResultScreenState extends State<ResultScreen> {
           context.read<DashboardBloc>().add(FetchDashboardAnalytics());
           if (widget.testModel.testType == TestType.mcq) {
             context.read<DailyTestBloc>().add(FetchTests());
-          } else if (widget.testModel.testType == TestType.prelims) {
-            context.read<PrelimsTestBloc>().add(FetchPrelimsTest());
           }
         }
       },

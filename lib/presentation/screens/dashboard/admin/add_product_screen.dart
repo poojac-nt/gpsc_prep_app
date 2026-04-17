@@ -164,10 +164,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       icon: Icons.currency_rupee_rounded,
                       keyboardType: TextInputType.number,
                       validator: (val) {
-                        if (val == null || val.isEmpty)
+                        if (val == null || val.isEmpty) {
                           return 'Price is required';
-                        if (int.tryParse(val) == null)
+                        }
+                        if (int.tryParse(val) == null) {
                           return 'Enter a valid number';
+                        }
                         return null;
                       },
                     ),
