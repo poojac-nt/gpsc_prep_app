@@ -85,6 +85,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         40.wGap,
         IconButton(
+          onPressed: () => context.push(AppRoutes.createNotification),
+          icon: Icon(
+            Icons.notifications_none_rounded,
+            size: 24.sp,
+            color: Colors.blue,
+          ),
+        ),
+        IconButton(
           onPressed: () => showLogoutDialog(context),
           icon: Icon(Icons.logout, size: 24.sp, color: Colors.red),
         ),

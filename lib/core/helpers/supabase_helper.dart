@@ -53,6 +53,7 @@ import '../../data/models/payloads/verify_purchase_response.dart';
 import '../../domain/entities/all_tests_model.dart';
 import '../../domain/entities/product_model.dart';
 import '../../domain/entities/study_material_model.dart';
+import '../../domain/entities/notification_model.dart';
 import 'log_helper.dart';
 
 class SupabaseHelper {
@@ -2000,6 +2001,48 @@ class SupabaseHelper {
       _log.e('Error fetching tests: $e', error: e);
       _snackBar.showError('Error fetching tests: ${e.toString()}');
       return Left(Failure('Error fetching tests: ${e.toString()}'));
+    }
+  }
+
+  /// ===========================================================================
+  /// NOTIFICATIONS
+  /// ===========================================================================
+
+  Future<Either<Failure, NotificationModel>> createNotification(
+    NotificationModel data,
+  ) async {
+    try {
+      final jsonData = data.toJson();
+      // Remove id if null to let supabase generate it
+      if (jsonData['id'] == null) jsonData.remove('id');
+      if (jsonData['created_at'] == null) jsonData.remove('created_at');
+
+      final result =
+          await supabase
+              .from(SupabaseKeys.notificationsTable)
+              .insert(jsonData)
+              .select()
+              .single();
+
+      final notification = NotificationModel.fromJson(result);
+      _snackBar.showSuccess('Notification Created Successfully');
+      return Right(notification);
+    } catch (e) {
+      _snackBar.showError('Error Creating Notification: ${e.toString()}');
+      _log.e('[Create Notification] Error: $e', error: e);
+      return Left(Failure('Error Creating Notification: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, AllTestsModel>> fetchNotificationMetadata() async {
+    try {
+      final rpcResponse = await supabase.rpc(SupabaseKeys.getAllTests);
+      final data = AllTestsModel.fromJson(rpcResponse as Map<String, dynamic>);
+      return Right(data);
+    } catch (e) {
+      _snackBar.showError('Error fetching metadata: ${e.toString()}');
+      _log.e('[Fetch Notification Metadata] Error: $e', error: e);
+      return Left(Failure('Error fetching metadata: ${e.toString()}'));
     }
   }
 }

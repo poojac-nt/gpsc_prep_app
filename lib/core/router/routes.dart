@@ -20,6 +20,7 @@ import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.da
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/add_product_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/notifications/create_notification_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
@@ -738,6 +739,12 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.addProduct,
     pageBuilder:
         (context, state) => _slideTransition(const AddProductScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.createNotification,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const CreateNotificationScreen(), state),
   ),
 ];
 
