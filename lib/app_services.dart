@@ -79,15 +79,6 @@ class AppServices {
     );
     await MobileAds.instance.initialize();
 
-    // Initialize Local Notifications
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    await FlutterLocalNotificationsPlugin().initialize(
-      settings: initializationSettings,
-    );
-
     await ScreenUtil.ensureScreenSize();
 
     await Supabase.initialize(

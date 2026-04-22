@@ -4,7 +4,7 @@ part 'notification_model.g.dart';
 
 @JsonSerializable()
 class NotificationModel {
-  final String? id;
+  final int? id;
   final String title;
   final String body;
   @JsonKey(name: 'scheduled_at')
@@ -16,6 +16,10 @@ class NotificationModel {
   final int? referenceId;
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
+  @JsonKey(name: 'test_type')
+  final String? testType;
+  @JsonKey(name: 'target_audience')
+  final String targetAudience; // 'all', 'student', 'mentor'
 
   NotificationModel({
     this.id,
@@ -26,6 +30,8 @@ class NotificationModel {
     required this.type,
     this.referenceId,
     this.createdAt,
+    this.testType,
+    this.targetAudience = 'all',
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>
@@ -34,7 +40,7 @@ class NotificationModel {
   Map<String, dynamic> toJson() => _$NotificationModelToJson(this);
 
   NotificationModel copyWith({
-    String? id,
+    int? id,
     String? title,
     String? body,
     DateTime? scheduledAt,
@@ -42,6 +48,8 @@ class NotificationModel {
     String? type,
     int? referenceId,
     DateTime? createdAt,
+    String? testType,
+    String? targetAudience,
   }) {
     return NotificationModel(
       id: id ?? this.id,
@@ -52,6 +60,8 @@ class NotificationModel {
       type: type ?? this.type,
       referenceId: referenceId ?? this.referenceId,
       createdAt: createdAt ?? this.createdAt,
+      testType: testType ?? this.testType,
+      targetAudience: targetAudience ?? this.targetAudience,
     );
   }
 }

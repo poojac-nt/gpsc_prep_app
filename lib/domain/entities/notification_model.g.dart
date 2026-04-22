@@ -8,7 +8,7 @@ part of 'notification_model.dart';
 
 NotificationModel _$NotificationModelFromJson(Map<String, dynamic> json) =>
     NotificationModel(
-      id: json['id'] as String?,
+      id: json['id'] as int?,
       title: json['title'] as String,
       body: json['body'] as String,
       scheduledAt: DateTime.parse(json['scheduled_at'] as String),
@@ -18,6 +18,8 @@ NotificationModel _$NotificationModelFromJson(Map<String, dynamic> json) =>
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
+      testType: json['test_type'] as String?,
+      targetAudience: json['target_audience'] as String? ?? 'all',
     );
 
 Map<String, dynamic> _$NotificationModelToJson(NotificationModel instance) =>
@@ -30,4 +32,6 @@ Map<String, dynamic> _$NotificationModelToJson(NotificationModel instance) =>
       'type': instance.type,
       'reference_id': instance.referenceId,
       'created_at': instance.createdAt?.toIso8601String(),
+      'test_type': instance.testType,
+      'target_audience': instance.targetAudience,
     };
