@@ -263,84 +263,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                     });
                                   },
                                 )
-                                : _buildDropdown<_TestOption>(
-                                  hint: "Select a test...",
-                                  value: _selectedTest,
-                                  items:
-                                      tests.map((e) {
-                                        return DropdownMenuItem(
-                                          value: e,
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 8.h,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  e.name,
-                                                  style: TextStyle(
-                                                    fontSize: 14.sp,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                                6.hGap,
-                                                Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 8.w,
-                                                    vertical: 2.h,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: e.color.withAlpha(
-                                                      25,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          4.r,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: e.color.withAlpha(
-                                                        50,
-                                                      ),
-                                                      width: 0.5,
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    e.label,
-                                                    style: TextStyle(
-                                                      color: e.color,
-                                                      fontSize: 10.sp,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _selectedTest = val;
-                                    });
-                                  },
-                                  selectedItemBuilder: (context) {
-                                    return tests.map((e) {
-                                      return Text(
-                                        e.name,
-                                        style: TextStyle(
-                                          fontSize: 14.sp,
-                                          color: Colors.black87,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                                    }).toList();
-                                  },
-                                ),
+                                : _buildTestPickerField(tests),
                       ),
                     ],
                     15.hGap,
@@ -561,11 +484,325 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
           id: e.id,
           name: e.name,
           type: 'desc',
-          label: "DESCRIPTIVE",
+          label: "DESC",
           color: Colors.green,
         ),
       ),
     ];
+  }
+
+  /// Tappable field that opens the searchable test picker bottom sheet.
+  Widget _buildTestPickerField(List<_TestOption> tests) {
+    return GestureDetector(
+      onTap: () => _showTestSearchPicker(tests),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        height: 52.h,
+        alignment: Alignment.centerLeft,
+        child: Row(
+          children: [
+            Expanded(
+              child:
+                  _selectedTest == null
+                      ? Text(
+                        "Search and select a test...",
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 13.sp,
+                        ),
+                      )
+                      : Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 7.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _selectedTest!.color.withAlpha(25),
+                              borderRadius: BorderRadius.circular(4.r),
+                              border: Border.all(
+                                color: _selectedTest!.color.withAlpha(50),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              _selectedTest!.label,
+                              style: TextStyle(
+                                color: _selectedTest!.color,
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          8.wGap,
+                          Expanded(
+                            child: Text(
+                              _selectedTest!.name,
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+            ),
+            if (_selectedTest != null)
+              GestureDetector(
+                onTap: () => setState(() => _selectedTest = null),
+                child: Icon(Icons.close, size: 18.sp, color: Colors.grey[500]),
+              )
+            else
+              Icon(Icons.search, size: 18.sp, color: Colors.grey[500]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTestSearchPicker(List<_TestOption> allTests) {
+    final searchController = TextEditingController();
+    List<_TestOption> filtered = List.from(allTests);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.75,
+              minChildSize: 0.4,
+              maxChildSize: 0.95,
+              builder: (_, scrollController) {
+                return Column(
+                  children: [
+                    // Handle bar
+                    Padding(
+                      padding: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 8.h,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Select a Test",
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xff1f2937),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            "${filtered.length} results",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Search bar
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 4.h,
+                      ),
+                      child: TextField(
+                        controller: searchController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: "Search tests...",
+                          hintStyle: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14.sp,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            size: 20.sp,
+                            color: Colors.grey[400],
+                          ),
+                          suffixIcon:
+                              searchController.text.isNotEmpty
+                                  ? GestureDetector(
+                                    onTap: () {
+                                      searchController.clear();
+                                      setModalState(() {
+                                        filtered = List.from(allTests);
+                                      });
+                                    },
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 18.sp,
+                                      color: Colors.grey[400],
+                                    ),
+                                  )
+                                  : null,
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                        ),
+                        onChanged: (query) {
+                          setModalState(() {
+                            filtered =
+                                allTests
+                                    .where(
+                                      (t) => t.name.toLowerCase().contains(
+                                        query.toLowerCase(),
+                                      ),
+                                    )
+                                    .toList();
+                          });
+                        },
+                      ),
+                    ),
+                    Divider(height: 1, color: Colors.grey[200]),
+                    // List
+                    Expanded(
+                      child:
+                          filtered.isEmpty
+                              ? Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 40.sp,
+                                      color: Colors.grey[300],
+                                    ),
+                                    12.hGap,
+                                    Text(
+                                      "No tests found",
+                                      style: TextStyle(
+                                        color: Colors.grey[400],
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                              : ListView.separated(
+                                controller: scrollController,
+                                itemCount: filtered.length,
+                                padding: EdgeInsets.symmetric(vertical: 8.h),
+                                separatorBuilder:
+                                    (_, __) => Divider(
+                                      height: 1,
+                                      color: Colors.grey[100],
+                                      indent: 16.w,
+                                      endIndent: 16.w,
+                                    ),
+                                itemBuilder: (_, index) {
+                                  final test = filtered[index];
+                                  final isSelected =
+                                      _selectedTest?.id == test.id &&
+                                      _selectedTest?.type == test.type;
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() => _selectedTest = test);
+                                      Navigator.pop(ctx);
+                                    },
+                                    child: Container(
+                                      color:
+                                          isSelected
+                                              ? AppColors.primary.withAlpha(10)
+                                              : null,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 12.h,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 8.w,
+                                              vertical: 3.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: test.color.withAlpha(20),
+                                              borderRadius:
+                                                  BorderRadius.circular(4.r),
+                                              border: Border.all(
+                                                color: test.color.withAlpha(50),
+                                                width: 0.5,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              test.label,
+                                              style: TextStyle(
+                                                color: test.color,
+                                                fontSize: 10.sp,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          12.wGap,
+                                          Expanded(
+                                            child: Text(
+                                              test.name,
+                                              style: TextStyle(
+                                                fontSize: 13.sp,
+                                                fontWeight:
+                                                    isSelected
+                                                        ? FontWeight.w600
+                                                        : FontWeight.normal,
+                                                color:
+                                                    isSelected
+                                                        ? AppColors.primary
+                                                        : Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          if (isSelected)
+                                            Icon(
+                                              Icons.check_circle,
+                                              color: AppColors.primary,
+                                              size: 18.sp,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildSectionCard({
