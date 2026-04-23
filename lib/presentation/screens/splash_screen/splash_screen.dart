@@ -95,13 +95,26 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateBasedOnUserRole({Map<String, dynamic>? notificationData}) {
     if (!mounted) return;
 
+    // 1. If we've already navigated away from splash (e.g., via a notification push), stop.
+    // This prevents splash from overriding deep links triggered by onMessageOpenedApp.
+    final String currentPath =
+        GoRouter.of(context).routeInformationProvider.value.uri.path;
+    if (currentPath != AppRoutes.splashScreen && currentPath != '/') {
+      debugPrint(
+        "Already navigated to $currentPath, skipping default splash navigation",
+      );
+      return;
+    }
+
     final role = getIt<CacheManager>().getUserRole();
 
     // Check if we should override the home navigation with a notification route
     if (role != null && notificationData != null) {
       final route = getIt<FCMService>().getRouteFromData(notificationData);
       if (route != null) {
-        debugPrint("Overriding startup navigation with notification route: $route");
+        debugPrint(
+          "Overriding startup navigation with notification route: $route",
+        );
         context.go(route);
         return;
       }

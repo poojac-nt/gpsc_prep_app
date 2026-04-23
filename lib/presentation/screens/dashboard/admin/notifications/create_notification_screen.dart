@@ -13,6 +13,9 @@ import 'package:gpsc_prep_app/presentation/widgets/custom_text_field.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
+import '../../../../../core/di/di.dart';
+import '../../../../../core/helpers/snack_bar_helper.dart';
+
 class CreateNotificationScreen extends StatefulWidget {
   const CreateNotificationScreen({super.key});
 
@@ -29,6 +32,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   final _timeController = TextEditingController();
 
   String _targetAudience = 'all'; // 'all', 'student', 'mentor'
+  String _notificationType = 'general'; // 'general', 'course', 'test'
   CourseModel? _selectedCourse;
   _TestOption? _selectedTest;
 
@@ -178,6 +182,169 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                     ),
                     15.hGap,
                     _buildSectionCard(
+                      title: "NOTIFICATION TYPE",
+                      child: Row(
+                        children: [
+                          _buildSelectOption(
+                            label: "General",
+                            value: 'general',
+                            isSelected: _notificationType == 'general',
+                            icon: Icons.notifications_none,
+                            onTap:
+                                () => setState(() {
+                                  _notificationType = 'general';
+                                  _selectedCourse = null;
+                                  _selectedTest = null;
+                                }),
+                          ),
+                          10.wGap,
+                          _buildSelectOption(
+                            label: "Course",
+                            value: 'course',
+                            isSelected: _notificationType == 'course',
+                            icon: Icons.book_outlined,
+                            onTap:
+                                () => setState(() {
+                                  _notificationType = 'course';
+                                  _selectedTest = null;
+                                }),
+                          ),
+                          10.wGap,
+                          _buildSelectOption(
+                            label: "Test",
+                            value: 'test',
+                            isSelected: _notificationType == 'test',
+                            icon: Icons.quiz_outlined,
+                            onTap:
+                                () => setState(() {
+                                  _notificationType = 'test';
+                                  _selectedCourse = null;
+                                }),
+                          ),
+                        ],
+                      ),
+                    ),
+                    15.hGap,
+
+                    if (_notificationType != 'general') ...[
+                      15.hGap,
+                      _buildSectionCard(
+                        title:
+                            _notificationType == 'course'
+                                ? "COURSE SELECTION"
+                                : "TEST SELECTION",
+                        child:
+                            _notificationType == 'course'
+                                ? _buildDropdown<CourseModel>(
+                                  hint: "Select a course...",
+                                  value: _selectedCourse,
+                                  items:
+                                      courses.map((e) {
+                                        return DropdownMenuItem(
+                                          value: e,
+                                          child: Text(
+                                            e.name,
+                                            style: TextStyle(fontSize: 14.sp),
+                                          ),
+                                        );
+                                      }).toList(),
+                                  selectedItemBuilder: (context) {
+                                    return courses.map((e) {
+                                      return Text(
+                                        e.name,
+                                        style: TextStyle(fontSize: 14.sp),
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    }).toList();
+                                  },
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedCourse = val;
+                                    });
+                                  },
+                                )
+                                : _buildDropdown<_TestOption>(
+                                  hint: "Select a test...",
+                                  value: _selectedTest,
+                                  items:
+                                      tests.map((e) {
+                                        return DropdownMenuItem(
+                                          value: e,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 8.h,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  e.name,
+                                                  style: TextStyle(
+                                                    fontSize: 14.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                6.hGap,
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8.w,
+                                                    vertical: 2.h,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: e.color.withAlpha(
+                                                      25,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4.r,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: e.color.withAlpha(
+                                                        50,
+                                                      ),
+                                                      width: 0.5,
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    e.label,
+                                                    style: TextStyle(
+                                                      color: e.color,
+                                                      fontSize: 10.sp,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedTest = val;
+                                    });
+                                  },
+                                  selectedItemBuilder: (context) {
+                                    return tests.map((e) {
+                                      return Text(
+                                        e.name,
+                                        style: TextStyle(
+                                          fontSize: 14.sp,
+                                          color: Colors.black87,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    }).toList();
+                                  },
+                                ),
+                      ),
+                    ],
+                    15.hGap,
+                    _buildSectionCard(
                       title: "NOTIFICATION TITLE",
                       child: CustomTextField(
                         controller: _titleController,
@@ -185,129 +352,6 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                         validator:
                             (val) =>
                                 val == null || val.isEmpty ? "Required" : null,
-                      ),
-                    ),
-                    15.hGap,
-                    _buildSectionCard(
-                      title: "COURSE SELECTION",
-                      child: _buildDropdown<CourseModel>(
-                        hint: "General Notification (No course selected)",
-                        value: _selectedCourse,
-                        items: [
-                          const DropdownMenuItem(
-                            value: null,
-                            child: Text("General Notification"),
-                          ),
-                          ...courses.map((e) {
-                            return DropdownMenuItem(
-                              value: e,
-                              child: Text(
-                                e.name,
-                                style: TextStyle(fontSize: 14.sp),
-                              ),
-                            );
-                          }),
-                        ],
-                        selectedItemBuilder: (context) {
-                          return [
-                            const Text("General Notification"),
-                            ...courses.map((e) {
-                              return Text(
-                                e.name,
-                                style: TextStyle(fontSize: 14.sp),
-                                overflow: TextOverflow.ellipsis,
-                              );
-                            }),
-                          ];
-                        },
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedCourse = val;
-                            if (val != null) _selectedTest = null;
-                          });
-                        },
-                      ),
-                    ),
-                    15.hGap,
-                    _buildSectionCard(
-                      title: "TEST SELECTION",
-                      child: _buildDropdown<_TestOption>(
-                        hint: "General Notification (No test selected)",
-                        value: _selectedTest,
-                        items: [
-                          const DropdownMenuItem(
-                            value: null,
-                            child: Text("General Notification"),
-                          ),
-                          ...tests.map((e) {
-                            return DropdownMenuItem(
-                              value: e,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.h),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      e.name,
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    6.hGap,
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8.w,
-                                        vertical: 2.h,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: e.color.withAlpha(25),
-                                        borderRadius: BorderRadius.circular(
-                                          4.r,
-                                        ),
-                                        border: Border.all(
-                                          color: e.color.withAlpha(50),
-                                          width: 0.5,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        e.label,
-                                        style: TextStyle(
-                                          color: e.color,
-                                          fontSize: 10.sp,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedTest = val;
-                            if (val != null) _selectedCourse = null;
-                          });
-                        },
-                        selectedItemBuilder: (context) {
-                          return [
-                            const Text("General Notification"),
-                            ...tests.map((e) {
-                              return Text(
-                                e.name,
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: Colors.black87,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              );
-                            }),
-                          ];
-                        },
                       ),
                     ),
                     15.hGap,
@@ -379,6 +423,21 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                 ? null
                                 : () {
                                   if (_formKey.currentState!.validate()) {
+                                    if (_notificationType == 'course' &&
+                                        _selectedCourse == null) {
+                                      getIt<SnackBarHelper>().showError(
+                                        "Please select a course",
+                                      );
+                                      return;
+                                    }
+                                    if (_notificationType == 'test' &&
+                                        _selectedTest == null) {
+                                      getIt<SnackBarHelper>().showError(
+                                        "Please select a test",
+                                      );
+                                      return;
+                                    }
+
                                     debugPrint(
                                       "Form validated, preparing notification...",
                                     );
@@ -386,12 +445,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                       title: _titleController.text.trim(),
                                       body: _bodyController.text.trim(),
                                       scheduledAt: _getScheduledDateTime(),
-                                      type:
-                                          _selectedCourse != null
-                                              ? 'course'
-                                              : (_selectedTest != null
-                                                  ? 'test'
-                                                  : 'general'),
+                                      type: _notificationType,
                                       referenceId:
                                           _selectedCourse?.id ??
                                           _selectedTest?.id,
@@ -519,45 +573,53 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
     required Widget child,
     Widget? trailing,
     VoidCallback? onTap,
+    bool isEnabled = true,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: isEnabled ? 1.0 : 0.5,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
+                if (trailing != null) trailing,
+              ],
+            ),
+            12.hGap,
+            InkWell(
+              onTap: isEnabled ? onTap : null,
+              child: IgnorePointer(
+                ignoring: (onTap != null || !isEnabled),
+                child: child,
               ),
-              if (trailing != null) trailing,
-            ],
-          ),
-          12.hGap,
-          InkWell(
-            onTap: onTap,
-            child: IgnorePointer(ignoring: onTap != null, child: child),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -567,15 +629,31 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
     required String value,
     required IconData icon,
   }) {
-    final isSelected = _targetAudience == value;
+    return _buildSelectOption(
+      label: label,
+      value: value,
+      isSelected: _targetAudience == value,
+      icon: icon,
+      onTap: () => setState(() => _targetAudience = value),
+    );
+  }
+
+  Widget _buildSelectOption({
+    required String label,
+    required String value,
+    required bool isSelected,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return Expanded(
       child: InkWell(
-        onTap: () => setState(() => _targetAudience = value),
+        onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(vertical: 10.h),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withAlpha(20) : Colors.grey[100],
+            color:
+                isSelected ? AppColors.primary.withAlpha(20) : Colors.grey[100],
             borderRadius: BorderRadius.circular(10.r),
             border: Border.all(
               color: isSelected ? AppColors.primary : Colors.transparent,
@@ -611,6 +689,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
     required List<DropdownMenuItem<T?>> items,
     required ValueChanged<T?> onChanged,
     DropdownButtonBuilder? selectedItemBuilder,
+    bool isEnabled = true,
   }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -636,7 +715,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
             isExpanded: true,
             items: items,
             selectedItemBuilder: selectedItemBuilder,
-            onChanged: onChanged,
+            onChanged: isEnabled ? onChanged : null,
           ),
         ),
       ),
