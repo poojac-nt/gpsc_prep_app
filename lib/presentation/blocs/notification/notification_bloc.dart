@@ -8,7 +8,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
   NotificationBloc(this._repository) : super(const NotificationState()) {
     on<FetchNotificationMetadata>(_onFetchMetadata);
+    on<FetchNotificationHistory>(_onFetchHistory);
     on<CreateNotificationEvent>(_onCreateNotification);
+    on<UpdateNotificationEvent>(_onUpdateNotification);
   }
 
   Future<void> _onFetchMetadata(
@@ -33,6 +35,28 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     );
   }
 
+  Future<void> _onFetchHistory(
+    FetchNotificationHistory event,
+    Emitter<NotificationState> emit,
+  ) async {
+    emit(state.copyWith(status: NotificationStatus.loadingHistory));
+    final result = await _repository.fetchNotifications();
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: NotificationStatus.historyError,
+          failure: failure,
+        ),
+      ),
+      (notifications) => emit(
+        state.copyWith(
+          status: NotificationStatus.historyLoaded,
+          notifications: notifications,
+        ),
+      ),
+    );
+  }
+
   Future<void> _onCreateNotification(
     CreateNotificationEvent event,
     Emitter<NotificationState> emit,
@@ -49,6 +73,23 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       (notification) => emit(
         state.copyWith(status: NotificationStatus.success),
       ),
+    );
+  }
+
+  Future<void> _onUpdateNotification(
+    UpdateNotificationEvent event,
+    Emitter<NotificationState> emit,
+  ) async {
+    emit(state.copyWith(status: NotificationStatus.submitting));
+    final result = await _repository.updateNotification(event.notification);
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: NotificationStatus.error,
+          failure: failure,
+        ),
+      ),
+      (_) => emit(state.copyWith(status: NotificationStatus.success)),
     );
   }
 }

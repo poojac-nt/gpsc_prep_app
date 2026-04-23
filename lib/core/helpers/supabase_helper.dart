@@ -2045,4 +2045,50 @@ class SupabaseHelper {
       return Left(Failure('Error fetching metadata: ${e.toString()}'));
     }
   }
+
+  Future<Either<Failure, List<NotificationModel>>> fetchNotifications() async {
+    try {
+      final result = await supabase
+          .from(SupabaseKeys.notificationsTable)
+          .select()
+          .order('created_at', ascending: false);
+      final notifications =
+          (result as List).map((e) => NotificationModel.fromJson(e)).toList();
+      _log.i('Fetched ${notifications.length} notifications');
+      return Right(notifications);
+    } catch (e) {
+      _snackBar.showError('Error fetching notifications: ${e.toString()}');
+      _log.e('[Fetch Notifications] Error: $e', error: e);
+      return Left(Failure('Error fetching notifications: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, void>> updateNotification(
+    NotificationModel notification,
+  ) async {
+    try {
+      if (notification.id == null) {
+        return Left(Failure('Notification ID cannot be null for updates'));
+      }
+      
+      final json = notification.toJson()
+        ..remove('id')
+        ..remove('created_at');
+      // Reset is_sent so the edge function re-dispatches it
+      json['is_sent'] = false;
+
+      await supabase
+          .from(SupabaseKeys.notificationsTable)
+          .update(json)
+          .eq('id', notification.id!);
+
+      _snackBar.showSuccess('Notification updated successfully');
+      _log.i('[Update Notification] id=${notification.id} updated');
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating notification: ${e.toString()}');
+      _log.e('[Update Notification] Error: $e', error: e);
+      return Left(Failure('Error updating notification: ${e.toString()}'));
+    }
+  }
 }

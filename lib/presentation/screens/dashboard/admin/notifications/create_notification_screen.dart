@@ -17,7 +17,11 @@ import '../../../../../core/di/di.dart';
 import '../../../../../core/helpers/snack_bar_helper.dart';
 
 class CreateNotificationScreen extends StatefulWidget {
-  const CreateNotificationScreen({super.key});
+  /// If provided, the form will be pre-filled with this notification's data
+  /// to allow admins to resend it with a new schedule.
+  final NotificationModel? prefill;
+
+  const CreateNotificationScreen({super.key, this.prefill});
 
   @override
   State<CreateNotificationScreen> createState() =>
@@ -38,8 +42,16 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
 
   @override
   void initState() {
-    context.read<NotificationBloc>().add(FetchNotificationMetadata());
     super.initState();
+    context.read<NotificationBloc>().add(FetchNotificationMetadata());
+    // Pre-fill if resending a past notification
+    final prefill = widget.prefill;
+    if (prefill != null) {
+      _titleController.text = prefill.title;
+      _bodyController.text = prefill.body;
+      _targetAudience = prefill.targetAudience;
+      _notificationType = prefill.type;
+    }
   }
 
   @override
@@ -107,6 +119,11 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
       listener: (context, state) {
         if (state.status == NotificationStatus.success) {
           context.pop();
+        }
+        // Once metadata is loaded, pre-select the linked course/test from prefill
+        if (state.status == NotificationStatus.metadataLoaded &&
+            widget.prefill != null) {
+          _applyPrefillSelection(state);
         }
       },
       child: Scaffold(
@@ -365,6 +382,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                       "Form validated, preparing notification...",
                                     );
                                     final notification = NotificationModel(
+                                      id: widget.prefill?.id,
                                       title: _titleController.text.trim(),
                                       body: _bodyController.text.trim(),
                                       scheduledAt: _getScheduledDateTime(),
@@ -375,12 +393,21 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                       testType: _selectedTest?.type,
                                       targetAudience: _targetAudience,
                                     );
-                                    debugPrint(
-                                      "Dispatching CreateNotificationEvent: ${notification.toJson()}",
-                                    );
-                                    context.read<NotificationBloc>().add(
-                                      CreateNotificationEvent(notification),
-                                    );
+                                    if (widget.prefill != null && widget.prefill!.id != null) {
+                                      debugPrint(
+                                        "Dispatching UpdateNotificationEvent: ${notification.toJson()}",
+                                      );
+                                      context.read<NotificationBloc>().add(
+                                        UpdateNotificationEvent(notification),
+                                      );
+                                    } else {
+                                      debugPrint(
+                                        "Dispatching CreateNotificationEvent: ${notification.toJson()}",
+                                      );
+                                      context.read<NotificationBloc>().add(
+                                        CreateNotificationEvent(notification),
+                                      );
+                                    }
                                   } else {
                                     debugPrint("Form validation failed.");
                                   }
@@ -411,11 +438,13 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                     ),
                                     10.wGap,
                                     Text(
-                                      "Create Notification",
+                                      widget.prefill != null
+                                          ? 'Update Broadcast'
+                                          : 'Schedule Broadcast',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16.sp,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ],
@@ -464,6 +493,35 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
       return DateTime(year, month, day, hour, minute).toUtc();
     } catch (e) {
       return DateTime.now().toUtc();
+    }
+  }
+
+  /// Called after metadata loads when resending a past notification.
+  /// Matches [prefill.referenceId] to a course or test and pre-selects it.
+  void _applyPrefillSelection(NotificationState state) {
+    final prefill = widget.prefill;
+    if (prefill == null || prefill.referenceId == null) return;
+
+    final refId = prefill.referenceId!;
+
+    if (prefill.type == 'course') {
+      final courses = state.metadata?.courses ?? [];
+      final match = courses.cast<CourseModel?>().firstWhere(
+        (c) => c?.id == refId,
+        orElse: () => null,
+      );
+      if (match != null && mounted) {
+        setState(() => _selectedCourse = match);
+      }
+    } else if (prefill.type == 'test') {
+      final tests = _getMergedTests(state.metadata);
+      final match = tests.cast<_TestOption?>().firstWhere(
+        (t) => t?.id == refId && t?.type == (prefill.testType ?? ''),
+        orElse: () => null,
+      );
+      if (match != null && mounted) {
+        setState(() => _selectedTest = match);
+      }
     }
   }
 

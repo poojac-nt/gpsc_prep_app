@@ -66,6 +66,8 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 import '../../utils/enums/user_role.dart';
 import '../cache_manager.dart';
+import '../../domain/entities/notification_model.dart';
+import '../../presentation/screens/dashboard/admin/notifications/notification_history_screen.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -742,9 +744,19 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.createNotification,
+    pageBuilder: (context, state) {
+      final prefill = state.extra as NotificationModel?;
+      return _slideTransition(
+        CreateNotificationScreen(prefill: prefill),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.notificationHistory,
     pageBuilder:
         (context, state) =>
-            _slideTransition(const CreateNotificationScreen(), state),
+            _slideTransition(const NotificationHistoryScreen(), state),
   ),
 ];
 

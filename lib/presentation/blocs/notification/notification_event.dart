@@ -10,9 +10,19 @@ abstract class NotificationEvent extends Equatable {
 
 class FetchNotificationMetadata extends NotificationEvent {}
 
+class FetchNotificationHistory extends NotificationEvent {}
+
 class CreateNotificationEvent extends NotificationEvent {
   final NotificationModel notification;
   const CreateNotificationEvent(this.notification);
+
+  @override
+  List<Object?> get props => [notification];
+}
+
+class UpdateNotificationEvent extends NotificationEvent {
+  final NotificationModel notification;
+  const UpdateNotificationEvent(this.notification);
 
   @override
   List<Object?> get props => [notification];

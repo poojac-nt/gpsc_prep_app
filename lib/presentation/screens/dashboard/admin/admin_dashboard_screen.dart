@@ -285,6 +285,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           iconColor: const Color(0xff10b981),
           onTap: () => context.push(AppRoutes.addProduct),
         ),
+        12.hGap,
+        _buildManagementItem(
+          context,
+          title: 'Notifications',
+          subtitle: 'View history & resend notifications',
+          icon: Icons.notifications_none_rounded,
+          iconBgColor: const Color(0xfffef3c7),
+          iconColor: const Color(0xffd97706),
+          onTap: () => context.push(AppRoutes.notificationHistory),
+        ),
       ],
     );
   }

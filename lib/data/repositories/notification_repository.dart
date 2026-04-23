@@ -18,4 +18,14 @@ class NotificationRepository {
   Future<Either<Failure, AllTestsModel>> getNotificationMetadata() async {
     return await _supabase.fetchNotificationMetadata();
   }
+
+  Future<Either<Failure, List<NotificationModel>>> fetchNotifications() async {
+    return await _supabase.fetchNotifications();
+  }
+
+  Future<Either<Failure, void>> updateNotification(
+    NotificationModel notification,
+  ) async {
+    return await _supabase.updateNotification(notification);
+  }
 }
