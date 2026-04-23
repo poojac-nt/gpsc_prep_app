@@ -55,8 +55,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final needsUpdate = await _checkAppVersion();
     if (needsUpdate) return;
 
-    await _setupFirebaseMessaging();
-    _navigateBasedOnUserRole();
+    final notificationData = await _setupFirebaseMessaging();
+    _navigateBasedOnUserRole(notificationData: notificationData);
     await ensureStoragePermission();
   }
 
@@ -88,14 +88,38 @@ class _SplashScreenState extends State<SplashScreen> {
     return false;
   }
 
-  Future<void> _setupFirebaseMessaging() async {
-    await getIt<FCMService>().setupFirebaseMessaging();
+  Future<Map<String, dynamic>?> _setupFirebaseMessaging() async {
+    return await getIt<FCMService>().setupFirebaseMessaging();
   }
 
-  void _navigateBasedOnUserRole() {
+  void _navigateBasedOnUserRole({Map<String, dynamic>? notificationData}) {
     if (!mounted) return;
 
+    // 1. If we've already navigated away from splash (e.g., via a notification push), stop.
+    // This prevents splash from overriding deep links triggered by onMessageOpenedApp.
+    final String currentPath =
+        GoRouter.of(context).routeInformationProvider.value.uri.path;
+    if (currentPath != AppRoutes.splashScreen && currentPath != '/') {
+      debugPrint(
+        "Already navigated to $currentPath, skipping default splash navigation",
+      );
+      return;
+    }
+
     final role = getIt<CacheManager>().getUserRole();
+
+    // Check if we should override the home navigation with a notification route
+    if (role != null && notificationData != null) {
+      final route = getIt<FCMService>().getRouteFromData(notificationData);
+      if (route != null) {
+        debugPrint(
+          "Overriding startup navigation with notification route: $route",
+        );
+        context.go(route);
+        return;
+      }
+    }
+
     switch (role) {
       case UserRole.student:
         context.read<DashboardBloc>().add(FetchDashboardAnalytics());

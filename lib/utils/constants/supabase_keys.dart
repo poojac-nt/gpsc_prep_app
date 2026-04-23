@@ -74,6 +74,7 @@ abstract class SupabaseKeys {
   static final String descMentorAssignment = 'desc_mentor_assignment';
   static final String peerReviewTable = 'peer_review';
   static final String productsTable = 'products';
+  static final String notificationsTable = 'notifications';
 
   ///columns
   static final String email = 'user_email';

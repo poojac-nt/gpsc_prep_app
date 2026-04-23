@@ -28,6 +28,7 @@ import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/notification/notification_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
@@ -77,15 +78,6 @@ class AppServices {
       ),
     );
     await MobileAds.instance.initialize();
-
-    // Initialize Local Notifications
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    await FlutterLocalNotificationsPlugin().initialize(
-      settings: initializationSettings,
-    );
 
     await ScreenUtil.ensureScreenSize();
 
@@ -190,6 +182,7 @@ class AppServices {
       create: (_) => getIt<FetchCourseDetailsBloc>(),
     ),
     BlocProvider<AddProductBloc>(create: (_) => getIt<AddProductBloc>()),
+    BlocProvider<NotificationBloc>(create: (_) => getIt<NotificationBloc>()),
   ];
 
   List<BlocProvider> get blocProviders => _blocProviders;

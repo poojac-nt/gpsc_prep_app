@@ -20,6 +20,7 @@ import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.da
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/add_product_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/notifications/create_notification_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
@@ -65,6 +66,8 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 import '../../utils/enums/user_role.dart';
 import '../cache_manager.dart';
+import '../../domain/entities/notification_model.dart';
+import '../../presentation/screens/dashboard/admin/notifications/notification_history_screen.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -738,6 +741,22 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.addProduct,
     pageBuilder:
         (context, state) => _slideTransition(const AddProductScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.createNotification,
+    pageBuilder: (context, state) {
+      final prefill = state.extra as NotificationModel?;
+      return _slideTransition(
+        CreateNotificationScreen(prefill: prefill),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.notificationHistory,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const NotificationHistoryScreen(), state),
   ),
 ];
 
