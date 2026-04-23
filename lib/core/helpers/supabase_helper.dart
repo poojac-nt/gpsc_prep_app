@@ -2051,7 +2051,7 @@ class SupabaseHelper {
       final result = await supabase
           .from(SupabaseKeys.notificationsTable)
           .select()
-          .order('created_at', ascending: false);
+          .order('scheduled_at', ascending: false);
       final notifications =
           (result as List).map((e) => NotificationModel.fromJson(e)).toList();
       _log.i('Fetched ${notifications.length} notifications');
@@ -2070,10 +2070,11 @@ class SupabaseHelper {
       if (notification.id == null) {
         return Left(Failure('Notification ID cannot be null for updates'));
       }
-      
-      final json = notification.toJson()
-        ..remove('id')
-        ..remove('created_at');
+
+      final json =
+          notification.toJson()
+            ..remove('id')
+            ..remove('created_at');
       // Reset is_sent so the edge function re-dispatches it
       json['is_sent'] = false;
 

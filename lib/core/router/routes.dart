@@ -97,8 +97,8 @@ final List<GoRoute> appRoutes = [
 
         router.go(dashboardRoute);
 
-        // Step 2: Wait 300ms so dashboard builds (important!)
-        await Future.delayed(const Duration(milliseconds: 300));
+        // Step 2: Wait 500ms so dashboard builds (important!)
+        await Future.delayed(const Duration(milliseconds: 500));
 
         // Step 3: Push studyMaterial on top of dashboard
         debugPrint(
@@ -141,7 +141,7 @@ final List<GoRoute> appRoutes = [
           router.go(dashboardRoute);
         }
 
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 500));
         debugPrint(
           '🚀 [DEBUG] Navigating via AppRoutes names: type=$type, id=$id',
         );
@@ -190,7 +190,7 @@ final List<GoRoute> appRoutes = [
           router.go(dashboardRoute);
         }
 
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 500));
 
         // Push the course list screen first if not admin
         if (role != UserRole.admin) {

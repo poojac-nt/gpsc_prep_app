@@ -14,6 +14,13 @@ class FCMService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
+  /// Stores the message that opened the app from a terminated state.
+  /// We store this locally because FirebaseMessaging.instance.getInitialMessage()
+  /// can sometimes return the same message multiple times on certain Android devices
+  /// until the app is fully restarted or another message arrives.
+  Map<String, dynamic>? _initialMessageData;
+  bool _hasCheckedInitialMessage = false;
+
   FCMService(this._supabase);
 
   Future<Map<String, dynamic>?> setupFirebaseMessaging() async {
@@ -59,15 +66,21 @@ class FCMService {
       });
 
       // Check for message that opened the app from terminated state
-      final RemoteMessage? initialMessage =
-          await FirebaseMessaging.instance.getInitialMessage();
+      // We only check this once per app session to avoid redundant navigation
+      if (!_hasCheckedInitialMessage) {
+        final RemoteMessage? initialMessage =
+            await FirebaseMessaging.instance.getInitialMessage();
+        _hasCheckedInitialMessage = true;
 
-      if (initialMessage != null) {
-        debugPrint(
-          "App opened from terminated state via notification: ${initialMessage.data}",
-        );
-        return initialMessage.data;
+        if (initialMessage != null) {
+          debugPrint(
+            "App opened from terminated state via notification: ${initialMessage.data}",
+          );
+          _initialMessageData = initialMessage.data;
+        }
       }
+
+      return _initialMessageData;
     } catch (e) {
       debugPrint("Firebase setup failed: $e");
     }
@@ -86,6 +99,7 @@ class FCMService {
 
   /// Maps the FCM data payload to the app's existing deep-link routes.
   String? getRouteFromData(Map<String, dynamic> data) {
+    debugPrint("Parsing notification data for route: $data");
     final String? type = data['type']?.toString();
     final String? referenceId = data['reference_id']?.toString();
     final String? testType = data['test_type']?.toString();
@@ -99,6 +113,16 @@ class FCMService {
       return '/openTest?type=$normalizedType&id=$referenceId';
     }
     return null;
+  }
+
+  /// Clears the initial message data after it has been handled.
+  /// This prevents the same notification from triggering navigation again
+  /// if the user logs out and logs back in without killing the app.
+  void consumeInitialMessageData() {
+    if (_initialMessageData != null) {
+      debugPrint("Consuming initial notification message data");
+      _initialMessageData = null;
+    }
   }
 
   Future<void> requestNotificationPermission() async {

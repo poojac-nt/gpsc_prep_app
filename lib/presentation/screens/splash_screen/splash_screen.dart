@@ -115,6 +115,8 @@ class _SplashScreenState extends State<SplashScreen> {
         debugPrint(
           "Overriding startup navigation with notification route: $route",
         );
+        // Mark the initial message as consumed so it doesn't trigger again on re-login
+        getIt<FCMService>().consumeInitialMessageData();
         context.go(route);
         return;
       }
