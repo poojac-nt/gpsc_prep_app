@@ -51,9 +51,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/models/payloads/verify_purchase_response.dart';
 import '../../domain/entities/all_tests_model.dart';
+import '../../domain/entities/notification_model.dart';
 import '../../domain/entities/product_model.dart';
 import '../../domain/entities/study_material_model.dart';
-import '../../domain/entities/notification_model.dart';
 import 'log_helper.dart';
 
 class SupabaseHelper {
@@ -451,16 +451,29 @@ class SupabaseHelper {
     int limit = 20,
   }) async {
     try {
-      final response = await supabase
-          .rpc(SupabaseKeys.testWithoutCourseMCQ)
-          .range(offset, offset + limit - 1);
+      final response = await supabase.rpc(
+        SupabaseKeys.testWithoutCourseMCQ,
+        params: {'p_offset': offset, 'p_limit': limit},
+      );
+
+      // ✅ Fix: handle null safely
+      if (response == null) {
+        _log.w('RPC returned null');
+        return const Right([]);
+      }
+
+      // ✅ Ensure it's a list
+      if (response is! List) {
+        _log.e('Unexpected response type: ${response.runtimeType}');
+        return Left(Failure('Unexpected response format'));
+      }
 
       if (response.isEmpty) {
         return const Right([]);
       }
 
       final List<TestModel> result =
-          (response as List<dynamic>).map((e) {
+          response.map((e) {
             try {
               return TestModel.fromJson(e as Map<String, dynamic>);
             } catch (parseError) {
@@ -702,9 +715,10 @@ class SupabaseHelper {
     int limit = 20,
   }) async {
     try {
-      final response = await supabase
-          .rpc(SupabaseKeys.descTestWithoutCourse)
-          .range(offset, offset + limit - 1);
+      final response = await supabase.rpc(
+        SupabaseKeys.descTestWithoutCourse,
+        params: {'p_offset': offset, 'p_limit': limit},
+      );
 
       final result =
           (response as List).map((e) => DescTestModel.fromJson(e)).toList();

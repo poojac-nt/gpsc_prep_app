@@ -143,10 +143,18 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
         },
         child: NotificationListener<ScrollNotification>(
           onNotification: (ScrollNotification scrollInfo) {
+            // Make load-more trigger more robust and log values for debugging.
+            final pixels = scrollInfo.metrics.pixels;
+            final max = scrollInfo.metrics.maxScrollExtent;
+            // Only trigger on meaningful scroll updates/end to avoid duplicate calls.
             if (!state.hasReachedMax &&
                 !state.isFetchingMore &&
-                scrollInfo.metrics.pixels >=
-                    scrollInfo.metrics.maxScrollExtent - 200) {
+                (scrollInfo is ScrollUpdateNotification ||
+                    scrollInfo is ScrollEndNotification) &&
+                pixels >= max - 100) {
+              debugPrint(
+                'MCQTestScreen: trigger LoadMoreTests -> pixels=$pixels max=$max hasReachedMax=${state.hasReachedMax} isFetchingMore=${state.isFetchingMore}',
+              );
               context.read<DailyTestBloc>().add(LoadMoreTests());
             }
             return false;
@@ -184,10 +192,17 @@ class _MCQTestScreenState extends State<MCQTestScreen> {
       },
       child: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
+          // Make load-more trigger more robust and log values for debugging.
+          final pixels = scrollInfo.metrics.pixels;
+          final max = scrollInfo.metrics.maxScrollExtent;
           if (!state.hasReachedMax &&
               !state.isFetchingMore &&
-              scrollInfo.metrics.pixels >=
-                  scrollInfo.metrics.maxScrollExtent - 200) {
+              (scrollInfo is ScrollUpdateNotification ||
+                  scrollInfo is ScrollEndNotification) &&
+              pixels >= max - 100) {
+            debugPrint(
+              'MCQTestScreen: trigger LoadMoreTests -> pixels=$pixels max=$max hasReachedMax=${state.hasReachedMax} isFetchingMore=${state.isFetchingMore}',
+            );
             context.read<DailyTestBloc>().add(LoadMoreTests());
           }
           return false;
