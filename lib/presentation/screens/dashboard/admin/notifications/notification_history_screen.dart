@@ -131,7 +131,7 @@ class _NotificationHistoryScreenState
             child: ListView.separated(
               padding: EdgeInsets.all(16.w),
               itemCount: state.notifications.length,
-              separatorBuilder: (_, __) => 10.hGap,
+              separatorBuilder: (_, _) => 10.hGap,
               itemBuilder: (context, index) {
                 final n = state.notifications[index];
                 return _NotificationHistoryCard(

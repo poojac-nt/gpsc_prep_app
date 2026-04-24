@@ -398,7 +398,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<ProductModel>(
-                    value: selectedSingle,
+                    initialValue: selectedSingle,
                     dropdownColor: Colors.white,
                     decoration: InputDecoration(
                       labelText: 'Single Assessment',
@@ -428,7 +428,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                   if (isDescriptive) ...[
                     16.hGap,
                     DropdownButtonFormField<ProductModel>(
-                      value: selectedDual,
+                      initialValue: selectedDual,
                       dropdownColor: Colors.white,
                       decoration: InputDecoration(
                         labelText: 'Dual Assessment',

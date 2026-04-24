@@ -773,7 +773,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                                 itemCount: filtered.length,
                                 padding: EdgeInsets.symmetric(vertical: 8.h),
                                 separatorBuilder:
-                                    (_, __) => Divider(
+                                    (_, _) => Divider(
                                       height: 1,
                                       color: Colors.grey[100],
                                       indent: 16.w,
