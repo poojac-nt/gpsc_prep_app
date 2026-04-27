@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/analytics_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
-import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
@@ -17,15 +17,17 @@ import 'package:gpsc_prep_app/presentation/screens/auth/login_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/add_product_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/notifications/create_notification_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/free_test_review_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor_dashborad_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/free_test_review_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/student_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_full_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/descriptive_answer_detail_screen.dart';
@@ -60,11 +62,12 @@ import '../../presentation/screens/dashboard/admin/assign_mentor_detail_screen.d
 import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
-import '../../presentation/screens/prelims/prelims_mcq_test_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 import '../../utils/enums/user_role.dart';
 import '../cache_manager.dart';
+import '../../domain/entities/notification_model.dart';
+import '../../presentation/screens/dashboard/admin/notifications/notification_history_screen.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -94,8 +97,8 @@ final List<GoRoute> appRoutes = [
 
         router.go(dashboardRoute);
 
-        // Step 2: Wait 300ms so dashboard builds (important!)
-        await Future.delayed(const Duration(milliseconds: 300));
+        // Step 2: Wait 500ms so dashboard builds (important!)
+        await Future.delayed(const Duration(milliseconds: 500));
 
         // Step 3: Push studyMaterial on top of dashboard
         debugPrint(
@@ -138,7 +141,7 @@ final List<GoRoute> appRoutes = [
           router.go(dashboardRoute);
         }
 
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 500));
         debugPrint(
           '🚀 [DEBUG] Navigating via AppRoutes names: type=$type, id=$id',
         );
@@ -187,7 +190,7 @@ final List<GoRoute> appRoutes = [
           router.go(dashboardRoute);
         }
 
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 500));
 
         // Push the course list screen first if not admin
         if (role != UserRole.admin) {
@@ -417,6 +420,9 @@ final List<GoRoute> appRoutes = [
           url: args.url,
           language: args.language,
           courseId: args.courseId,
+          priceSingle: args.priceSingle,
+          priceDual: args.priceDual,
+          testType: args.testType,
         ),
         state,
       );
@@ -430,6 +436,9 @@ final List<GoRoute> appRoutes = [
         DescReviewQuestionUploadScreen(
           payload: args.payload,
           courseId: args.courseId,
+          priceSingle: args.priceSingle,
+          priceDual: args.priceDual,
+          testType: args.testType,
         ),
         state,
       );
@@ -633,12 +642,6 @@ final List<GoRoute> appRoutes = [
 
   // RESTORED ROOT LEVEL ROUTES FOR COMPATIBILITY
   GoRoute(
-    path: AppRoutes.prelimsMcqTestScreen,
-    pageBuilder: (context, state) {
-      return _slideTransition(PrelimsMcqTestScreen(), state);
-    },
-  ),
-  GoRoute(
     path: AppRoutes.prelimsInstructionsScreen,
     name: AppRoutes.prelimsInstructionsScreen,
     pageBuilder: (context, state) {
@@ -710,10 +713,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.assessmentTypeSelection,
     pageBuilder: (context, state) {
       final args = state.extra as AssessmentTypeSelectionScreenArgs;
-      return _slideTransition(
-        AssessmentTypeSelectionScreen(courseModel: args.courseModel),
-        state,
-      );
+      return _slideTransition(AssessmentTypeSelectionScreen(args: args), state);
     },
   ),
   GoRoute(
@@ -736,6 +736,27 @@ final List<GoRoute> appRoutes = [
       final args = state.extra as StudentEvaluationResultScreenArgs;
       return _slideTransition(StudentEvaluationResultScreen(args: args), state);
     },
+  ),
+  GoRoute(
+    path: AppRoutes.addProduct,
+    pageBuilder:
+        (context, state) => _slideTransition(const AddProductScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.createNotification,
+    pageBuilder: (context, state) {
+      final prefill = state.extra as NotificationModel?;
+      return _slideTransition(
+        CreateNotificationScreen(prefill: prefill),
+        state,
+      );
+    },
+  ),
+  GoRoute(
+    path: AppRoutes.notificationHistory,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const NotificationHistoryScreen(), state),
   ),
 ];
 

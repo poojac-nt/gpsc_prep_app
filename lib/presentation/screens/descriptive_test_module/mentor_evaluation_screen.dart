@@ -269,7 +269,7 @@ Positives:
           iconColor: const Color(0xFF059669),
           iconBackgroundColor: const Color(0xFFD1FAE5),
           onTap: () async {
-            final result = await FilePicker.platform.pickFiles(
+            final result = await FilePicker.pickFiles(
               type: FileType.custom,
               allowedExtensions: ['pdf'],
             );

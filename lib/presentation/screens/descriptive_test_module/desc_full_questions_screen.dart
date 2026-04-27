@@ -108,17 +108,24 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                   ),
                 if (questions.isNotEmpty)
                   IconButton(
-                    onPressed: _isDownloadingFull ? null : () => _downloadFullPdf(questions),
-                    icon: _isDownloadingFull 
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                    onPressed:
+                        _isDownloadingFull
+                            ? null
+                            : () => _downloadFullPdf(questions),
+                    icon:
+                        _isDownloadingFull
+                            ? SizedBox(
+                              width: 20.w,
+                              height: 20.w,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            )
+                            : Icon(
+                              Icons.download_rounded,
                               color: AppColors.primary,
                             ),
-                          )
-                        : Icon(Icons.download_rounded, color: AppColors.primary),
                     tooltip: 'Download Full Test PDF',
                   ),
                 SizedBox(width: 8.w),
@@ -396,7 +403,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   }
 
   Future<void> _pickPDF() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
@@ -438,7 +445,9 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
     try {
       await generateFullDescTestPdf(questions, widget.testName);
       if (mounted) {
-        getIt<SnackBarHelper>().showSuccess('Full Test PDF downloaded successfully');
+        getIt<SnackBarHelper>().showSuccess(
+          'Full Test PDF downloaded successfully',
+        );
       }
     } catch (e) {
       if (mounted) {

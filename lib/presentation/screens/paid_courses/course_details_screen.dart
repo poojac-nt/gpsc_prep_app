@@ -11,16 +11,19 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_attempt_state_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/user_purchase_model.dart';
-import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_course_details/fetch_course_details_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/enums/assement_type_enum.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
-import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
+
+import '../../../domain/entities/desc_answer_model.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   const CourseDetailsScreen({super.key, required this.courseModel});
@@ -39,8 +42,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   void initState() {
     super.initState();
     _fetchAttemptStates();
-    context.read<DailyDescTestBloc>().add(
-      FetchAllTests(courseId: widget.courseModel.id),
+    context.read<FetchCourseDetailsBloc>().add(
+      FetchCourseTestsAndResults(widget.courseModel.id),
     );
     context.read<PurchaseBloc>().add(FetchPurchases());
   }
@@ -76,148 +79,154 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           "Course Details",
           style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
         ),
-        centerTitle: true,
         elevation: 0,
         backgroundColor: AppColors.scaffoldColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: RefreshIndicator(
-              color: AppColors.primary,
-              onRefresh: () async {
-                await _fetchAttemptStates();
-                if (mounted) {
-                  context.read<DailyDescTestBloc>().add(
-                    FetchAllTests(courseId: widget.courseModel.id),
-                  );
-                }
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.only(
-                  left: 16.w,
-                  right: 16.w,
-                  bottom: 20.h,
-                  top: 10.h,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.courseModel.name,
-                      style: AppTexts.titleTextStyle.copyWith(
-                        fontSize: 24.sp,
-                        height: 1.2,
+      body: BlocListener<PurchaseBloc, PurchaseState>(
+        listener: (context, state) {
+          if (state is IapPurchaseSuccess) {
+            getIt<SnackBarHelper>().showSuccess(
+              'Payment successful! You are now enrolled.',
+            );
+          } else if (state is IapPurchaseFailed &&
+              state.message != 'Purchase was cancelled.') {
+            getIt<SnackBarHelper>().showError(state.message);
+          } else if (state is PurchaseFailed) {
+            getIt<SnackBarHelper>().showError(
+              'Enrollment failed. Please try again.',
+            );
+          }
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async {
+                  await _fetchAttemptStates();
+                  if (mounted) {
+                    context.read<FetchCourseDetailsBloc>().add(
+                      FetchCourseTestsAndResults(widget.courseModel.id),
+                    );
+                  }
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    left: 16.w,
+                    right: 16.w,
+                    bottom: 20.h,
+                    top: 10.h,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.courseModel.name,
+                        style: AppTexts.titleTextStyle.copyWith(
+                          fontSize: 24.sp,
+                          height: 1.2,
+                        ),
                       ),
-                    ),
-                    24.hGap,
-                    // Description
-                    Text(
-                      "About this course",
-                      style: AppTexts.heading.copyWith(fontSize: 16.sp),
-                    ),
-                    12.hGap,
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final String descriptionText =
-                            widget.courseModel.description;
-                        final TextStyle style = TextStyle(
-                          fontSize: 13.sp,
-                          color: AppColors.gray500,
-                          height: 1.6,
-                        );
+                      24.hGap,
+                      // Description
+                      Text(
+                        "About this course",
+                        style: AppTexts.heading.copyWith(fontSize: 16.sp),
+                      ),
+                      12.hGap,
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final String descriptionText =
+                              widget.courseModel.description;
+                          final TextStyle style = TextStyle(
+                            fontSize: 13.sp,
+                            color: AppColors.gray500,
+                            height: 1.6,
+                          );
 
-                        final span = TextSpan(
-                          text: descriptionText,
-                          style: style,
-                        );
-                        final tp = TextPainter(
-                          text: span,
-                          maxLines: 4,
-                          textDirection: TextDirection.ltr,
-                        );
-                        tp.layout(maxWidth: constraints.maxWidth);
-                        final bool isOverflowing = tp.didExceedMaxLines;
+                          final span = TextSpan(
+                            text: descriptionText,
+                            style: style,
+                          );
+                          final tp = TextPainter(
+                            text: span,
+                            maxLines: 4,
+                            textDirection: TextDirection.ltr,
+                          );
+                          tp.layout(maxWidth: constraints.maxWidth);
+                          final bool isOverflowing = tp.didExceedMaxLines;
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              descriptionText,
-                              style: style,
-                              maxLines: _isExpanded ? null : 4,
-                              overflow:
-                                  _isExpanded
-                                      ? TextOverflow.visible
-                                      : TextOverflow.ellipsis,
-                            ),
-                            if (isOverflowing) ...[
-                              4.hGap,
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _isExpanded = !_isExpanded;
-                                  });
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      _isExpanded ? "Read Less" : "Read More",
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                    Icon(
-                                      _isExpanded
-                                          ? Icons.keyboard_arrow_up_rounded
-                                          : Icons.keyboard_arrow_down_rounded,
-                                      color: AppColors.primary,
-                                      size: 16.sp,
-                                    ),
-                                  ],
-                                ),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                descriptionText,
+                                style: style,
+                                maxLines: _isExpanded ? null : 4,
+                                overflow:
+                                    _isExpanded
+                                        ? TextOverflow.visible
+                                        : TextOverflow.ellipsis,
                               ),
+                              if (isOverflowing) ...[
+                                4.hGap,
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _isExpanded = !_isExpanded;
+                                    });
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _isExpanded ? "Read Less" : "Read More",
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      Icon(
+                                        _isExpanded
+                                            ? Icons.keyboard_arrow_up_rounded
+                                            : Icons.keyboard_arrow_down_rounded,
+                                        color: AppColors.primary,
+                                        size: 16.sp,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
-                        );
-                      },
-                    ),
-                    32.hGap,
-                    Text(
-                      "Curriculum",
-                      style: AppTexts.heading.copyWith(fontSize: 16.sp),
-                    ),
-                    16.hGap,
-                    _buildAllTests(),
-                  ],
+                          );
+                        },
+                      ),
+                      32.hGap,
+                      Text(
+                        "Curriculum",
+                        style: AppTexts.heading.copyWith(fontSize: 16.sp),
+                      ),
+                      16.hGap,
+                      _buildAllTests(),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          BlocBuilder<PurchaseBloc, PurchaseState>(
-            builder: (context, state) {
-              final purchases =
-                  (state is PurchaseFetched)
-                      ? state.purchases
-                      : (state is PurchaseSuccess
-                          ? state.purchases
-                          : (state is PurchasePurchasing
-                              ? state.purchases
-                              : (state is PurchaseFailed
-                                  ? state.purchases
-                                  : <UserPurchaseModel>[])));
-              final bool isEnrolled = purchases.any(
-                (p) => p.courseId == widget.courseModel.id,
-              );
-              return _bottomBar(isEnrolled);
-            },
-          ),
-        ],
+            BlocBuilder<PurchaseBloc, PurchaseState>(
+              builder: (context, state) {
+                final bool isEnrolled = state.isCourseEnrolled(
+                  widget.courseModel.id,
+                );
+                final bool isIapLoading = state is IapPurchasing;
+                return _bottomBar(isEnrolled, isLoading: isIapLoading);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -227,31 +236,26 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
     return BlocBuilder<PurchaseBloc, PurchaseState>(
       builder: (context, purchaseState) {
-        final purchases =
-            (purchaseState is PurchaseFetched)
-                ? purchaseState.purchases
-                : (purchaseState is PurchaseSuccess
-                    ? purchaseState.purchases
-                    : (purchaseState is PurchasePurchasing
-                        ? purchaseState.purchases
-                        : (purchaseState is PurchaseFailed
-                            ? purchaseState.purchases
-                            : <UserPurchaseModel>[])));
-        final bool isEnrolled = purchases.any(
-          (p) => p.courseId == widget.courseModel.id,
-        );
+        final int courseId = widget.courseModel.id;
 
         final tests = widget.courseModel.tests;
+
         final List<Widget> items = [];
         final prelims = tests?.prelims ?? [];
         for (int i = 0; i < prelims.length; i++) {
+          final test = prelims[i];
+
+          final bool isAccessible = purchaseState.isTestAccessible(
+            courseId,
+            test.id,
+          );
           items.add(
             Padding(
               padding: EdgeInsets.only(bottom: 12.h),
               child: _buildTestItem(
-                test: prelims[i],
+                test: test,
                 index: '${i + 1}',
-                isEnrolled: isEnrolled,
+                isAccessible: isAccessible,
               ),
             ),
           );
@@ -260,33 +264,46 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         final descriptiveTests = tests?.descriptive ?? [];
         if (descriptiveTests.isNotEmpty) {
           final prelimCount = prelims.length;
+
           items.add(
-            BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
+            BlocBuilder<FetchCourseDetailsBloc, FetchCourseDetailsState>(
               builder: (context, state) {
+                if (state is FetchCourseDetailsLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
+                }
                 final List<Widget> descItems = [];
-                final Map<int, dynamic> answersMap =
-                    (state is DailyDescTestFetched) ? state.answersMap : {};
+                final Map<int, List<DescAnswerModel>> answersMap =
+                    (state is FetchCourseDetailsSuccess)
+                        ? state.answersMap
+                        : {};
                 final Map<int, MainsTestReviewModel?> reviewModels =
-                    (state is DailyDescTestFetched) ? state.reviewsMap : {};
+                    (state is FetchCourseDetailsSuccess)
+                        ? state.reviewsMap
+                        : {};
+
                 for (int i = 0; i < descriptiveTests.length; i++) {
                   final test = descriptiveTests[i];
                   final hasAnswer = answersMap.containsKey(test.id);
 
-                  if (hasAnswer && !reviewModels.containsKey(test.id)) {
-                    context.read<DailyDescTestBloc>().add(
-                      FetchReviewForTest(test.id),
-                    );
-                  }
+                  final bool isAccessible = purchaseState.isTestAccessible(
+                    courseId,
+                    test.id,
+                  );
 
-                  final purchase = purchases.firstWhere(
-                    (p) => p.courseId == widget.courseModel.id,
+                  // Find the matching purchase to get assessmentType.
+                  final purchase = purchaseState.purchases.firstWhere(
+                    (p) => p.courseId == courseId && p.isTestUnlocked(test.id),
                     orElse:
                         () => UserPurchaseModel(
                           id: 0,
                           userId: 0,
                           courseId: 0,
+                          testIds: '',
                           assessmentType: AssessmentType.single,
                           createdAt: '',
+                          isActive: true,
                         ),
                   );
 
@@ -297,9 +314,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         test: test,
                         index: '${prelimCount + i + 1}',
                         hasAnswer: hasAnswer,
-                        isEnrolled: isEnrolled,
+                        isAccessible: isAccessible,
                         assessmentType:
-                            isEnrolled ? purchase.assessmentType : null,
+                            isAccessible ? purchase.assessmentType : null,
                         reviewModel: reviewModels[test.id],
                       ),
                     ),
@@ -320,17 +337,19 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required DescTestModel test,
     required String index,
     required bool hasAnswer,
-    required bool isEnrolled,
+    required bool isAccessible,
     AssessmentType? assessmentType,
     MainsTestReviewModel? reviewModel,
   }) {
+    final bool isCourseFree =
+        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
     const Color badgeColor = Color(0xFF7C3AED);
     final String badgeLabel =
         assessmentType != null ? assessmentType.type : 'Descriptive';
     final String details = "${test.noQuestions} Questions";
 
     Widget? statusWidget;
-    if (hasAnswer) {
+    if (isAccessible && hasAnswer) {
       String status = "Submitted";
       Color statusColor = const Color(0xFFD97706); // Amber
       IconData statusIcon = Icons.pending_actions_rounded;
@@ -357,65 +376,65 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
 
     return InkWell(
-      onTap: () async {
-        if (!isEnrolled) {
-          getIt<SnackBarHelper>().showError(
-            "Please enroll in the course to access tests.",
-          );
-          return;
-        }
-        if (hasAnswer) {
-          // No mentor assigned at all
-          if (reviewModel == null || reviewModel.mentorReviews.isEmpty) {
-            getIt<SnackBarHelper>().showSuccess(
-              "No mentor has been assigned yet. Please wait.",
-            );
-            return;
-          }
+      onTap:
+          isAccessible
+              ? () async {
+                if (hasAnswer) {
+                  // No mentor assigned at all
+                  if (reviewModel == null ||
+                      reviewModel.mentorReviews.isEmpty) {
+                    getIt<SnackBarHelper>().showSuccess(
+                      "No mentor has been assigned yet. Please wait.",
+                    );
+                    return;
+                  }
 
-          final reviews = reviewModel.mentorReviews;
+                  final reviews = reviewModel.mentorReviews;
 
-          if (reviews.length == 1) {
-            final mentor = reviews.first;
-            final isCompleted = mentor.status.toLowerCase() == "completed";
-            if (isCompleted) {
-              await context.push(
-                AppRoutes.studentEvaluationResult,
-                extra: StudentEvaluationResultScreenArgs(
-                  testId: test.id,
-                  testName: test.name,
-                  studentName: getIt<CacheManager>().user?.name ?? 'Student',
-                  reviewModel: reviewModel,
-                  mentorId: mentor.mentorId,
-                ),
-              );
-            } else {
-              // Assigned but not yet reviewed
-              getIt<SnackBarHelper>().showSuccess(
-                "Your test is assigned to a mentor and is under review. Result will be available soon.",
-              );
-            }
-          } else {
-            // 2+ mentors — always show bottom sheet regardless of status
-            _showMentorSelectionSheet(test, reviewModel);
-          }
-          return;
-        }
+                  if (reviews.length == 1) {
+                    final mentor = reviews.first;
+                    final isCompleted =
+                        mentor.status.toLowerCase() == "completed";
+                    if (isCompleted) {
+                      await context.push(
+                        AppRoutes.studentEvaluationResult,
+                        extra: StudentEvaluationResultScreenArgs(
+                          testId: test.id,
+                          testName: test.name,
+                          studentName:
+                              getIt<CacheManager>().user?.name ?? 'Student',
+                          reviewModel: reviewModel,
+                          mentorId: mentor.mentorId,
+                        ),
+                      );
+                    } else {
+                      // Assigned but not yet reviewed
+                      getIt<SnackBarHelper>().showSuccess(
+                        "Your test is assigned to a mentor and is under review. Result will be available soon.",
+                      );
+                    }
+                  } else {
+                    // 2+ mentors — always show bottom sheet regardless of status
+                    _showMentorSelectionSheet(test, reviewModel);
+                  }
+                  return;
+                }
 
-        await context.push(
-          AppRoutes.descFullQuestions,
-          extra: DescFullQuestionsScreenArgs(
-            testId: test.id,
-            testName: test.name,
-            courseId: widget.courseModel.id,
-          ),
-        );
+                await context.push(
+                  AppRoutes.descFullQuestions,
+                  extra: DescFullQuestionsScreenArgs(
+                    testId: test.id,
+                    testName: test.name,
+                    courseId: widget.courseModel.id,
+                  ),
+                );
 
-        if (!mounted) return;
-        context.read<DailyDescTestBloc>().add(
-          FetchAllTests(courseId: widget.courseModel.id),
-        );
-      },
+                if (!mounted) return;
+                context.read<FetchCourseDetailsBloc>().add(
+                  FetchCourseTestsAndResults(widget.courseModel.id),
+                );
+              }
+              : null,
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(
         index: index,
@@ -424,7 +443,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
         statusWidget: statusWidget,
-        isLocked: !isEnrolled,
+        isLocked: !isAccessible,
+        price:
+            (!isAccessible && !isCourseFree) ? test.singleProduct?.price : null,
+        onBuyTap: () {
+          _handleTestPurchase(
+            context,
+            testId: test.id,
+            singleProduct: test.singleProduct,
+            dualProduct: test.dualProduct,
+            isDescriptive: true,
+          );
+        },
       ),
     );
   }
@@ -433,7 +463,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     DescTestModel test,
     MainsTestReviewModel reviewModel,
   ) {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -530,10 +559,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  Widget _bottomBar(bool isEnrolled) {
+  Widget _bottomBar(bool isEnrolled, {bool isLoading = false}) {
+    final bool isFree =
+        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
+    final bool hasPrice = widget.courseModel.singleProduct.price > 0 || isFree;
     final bool isPrelims =
         widget.courseModel.testType == CourseTestType.prelims;
-    final bool hasPrice = widget.courseModel.priceSingle != null;
     final bool showPrice = !isEnrolled && isPrelims && hasPrice;
 
     return Container(
@@ -569,9 +600,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        "₹${widget.courseModel.priceSingle}",
+                        isFree
+                            ? "Free Access"
+                            : "₹${widget.courseModel.singleProduct.price}",
                         style: TextStyle(
-                          fontSize: 22.sp,
+                          fontSize: isFree ? 18.sp : 22.sp,
                           fontWeight: FontWeight.w900,
                           color: const Color(0xFF111827),
                         ),
@@ -615,7 +648,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 )
                 : (showPrice
                     ? ElevatedButton(
-                      onPressed: () => _handleEnrollment(context),
+                      onPressed:
+                          isLoading ? null : () => _handleEnrollment(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -628,17 +662,30 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
-                      child: Text(
-                        "Enroll Now",
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child:
+                          isLoading
+                              ? SizedBox(
+                                height: 20.h,
+                                width: 20.w,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : Text(
+                                "Enroll Now",
+                                style: TextStyle(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                     )
                     : Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _handleEnrollment(context),
+                        onPressed:
+                            isLoading ? null : () => _handleEnrollment(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -648,13 +695,25 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
-                        child: Text(
-                          "Enroll Now",
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child:
+                            isLoading
+                                ? SizedBox(
+                                  height: 20.h,
+                                  width: 20.w,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                : Text(
+                                  isFree ? "Enroll for Free" : "Enroll Now",
+                                  style: TextStyle(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                       ),
                     )),
           ],
@@ -676,16 +735,86 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       selectedType = AssessmentType.single;
     }
 
-    if (selectedType != null) {
-      if (!mounted) return;
+    if (selectedType == null) return;
+    if (!mounted) return;
+
+    final payload = UserPurchasePayload(
+      userId: getIt<CacheManager>().user?.id ?? 0,
+      courseId: widget.courseModel.id,
+      testIds: [0],
+      productId: '',
+      // Placeholder, populated in PurchaseBloc after native purchase
+      purchaseToken:
+          '', // Placeholder, populated in PurchaseBloc after native purchase
+    );
+
+    // Select the product ID from the course model based on the assessment type.
+    final String? productId =
+        (selectedType == AssessmentType.double)
+            ? widget.courseModel.dualProduct?.productId
+            : widget.courseModel.singleProduct.productId;
+
+    payload.productId = productId ?? '';
+    payload.assessmentType = selectedType;
+
+    if (productId == ProductIds.freeCourse) {
+      context.read<PurchaseBloc>().add(PurchaseCourse(payload));
+      return;
+    }
+
+    if (productId != null && productId.isNotEmpty) {
       context.read<PurchaseBloc>().add(
-        PurchaseCourse(
-          UserPurchasePayload(
-            userId: 0, // Handled internally in SupabaseHelper
-            courseId: widget.courseModel.id,
-            assessmentType: selectedType,
-          ),
+        InitiateIapPurchase(productId: productId, backendPayload: payload),
+      );
+    }
+  }
+
+  /// Handles purchasing an individual test (prelims or descriptive).
+  Future<void> _handleTestPurchase(
+    BuildContext context, {
+    required int testId,
+    required ProductModel? singleProduct,
+    required ProductModel? dualProduct,
+    required bool isDescriptive,
+  }) async {
+    AssessmentType? selectedType;
+
+    if (isDescriptive) {
+      selectedType = await context.push<AssessmentType>(
+        AppRoutes.assessmentTypeSelection,
+        extra: AssessmentTypeSelectionScreenArgs(
+          courseModel: widget.courseModel,
+          testSingleProduct: singleProduct,
+          testDualProduct: dualProduct,
         ),
+      );
+      if (selectedType == null) return;
+    } else {
+      selectedType = AssessmentType.single;
+    }
+
+    final String? productId =
+        (selectedType == AssessmentType.double)
+            ? dualProduct?.productId
+            : singleProduct?.productId;
+
+    final payload = UserPurchasePayload(
+      userId: getIt<CacheManager>().user?.id ?? 0,
+      courseId: widget.courseModel.id,
+      testIds: [testId],
+      productId: productId ?? '',
+      purchaseToken: '',
+      assessmentType: selectedType,
+    );
+
+    if (productId == ProductIds.freeCourse) {
+      context.read<PurchaseBloc>().add(PurchaseCourse(payload));
+      return;
+    }
+
+    if (productId != null && productId.isNotEmpty) {
+      context.read<PurchaseBloc>().add(
+        InitiateIapPurchase(productId: productId, backendPayload: payload),
       );
     }
   }
@@ -693,8 +822,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Widget _buildTestItem({
     required TestModel test,
     required String index,
-    required bool isEnrolled,
+    required bool isAccessible,
   }) {
+    final bool isCourseFree =
+        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
     final bool isPrelims = test.testType == TestType.prelims;
     final Color badgeColor =
         isPrelims ? const Color(0xFF059669) : AppColors.primary;
@@ -708,61 +839,63 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         attemptState.attemptsDone >= attemptState.maxAttempts;
     final bool hasAttempted =
         attemptState != null && attemptState.attemptsDone > 0;
-
+    debugPrint('=== TEST: ${test.name}');
+    debugPrint('isAccessible: $isAccessible');
+    debugPrint('singleProduct: ${test.singleProduct}');
+    debugPrint('price: ${test.singleProduct?.price}');
     Widget? statusWidget;
-    if (isCompleted) {
-      statusWidget = _buildStatusBadge(
-        icon: Icons.check_circle_rounded,
-        label: 'Completed',
-        color: const Color(0xFF059669),
-      );
-    } else if (hasAttempted) {
-      if (attemptState.canRetry) {
+    if (isAccessible) {
+      if (isCompleted) {
         statusWidget = _buildStatusBadge(
-          icon: Icons.replay_rounded,
-          label:
-              'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry available',
-          color: const Color(0xFFD97706),
+          icon: Icons.check_circle_rounded,
+          label: 'Completed',
+          color: const Color(0xFF059669),
         );
-      } else {
-        final remaining = _formatRemainingTime(attemptState.retryAvailableAt);
-        statusWidget = _buildStatusBadge(
-          icon: Icons.hourglass_top_rounded,
-          label:
-              'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry after $remaining',
-          color: const Color(0xFFD97706),
-        );
+      } else if (hasAttempted) {
+        if (attemptState.canRetry) {
+          statusWidget = _buildStatusBadge(
+            icon: Icons.replay_rounded,
+            label:
+                'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry available',
+            color: const Color(0xFFD97706),
+          );
+        } else {
+          final remaining = _formatRemainingTime(attemptState.retryAvailableAt);
+          statusWidget = _buildStatusBadge(
+            icon: Icons.hourglass_top_rounded,
+            label:
+                'Attempt ${attemptState.attemptsDone}/${attemptState.maxAttempts} • Retry after $remaining',
+            color: const Color(0xFFD97706),
+          );
+        }
       }
     }
 
     return InkWell(
-      onTap: () async {
-        if (!isEnrolled) {
-          getIt<SnackBarHelper>().showError(
-            "Please enroll in the course to access tests.",
-          );
-          return;
-        }
-        if (isCompleted) {
-          // Navigate to result screen
-          await context.push(
-            AppRoutes.resultScreen,
-            extra: ResultScreenArgs(isFromTest: false, testModal: test),
-          );
-          _fetchAttemptStates();
-        } else if (hasAttempted && !attemptState.canRetry) {
-          // In cooldown — show last result
-          await context.push(
-            AppRoutes.resultScreen,
-            extra: ResultScreenArgs(isFromTest: false, testModal: test),
-          );
-          _fetchAttemptStates();
-        } else {
-          await _navigateToInstruction(test);
-          if (!mounted) return;
-          _fetchAttemptStates();
-        }
-      },
+      onTap:
+          isAccessible
+              ? () async {
+                if (isCompleted) {
+                  // Navigate to result screen
+                  await context.push(
+                    AppRoutes.resultScreen,
+                    extra: ResultScreenArgs(isFromTest: false, testModal: test),
+                  );
+                  _fetchAttemptStates();
+                } else if (hasAttempted && !attemptState.canRetry) {
+                  // In cooldown — show last result
+                  await context.push(
+                    AppRoutes.resultScreen,
+                    extra: ResultScreenArgs(isFromTest: false, testModal: test),
+                  );
+                  _fetchAttemptStates();
+                } else {
+                  await _navigateToInstruction(test);
+                  if (!mounted) return;
+                  _fetchAttemptStates();
+                }
+              }
+              : null,
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(
         index: index,
@@ -771,7 +904,17 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeLabel: badgeLabel,
         badgeColor: badgeColor,
         statusWidget: statusWidget,
-        isLocked: !isEnrolled,
+        isLocked: !isAccessible,
+        price: !isAccessible ? test.singleProduct?.price : null,
+        onBuyTap: () {
+          _handleTestPurchase(
+            context,
+            testId: test.id,
+            singleProduct: test.singleProduct,
+            dualProduct: test.dualProduct,
+            isDescriptive: false,
+          );
+        },
       ),
     );
   }
@@ -830,6 +973,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required Color badgeColor,
     Widget? statusWidget,
     bool isLocked = false,
+    int? price,
+    VoidCallback? onBuyTap,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -901,11 +1046,34 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
           12.wGap,
           isLocked
-              ? Icon(
-                Icons.lock_person_rounded,
-                color: AppColors.gray400,
-                size: 22.sp,
-              )
+              ? (price != null && price > 0
+                  ? InkWell(
+                    onTap: onBuyTap,
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        'Buy ₹$price',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                  : Icon(
+                    Icons.lock_person_rounded,
+                    color: AppColors.gray400,
+                    size: 22.sp,
+                  ))
               : Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: AppColors.gray400,

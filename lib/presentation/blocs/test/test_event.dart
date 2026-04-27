@@ -33,5 +33,3 @@ class SubmitTest extends TestEvent {
     this.timePerQuestion,
   });
 }
-
-class InsertTestResultEvent extends TestEvent {}

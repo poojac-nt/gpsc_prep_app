@@ -30,3 +30,15 @@ class FetchCoursesFailure extends CourseState {
 
   FetchCoursesFailure(this.error);
 }
+
+class FetchProductsSuccess extends CourseState {
+  final List<ProductModel> products;
+
+  FetchProductsSuccess(this.products);
+}
+
+class FetchProductsFailure extends CourseState {
+  final String error;
+
+  FetchProductsFailure(this.error);
+}

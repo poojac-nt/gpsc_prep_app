@@ -331,17 +331,11 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                           }
 
                           // Open file picker
-                          FilePickerResult? result = await FilePicker.platform
-                              .pickFiles(
-                                type: FileType.custom,
-                                allowedExtensions: [
-                                  'pdf',
-                                  'jpg',
-                                  'jpeg',
-                                  'png',
-                                ],
-                                allowMultiple: true,
-                              );
+                          FilePickerResult? result = await FilePicker.pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                            allowMultiple: true,
+                          );
 
                           if (result != null) {
                             final files =

@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 
 final _log = getIt<LogHelper>();
 final _supabase = getIt<SupabaseHelper>().supabase;
@@ -29,7 +30,7 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
   required bool isTestUpload,
 }) async {
   try {
-    final pickedFileResult = await FilePicker.platform.pickFiles(
+    final pickedFileResult = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx'],
       withData: false,
@@ -175,6 +176,9 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
   required bool isTestUpload,
   DateTime? availableAt,
   int? courseId,
+  int? priceSingle,
+  int? priceDual,
+  CourseTestType? testType,
 }) async {
   try {
     if (payload.isEmpty) {
@@ -231,7 +235,13 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
 
     final rpcResult = await _supabase.rpc(
       SupabaseKeys.insertMcqWithTest,
-      params: {'p_course_id': courseId, 'payload': structuredPayload},
+      params: {
+        'p_course_id': courseId,
+        'payload': structuredPayload,
+        'p_single_price_id': priceSingle,
+        'p_double_price_id': priceDual,
+        'p_course_type': testType?.name,
+      },
     );
 
     final response = rpcResult as Map<String, dynamic>?;

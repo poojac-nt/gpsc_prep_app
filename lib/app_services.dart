@@ -14,6 +14,7 @@ import 'package:gpsc_prep_app/core/router/app_routes.dart';
 import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/firebase_options.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_product/add_product_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/admin_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
@@ -27,9 +28,11 @@ import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/notification/notification_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/fetch_course_details/fetch_course_details_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
@@ -40,7 +43,6 @@ import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.da
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pending_submissions/pending_submissions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/pie_chart/pie_chart_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/prelims/prelims_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/purchase/purchase_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/result/result_bloc.dart';
@@ -76,15 +78,6 @@ class AppServices {
       ),
     );
     await MobileAds.instance.initialize();
-
-    // Initialize Local Notifications
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    await FlutterLocalNotificationsPlugin().initialize(
-      settings: initializationSettings,
-    );
 
     await ScreenUtil.ensureScreenSize();
 
@@ -144,7 +137,7 @@ class AppServices {
     BlocProvider<DetailedAnalyticsBloc>(
       create: (_) => getIt<DetailedAnalyticsBloc>(),
     ),
-    BlocProvider<PrelimsTestBloc>(create: (_) => getIt<PrelimsTestBloc>()),
+
     BlocProvider<CourseBloc>(create: (_) => getIt<CourseBloc>()),
     BlocProvider<SubjectBloc>(create: (_) => getIt<SubjectBloc>()),
     BlocProvider<PeerReviewBloc>(create: (_) => getIt<PeerReviewBloc>()),
@@ -185,6 +178,11 @@ class AppServices {
     BlocProvider<FreeTestReviewBloc>(
       create: (_) => getIt<FreeTestReviewBloc>(),
     ),
+    BlocProvider<FetchCourseDetailsBloc>(
+      create: (_) => getIt<FetchCourseDetailsBloc>(),
+    ),
+    BlocProvider<AddProductBloc>(create: (_) => getIt<AddProductBloc>()),
+    BlocProvider<NotificationBloc>(create: (_) => getIt<NotificationBloc>()),
   ];
 
   List<BlocProvider> get blocProviders => _blocProviders;

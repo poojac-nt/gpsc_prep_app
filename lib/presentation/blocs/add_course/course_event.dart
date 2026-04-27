@@ -20,3 +20,5 @@ class AddCourseRequested extends CourseEvent {
 }
 
 class FetchCoursesRequested extends CourseEvent {}
+
+class FetchProductsRequested extends CourseEvent {}

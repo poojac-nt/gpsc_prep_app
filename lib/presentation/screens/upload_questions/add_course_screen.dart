@@ -3,13 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
-import 'package:gpsc_prep_app/utils/services/validator.dart';
+import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class AddCourseScreen extends StatefulWidget {
   const AddCourseScreen({super.key});
@@ -21,9 +21,10 @@ class AddCourseScreen extends StatefulWidget {
 class _AddCourseScreenState extends State<AddCourseScreen> {
   final TextEditingController _courseController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _priceSingleController = TextEditingController();
-  final TextEditingController _priceDualController = TextEditingController();
   CourseTestType _selectedTestType = CourseTestType.prelims; // Default value
+  List<ProductModel> _products = [];
+  ProductModel? _selectedSingleProduct;
+  ProductModel? _selectedDualProduct;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final CourseBloc _bloc;
 
@@ -31,14 +32,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   void initState() {
     super.initState();
     _bloc = getIt<CourseBloc>();
+    _bloc.add(FetchProductsRequested());
   }
 
   @override
   void dispose() {
     _courseController.dispose();
     _descriptionController.dispose();
-    _priceSingleController.dispose();
-    _priceDualController.dispose();
     super.dispose();
   }
 
@@ -46,16 +46,17 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     if (_formKey.currentState!.validate()) {
       final courseName = _courseController.text.trim();
       final description = _descriptionController.text.trim();
-      final priceSingle = int.tryParse(_priceSingleController.text.trim());
-      final priceDual = int.tryParse(_priceDualController.text.trim());
 
       _bloc.add(
         AddCourseRequested(
           name: courseName,
           description: description.isNotEmpty ? description : null,
           testType: _selectedTestType,
-          priceSingle: priceSingle,
-          priceDual: priceDual,
+          priceSingle: _selectedSingleProduct?.id,
+          priceDual:
+              _selectedTestType == CourseTestType.mains
+                  ? _selectedDualProduct?.id
+                  : null,
         ),
       );
     }
@@ -73,10 +74,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             );
             _courseController.clear();
             _descriptionController.clear();
-            _priceSingleController.clear();
-            _priceDualController.clear();
             setState(() {
               _selectedTestType = CourseTestType.prelims;
+              _selectedSingleProduct = null;
+              _selectedDualProduct = null;
+            });
+          } else if (state is FetchProductsSuccess) {
+            setState(() {
+              _products = state.products;
             });
           } else if (state is AddCourseFailure) {
             getIt<SnackBarHelper>().showError(state.error);
@@ -149,6 +154,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                         if (value != null) {
                                           setState(() {
                                             _selectedTestType = value;
+                                            if (value ==
+                                                CourseTestType.prelims) {
+                                              _selectedDualProduct = null;
+                                            }
                                           });
                                         }
                                       },
@@ -165,48 +174,86 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                   }).toList(),
                             ),
                             16.hGap,
-                            TextFormField(
-                              controller: _priceSingleController,
-                              enabled: !isLoading,
-                              keyboardType: TextInputType.number,
+                            DropdownButtonFormField<ProductModel>(
+                              initialValue: _selectedSingleProduct,
+                              dropdownColor: Colors.white,
+                              onChanged:
+                                  isLoading
+                                      ? null
+                                      : (value) {
+                                        setState(() {
+                                          _selectedSingleProduct = value;
+                                          if (_selectedDualProduct == value) {
+                                            _selectedDualProduct = null;
+                                          }
+                                        });
+                                      },
                               decoration: _inputDecoration(
                                 label: 'Price (Single Assessment)',
-                                hint: 'Enter price (e.g., 500)',
+                                hint: 'Select product/price',
                               ),
+                              items:
+                                  _products.map((product) {
+                                    return DropdownMenuItem(
+                                      value: product,
+                                      child: Text(
+                                        '${product.title} (₹${product.price})',
+                                      ),
+                                    );
+                                  }).toList(),
                               validator: (value) {
-                                return Validator.validatePrice(
-                                  value,
-                                  fieldName: 'Price (Single Assessment)',
-                                );
+                                if (value == null) {
+                                  return 'Please select a product';
+                                }
+                                return null;
                               },
                             ),
                             16.hGap,
-                            TextFormField(
-                              controller: _priceDualController,
-                              enabled: !isLoading,
-                              keyboardType: TextInputType.number,
+                            DropdownButtonFormField<ProductModel>(
+                              initialValue:
+                                  _selectedTestType == CourseTestType.prelims
+                                      ? null
+                                      : _selectedDualProduct,
+                              dropdownColor: Colors.white,
+                              onChanged:
+                                  isLoading ||
+                                          _selectedTestType ==
+                                              CourseTestType.prelims
+                                      ? null
+                                      : (value) {
+                                        setState(() {
+                                          _selectedDualProduct = value;
+                                        });
+                                      },
                               decoration: _inputDecoration(
                                 label: 'Price (Dual Assessment)',
                                 hint:
-                                    _selectedTestType == CourseTestType.mains
-                                        ? 'Enter price (e.g., 800)'
-                                        : 'Enter price (optional)',
+                                    _selectedTestType == CourseTestType.prelims
+                                        ? 'Not applicable for Prelims'
+                                        : 'Select product/price',
                               ),
+                              items:
+                                  _selectedTestType == CourseTestType.prelims
+                                      ? []
+                                      : _products
+                                          .where(
+                                            (p) =>
+                                                p.id !=
+                                                _selectedSingleProduct?.id,
+                                          )
+                                          .map((product) {
+                                            return DropdownMenuItem(
+                                              value: product,
+                                              child: Text(
+                                                '${product.title} (₹${product.price})',
+                                              ),
+                                            );
+                                          })
+                                          .toList(),
                               validator: (value) {
-                                if (_selectedTestType == CourseTestType.mains) {
-                                  return Validator.validatePrice(
-                                    value,
-                                    fieldName: 'Price (Dual Assessment)',
-                                  );
-                                }
-                                if (value != null && value.trim().isNotEmpty) {
-                                  final price = int.tryParse(value);
-                                  if (price == null) {
-                                    return 'Please enter a valid number';
-                                  }
-                                  if (price < 0) {
-                                    return 'Price cannot be negative';
-                                  }
+                                if (_selectedTestType == CourseTestType.mains &&
+                                    value == null) {
+                                  return 'Please select a product';
                                 }
                                 return null;
                               },

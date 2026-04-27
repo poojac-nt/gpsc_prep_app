@@ -75,22 +75,31 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
         ),
         title: Text('Writing Practice', style: AppTexts.titleTextStyle),
       ),
-      body: BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
-        builder: (context, state) {
-          if (state is DailyDescTestFetching) {
-            return _buildWhenLoading();
-          }
-          if (state is DailyDescTestFetchFailed) {
-            return Center(child: Text(state.failure.toString()));
-          }
-          if (state is DailyDescTestFetched) {
-            final descTests = state.dailyTestModel;
-            return RefreshIndicator(
-              color: AppColors.primary,
-              onRefresh: () async {
-                return context.read<DailyDescTestBloc>().add(FetchAllTests());
-              },
-              child: ListView.builder(
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          context.read<DailyDescTestBloc>().add(FetchAllTests());
+        },
+        child: BlocBuilder<DailyDescTestBloc, DailyDescTestState>(
+          builder: (context, state) {
+            if (state is DailyDescTestFetching) {
+              return _buildWhenLoading();
+            }
+            if (state is DailyDescTestFetchFailed) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(child: Text(state.failure.toString())),
+                  ),
+                ],
+              );
+            }
+            if (state is DailyDescTestFetched) {
+              final descTests = state.dailyTestModel;
+              return ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
                 controller: _scrollController,
                 padding: EdgeInsets.all(AppPaddings.appPaddingInt),
                 itemCount:
@@ -147,11 +156,16 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                     },
                   ).padSymmetric(vertical: 8.h);
                 },
-              ),
+              );
+            }
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.7),
+              ],
             );
-          }
-          return Container();
-        },
+          },
+        ),
       ),
     );
   }

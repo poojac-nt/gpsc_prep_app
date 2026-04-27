@@ -146,7 +146,6 @@ abstract class AppRoutes {
   static const String allQuestionTypesAnalyticsScreen =
       '/allQuestionTypesAnalyticsScreen';
   static const String omrScreen = '/omrScreen';
-  static const String prelimsMcqTestScreen = '/fullLengthMcqTestScreen';
   static const String prelimsInstructionsScreen = '/prelimsInstructionsScreen';
   static const String addCourse = '/addCourse';
   static const String courseList = '/courseList';
@@ -164,10 +163,17 @@ abstract class AppRoutes {
   static const String allTests = '/allTests';
   static const String studentEvaluationResult = '/studentEvaluationResult';
   static const String freeTestReview = '/freeTestReview';
+  static const String addProduct = '/addProduct';
+  static const String createNotification = '/createNotification';
+  static const String notificationHistory = '/notificationHistory';
 }
 
 class AdUnitIds {
   static const String interstitialUnitId =
       'ca-app-pub-4018950905393948/9479145944';
   static const String bannerUnitId = 'ca-app-pub-4018950905393948/8301827460';
+}
+
+class ProductIds {
+  static const freeCourse = 'price_tier_free';
 }

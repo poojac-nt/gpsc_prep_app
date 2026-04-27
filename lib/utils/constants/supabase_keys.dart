@@ -25,7 +25,8 @@ abstract class SupabaseKeys {
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
   static final String getToppers = 'get_top_3_prelims_and_mains_users';
-  static final String getCoursesWithTests = 'fetch_courses_with_tests';
+  static final String getCoursesListWithTests =
+      'fetch_courses_with_tests_products';
   static final String peerReview = 'get_question_peer_submission';
   static final String detailedPeerReviewPerUser = 'get_answer_with_comments';
   static final String insertPeerReview = 'insert_peer_review';
@@ -49,6 +50,9 @@ abstract class SupabaseKeys {
   static final String getSubmittedFreeDescTests =
       'get_submitted_free_desc_tests';
   static final String getAllTests = 'fetch_all_tests_grouped';
+  static final String testWithoutCourseMCQ = 'test_without_course_mcq';
+  static final String descTestWithoutCourse = 'test_without_course_desc';
+  static final String getCourseWithTests = 'get_course_with_tests';
 
   ///table
   static final String usersTable = 'users';
@@ -69,6 +73,8 @@ abstract class SupabaseKeys {
   static final String userPurchase = 'user_purchase';
   static final String descMentorAssignment = 'desc_mentor_assignment';
   static final String peerReviewTable = 'peer_review';
+  static final String productsTable = 'products';
+  static final String notificationsTable = 'notifications';
 
   ///columns
   static final String email = 'user_email';
@@ -83,4 +89,9 @@ abstract class SupabaseKeys {
   static final String answers = 'answers';
   static final String profilePicture = 'profile-picture';
   static final String mentorReview = 'mentor_review';
+
+  ///Edge functions
+  static final String createMentor = 'create-mentor';
+  static final String deleteUser = 'delete_user';
+  static final String verifyPurchase = 'verify_purchase';
 }

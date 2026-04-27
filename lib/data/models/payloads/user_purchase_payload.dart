@@ -9,14 +9,22 @@ class UserPurchasePayload {
   int userId;
   @JsonKey(name: "course_id")
   int courseId;
+  @JsonKey(name: "test_ids")
+  List<int> testIds;
+  @JsonKey(name: "product_id")
+  String productId;
+  @JsonKey(name: "purchase_token")
+  String purchaseToken;
   @JsonKey(name: "assessment_type")
-  AssessmentType assessmentType;
+  AssessmentType? assessmentType;
 
   UserPurchasePayload({
     required this.userId,
-
     required this.courseId,
-    required this.assessmentType,
+    required this.testIds,
+    required this.productId,
+    required this.purchaseToken,
+    this.assessmentType,
   });
 
   factory UserPurchasePayload.fromJson(Map<String, dynamic> json) =>

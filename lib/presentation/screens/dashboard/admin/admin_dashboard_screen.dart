@@ -85,6 +85,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         40.wGap,
         IconButton(
+          onPressed: () => context.push(AppRoutes.createNotification),
+          icon: Icon(
+            Icons.notifications_none_rounded,
+            size: 24.sp,
+            color: Colors.blue,
+          ),
+        ),
+        IconButton(
           onPressed: () => showLogoutDialog(context),
           icon: Icon(Icons.logout, size: 24.sp, color: Colors.red),
         ),
@@ -266,6 +274,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           iconBgColor: const Color(0xfff5f3ff),
           iconColor: const Color(0xff8b5cf6),
           onTap: () => context.push(AppRoutes.allTests),
+        ),
+        12.hGap,
+        _buildManagementItem(
+          context,
+          title: 'Add Product',
+          subtitle: 'Create new in-app products',
+          icon: Icons.shopping_bag_outlined,
+          iconBgColor: const Color(0xffecfdf5),
+          iconColor: const Color(0xff10b981),
+          onTap: () => context.push(AppRoutes.addProduct),
+        ),
+        12.hGap,
+        _buildManagementItem(
+          context,
+          title: 'Notifications',
+          subtitle: 'View history & resend notifications',
+          icon: Icons.notifications_none_rounded,
+          iconBgColor: const Color(0xfffef3c7),
+          iconColor: const Color(0xffd97706),
+          onTap: () => context.push(AppRoutes.notificationHistory),
         ),
       ],
     );

@@ -9,16 +9,23 @@ import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/notify_user_timing_widget.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 class DescReviewQuestionUploadScreen extends StatefulWidget {
   final List<Map<String, dynamic>> payload;
   final int? courseId;
+  final int? priceSingle;
+  final int? priceDual;
+  final CourseTestType? testType;
 
   const DescReviewQuestionUploadScreen({
     super.key,
     required this.payload,
     this.courseId,
+    this.priceSingle,
+    this.priceDual,
+    this.testType,
   });
 
   @override
@@ -168,6 +175,9 @@ class _DescReviewQuestionUploadScreenState
                                 payload: widget.payload,
                                 courseId: widget.courseId,
                                 availableAt: availableAt,
+                                priceSingle: widget.priceSingle,
+                                priceDual: widget.priceDual,
+                                testType: widget.testType,
                               ),
                             );
                           },

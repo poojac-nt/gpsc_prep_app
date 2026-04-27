@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_quest
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/presentation/widgets/notify_user_timing_widget.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
+import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
@@ -20,6 +21,9 @@ class ReviewQuestionUploadScreen extends StatefulWidget {
   final String? url;
   final String? language;
   final int? courseId;
+  final int? priceSingle;
+  final int? priceDual;
+  final CourseTestType? testType;
 
   const ReviewQuestionUploadScreen({
     super.key,
@@ -30,6 +34,9 @@ class ReviewQuestionUploadScreen extends StatefulWidget {
     this.url,
     this.language,
     this.courseId,
+    this.priceSingle,
+    this.priceDual,
+    this.testType,
   });
 
   @override
@@ -374,6 +381,9 @@ class _ReviewQuestionUploadScreenState
                                       isTestUpload: widget.isTestUpload,
                                       availableAt: availableAt,
                                       courseId: widget.courseId,
+                                      priceSingle: widget.priceSingle,
+                                      priceDual: widget.priceDual,
+                                      testType: widget.testType,
                                     ),
                                   );
                             },
@@ -389,6 +399,7 @@ class _ReviewQuestionUploadScreenState
       ),
     );
   }
+
   Widget _buildDetailRow(IconData icon, String label, String? value) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 2.h),
@@ -415,4 +426,3 @@ class _ReviewQuestionUploadScreenState
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
@@ -6,6 +7,7 @@ import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/mentor_assign_payload.dart';
+import 'package:gpsc_prep_app/data/models/payloads/product_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_purchase_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/admin_stats_model.dart';
@@ -47,7 +49,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../data/models/payloads/verify_purchase_response.dart';
 import '../../domain/entities/all_tests_model.dart';
+import '../../domain/entities/notification_model.dart';
+import '../../domain/entities/product_model.dart';
 import '../../domain/entities/study_material_model.dart';
 import 'log_helper.dart';
 
@@ -192,7 +197,7 @@ class SupabaseHelper {
       }
 
       final response = await supabase.functions.invoke(
-        'create-mentor',
+        SupabaseKeys.createMentor,
         body: {
           'full_name': data.name,
           'email': data.email,
@@ -294,7 +299,7 @@ class SupabaseHelper {
         throw Exception("User not logged in");
       }
       final response = await supabase.functions.invoke(
-        'delete_user',
+        SupabaseKeys.deleteUser,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -377,13 +382,36 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
     try {
-      final rpcResponse = await supabase.rpc(SupabaseKeys.getCoursesWithTests);
+      final rpcResponse = await supabase.rpc(
+        SupabaseKeys.getCoursesListWithTests,
+      );
 
       final List<dynamic> courseList = rpcResponse as List;
 
       final courses = courseList.map((e) => CourseModel.fromJson(e)).toList();
 
       return Right(courses);
+    } catch (e) {
+      _snackBar.showError('Error fetching courses: ${e.toString()}');
+      _log.e('[Fetch Courses] Error: $e', error: e);
+      return Left(Failure('Error fetching courses: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, CourseModel>> fetchCourseWithTests({
+    required int courseId,
+    int offset = 0,
+    int limit = 20,
+  }) async {
+    try {
+      final rpcResponse = await supabase
+          .rpc(
+            SupabaseKeys.getCourseWithTests,
+            params: {'p_course_id': courseId},
+          )
+          .range(offset, offset + limit - 1);
+
+      return Right(CourseModel.fromJson(rpcResponse));
     } catch (e) {
       _snackBar.showError('Error fetching courses: ${e.toString()}');
       _log.e('[Fetch Courses] Error: $e', error: e);
@@ -423,16 +451,36 @@ class SupabaseHelper {
     int limit = 20,
   }) async {
     try {
-      final response = await supabase
-          .from(SupabaseKeys.testsTable)
-          .select()
-          .inFilter('test_type', ['dtmcq', 'mcq'])
-          .lte('available_at', DateTime.now().toUtc().toIso8601String())
-          .order('available_at', ascending: false)
-          .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+      final response = await supabase.rpc(
+        SupabaseKeys.testWithoutCourseMCQ,
+        params: {'p_offset': offset, 'p_limit': limit},
+      );
 
-      final result = response.map((e) => TestModel.fromJson(e)).toList();
+      // ✅ Fix: handle null safely
+      if (response == null) {
+        _log.w('RPC returned null');
+        return const Right([]);
+      }
+
+      // ✅ Ensure it's a list
+      if (response is! List) {
+        _log.e('Unexpected response type: ${response.runtimeType}');
+        return Left(Failure('Unexpected response format'));
+      }
+
+      if (response.isEmpty) {
+        return const Right([]);
+      }
+
+      final List<TestModel> result =
+          response.map((e) {
+            try {
+              return TestModel.fromJson(e as Map<String, dynamic>);
+            } catch (parseError) {
+              _log.e('Parse error for item: $e', s: StackTrace.current);
+              rethrow;
+            }
+          }).toList();
 
       _log.i('Fetched tests: ${result.length} (offset: $offset)');
       return Right(result);
@@ -663,27 +711,14 @@ class SupabaseHelper {
   }
 
   Future<Either<Failure, List<DescTestModel>>> fetchDescriptiveTests({
-    int? courseId,
-    int? offset,
-    int? limit,
+    int offset = 0,
+    int limit = 20,
   }) async {
     try {
-      dynamic query = supabase
-          .from(SupabaseKeys.descTests)
-          .select()
-          .lte('available_at', DateTime.now().toUtc().toIso8601String());
-
-      if (courseId != null) {
-        query = query.eq('course_id', courseId);
-      } else {
-        query = query.filter('course_id', 'is', null);
-      }
-
-      if (offset != null && limit != null) {
-        query = query.range(offset, offset + limit - 1);
-      }
-
-      final response = await query.order('id', ascending: false);
+      final response = await supabase.rpc(
+        SupabaseKeys.descTestWithoutCourse,
+        params: {'p_offset': offset, 'p_limit': limit},
+      );
 
       final result =
           (response as List).map((e) => DescTestModel.fromJson(e)).toList();
@@ -771,6 +806,52 @@ class SupabaseHelper {
     } catch (e) {
       _log.e("File upload failed: $e");
       return Left(Failure("File upload failed: ${e.toString()}"));
+    }
+  }
+
+  /// ===========================================================================
+  /// PRODUCTS
+  /// ===========================================================================
+
+  Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
+    try {
+      final result = await supabase
+          .from(SupabaseKeys.productsTable)
+          .select('*');
+      final products =
+          (result as List).map((e) => ProductModel.fromJson(e)).toList();
+      return Right(products);
+    } catch (e) {
+      _snackBar.showError('Error Fetching Products: ${e.toString()}');
+      _log.e('Error Fetching Products: $e', error: e);
+      return Left(Failure('Error Fetching Products: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, ProductModel>> createProduct(
+    ProductPayload payload,
+  ) async {
+    try {
+      final response =
+          await supabase
+              .from(SupabaseKeys.productsTable)
+              .insert({
+                'title': payload.title,
+                'product_id': payload.productId,
+                'price': payload.price,
+                'description': payload.description,
+                'is_active': payload.isActive,
+              })
+              .select()
+              .single();
+
+      _log.i('Product created successfully: $response');
+      _snackBar.showSuccess('Product "${payload.title}" added successfully!');
+      return Right(ProductModel.fromJson(response));
+    } catch (e) {
+      _log.e('Error creating product: $e');
+      _snackBar.showError('Failed to add product');
+      return Left(Failure('Error creating product: ${e.toString()}'));
     }
   }
 
@@ -1432,26 +1513,77 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, UserPurchaseModel>> purchaseCourse({
+  Future<Either<Failure, VerifyPurchaseResponse>> verifyPurchase({
     required UserPurchasePayload payload,
   }) async {
     try {
-      final result =
+      final response = await supabase.functions.invoke(
+        SupabaseKeys.verifyPurchase,
+        body: payload.toJson(),
+      );
+
+      _log.i("STATUS: ${response.status}");
+      _log.i("RAW TYPE: ${response.data.runtimeType}");
+      _log.i("RAW DATA: ${response.data}");
+
+      if (response.status >= 400) {
+        final errorData = response.data;
+        return Left(
+          Failure(
+            errorData is Map
+                ? errorData['error'] ?? 'Verification failed'
+                : errorData.toString(),
+          ),
+        );
+      }
+
+      final dynamic rawData = response.data;
+
+      Map<String, dynamic> result;
+
+      if (rawData is String) {
+        result = jsonDecode(rawData);
+      } else if (rawData is Map<String, dynamic>) {
+        result = rawData;
+      } else {
+        throw Exception('Unexpected response format: ${rawData.runtimeType}');
+      }
+
+      final verifyResponse = VerifyPurchaseResponse.fromJson(result);
+
+      return Right(verifyResponse);
+    } catch (e) {
+      _snackBar.showError('Error Verifying Purchase: ${e.toString()}');
+      _log.e('Error Verifying Purchase: $e', error: e);
+      return Left(Failure('Error Verifying Purchase: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, UserPurchaseModel>> freePurchase({
+    required UserPurchasePayload payload,
+  }) async {
+    try {
+      final response =
           await supabase
-              .from(SupabaseKeys.userPurchase)
+              .from('user_purchase')
               .insert({
                 'user_id': userId,
                 'course_id': payload.courseId,
-                'assessment_type': payload.assessmentType.name,
+                'product_id': payload.productId,
+                'purchase_token':
+                    'free_purchase_${DateTime.now().millisecondsSinceEpoch}',
+                'test_ids': payload.testIds.join(','),
+                'is_active': true,
+                'assessment_type': payload.assessmentType?.name,
               })
               .select()
               .single();
-      final purchase = UserPurchaseModel.fromJson(result);
-      return Right(purchase);
+
+      return Right(UserPurchaseModel.fromJson(response));
     } catch (e) {
-      _snackBar.showError('Error Purchasing Course: ${e.toString()}');
-      _log.e('Error Purchasing Course :$e', error: e);
-      return Left(Failure('Error Purchasing Course: ${e.toString()}'));
+      _snackBar.showError('Error Verifying Purchase: ${e.toString()}');
+      _log.e('Error Verifying Purchase: $e', error: e);
+      return Left(Failure('Error Verifying Purchase: ${e.toString()}'));
     }
   }
 
@@ -1883,6 +2015,95 @@ class SupabaseHelper {
       _log.e('Error fetching tests: $e', error: e);
       _snackBar.showError('Error fetching tests: ${e.toString()}');
       return Left(Failure('Error fetching tests: ${e.toString()}'));
+    }
+  }
+
+  /// ===========================================================================
+  /// NOTIFICATIONS
+  /// ===========================================================================
+
+  Future<Either<Failure, NotificationModel>> createNotification(
+    NotificationModel data,
+  ) async {
+    try {
+      final jsonData = data.toJson();
+      // Remove id if null to let supabase generate it
+      if (jsonData['id'] == null) jsonData.remove('id');
+      if (jsonData['created_at'] == null) jsonData.remove('created_at');
+
+      final result =
+          await supabase
+              .from(SupabaseKeys.notificationsTable)
+              .insert(jsonData)
+              .select()
+              .single();
+
+      final notification = NotificationModel.fromJson(result);
+      _snackBar.showSuccess('Notification Created Successfully');
+      return Right(notification);
+    } catch (e) {
+      _snackBar.showError('Error Creating Notification: ${e.toString()}');
+      _log.e('[Create Notification] Error: $e', error: e);
+      return Left(Failure('Error Creating Notification: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, AllTestsModel>> fetchNotificationMetadata() async {
+    try {
+      final rpcResponse = await supabase.rpc(SupabaseKeys.getAllTests);
+      final data = AllTestsModel.fromJson(rpcResponse as Map<String, dynamic>);
+      return Right(data);
+    } catch (e) {
+      _snackBar.showError('Error fetching metadata: ${e.toString()}');
+      _log.e('[Fetch Notification Metadata] Error: $e', error: e);
+      return Left(Failure('Error fetching metadata: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, List<NotificationModel>>> fetchNotifications() async {
+    try {
+      final result = await supabase
+          .from(SupabaseKeys.notificationsTable)
+          .select()
+          .order('scheduled_at', ascending: false);
+      final notifications =
+          (result as List).map((e) => NotificationModel.fromJson(e)).toList();
+      _log.i('Fetched ${notifications.length} notifications');
+      return Right(notifications);
+    } catch (e) {
+      _snackBar.showError('Error fetching notifications: ${e.toString()}');
+      _log.e('[Fetch Notifications] Error: $e', error: e);
+      return Left(Failure('Error fetching notifications: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, void>> updateNotification(
+    NotificationModel notification,
+  ) async {
+    try {
+      if (notification.id == null) {
+        return Left(Failure('Notification ID cannot be null for updates'));
+      }
+
+      final json =
+          notification.toJson()
+            ..remove('id')
+            ..remove('created_at');
+      // Reset is_sent so the edge function re-dispatches it
+      json['is_sent'] = false;
+
+      await supabase
+          .from(SupabaseKeys.notificationsTable)
+          .update(json)
+          .eq('id', notification.id!);
+
+      _snackBar.showSuccess('Notification updated successfully');
+      _log.i('[Update Notification] id=${notification.id} updated');
+      return const Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating notification: ${e.toString()}');
+      _log.e('[Update Notification] Error: $e', error: e);
+      return Left(Failure('Error updating notification: ${e.toString()}'));
     }
   }
 }
