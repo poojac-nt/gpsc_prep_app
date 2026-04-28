@@ -11,6 +11,8 @@ class LeaderboardModel {
 
   @JsonKey(name: 'student_name')
   final String studentName;
+  @JsonKey(name: 'test_name')
+  final String testName;
 
   @JsonKey(name: 'total_marks')
   final int totalMarks;
@@ -23,6 +25,7 @@ class LeaderboardModel {
     required this.rank,
     required this.studentName,
     required this.totalMarks,
+    required this.testName,
     this.profilePicture,
   });
 

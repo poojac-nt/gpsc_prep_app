@@ -55,6 +55,7 @@ import 'package:gpsc_prep_app/presentation/screens/upload_questions/add_course_s
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_review_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_question_upload_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/leaderboard/leaderboard_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../data/repositories/test_repository.dart';
@@ -757,6 +758,10 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) =>
             _slideTransition(const NotificationHistoryScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.leaderboardScreen,
+    pageBuilder: (context, state) => _slideTransition(const LeaderboardScreen(), state),
   ),
 ];
 

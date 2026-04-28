@@ -20,9 +20,11 @@ import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/last_snapsh
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:hive/hive.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
+import 'package:hive/hive.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/enums/user_role.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
@@ -39,6 +41,7 @@ class StudentDashboardScreen extends StatefulWidget {
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final PageController _pageController = PageController();
+  final InAppReview _inAppReview = InAppReview.instance;
   int _leaderboardIndex = 0;
 
   Color _getRankColor(int rank) {
@@ -188,7 +191,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             10.hGap,
             state.leaderboardData.isNotEmpty
                 ? _buildLeaderboardCarousel(state.leaderboardData)
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
+            15.hGap,
+            _buildSocialMediaLinks(),
           ],
         ).padAll(20),
       ),
@@ -255,20 +260,61 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   ) {
     return DashboardContainer(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.emoji_events_rounded,
-                color: Colors.yellowAccent.shade700,
-                size: 25.sp,
+              Container(
+                padding: EdgeInsets.all(8.r),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700).withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.emoji_events_rounded,
+                  color: const Color(0xFFD4AF37),
+                  size: 20.sp,
+                ),
               ),
-              10.wGap,
+              12.wGap,
               Text(title, style: AppTexts.dashboardContainerTitle),
             ],
           ),
-          10.hGap,
-          const Divider(color: Colors.grey, thickness: 0.7),
+          12.hGap,
+          if (leaders.isNotEmpty) ...[
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(30.r),
+                border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.assignment_outlined,
+                    size: 12.sp,
+                    color: AppColors.primary,
+                  ),
+                  6.wGap,
+                  Flexible(
+                    child: Text(
+                      leaders.first.testName,
+                      style: AppTexts.dashboardSmallTexts.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                        fontSize: 11.sp,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            12.hGap,
+          ],
           Expanded(
             child:
                 leaders.isEmpty
@@ -280,44 +326,63 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         ),
                       ),
                     )
-                    : ListView.builder(
+                    : ListView.separated(
                       itemCount: leaders.length,
+                      padding: EdgeInsets.zero,
                       physics: const NeverScrollableScrollPhysics(),
+                      separatorBuilder: (context, index) => 8.hGap,
                       itemBuilder: (context, index) {
-                        final profilePicture = leaders[index].profilePicture;
-                        return Material(
-                          color: Colors.transparent,
-                          child: ListTile(
-                            tileColor:
-                                index == 0
-                                    ? const Color(0xffCB8C08).withAlpha(15)
-                                    : null,
-                            shape:
-                                index == 0
-                                    ? RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(60.r),
-                                    )
-                                    : null,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20.w,
+                        final leader = leaders[index];
+                        final profilePicture = leader.profilePicture;
+                        final isFirst = index == 0;
+
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                isFirst
+                                    ? AppColors.primary.withOpacity(0.03)
+                                    : Colors.white,
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(
+                              color:
+                                  isFirst
+                                      ? AppColors.primary.withOpacity(0.1)
+                                      : Colors.grey.shade100,
                             ),
-                            leading: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "#${leaders[index].rank}",
-                                  style: TextStyle(
-                                    color: _getRankColor(leaders[index].rank),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16.sp,
-                                    fontStyle: FontStyle.italic,
+                          ),
+                          child: Row(
+                            children: [
+                              // Rank Badge
+                              Text(
+                                "#${leader.rank}",
+                                style: TextStyle(
+                                  color: _getRankColor(leader.rank),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                              12.wGap,
+                              // Avatar
+                              Container(
+                                padding: EdgeInsets.all(1.5.r),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        isFirst
+                                            ? AppColors.primary.withOpacity(0.3)
+                                            : Colors.grey.shade200,
                                   ),
                                 ),
-                                10.wGap,
-                                CircleAvatar(
+                                child: CircleAvatar(
+                                  radius: 16.r,
                                   backgroundColor:
                                       profilePicture == null
-                                          ? Colors.blueAccent.withAlpha(40)
+                                          ? AppColors.primary.withOpacity(0.1)
                                           : Colors.transparent,
                                   backgroundImage:
                                       profilePicture != null
@@ -327,27 +392,162 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                                       profilePicture == null
                                           ? Icon(
                                             Icons.person,
-                                            color: Colors.grey.shade600,
-                                            size: 20.sp,
+                                            color: AppColors.primary,
+                                            size: 16.sp,
                                           )
                                           : null,
                                 ),
-                              ],
-                            ),
-                            title: Text(
-                              leaders[index].studentName,
-                              style: AppTexts.dashboardMediumTitle.copyWith(
-                                fontSize: 15.sp,
                               ),
-                            ),
-                            subtitle: Text(
-                              '${leaders[index].totalMarks} marks',
-                              style: AppTexts.dashboardSmallTexts,
-                            ),
+                              12.wGap,
+                              // Name
+                              Expanded(
+                                child: Text(
+                                  leader.studentName,
+                                  style: AppTexts.dashboardMediumTitle.copyWith(
+                                    fontSize: 13.sp,
+                                    fontWeight:
+                                        isFirst
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              // Marks
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${leader.totalMarks}',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.sp,
+                                    ),
+                                  ),
+                                  Text(
+                                    'marks',
+                                    style: TextStyle(
+                                      color: AppColors.gray400,
+                                      fontSize: 9.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         );
                       },
                     ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialMediaLinks() {
+    return DashboardContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Connect with Us", style: AppTexts.dashboardContainerTitle),
+          20.hGap,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _socialIcon(
+                imagePath: 'assets/images/telegram_logo.png',
+                label: 'Telegram',
+                color: const Color(0xff0088cc),
+                onTap: () => _launchSocialUrl('https://t.me/starics_prep'),
+              ),
+              _socialIcon(
+                imagePath: 'assets/images/x_logo.png',
+                label: 'X',
+                color: Colors.black,
+                onTap: () => _launchSocialUrl('https://x.com/star_ics89'),
+              ),
+              _socialIcon(
+                imagePath: 'assets/images/gmail_logo.png',
+                label: 'Gmail',
+                color: const Color(0xffEA4335),
+                onTap: () => _launchSocialUrl('mailto:star.ics89@gmail.com'),
+              ),
+              _socialIcon(
+                imagePath: 'assets/images/whatsapp_logo.png',
+                label: 'WhatsApp',
+                color: const Color(0xff25D366),
+                onTap: () => _launchSocialUrl('https://wa.me/+91 6357440321'),
+              ),
+              _socialIcon(
+                icon: Icons.star_rounded,
+                label: 'Rate Us',
+                color: Colors.amber,
+                onTap: () async {
+                  try {
+                    if (await _inAppReview.isAvailable()) {
+                      await _inAppReview.requestReview();
+                    }
+                    await _inAppReview.openStoreListing(
+                      appStoreId: "app.starics",
+                    );
+                  } catch (e) {
+                    getIt<LogHelper>().e('Error requesting review: $e');
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchSocialUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      // Launch in external app if available, otherwise fallback to browser
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      getIt<LogHelper>().e('Could not launch social link: $url. Error: $e');
+    }
+  }
+
+  Widget _socialIcon({
+    String? imagePath,
+    IconData? icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15.r),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: color.withAlpha(25),
+              shape: BoxShape.circle,
+              border: Border.all(color: color.withAlpha(40), width: 1),
+            ),
+            child:
+                imagePath != null
+                    ? Image.asset(imagePath, width: 26.w, height: 26.w)
+                    : Icon(icon, color: color, size: 26.w),
+          ),
+          8.hGap,
+          Text(
+            label,
+            style: AppTexts.dashboardSmallTexts.copyWith(
+              fontSize: 11.sp,
+              color: AppColors.gray700,
+            ),
           ),
         ],
       ),

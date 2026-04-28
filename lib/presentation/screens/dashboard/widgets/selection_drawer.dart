@@ -60,6 +60,12 @@ class SelectionDrawer extends StatelessWidget {
                       ),
                       _buildMenuItem(
                         context,
+                        icon: Icons.leaderboard_rounded,
+                        title: 'Leaderboard',
+                        onTap: () => context.push(AppRoutes.leaderboardScreen),
+                      ),
+                      _buildMenuItem(
+                        context,
                         icon: Icons.person,
                         title: 'Profile',
                         onTap: () => context.push(AppRoutes.profile),

@@ -20,6 +20,7 @@ import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_peer_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_screen_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_assignment_list_model.dart';
 import 'package:gpsc_prep_app/domain/entities/mentor_dashbord_data.dart';
@@ -1197,6 +1198,21 @@ class SupabaseHelper {
     } catch (e, st) {
       _log.e("Error fetching leaderboard analytics", error: e, s: st);
       return Left(Failure("Error fetching leaderboard analytics"));
+    }
+  }
+
+  Future<Either<Failure, LeaderboardScreenModel>> getTop3Scorers() async {
+    try {
+      final result = await supabase.rpc(SupabaseKeys.getTop3Scorers);
+      final toppers = LeaderboardScreenModel.fromJson(
+        result as Map<String, dynamic>,
+      );
+
+      _log.i("Leaderboard Screen Analytics: $toppers");
+      return Right(toppers);
+    } catch (e, st) {
+      _log.e("Error fetching leaderboard screen analytics", error: e, s: st);
+      return Left(Failure("Error fetching leaderboard screen analytics"));
     }
   }
 

@@ -1,5 +1,5 @@
 abstract class SupabaseKeys {
-  ///functions
+  ///RPC functions
   static final String updateUserInfo = 'update_user_info';
   static final String insertMcqWithTest = 'insert_questions_with_tests';
   static final String insertBulkQuestions = 'insert_bulk_questions';
@@ -24,7 +24,7 @@ abstract class SupabaseKeys {
   static final String getAccuracyTrend = 'get_accuracy_trends';
   static final String getTestAttemptState = 'get_test_attempt_state';
   static final String submitTestAttempt = 'submit_test_attempt';
-  static final String getToppers = 'get_top_3_prelims_and_mains_users';
+  static final String getToppers = 'get_top_3_for_dashboard';
   static final String getCoursesListWithTests =
       'fetch_courses_with_tests_products';
   static final String peerReview = 'get_question_peer_submission';
@@ -53,6 +53,7 @@ abstract class SupabaseKeys {
   static final String testWithoutCourseMCQ = 'test_without_course_mcq';
   static final String descTestWithoutCourse = 'test_without_course_desc';
   static final String getCourseWithTests = 'get_course_with_tests';
+  static final String getTop3Scorers = 'get_top_3_scorers';
 
   ///table
   static final String usersTable = 'users';

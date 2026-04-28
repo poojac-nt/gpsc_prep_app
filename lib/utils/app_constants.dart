@@ -166,6 +166,7 @@ abstract class AppRoutes {
   static const String addProduct = '/addProduct';
   static const String createNotification = '/createNotification';
   static const String notificationHistory = '/notificationHistory';
+  static const String leaderboardScreen = '/leaderboardScreen';
 }
 
 class AdUnitIds {
