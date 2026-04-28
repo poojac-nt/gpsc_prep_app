@@ -267,7 +267,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               Container(
                 padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withOpacity(0.15),
+                  color: const Color(0xFFFFD700).withAlpha(38),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -285,9 +285,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withAlpha(20),
                 borderRadius: BorderRadius.circular(30.r),
-                border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                border: Border.all(color: AppColors.primary.withAlpha(25)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -344,13 +344,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                           decoration: BoxDecoration(
                             color:
                                 isFirst
-                                    ? AppColors.primary.withOpacity(0.03)
+                                    ? AppColors.primary.withAlpha(8)
                                     : Colors.white,
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
                               color:
                                   isFirst
-                                      ? AppColors.primary.withOpacity(0.1)
+                                      ? AppColors.primary.withAlpha(25)
                                       : Colors.grey.shade100,
                             ),
                           ),
@@ -374,7 +374,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                                   border: Border.all(
                                     color:
                                         isFirst
-                                            ? AppColors.primary.withOpacity(0.3)
+                                            ? AppColors.primary.withAlpha(76)
                                             : Colors.grey.shade200,
                                   ),
                                 ),
@@ -382,7 +382,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                                   radius: 16.r,
                                   backgroundColor:
                                       profilePicture == null
-                                          ? AppColors.primary.withOpacity(0.1)
+                                          ? AppColors.primary.withAlpha(25)
                                           : Colors.transparent,
                                   backgroundImage:
                                       profilePicture != null
