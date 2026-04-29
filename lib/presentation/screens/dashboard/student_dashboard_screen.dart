@@ -15,9 +15,9 @@ import 'package:gpsc_prep_app/presentation/blocs/connectivity_bloc/connectivity_
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/dashboard_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/goal_reminder.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/icon_container.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/last_snapshot_card.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/widgets/performance_card.dart';
+import 'package:gpsc_prep_app/presentation/widgets/start_test_card_widget.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
@@ -28,7 +28,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/enums/user_role.dart';
 import '../../widgets/connectivity_handler_dialog.dart';
-import '../../widgets/custom_painter.dart';
 import '../dashboard/widgets/selection_drawer.dart';
 import 'widgets/paid_course_card.dart';
 
@@ -43,19 +42,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final PageController _pageController = PageController();
   final InAppReview _inAppReview = InAppReview.instance;
   int _leaderboardIndex = 0;
-
-  Color _getRankColor(int rank) {
-    switch (rank) {
-      case 1:
-        return const Color(0xffCB8C08); // Gold
-      case 2:
-        return const Color(0xff9E9E9E); // Silver
-      case 3:
-        return const Color(0xffCD7F32); // Bronze
-      default:
-        return Colors.grey;
-    }
-  }
 
   @override
   void initState() {
@@ -334,23 +320,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ),
             ),
           if (availableSections.length > 1) 20.hGap,
-          // Content
           Builder(
             builder: (context) {
               if (availableSections.length == 1) {
                 return leaderboardSection(
                   availableSections[0]['title'],
                   availableSections[0]['data'] as List<LeaderboardModel>,
+                  showTitle: true,
                 );
               }
 
               final maxItems = availableSections
                   .map((sec) => (sec['data'] as List).length)
                   .fold(0, (max, current) => current > max ? current : max);
-
-              // 70.h covers headers (Prelims/Mains + Test Name)
-              // 90.h is per student row
-              final dynamicHeight = 12.h + (maxItems * 90.h);
+              final dynamicHeight = maxItems * 87.h;
 
               return SizedBox(
                 height: dynamicHeight,
@@ -366,6 +349,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         (sec) => leaderboardSection(
                           sec['title'],
                           sec['data'] as List<LeaderboardModel>,
+                          showTitle: false,
                         ),
                       )
                       .toList(),
@@ -378,7 +362,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget leaderboardSection(String title, List<LeaderboardModel> leaders) {
+  Widget leaderboardSection(
+    String title,
+    List<LeaderboardModel> leaders, {
+    bool showTitle = true,
+  }) {
     if (leaders.isEmpty) return const SizedBox.shrink();
     final testName = leaders.first.testName;
 
@@ -389,16 +377,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title.toUpperCase(),
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF3B82F6),
-                letterSpacing: 1.2,
+            if (showTitle)
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3B82F6),
+                  letterSpacing: 1.2,
+                ),
               ),
-            ),
-            4.hGap,
+            if (showTitle) 4.hGap,
             Text(
               testName,
               style: TextStyle(
@@ -803,96 +792,5 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     } else if (offlineDetails.isNotEmpty) {
       log.w('⚠️ Found detailed results but no summary result to sync.');
     }
-  }
-}
-
-class StartTestCard extends StatelessWidget {
-  final Color color;
-  final String buttonText;
-  final String title;
-  final String subTitle;
-  final Color buttonTextColor;
-  final Color buttonBgColor;
-  final VoidCallback onTap;
-
-  const StartTestCard({
-    super.key,
-    required this.color,
-    this.buttonText = 'Start Test',
-    required this.title,
-    required this.subTitle,
-    this.buttonTextColor = Colors.white,
-    this.buttonBgColor = const Color(0xff3b82f6),
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DashboardContainer(
-      padding: EdgeInsets.zero,
-      child: ClipRRect(
-        borderRadius: AppBorders.dashboardBorderRadius,
-        child: Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  8.hGap,
-                  IconContainer(
-                    borderRadius: BorderRadius.circular(100.r),
-                    icon: Icons.menu_book,
-                    color: color,
-                  ),
-                  10.hGap,
-                  Text(title, style: AppTexts.dashboardMediumTitle),
-                  5.hGap,
-                  Text(subTitle, style: AppTexts.dashboardSmallTexts),
-                  8.hGap,
-                  ElevatedButton(
-                    onPressed: onTap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonBgColor,
-                      foregroundColor: buttonTextColor,
-                      padding: EdgeInsets.symmetric(
-                        vertical: 8.h,
-                        horizontal: 13.w,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            buttonText,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          4.wGap,
-                          Icon(Icons.navigate_next, size: 20.sp),
-                        ],
-                      ),
-                    ),
-                  ),
-                  5.hGap,
-                ],
-              ),
-            ),
-            Positioned(
-              top: -10.h,
-              right: -10.w,
-              child: SizedBox(
-                width: 120.w,
-                height: 120.h,
-                child: CustomPaint(painter: CirclePainter(color: color)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
