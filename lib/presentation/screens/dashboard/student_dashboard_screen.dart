@@ -333,7 +333,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               final maxItems = availableSections
                   .map((sec) => (sec['data'] as List).length)
                   .fold(0, (max, current) => current > max ? current : max);
-              final dynamicHeight = maxItems * 87.h;
+              final dynamicHeight = 12.h + (maxItems * 87.h);
 
               return SizedBox(
                 height: dynamicHeight,
@@ -494,7 +494,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                           ),
                           4.hGap,
                           Text(
-                            "Score: ${leader.totalMarks}",
+                            "Score: ${leader.totalMarks.toStringAsFixed(2)}",
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
