@@ -337,10 +337,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           // Content
           Builder(
             builder: (context) {
+              if (availableSections.length == 1) {
+                return leaderboardSection(
+                  availableSections[0]['title'],
+                  availableSections[0]['data'] as List<LeaderboardModel>,
+                );
+              }
+
               final maxItems = availableSections
                   .map((sec) => (sec['data'] as List).length)
                   .fold(0, (max, current) => current > max ? current : max);
-              final dynamicHeight = (maxItems * 90).h;
+
+              // 70.h covers headers (Prelims/Mains + Test Name)
+              // 90.h is per student row
+              final dynamicHeight = 12.h + (maxItems * 90.h);
 
               return SizedBox(
                 height: dynamicHeight,
@@ -369,118 +379,155 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget leaderboardSection(String title, List<LeaderboardModel> leaders) {
-    return Column(
-      children: List.generate(leaders.length, (index) {
-        final leader = leaders[index];
-        final isFirst = index == 0;
-        final isLast = index == leaders.length - 1;
-        final userItSelf = getIt<CacheManager>().getUserId() == leader.userId;
+    if (leaders.isEmpty) return const SizedBox.shrink();
+    final testName = leaders.first.testName;
 
-        return Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Category and Test Name Headers
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 15.h),
-              child: Row(
-                children: [
-                  // Rank
-                  SizedBox(
-                    width: 25.w,
-                    child: Text(
-                      "${leader.rank}",
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w900,
-                        color: isFirst
-                            ? const Color(0xFFF1C40F)
-                            : const Color(0xFF94A3B8),
-                      ),
-                    ),
-                  ),
-                  10.wGap,
-                  // Avatar with badge for #1
-                  Stack(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(2.r),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isFirst
-                                ? const Color(0xFFF1C40F)
-                                : const Color(0xFFE2E8F0),
-                            width: 2,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 24.r,
-                          backgroundColor: const Color(0xFFF1F4F9),
-                          backgroundImage: leader.profilePicture != null
-                              ? NetworkImage(leader.profilePicture!)
-                              : null,
-                          child: leader.profilePicture == null
-                              ? Icon(
-                                  Icons.person,
-                                  color: const Color(0xFF94A3B8),
-                                  size: 24.sp,
-                                )
-                              : null,
-                        ),
-                      ),
-                      if (isFirst)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: EdgeInsets.all(4.r),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF1C40F),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.star_rounded,
-                              color: Colors.white,
-                              size: 12.sp,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  15.wGap,
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          leader.studentName + (userItSelf ? "(You)" : ""),
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF1A1C1E),
-                          ),
-                          maxLines: 1,
-                          overflow: .ellipsis,
-                        ),
-                        4.hGap,
-                        Text(
-                          "Score: ${leader.totalMarks}",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF3B82F6),
+                letterSpacing: 1.2,
               ),
             ),
-            if (!isLast)
-              Divider(height: 1, thickness: 1, color: const Color(0xFFF1F4F9)),
+            4.hGap,
+            Text(
+              testName,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1A1C1E),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
-        );
-      }),
+        ),
+        const Divider(height: 1, thickness: 1, color: Color(0xFFF1F4F9)),
+        ...List.generate(leaders.length, (index) {
+          final leader = leaders[index];
+          final isFirst = index == 0;
+          final isLast = index == leaders.length - 1;
+          final userItSelf = getIt<CacheManager>().getUserId() == leader.userId;
+
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Row(
+                  children: [
+                    // Rank
+                    SizedBox(
+                      width: 25.w,
+                      child: Text(
+                        "${leader.rank}",
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w900,
+                          color: isFirst
+                              ? const Color(0xFFF1C40F)
+                              : const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ),
+                    10.wGap,
+                    // Avatar with badge for #1
+                    Stack(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(2.r),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isFirst
+                                  ? const Color(0xFFF1C40F)
+                                  : const Color(0xFFE2E8F0),
+                              width: 2,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 24.r,
+                            backgroundColor: const Color(0xFFF1F4F9),
+                            backgroundImage: leader.profilePicture != null
+                                ? NetworkImage(leader.profilePicture!)
+                                : null,
+                            child: leader.profilePicture == null
+                                ? Icon(
+                                    Icons.person,
+                                    color: const Color(0xFF94A3B8),
+                                    size: 24.sp,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        if (isFirst)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(4.r),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF1C40F),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.star_rounded,
+                                color: Colors.white,
+                                size: 12.sp,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    15.wGap,
+                    // Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            leader.studentName + (userItSelf ? " (You)" : ""),
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1A1C1E),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          4.hGap,
+                          Text(
+                            "Score: ${leader.totalMarks}",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!isLast)
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFF1F4F9),
+                ),
+            ],
+          );
+        }),
+      ],
     );
   }
 
