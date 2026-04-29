@@ -74,10 +74,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   Widget build(BuildContext context) {
     final user = getIt<CacheManager>().user;
     return Scaffold(
-      drawer:
-          getIt<CacheManager>().getUserRole() == UserRole.admin
-              ? null
-              : SelectionDrawer(),
+      drawer: getIt<CacheManager>().getUserRole() == UserRole.admin
+          ? null
+          : SelectionDrawer(),
       drawerEdgeDragWidth: 150,
       appBar: AppBar(
         title: Text(
@@ -201,248 +200,287 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _buildLeaderboardCarousel(List<LeaderboardModel> allLeaders) {
-    final prelimsLeaders =
-        allLeaders
-            .where((l) => l.testType.toLowerCase().contains('prelim'))
-            .toList();
-    final mainsLeaders =
-        allLeaders
-            .where((l) => l.testType.toLowerCase().contains('main'))
-            .toList();
+    final prelimsLeaders = allLeaders
+        .where((l) => l.testType.toLowerCase().contains('prelim'))
+        .toList();
+    final mainsLeaders = allLeaders
+        .where((l) => l.testType.toLowerCase().contains('main'))
+        .toList();
 
-    final pages = <Widget>[
-      leaderboardSection("Prelims Leaderboard", prelimsLeaders),
-      leaderboardSection("Mains Leaderboard", mainsLeaders),
-    ];
+    final availableSections = <Map<String, dynamic>>[];
+    if (prelimsLeaders.isNotEmpty) {
+      availableSections.add({'title': 'Prelims', 'data': prelimsLeaders});
+    }
+    if (mainsLeaders.isNotEmpty) {
+      availableSections.add({'title': 'Mains', 'data': mainsLeaders});
+    }
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 310.h,
-          child: PageView(
-            clipBehavior: Clip.none,
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _leaderboardIndex = index;
-              });
-            },
-            children: pages,
-          ),
-        ),
-        10.hGap,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            pages.length,
-            (index) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
-              height: 8.h,
-              width: _leaderboardIndex == index ? 24.w : 8.w,
-              decoration: BoxDecoration(
-                color:
-                    _leaderboardIndex == index
-                        ? AppColors.primary
-                        : AppColors.gray200,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+    if (availableSections.isEmpty) return const SizedBox.shrink();
 
-  DashboardContainer leaderboardSection(
-    String title,
-    List<LeaderboardModel> leaders,
-  ) {
     return DashboardContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: EdgeInsets.all(8.r),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withAlpha(38),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.emoji_events_rounded,
-                  color: const Color(0xFFD4AF37),
-                  size: 20.sp,
-                ),
-              ),
-              12.wGap,
-              Text(title, style: AppTexts.dashboardContainerTitle),
-            ],
-          ),
-          12.hGap,
-          if (leaders.isNotEmpty) ...[
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(20),
-                borderRadius: BorderRadius.circular(30.r),
-                border: Border.all(color: AppColors.primary.withAlpha(25)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              Row(
                 children: [
                   Icon(
-                    Icons.assignment_outlined,
-                    size: 12.sp,
-                    color: AppColors.primary,
+                    Icons.emoji_events_rounded,
+                    color: const Color(0xFFF1C40F),
+                    size: 26.sp,
                   ),
-                  6.wGap,
-                  Flexible(
-                    child: Text(
-                      leaders.first.testName,
-                      style: AppTexts.dashboardSmallTexts.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                        fontSize: 11.sp,
+                  10.wGap,
+                  Text(
+                    "Leaderboard",
+                    style: TextStyle(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1A1C1E),
+                    ),
+                  ),
+                ],
+              ),
+              TextButton(
+                onPressed: () {
+                  context.push(
+                    AppRoutes.leaderboardScreen,
+                    extra: _leaderboardIndex,
+                  );
+                },
+                style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "View All",
+                      style: TextStyle(
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14.sp,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: const Color(0xFF3B82F6),
+                      size: 20.sp,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          15.hGap,
+          // Custom Tab Selector (if more than 1 category)
+          if (availableSections.length > 1)
+            Container(
+              padding: EdgeInsets.all(6.r),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F4F9),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                children: List.generate(availableSections.length, (index) {
+                  final isSelected = _leaderboardIndex == index;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _leaderboardIndex = index;
+                          _pageController.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        padding: EdgeInsets.symmetric(vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : Colors.transparent,
+                          borderRadius: BorderRadius.circular(15.r),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "${availableSections[index]['title']}",
+                            style: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFF1A1C1E)
+                                  : const Color(0xFF64748B),
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              fontSize: 13.sp,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          if (availableSections.length > 1) 20.hGap,
+          // Content
+          Builder(
+            builder: (context) {
+              final maxItems = availableSections
+                  .map((sec) => (sec['data'] as List).length)
+                  .fold(0, (max, current) => current > max ? current : max);
+              final dynamicHeight = (maxItems * 90).h;
+
+              return SizedBox(
+                height: dynamicHeight,
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _leaderboardIndex = index;
+                    });
+                  },
+                  children: availableSections
+                      .map(
+                        (sec) => leaderboardSection(
+                          sec['title'],
+                          sec['data'] as List<LeaderboardModel>,
+                        ),
+                      )
+                      .toList(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget leaderboardSection(String title, List<LeaderboardModel> leaders) {
+    return Column(
+      children: List.generate(leaders.length, (index) {
+        final leader = leaders[index];
+        final isFirst = index == 0;
+        final isLast = index == leaders.length - 1;
+        final userItSelf = getIt<CacheManager>().getUserId() == leader.userId;
+
+        return Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 15.h),
+              child: Row(
+                children: [
+                  // Rank
+                  SizedBox(
+                    width: 25.w,
+                    child: Text(
+                      "${leader.rank}",
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w900,
+                        color: isFirst
+                            ? const Color(0xFFF1C40F)
+                            : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ),
+                  10.wGap,
+                  // Avatar with badge for #1
+                  Stack(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(2.r),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isFirst
+                                ? const Color(0xFFF1C40F)
+                                : const Color(0xFFE2E8F0),
+                            width: 2,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 24.r,
+                          backgroundColor: const Color(0xFFF1F4F9),
+                          backgroundImage: leader.profilePicture != null
+                              ? NetworkImage(leader.profilePicture!)
+                              : null,
+                          child: leader.profilePicture == null
+                              ? Icon(
+                                  Icons.person,
+                                  color: const Color(0xFF94A3B8),
+                                  size: 24.sp,
+                                )
+                              : null,
+                        ),
+                      ),
+                      if (isFirst)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(4.r),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF1C40F),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.star_rounded,
+                              color: Colors.white,
+                              size: 12.sp,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  15.wGap,
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          leader.studentName + (userItSelf ? "(You)" : ""),
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF1A1C1E),
+                          ),
+                          maxLines: 1,
+                          overflow: .ellipsis,
+                        ),
+                        4.hGap,
+                        Text(
+                          "Score: ${leader.totalMarks}",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            12.hGap,
+            if (!isLast)
+              Divider(height: 1, thickness: 1, color: const Color(0xFFF1F4F9)),
           ],
-          Expanded(
-            child:
-                leaders.isEmpty
-                    ? Center(
-                      child: Text(
-                        "No rankings available yet",
-                        style: AppTexts.dashboardSmallTexts.copyWith(
-                          color: AppColors.gray400,
-                        ),
-                      ),
-                    )
-                    : ListView.separated(
-                      itemCount: leaders.length,
-                      padding: EdgeInsets.zero,
-                      physics: const NeverScrollableScrollPhysics(),
-                      separatorBuilder: (context, index) => 8.hGap,
-                      itemBuilder: (context, index) {
-                        final leader = leaders[index];
-                        final profilePicture = leader.profilePicture;
-                        final isFirst = index == 0;
-
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                isFirst
-                                    ? AppColors.primary.withAlpha(8)
-                                    : Colors.white,
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color:
-                                  isFirst
-                                      ? AppColors.primary.withAlpha(25)
-                                      : Colors.grey.shade100,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              // Rank Badge
-                              Text(
-                                "#${leader.rank}",
-                                style: TextStyle(
-                                  color: _getRankColor(leader.rank),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp,
-                                ),
-                              ),
-                              12.wGap,
-                              // Avatar
-                              Container(
-                                padding: EdgeInsets.all(1.5.r),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color:
-                                        isFirst
-                                            ? AppColors.primary.withAlpha(76)
-                                            : Colors.grey.shade200,
-                                  ),
-                                ),
-                                child: CircleAvatar(
-                                  radius: 16.r,
-                                  backgroundColor:
-                                      profilePicture == null
-                                          ? AppColors.primary.withAlpha(25)
-                                          : Colors.transparent,
-                                  backgroundImage:
-                                      profilePicture != null
-                                          ? NetworkImage(profilePicture)
-                                          : null,
-                                  child:
-                                      profilePicture == null
-                                          ? Icon(
-                                            Icons.person,
-                                            color: AppColors.primary,
-                                            size: 16.sp,
-                                          )
-                                          : null,
-                                ),
-                              ),
-                              12.wGap,
-                              // Name
-                              Expanded(
-                                child: Text(
-                                  leader.studentName,
-                                  style: AppTexts.dashboardMediumTitle.copyWith(
-                                    fontSize: 13.sp,
-                                    fontWeight:
-                                        isFirst
-                                            ? FontWeight.bold
-                                            : FontWeight.w500,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              // Marks
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '${leader.totalMarks}',
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14.sp,
-                                    ),
-                                  ),
-                                  Text(
-                                    'marks',
-                                    style: TextStyle(
-                                      color: AppColors.gray400,
-                                      fontSize: 9.sp,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-          ),
-        ],
-      ),
+        );
+      }),
     );
   }
 
@@ -536,10 +574,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: color.withAlpha(40), width: 1),
             ),
-            child:
-                imagePath != null
-                    ? Image.asset(imagePath, width: 26.w, height: 26.w)
-                    : Icon(icon, color: color, size: 26.w),
+            child: imagePath != null
+                ? Image.asset(imagePath, width: 26.w, height: 26.w)
+                : Icon(icon, color: color, size: 26.w),
           ),
           8.hGap,
           Text(

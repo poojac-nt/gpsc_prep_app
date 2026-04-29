@@ -6,16 +6,16 @@ part 'leaderboard_model.g.dart';
 class LeaderboardModel {
   @JsonKey(name: 'test_type')
   final String testType;
-
+  @JsonKey(name: 'rank')
   final int rank;
-
   @JsonKey(name: 'student_name')
   final String studentName;
+  @JsonKey(name: 'user_id')
+  final int userId;
   @JsonKey(name: 'test_name')
   final String testName;
-
   @JsonKey(name: 'total_marks')
-  final int totalMarks;
+  final num totalMarks;
 
   @JsonKey(name: 'profile_picture')
   final String? profilePicture;
@@ -24,6 +24,7 @@ class LeaderboardModel {
     required this.testType,
     required this.rank,
     required this.studentName,
+    required this.userId,
     required this.totalMarks,
     required this.testName,
     this.profilePicture,

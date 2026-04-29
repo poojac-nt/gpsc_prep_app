@@ -761,7 +761,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.leaderboardScreen,
-    pageBuilder: (context, state) => _slideTransition(const LeaderboardScreen(), state),
+    pageBuilder: (context, state) {
+      final initialIndex = state.extra as int? ?? 0;
+      return _slideTransition(
+        LeaderboardScreen(initialIndex: initialIndex),
+        state,
+      );
+    },
   ),
 ];
 

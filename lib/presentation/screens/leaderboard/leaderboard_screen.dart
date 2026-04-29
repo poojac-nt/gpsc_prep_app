@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_screen_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/leaderboard/leaderboard_bloc.dart';
@@ -11,7 +12,9 @@ import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 
 class LeaderboardScreen extends StatefulWidget {
-  const LeaderboardScreen({super.key});
+  final int initialIndex;
+
+  const LeaderboardScreen({super.key, this.initialIndex = 0});
 
   @override
   State<LeaderboardScreen> createState() => _LeaderboardScreenState();
@@ -25,7 +28,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialIndex,
+    );
     _leaderboardBloc = getIt<LeaderboardBloc>()..add(FetchLeaderboardData());
   }
 
@@ -44,7 +51,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           'Leaderboard',
           style: AppTexts.titleTextStyle.copyWith(fontSize: 22.sp),
         ),
-        centerTitle: true,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(50.h),
           child: Container(
@@ -67,7 +73,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                 fontWeight: FontWeight.bold,
                 fontSize: 14.sp,
               ),
-              tabs: const [Tab(text: 'Prelims'), Tab(text: 'Mains')],
+              tabs: const [
+                Tab(text: 'Prelims'),
+                Tab(text: 'Mains'),
+              ],
             ),
           ),
         ),
@@ -129,49 +138,65 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Widget _buildTestCard(List<Main> testToppers, String type) {
+    if (testToppers.isEmpty) return const SizedBox.shrink();
     final firstTopper = testToppers.first;
+    final isSingle = testToppers.length == 1;
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withAlpha(10),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
+          Text(
+            firstTopper.testName,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF1A1C1E),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          20.hGap,
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Rank 2
+              if (!isSingle)
+                Expanded(
+                  child: testToppers.length > 1
+                      ? _buildScorer(testToppers[1], 2, type, isMulti: true)
+                      : const SizedBox.shrink(),
+                ),
+
+              // Rank 1
               Expanded(
-                child: Text(
-                  firstTopper.testName,
-                  style: AppTexts.dashboardMediumTitle.copyWith(
-                    fontSize: 16.sp,
-                  ),
+                child: _buildScorer(
+                  testToppers[0],
+                  1,
+                  type,
+                  isMulti: !isSingle,
                 ),
               ),
-            ],
-          ),
-          12.hGap,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              if (testToppers.length > 1) _buildScorer(testToppers[1], 2, type),
-              if (testToppers.isNotEmpty) _buildScorer(testToppers[0], 1, type),
-              if (testToppers.length > 2) _buildScorer(testToppers[2], 3, type),
-              if (testToppers.length == 1) ...[
-                const SizedBox(width: 45),
-                const SizedBox(width: 45),
-              ],
-              if (testToppers.length == 2) const SizedBox(width: 45),
+
+              // Rank 3
+              if (!isSingle)
+                Expanded(
+                  child: testToppers.length > 2
+                      ? _buildScorer(testToppers[2], 3, type, isMulti: true)
+                      : const SizedBox.shrink(),
+                ),
             ],
           ),
         ],
@@ -179,24 +204,30 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     );
   }
 
-  Widget _buildScorer(Main scorer, int rank, String type) {
+  Widget _buildScorer(
+    Main scorer,
+    int rank,
+    String type, {
+    bool isMulti = false,
+  }) {
+    final userItSelf = scorer.userId == getIt<CacheManager>().getUserId();
     final double avatarSize = rank == 1 ? 55.r : 45.r;
-    final Color rankColor =
-        rank == 1
-            ? const Color(0xFFFFD700)
-            : rank == 2
-            ? const Color(0xFFC0C0C0)
-            : const Color(0xFFCD7F32);
+    final Color rankColor = rank == 1
+        ? const Color(0xFFFFD700)
+        : rank == 2
+        ? const Color(0xFFC0C0C0)
+        : const Color(0xFFCD7F32);
 
-    final String scoreDisplay =
-        type == 'Prelims'
-            ? '${scorer.score ?? 0}'
-            : '${scorer.totalMarks ?? 0}';
+    final String scoreDisplay = type == 'Prelims'
+        ? '${scorer.score?.toStringAsFixed(2) ?? 0}'
+        : '${scorer.totalMarks?.toStringAsFixed(2) ?? 0}';
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Stack(
-          alignment: Alignment.bottomCenter,
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
           children: [
             Container(
               padding: EdgeInsets.all(rank == 1 ? 3.r : 2.r),
@@ -207,45 +238,43 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               child: ClipOval(
                 child:
                     scorer.profilePicture != null &&
-                            scorer.profilePicture!.isNotEmpty
-                        ? CachedNetworkImage(
-                          imageUrl: scorer.profilePicture!,
-                          width: avatarSize,
-                          height: avatarSize,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => Container(
-                                color: Colors.grey.shade100,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.grey,
-                                  size: avatarSize * 0.5,
-                                ),
-                              ),
-                          errorWidget:
-                              (context, url, error) => Container(
-                                color: Colors.grey.shade100,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.grey,
-                                  size: avatarSize * 0.5,
-                                ),
-                              ),
-                        )
-                        : Container(
+                        scorer.profilePicture!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: scorer.profilePicture!,
+                        width: avatarSize,
+                        height: avatarSize,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
                           color: Colors.grey.shade100,
-                          width: avatarSize,
-                          height: avatarSize,
                           child: Icon(
                             Icons.person,
                             color: Colors.grey,
                             size: avatarSize * 0.5,
                           ),
                         ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey.shade100,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.grey,
+                            size: avatarSize * 0.5,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey.shade100,
+                        width: avatarSize,
+                        height: avatarSize,
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.grey,
+                          size: avatarSize * 0.5,
+                        ),
+                      ),
               ),
             ),
-            Transform.translate(
-              offset: Offset(0, 10.h),
+            Positioned(
+              bottom: -8.h,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
@@ -253,7 +282,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   borderRadius: BorderRadius.circular(10.r),
                   boxShadow: [
                     BoxShadow(
-                      color: rankColor.withOpacity(0.4),
+                      color: Colors.black.withAlpha(20),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -271,18 +300,30 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             ),
           ],
         ),
-        16.hGap,
-        Text(
-          scorer.fullName,
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
+        20.hGap,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
+          child: Text(
+            userItSelf ? '${scorer.fullName}(Me)' : scorer.fullName,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: isMulti ? 11.sp : 14.sp,
+              color: const Color(0xFF1A1C1E),
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
+        2.hGap,
         Text(
           scoreDisplay,
           style: TextStyle(
-            color: AppColors.primary,
+            color: const Color(0xFF3B82F6),
             fontWeight: FontWeight.bold,
-            fontSize: 11.sp,
+            fontSize: 12.sp,
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
