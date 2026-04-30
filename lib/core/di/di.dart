@@ -39,6 +39,7 @@ import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_blo
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_course_details/fetch_course_details_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/leaderboard/leaderboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
@@ -268,6 +269,9 @@ void setupBlocs() {
   );
   getIt.registerLazySingleton<NotificationBloc>(
     () => NotificationBloc(getIt<NotificationRepository>()),
+  );
+  getIt.registerFactory<LeaderboardBloc>(
+    () => LeaderboardBloc(getIt<AnalyticsRepository>()),
   );
 }
 

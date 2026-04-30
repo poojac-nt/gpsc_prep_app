@@ -1,5 +1,6 @@
 import 'package:either_dart/either.dart';
 import 'package:gpsc_prep_app/domain/entities/leaderboard_model.dart';
+import 'package:gpsc_prep_app/domain/entities/leaderboard_screen_model.dart';
 import 'package:gpsc_prep_app/domain/entities/overall_analytics_model.dart';
 import 'package:gpsc_prep_app/domain/entities/trend_result_model.dart';
 
@@ -35,4 +36,7 @@ class AnalyticsRepository {
 
   Future<Either<Failure, List<LeaderboardModel>>> getToppers() async =>
       await _supabase.getToppers();
+
+  Future<Either<Failure, LeaderboardScreenModel>> getTop3Scorers() async =>
+      await _supabase.getTop3Scorers();
 }

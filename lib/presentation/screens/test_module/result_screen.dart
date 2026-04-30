@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/detailed_test_result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/difficulty_wise_review_per_test_model.dart';
@@ -25,6 +27,7 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:in_app_review/in_app_review.dart';
 
 import '../../blocs/daily_test/daily_test_bloc.dart';
 import '../../blocs/dashboard/dashboard_bloc.dart';
@@ -44,13 +47,29 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
+  final InAppReview _inAppReview = InAppReview.instance;
+
   @override
   void initState() {
     super.initState();
+    _requestReview();
     final isInternetAvailable =
         context.read<ConnectivityBloc>().state is ConnectivityOnline;
     if (isInternetAvailable) {
       context.read<ResultBloc>().add(FetchResultData(widget.testModel.id));
+    }
+  }
+
+  Future<void> _requestReview() async {
+    final log = getIt<LogHelper>();
+    try {
+      if (await _inAppReview.isAvailable()) {
+        log.i("Requesting in-app review");
+        await _inAppReview.requestReview();
+      }
+    } catch (e) {
+      log.e('Error requesting in-app review', error: e);
+      debugPrint('Error requesting in-app review: $e');
     }
   }
 
