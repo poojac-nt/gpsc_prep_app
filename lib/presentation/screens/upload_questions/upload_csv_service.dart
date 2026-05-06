@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/rpc_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
@@ -187,15 +188,20 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
 
     // ===== BULK QUESTION UPLOAD =====
     if (!isTestUpload) {
-      final rpcResult = await _supabase.rpc(
-        SupabaseKeys.insertBulkQuestions,
-        params: {'payload': payload},
+      String? rpcError;
+      final rpcResult = await callRpc(
+        call:
+            () => _supabase.rpc(
+              SupabaseKeys.insertBulkQuestions,
+              params: {'payload': payload},
+            ),
+        onError: (msg) => rpcError = msg,
       );
 
       final response = rpcResult as Map<String, dynamic>?;
 
       if (response == null) {
-        return Left(Failure('Upload failed: No response.'));
+        return Left(Failure(rpcError ?? 'Upload failed: No response.'));
       }
 
       return Right(
@@ -233,21 +239,26 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
 
     final structuredPayload = {"test": testObject, "questions": questions};
 
-    final rpcResult = await _supabase.rpc(
-      SupabaseKeys.insertMcqWithTest,
-      params: {
-        'p_course_id': courseId,
-        'payload': structuredPayload,
-        'p_single_price_id': priceSingle,
-        'p_double_price_id': priceDual,
-        'p_course_type': testType?.name,
-      },
+    String? rpcError;
+    final rpcResult = await callRpc(
+      call:
+          () => _supabase.rpc(
+            SupabaseKeys.insertMcqWithTest,
+            params: {
+              'p_course_id': courseId,
+              'payload': structuredPayload,
+              'p_single_price_id': priceSingle,
+              'p_double_price_id': priceDual,
+              'p_course_type': testType?.name,
+            },
+          ),
+      onError: (msg) => rpcError = msg,
     );
 
     final response = rpcResult as Map<String, dynamic>?;
 
     if (response == null) {
-      return Left(Failure('Upload failed: No response.'));
+      return Left(Failure(rpcError ?? 'Upload failed: No response.'));
     }
 
     return Right(

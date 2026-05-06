@@ -56,6 +56,7 @@ import '../../domain/entities/notification_model.dart';
 import '../../domain/entities/product_model.dart';
 import '../../domain/entities/study_material_model.dart';
 import 'log_helper.dart';
+import 'rpc_helper.dart';
 
 class SupabaseHelper {
   final supabase = Supabase.instance.client;
@@ -83,11 +84,15 @@ class SupabaseHelper {
   }
 
   Future<bool> checkUserExist(String email) async {
-    final response = await supabase.rpc(
-      SupabaseKeys.checkUserExist,
-      params: {"user_email": email},
+    final response = await callRpc(
+      call:
+          () => supabase.rpc(
+            SupabaseKeys.checkUserExist,
+            params: {"user_email": email},
+          ),
+      onError: (msg) => _snackBar.showError(msg),
     );
-    return response;
+    return response ?? false;
   }
 
   ///Login Method
@@ -259,17 +264,29 @@ class SupabaseHelper {
       final jsonData = data.toJson();
       _log.d('[Update User] Payload: $jsonData');
 
-      await supabase.rpc(
-        SupabaseKeys.updateUserInfo,
-        params: {
-          'p_auth_id': data.authID,
-          'p_full_name': data.name,
-          'p_email': data.email,
-          'p_address': data.address,
-          'p_number': data.number,
-          'p_profile_picture': data.profilePicture,
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.updateUserInfo,
+              params: {
+                'p_auth_id': data.authID,
+                'p_full_name': data.name,
+                'p_email': data.email,
+                'p_address': data.address,
+                'p_number': data.number,
+                'p_profile_picture': data.profilePicture,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error Updating User Info'));
+      }
 
       // ✅ Recommended: refetch updated user
       final userResponse =
@@ -383,9 +400,18 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
     try {
-      final rpcResponse = await supabase.rpc(
-        SupabaseKeys.getCoursesListWithTests,
+      String? rpcError;
+      final rpcResponse = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getCoursesListWithTests),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (rpcResponse == null) {
+        return Left(Failure(rpcError ?? 'Error fetching courses'));
+      }
 
       final List<dynamic> courseList = rpcResponse as List;
 
@@ -405,12 +431,24 @@ class SupabaseHelper {
     int limit = 20,
   }) async {
     try {
-      final rpcResponse = await supabase
-          .rpc(
-            SupabaseKeys.getCourseWithTests,
-            params: {'p_course_id': courseId},
-          )
-          .range(offset, offset + limit - 1);
+      String? rpcError;
+      final rpcResponse = await callRpc(
+        call:
+            () => supabase
+                .rpc(
+                  SupabaseKeys.getCourseWithTests,
+                  params: {'p_course_id': courseId},
+                )
+                .range(offset, offset + limit - 1),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (rpcResponse == null) {
+        return Left(Failure(rpcError ?? 'Error fetching courses'));
+      }
 
       return Right(CourseModel.fromJson(rpcResponse));
     } catch (e) {
@@ -428,10 +466,22 @@ class SupabaseHelper {
     int testId,
   ) async {
     try {
-      final List<Map<String, dynamic>> response = await supabase.rpc(
-        SupabaseKeys.getTestQuestionsByTestId,
-        params: {'p_test_id': testId},
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getTestQuestionsByTestId,
+              params: {'p_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching test questions'));
+      }
 
       _log.i("Questions Fetched for the testId $testId: ${response.length}");
 
@@ -564,21 +614,33 @@ class SupabaseHelper {
               )
               .toList();
 
-      final response = await supabase.rpc(
-        SupabaseKeys.submitTestAttempt,
-        params: {
-          'p_user_id': test.userId,
-          'p_test_id': test.testId,
-          'p_score': test.score,
-          'p_correct_answers': test.correctAnswers,
-          'p_incorrect_answers': test.inCorrectAnswers,
-          'p_attempted_questions': test.attemptedQuestions,
-          'p_not_attempted_questions': test.notAttemptedQuestions,
-          'p_time_taken': test.timeTaken,
-          'p_total_questions': test.totalQuestions,
-          'p_details': payload,
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.submitTestAttempt,
+              params: {
+                'p_user_id': test.userId,
+                'p_test_id': test.testId,
+                'p_score': test.score,
+                'p_correct_answers': test.correctAnswers,
+                'p_incorrect_answers': test.inCorrectAnswers,
+                'p_attempted_questions': test.attemptedQuestions,
+                'p_not_attempted_questions': test.notAttemptedQuestions,
+                'p_time_taken': test.timeTaken,
+                'p_total_questions': test.totalQuestions,
+                'p_details': payload,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? "RPC submit failed"));
+      }
 
       _log.i('RPC response: $response');
 
@@ -625,10 +687,22 @@ class SupabaseHelper {
   Future<Either<Failure, TestResultWithTopScoreModel?>>
   getUserTestResultWithTopScore({required int testId}) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getTestAttemptWithAnalytics,
-        params: {'p_user_id': userId, 'p_test_id': testId},
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getTestAttemptWithAnalytics,
+              params: {'p_user_id': userId, 'p_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? "Error fetching result with Top Score"));
+      }
 
       // Cast response to Map<String, dynamic>
       final data = response as Map<String, dynamic>;
@@ -688,12 +762,27 @@ class SupabaseHelper {
     int testId,
   ) async {
     try {
-      final List<Map<String, dynamic>> response = await supabase.rpc(
-        SupabaseKeys.getDescTestQuestionsByTestId,
-        params: {'p_desc_test_id': testId},
+      String? rpcError;
+      final List<dynamic>? response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getDescTestQuestionsByTestId,
+              params: {'p_desc_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
 
-      _log.i(response.toString());
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching test questions'));
+      }
+
+      final List<Map<String, dynamic>> responseList =
+          response.map((e) => Map<String, dynamic>.from(e)).toList();
+
+      _log.i(responseList.toString());
 
       final questions =
           response.map((e) => DescQuestionModel.fromJson(e)).toList();
@@ -716,10 +805,22 @@ class SupabaseHelper {
     int limit = 20,
   }) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.descTestWithoutCourse,
-        params: {'p_offset': offset, 'p_limit': limit},
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.descTestWithoutCourse,
+              params: {'p_offset': offset, 'p_limit': limit},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching descriptive tests'));
+      }
 
       final result =
           (response as List).map((e) => DescTestModel.fromJson(e)).toList();
@@ -760,14 +861,26 @@ class SupabaseHelper {
           answers.entries
               .map((e) => {'question_id': e.key, 'answer': e.value})
               .toList();
-      await supabase.rpc(
-        SupabaseKeys.submitDescTest,
-        params: {
-          'p_user_id': userId,
-          'p_test_id': testId,
-          'p_answers': formattedAnswers,
+      String? rpcError;
+      await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.submitDescTest,
+              params: {
+                'p_user_id': userId,
+                'p_test_id': testId,
+                'p_answers': formattedAnswers,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
+
+      if (rpcError != null) {
+        return Left(Failure(rpcError!));
+      }
 
       return Right("Test submitted successfully!");
     } catch (e) {
@@ -933,10 +1046,22 @@ class SupabaseHelper {
     int testId,
   ) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.fetchStudentTestReview,
-        params: {'p_user_id': userId, 'p_test_id': testId},
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.fetchStudentTestReview,
+              params: {'p_user_id': userId, 'p_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'No review data found for this test.'));
+      }
 
       if (response == null) {
         return Left(Failure('No review data found for this test.'));
@@ -1026,10 +1151,22 @@ class SupabaseHelper {
     int testId,
   ) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getTestAttemptState,
-        params: {'p_user_id': userId!, 'p_test_id': testId},
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getTestAttemptState,
+              params: {'p_user_id': userId!, 'p_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching test attempt state'));
+      }
 
       final results = TestAttemptState.fromJson(response);
       _log.i('Fetched TestAttemptState: $results');
@@ -1047,10 +1184,22 @@ class SupabaseHelper {
   Future<Either<Failure, List<Map<String, dynamic>>>>
   fetchTestQuestionCorrectness(int testId) async {
     try {
-      final response = await supabase.rpc(
-        SupabaseKeys.getQuestionCorrectnessCounts,
-        params: {'test_id': testId},
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getQuestionCorrectnessCounts,
+              params: {'test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Failed to fetch correctness data'));
+      }
 
       final resultData = response;
 
@@ -1149,10 +1298,22 @@ class SupabaseHelper {
 
   Future<Either<Failure, TrendResultModel>> fetchTrendForUser() async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getAccuracyTrend,
-        params: {'p_user_id': userId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getAccuracyTrend,
+              params: {'p_user_id': userId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error fetching Accuracy Trend"));
+      }
 
       final stats = TrendResultModel.fromRpcResponse(result);
 
@@ -1169,10 +1330,22 @@ class SupabaseHelper {
 
   Future<Either<Failure, DashboardAnalytics>> getDashboardAnalytics() async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getDashboardAnalytics,
-        params: {'p_user_id': userId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getDashboardAnalytics,
+              params: {'p_user_id': userId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error fetching dashboard analytics"));
+      }
       final analytics = DashboardAnalytics.fromJson(
         result.first as Map<String, dynamic>,
       );
@@ -1186,7 +1359,18 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<LeaderboardModel>>> getToppers() async {
     try {
-      final result = await supabase.rpc(SupabaseKeys.getToppers);
+      String? rpcError;
+      final result = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getToppers),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error fetching leaderboard analytics"));
+      }
 
       final toppers =
           (result as List)
@@ -1203,7 +1387,20 @@ class SupabaseHelper {
 
   Future<Either<Failure, LeaderboardScreenModel>> getTop3Scorers() async {
     try {
-      final result = await supabase.rpc(SupabaseKeys.getTop3Scorers);
+      String? rpcError;
+      final result = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getTop3Scorers),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (result == null) {
+        return Left(
+          Failure(rpcError ?? "Error fetching leaderboard screen analytics"),
+        );
+      }
       final toppers = LeaderboardScreenModel.fromJson(
         result as Map<String, dynamic>,
       );
@@ -1296,15 +1493,27 @@ class SupabaseHelper {
     required List<Map<String, dynamic>> payload,
   }) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.insertTestWithStudyMaterial,
-        params: {
-          'payload': payload,
-          'study_title': title,
-          'study_link': link,
-          'study_language': language,
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.insertTestWithStudyMaterial,
+              params: {
+                'payload': payload,
+                'study_title': title,
+                'study_link': link,
+                'study_language': language,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error inserting study material with test"));
+      }
 
       _log.i('Inserted study material with test: $result');
       return const Right(null);
@@ -1409,10 +1618,22 @@ class SupabaseHelper {
     required int questionId,
   }) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.peerReview,
-        params: {'p_test_id': testId, 'p_question_id': questionId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.peerReview,
+              params: {'p_test_id': testId, 'p_question_id': questionId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error fetching Peer Review"));
+      }
       final reviews =
           (result as List)
               .map((e) => PeerReviewModel.fromJson(e as Map<String, dynamic>))
@@ -1438,10 +1659,22 @@ class SupabaseHelper {
     required int answerId,
   }) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.detailedPeerReviewPerUser,
-        params: {'p_answer_id': answerId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.detailedPeerReviewPerUser,
+              params: {'p_answer_id': answerId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error fetching Detailed Peer Review"));
+      }
       final list = result as List<dynamic>;
       if (list.isEmpty) {
         return Left(Failure('No answer found for answerId $answerId'));
@@ -1469,14 +1702,26 @@ class SupabaseHelper {
     required String comment,
   }) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.insertPeerReview,
-        params: {
-          'p_answer_id': answerId,
-          'p_reviewer_id': reviewerId,
-          'p_comment': comment,
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.insertPeerReview,
+              params: {
+                'p_answer_id': answerId,
+                'p_reviewer_id': reviewerId,
+                'p_comment': comment,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? "Error inserting Peer Review"));
+      }
       final commentJson = (result as List).first as Map<String, dynamic>;
       final commentModel = Comment.fromJson(commentJson);
       _log.i(
@@ -1636,12 +1881,22 @@ class SupabaseHelper {
   Future<Either<Failure, List<StudentListWithMentor>>>
   fetchTestWisePendingSubmission({required int testId}) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getUnassignedStudentsForTest,
-        params: {'p_test_id': testId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getUnassignedStudentsForTest,
+              params: {'p_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
       if (result == null) {
-        return const Right([]);
+        return Left(
+          Failure(rpcError ?? 'Error Fetching Test Wise Pending Submission'),
+        );
       }
       final submissions =
           (result as List).map((e) {
@@ -1669,10 +1924,22 @@ class SupabaseHelper {
     required List<MentorAssignmentPayload> payloads,
   }) async {
     try {
-      await supabase.rpc(
-        SupabaseKeys.rpcDescMentorAssignment,
-        params: {'p_rows': payloads.map((e) => e.toJson()).toList()},
+      String? rpcError;
+      await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.rpcDescMentorAssignment,
+              params: {'p_rows': payloads.map((e) => e.toJson()).toList()},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (rpcError != null) {
+        return Left(Failure(rpcError!));
+      }
 
       return const Right(null);
     } catch (e) {
@@ -1688,10 +1955,24 @@ class SupabaseHelper {
   Future<Either<Failure, MentorDashboardData>>
   fetchMentorDashboardData() async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.mentorDashboard,
-        params: {'p_mentor_id': userId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.mentorDashboard,
+              params: {'p_mentor_id': userId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(
+          Failure(rpcError ?? 'Error Fetching Mentor Dashboard Data'),
+        );
+      }
 
       final data = (result as List).first as Map<String, dynamic>;
 
@@ -1715,10 +1996,22 @@ class SupabaseHelper {
     int limit = 20,
   }) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getSubmittedFreeDescTests,
-        params: {'p_offset': offset, 'p_limit': limit},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getSubmittedFreeDescTests,
+              params: {'p_offset': offset, 'p_limit': limit},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(Failure(rpcError ?? 'Error Fetching Free Desc Tests'));
+      }
 
       final data =
           (result as List).map((e) {
@@ -1745,10 +2038,24 @@ class SupabaseHelper {
   Future<Either<Failure, List<MentorAssignmentListModel>>>
   fetchMentorSubmission() async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.mentorSubmission,
-        params: {'p_mentor_id': userId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.mentorSubmission,
+              params: {'p_mentor_id': userId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(
+          Failure(rpcError ?? 'Error Fetching Mentor Submission List'),
+        );
+      }
       final data =
           (result as List)
               .map(
@@ -1773,10 +2080,27 @@ class SupabaseHelper {
   Future<Either<Failure, List<MentorTestSubmissions>>>
   fetchMentorTestSubmission({required int testId}) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.fetchMentorTestSubmissions,
-        params: {'p_mentor_id': userId, 'p_test_id': testId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.fetchMentorTestSubmissions,
+              params: {'p_mentor_id': userId, 'p_test_id': testId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(
+          Failure(
+            rpcError ??
+                'Error Fetching Mentor Test Submission List for $testId',
+          ),
+        );
+      }
       final data =
           (result as List)
               .map(
@@ -1827,15 +2151,27 @@ class SupabaseHelper {
             .getPublicUrl(filePath);
       }
 
-      await supabase.rpc(
-        SupabaseKeys.submitMentorEvaluation,
-        params: {
-          'p_mentor_assignment_id': mentorAssignmentId,
-          'p_marks_per_question': questionScores,
-          'p_reviewed_pdf_link': publicUrl,
-          'p_feedback': feedback,
+      String? rpcError;
+      await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.submitMentorEvaluation,
+              params: {
+                'p_mentor_assignment_id': mentorAssignmentId,
+                'p_marks_per_question': questionScores,
+                'p_reviewed_pdf_link': publicUrl,
+                'p_feedback': feedback,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
+
+      if (rpcError != null) {
+        return Left(Failure(rpcError!));
+      }
 
       return const Right(null);
     } catch (e) {
@@ -1849,10 +2185,24 @@ class SupabaseHelper {
     required int submissionId,
   }) async {
     try {
-      final result = await supabase.rpc(
-        SupabaseKeys.getSubmissionsReport,
-        params: {'p_submission_id': submissionId},
+      String? rpcError;
+      final result = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.getSubmissionsReport,
+              params: {'p_submission_id': submissionId},
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
       );
+
+      if (result == null) {
+        return Left(
+          Failure(rpcError ?? 'Error Fetching Submission Report for $submissionId'),
+        );
+      }
 
       final Map<String, dynamic> jsonData;
       if (result is List && result.isNotEmpty) {
@@ -1887,7 +2237,19 @@ class SupabaseHelper {
   /// ===========================================================================
   Future<Either<Failure, AdminStatsModel>> fetchAdminStats() async {
     try {
-      final response = await supabase.rpc(SupabaseKeys.getAdminDashboardStats);
+      String? rpcError;
+      final response = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getAdminDashboardStats),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? "Error fetching admin stats"));
+      }
+
       final data = AdminStatsModel.fromJson(response);
       return Right(data);
     } catch (e) {
@@ -1898,7 +2260,18 @@ class SupabaseHelper {
 
   Future<Either<Failure, List<MentorModel>>> fetchMentorList() async {
     try {
-      final response = await supabase.rpc(SupabaseKeys.getMentorList);
+      String? rpcError;
+      final response = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getMentorList),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching mentor list'));
+      }
 
       final mentors =
           (response as List).map((e) => MentorModel.fromJson(e)).toList();
@@ -1912,7 +2285,19 @@ class SupabaseHelper {
 
   Future<Either<Failure, MentorModel>> fetchMentorByUserId(int userId) async {
     try {
-      final response = await supabase.rpc(SupabaseKeys.getMentorList);
+      String? rpcError;
+      final response = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getMentorList),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Mentor data not found for user ID: $userId'));
+      }
+
       final mentorsJson = response as List;
       final mentorJson = mentorsJson.firstWhere(
         (e) => e['user_data']['id'] == userId,
@@ -1974,25 +2359,46 @@ class SupabaseHelper {
       }
 
       // 2️⃣ Call RPC to update mentor
-      final response = await supabase.rpc(
-        SupabaseKeys.editMentor,
-        params: {
-          'p_user_id': userId,
-          'p_name': name,
-          'p_bio': bio,
-          'p_subject_ids':
-              subjectIds, // Fixed: use subjectIds instead of subjectExpertise
-          'p_is_active': isActive,
-          'p_profile_picture': profilePictureUrl,
+      String? rpcError;
+      final response = await callRpc(
+        call:
+            () => supabase.rpc(
+              SupabaseKeys.editMentor,
+              params: {
+                'p_user_id': userId,
+                'p_name': name,
+                'p_bio': bio,
+                'p_subject_ids':
+                    subjectIds, // Fixed: use subjectIds instead of subjectExpertise
+                'p_is_active': isActive,
+                'p_profile_picture': profilePictureUrl,
+              },
+            ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
         },
       );
 
       if (response == null || response['success'] != true) {
-        return Left(Failure(response?['message'] ?? 'Failed to update mentor'));
+        return Left(
+          Failure(rpcError ?? response?['message'] ?? 'Failed to update mentor'),
+        );
       }
 
       // 3️⃣ Fetch updated mentor data
-      final mentorList = await supabase.rpc(SupabaseKeys.getMentorList);
+      String? fetchError;
+      final mentorList = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getMentorList),
+        onError: (msg) {
+          fetchError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (mentorList == null) {
+        return Left(Failure(fetchError ?? 'Failed to refetch mentor data'));
+      }
 
       final mentorJson = (mentorList as List).firstWhere(
         (e) => e['user_data']['id'] == userId,
@@ -2014,7 +2420,18 @@ class SupabaseHelper {
 
   Future<Either<Failure, AllTestsModel>> fetchAllTests() async {
     try {
-      final response = await supabase.rpc(SupabaseKeys.getAllTests);
+      String? rpcError;
+      final response = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getAllTests),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching tests'));
+      }
 
       if (response == null) {
         throw Exception('Empty response from fetch_all_tests_grouped');
@@ -2066,7 +2483,18 @@ class SupabaseHelper {
 
   Future<Either<Failure, AllTestsModel>> fetchNotificationMetadata() async {
     try {
-      final rpcResponse = await supabase.rpc(SupabaseKeys.getAllTests);
+      String? rpcError;
+      final rpcResponse = await callRpc(
+        call: () => supabase.rpc(SupabaseKeys.getAllTests),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (rpcResponse == null) {
+        return Left(Failure(rpcError ?? 'Error fetching metadata'));
+      }
       final data = AllTestsModel.fromJson(rpcResponse as Map<String, dynamic>);
       return Right(data);
     } catch (e) {
