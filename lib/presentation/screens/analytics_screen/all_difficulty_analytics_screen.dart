@@ -59,66 +59,65 @@ class _AllDifficultyAnalyticsScreenState
               ),
             ),
           ),
-          body:
-              isLoading && data.isEmpty
-                  ? Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        16.hGap,
-                        AnalyticsDateRangePicker(
-                          selectedRange: _selectedDateRange,
-                          onRangeSelected: (picked) {
-                            setState(() {
-                              _selectedDateRange = picked;
-                            });
-                            context.read<DetailedAnalyticsBloc>().add(
-                              LoadDetailedDifficultyEvent(
-                                from: picked.start,
-                                to: picked.end,
-                              ),
-                            );
-                          },
+          body: isLoading && data.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      16.hGap,
+                      AnalyticsDateRangePicker(
+                        selectedRange: _selectedDateRange,
+                        onRangeSelected: (picked) {
+                          setState(() {
+                            _selectedDateRange = picked;
+                          });
+                          context.read<DetailedAnalyticsBloc>().add(
+                            LoadDetailedDifficultyEvent(
+                              from: picked.start,
+                              to: picked.end,
+                            ),
+                          );
+                        },
+                      ),
+                      24.hGap,
+                      if (data.isEmpty && !isLoading)
+                        EmptyStateUi()
+                      else ...[
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Text(
+                            "ACCURACY OVERVIEW",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.gray500,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
+                        16.hGap,
+                        _buildAccuracyOverview(data),
                         24.hGap,
-                        if (data.isEmpty && !isLoading)
-                          EmptyStateUi()
-                        else ...[
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            child: Text(
-                              "ACCURACY OVERVIEW",
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.gray500,
-                                letterSpacing: 0.5,
-                              ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Text(
+                            "PERFORMANCE METRICS",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.gray500,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          16.hGap,
-                          _buildAccuracyOverview(data),
-                          24.hGap,
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            child: Text(
-                              "PERFORMANCE METRICS",
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.gray500,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          16.hGap,
-                          ...data.map((d) => _buildPerformanceMetricCard(d)),
-                        ],
-                        40.hGap,
+                        ),
+                        16.hGap,
+                        ...data.map((d) => _buildPerformanceMetricCard(d)),
                       ],
-                    ),
+                      40.hGap,
+                    ],
                   ),
+                ),
         );
       },
     );
@@ -136,53 +135,52 @@ class _AllDifficultyAnalyticsScreenState
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children:
-            sortedData.map((d) {
-              Color color;
-              DifficultyLevel? level = d.difficultyLevel;
-              String levelName = level?.level ?? "UNKNOWN";
+        children: sortedData.map((d) {
+          Color color;
+          DifficultyLevel? level = d.difficultyLevel;
+          String levelName = level?.level ?? "UNKNOWN";
 
-              if (level == DifficultyLevel.easy) {
-                color = AppColors.green500;
-              } else if (level == DifficultyLevel.mod) {
-                color = AppColors.orange500;
-              } else {
-                color = AppColors.red500;
-              }
+          if (level == DifficultyLevel.easy) {
+            color = AppColors.green500;
+          } else if (level == DifficultyLevel.mod) {
+            color = AppColors.orange500;
+          } else {
+            color = AppColors.red500;
+          }
 
-              return Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  padding: EdgeInsets.symmetric(vertical: 20.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: AppColors.gray200),
+          return Expanded(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 4.w),
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: AppColors.gray200),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    levelName.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.gray400,
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        levelName.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.gray400,
-                        ),
-                      ),
-                      8.hGap,
-                      Text(
-                        "${d.accuracyPct.toInt()}%",
-                        style: TextStyle(
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                      ),
-                    ],
+                  8.hGap,
+                  Text(
+                    "${d.accuracyPct.toInt()}%",
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -229,7 +227,7 @@ class _AllDifficultyAnalyticsScreenState
               Text(
                 "$levelName Questions",
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: levelColor,
                 ),
@@ -258,12 +256,9 @@ class _AllDifficultyAnalyticsScreenState
               _buildMetricItem(
                 "ACCURACY",
                 "${accuracy.toInt()}%",
-                color:
-                    accuracy >= 85
-                        ? AppColors.green500
-                        : (accuracy < 60
-                            ? AppColors.red500
-                            : AppColors.orange500),
+                color: accuracy >= 85
+                    ? AppColors.green500
+                    : (accuracy < 60 ? AppColors.red500 : AppColors.orange500),
               ),
               _buildMetricItem("ATTEMPTED", "${data.attempted}"),
             ],

@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/error/failure.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/rpc_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
 import 'package:gpsc_prep_app/utils/constants/supabase_keys.dart';
@@ -200,21 +201,26 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
   CourseTestType? testType,
 }) async {
   try {
-    final rpcResult = await _supabase.rpc(
-      SupabaseKeys.insertDescWithTest,
-      params: {
-        'p_course_id': courseId,
-        'payload': payload,
-        'p_available_at': availableAt?.toIso8601String(),
-        'p_single_price_id': priceSingle,
-        'p_double_price_id': priceDual,
-        'p_course_type': testType?.name,
-      },
+    String? rpcError;
+    final rpcResult = await callRpc(
+      call: () => _supabase.rpc(
+        SupabaseKeys.insertDescWithTest,
+        params: {
+          'p_course_id': courseId,
+          'payload': payload,
+          'p_available_at': availableAt?.toIso8601String(),
+          'p_single_price_id': priceSingle,
+          'p_double_price_id': priceDual,
+          'p_course_type': testType?.name,
+        },
+      ),
+      onError: (msg) => rpcError = msg,
     );
 
     final response = rpcResult as Map<String, dynamic>?;
+
     if (response == null) {
-      return Left(Failure('Upload failed (DESC): No response received.'));
+      return Left(Failure(rpcError ?? 'Upload failed (DESC): No response received.'));
     }
 
     return Right(
