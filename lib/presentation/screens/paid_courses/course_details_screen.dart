@@ -386,37 +386,49 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     getIt<SnackBarHelper>().showSuccess(
                       "No mentor has been assigned yet. Please wait.",
                     );
-                    return;
-                  }
-
-                  final reviews = reviewModel.mentorReviews;
-
-                  if (reviews.length == 1) {
-                    final mentor = reviews.first;
-                    final isCompleted =
-                        mentor.status.toLowerCase() == "completed";
-                    if (isCompleted) {
-                      await context.push(
-                        AppRoutes.studentEvaluationResult,
-                        extra: StudentEvaluationResultScreenArgs(
-                          testId: test.id,
-                          testName: test.name,
-                          studentName:
-                              getIt<CacheManager>().user?.name ?? 'Student',
-                          reviewModel: reviewModel,
-                          mentorId: mentor.mentorId,
-                        ),
-                      );
-                    } else {
-                      // Assigned but not yet reviewed
-                      getIt<SnackBarHelper>().showSuccess(
-                        "Your test is assigned to a mentor and is under review. Result will be available soon.",
-                      );
-                    }
                   } else {
-                    // 2+ mentors — always show bottom sheet regardless of status
-                    _showMentorSelectionSheet(test, reviewModel);
+                    final reviews = reviewModel.mentorReviews;
+
+                    if (reviews.length == 1) {
+                      final mentor = reviews.first;
+                      final isCompleted =
+                          mentor.status.toLowerCase() == "completed";
+                      if (isCompleted) {
+                        await context.push(
+                          AppRoutes.studentEvaluationResult,
+                          extra: StudentEvaluationResultScreenArgs(
+                            testId: test.id,
+                            testName: test.name,
+                            studentName:
+                                getIt<CacheManager>().user?.name ?? 'Student',
+                            reviewModel: reviewModel,
+                            mentorId: mentor.mentorId,
+                            courseId: widget.courseModel.id,
+                          ),
+                        );
+                        return;
+                      } else {
+                        // Assigned but not yet reviewed
+                        getIt<SnackBarHelper>().showSuccess(
+                          "Your test is assigned to a mentor and is under review. Result will be available soon.",
+                        );
+                      }
+                    } else {
+                      // 2+ mentors — always show bottom sheet regardless of status
+                      _showMentorSelectionSheet(test, reviewModel);
+                      return;
+                    }
                   }
+
+                  await context.push(
+                    AppRoutes.descFullQuestions,
+                    extra: DescFullQuestionsScreenArgs(
+                      testId: test.id,
+                      testName: test.name,
+                      courseId: widget.courseModel.id,
+                      isSubmitted: true,
+                    ),
+                  );
                   return;
                 }
 
@@ -512,6 +524,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                               getIt<CacheManager>().user?.name ?? 'Student',
                           reviewModel: reviewModel,
                           mentorId: m.mentorId,
+                          courseId: widget.courseModel.id,
                         ),
                       );
                     },

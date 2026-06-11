@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -207,12 +207,11 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                             value: 'general',
                             isSelected: _notificationType == 'general',
                             icon: Icons.notifications_none,
-                            onTap:
-                                () => setState(() {
-                                  _notificationType = 'general';
-                                  _selectedCourse = null;
-                                  _selectedTest = null;
-                                }),
+                            onTap: () => setState(() {
+                              _notificationType = 'general';
+                              _selectedCourse = null;
+                              _selectedTest = null;
+                            }),
                           ),
                           10.wGap,
                           _buildSelectOption(
@@ -220,11 +219,10 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                             value: 'course',
                             isSelected: _notificationType == 'course',
                             icon: Icons.book_outlined,
-                            onTap:
-                                () => setState(() {
-                                  _notificationType = 'course';
-                                  _selectedTest = null;
-                                }),
+                            onTap: () => setState(() {
+                              _notificationType = 'course';
+                              _selectedTest = null;
+                            }),
                           ),
                           10.wGap,
                           _buildSelectOption(
@@ -232,11 +230,10 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                             value: 'test',
                             isSelected: _notificationType == 'test',
                             icon: Icons.quiz_outlined,
-                            onTap:
-                                () => setState(() {
-                                  _notificationType = 'test';
-                                  _selectedCourse = null;
-                                }),
+                            onTap: () => setState(() {
+                              _notificationType = 'test';
+                              _selectedCourse = null;
+                            }),
                           ),
                         ],
                       ),
@@ -246,41 +243,38 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                     if (_notificationType != 'general') ...[
                       15.hGap,
                       _buildSectionCard(
-                        title:
-                            _notificationType == 'course'
-                                ? "COURSE SELECTION"
-                                : "TEST SELECTION",
-                        child:
-                            _notificationType == 'course'
-                                ? _buildDropdown<CourseModel>(
-                                  hint: "Select a course...",
-                                  value: _selectedCourse,
-                                  items:
-                                      courses.map((e) {
-                                        return DropdownMenuItem(
-                                          value: e,
-                                          child: Text(
-                                            e.name,
-                                            style: TextStyle(fontSize: 14.sp),
-                                          ),
-                                        );
-                                      }).toList(),
-                                  selectedItemBuilder: (context) {
-                                    return courses.map((e) {
-                                      return Text(
-                                        e.name,
-                                        style: TextStyle(fontSize: 14.sp),
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                                    }).toList();
-                                  },
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _selectedCourse = val;
-                                    });
-                                  },
-                                )
-                                : _buildTestPickerField(tests),
+                        title: _notificationType == 'course'
+                            ? "COURSE SELECTION"
+                            : "TEST SELECTION",
+                        child: _notificationType == 'course'
+                            ? _buildDropdown<CourseModel>(
+                                hint: "Select a course...",
+                                value: _selectedCourse,
+                                items: courses.map((e) {
+                                  return DropdownMenuItem(
+                                    value: e,
+                                    child: Text(
+                                      e.name,
+                                      style: TextStyle(fontSize: 14.sp),
+                                    ),
+                                  );
+                                }).toList(),
+                                selectedItemBuilder: (context) {
+                                  return courses.map((e) {
+                                    return Text(
+                                      e.name,
+                                      style: TextStyle(fontSize: 14.sp),
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  }).toList();
+                                },
+                                onChanged: (val) {
+                                  setState(() {
+                                    _selectedCourse = val;
+                                  });
+                                },
+                              )
+                            : _buildTestPickerField(tests),
                       ),
                     ],
                     15.hGap,
@@ -289,9 +283,8 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                       child: CustomTextField(
                         controller: _titleController,
                         hintText: "Enter broadcast title...",
-                        validator:
-                            (val) =>
-                                val == null || val.isEmpty ? "Required" : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? "Required" : null,
                       ),
                     ),
                     15.hGap,
@@ -309,9 +302,8 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                         hintText: "Compose your message for students...",
                         maxLine: 5,
                         // onChanged: (val) => setState(() {}),
-                        validator:
-                            (val) =>
-                                val == null || val.isEmpty ? "Required" : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? "Required" : null,
                       ),
                     ),
                     15.hGap,
@@ -326,9 +318,8 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                           size: 20.sp,
                           color: Colors.black87,
                         ),
-                        validator:
-                            (val) =>
-                                val == null || val.isEmpty ? "Required" : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? "Required" : null,
                       ),
                       onTap: _selectDate,
                     ),
@@ -345,9 +336,8 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                           size: 20.sp,
                           color: Colors.black87,
                         ),
-                        validator:
-                            (val) =>
-                                val == null || val.isEmpty ? "Required" : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? "Required" : null,
                       ),
                       onTap: _selectTime,
                     ),
@@ -358,97 +348,96 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                       width: double.infinity,
                       height: 50.h,
                       child: ElevatedButton(
-                        onPressed:
-                            state.status == NotificationStatus.submitting
-                                ? null
-                                : () {
-                                  if (_formKey.currentState!.validate()) {
-                                    if (_notificationType == 'course' &&
-                                        _selectedCourse == null) {
-                                      getIt<SnackBarHelper>().showError(
-                                        "Please select a course",
-                                      );
-                                      return;
-                                    }
-                                    if (_notificationType == 'test' &&
-                                        _selectedTest == null) {
-                                      getIt<SnackBarHelper>().showError(
-                                        "Please select a test",
-                                      );
-                                      return;
-                                    }
-
-                                    debugPrint(
-                                      "Form validated, preparing notification...",
+                        onPressed: state.status == NotificationStatus.submitting
+                            ? null
+                            : () {
+                                if (_formKey.currentState!.validate()) {
+                                  if (_notificationType == 'course' &&
+                                      _selectedCourse == null) {
+                                    getIt<SnackBarHelper>().showError(
+                                      "Please select a course",
                                     );
-                                    final notification = NotificationModel(
-                                      id: widget.prefill?.id,
-                                      title: _titleController.text.trim(),
-                                      body: _bodyController.text.trim(),
-                                      scheduledAt: _getScheduledDateTime(),
-                                      type: _notificationType,
-                                      referenceId:
-                                          _selectedCourse?.id ??
-                                          _selectedTest?.id,
-                                      testType: _selectedTest?.type,
-                                      targetAudience: _targetAudience,
-                                    );
-                                    if (widget.prefill != null && widget.prefill!.id != null) {
-                                      debugPrint(
-                                        "Dispatching UpdateNotificationEvent: ${notification.toJson()}",
-                                      );
-                                      context.read<NotificationBloc>().add(
-                                        UpdateNotificationEvent(notification),
-                                      );
-                                    } else {
-                                      debugPrint(
-                                        "Dispatching CreateNotificationEvent: ${notification.toJson()}",
-                                      );
-                                      context.read<NotificationBloc>().add(
-                                        CreateNotificationEvent(notification),
-                                      );
-                                    }
-                                  } else {
-                                    debugPrint("Form validation failed.");
+                                    return;
                                   }
-                                },
+                                  if (_notificationType == 'test' &&
+                                      _selectedTest == null) {
+                                    getIt<SnackBarHelper>().showError(
+                                      "Please select a test",
+                                    );
+                                    return;
+                                  }
+
+                                  debugPrint(
+                                    "Form validated, preparing notification...",
+                                  );
+                                  final notification = NotificationModel(
+                                    id: widget.prefill?.id,
+                                    title: _titleController.text.trim(),
+                                    body: _bodyController.text.trim(),
+                                    scheduledAt: _getScheduledDateTime(),
+                                    type: _notificationType,
+                                    referenceId:
+                                        _selectedCourse?.id ??
+                                        _selectedTest?.id,
+                                    testType: _selectedTest?.type,
+                                    targetAudience: _targetAudience,
+                                  );
+                                  if (widget.prefill != null &&
+                                      widget.prefill!.id != null) {
+                                    debugPrint(
+                                      "Dispatching UpdateNotificationEvent: ${notification.toJson()}",
+                                    );
+                                    context.read<NotificationBloc>().add(
+                                      UpdateNotificationEvent(notification),
+                                    );
+                                  } else {
+                                    debugPrint(
+                                      "Dispatching CreateNotificationEvent: ${notification.toJson()}",
+                                    );
+                                    context.read<NotificationBloc>().add(
+                                      CreateNotificationEvent(notification),
+                                    );
+                                  }
+                                } else {
+                                  debugPrint("Form validation failed.");
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xff0056b3),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25.r),
                           ),
                         ),
-                        child:
-                            state.status == NotificationStatus.submitting
-                                ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.h,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.send,
-                                      color: Colors.white,
-                                      size: 18.sp,
-                                    ),
-                                    10.wGap,
-                                    Text(
-                                      widget.prefill != null
-                                          ? 'Update Broadcast'
-                                          : 'Schedule Broadcast',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                        child: state.status == NotificationStatus.submitting
+                            ? SizedBox(
+                                height: 20.h,
+                                width: 20.h,
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
                                 ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 18.sp,
+                                  ),
+                                  10.wGap,
+                                  Text(
+                                    widget.prefill != null
+                                        ? 'Update Broadcast'
+                                        : 'Schedule Broadcast',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                     20.hGap,
@@ -564,53 +553,52 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
         child: Row(
           children: [
             Expanded(
-              child:
-                  _selectedTest == null
-                      ? Text(
-                        "Search and select a test...",
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 13.sp,
-                        ),
-                      )
-                      : Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 7.w,
-                              vertical: 2.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _selectedTest!.color.withAlpha(25),
-                              borderRadius: BorderRadius.circular(4.r),
-                              border: Border.all(
-                                color: _selectedTest!.color.withAlpha(50),
-                                width: 0.5,
-                              ),
-                            ),
-                            child: Text(
-                              _selectedTest!.label,
-                              style: TextStyle(
-                                color: _selectedTest!.color,
-                                fontSize: 9.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          8.wGap,
-                          Expanded(
-                            child: Text(
-                              _selectedTest!.name,
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+              child: _selectedTest == null
+                  ? Text(
+                      "Search and select a test...",
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 13.sp,
                       ),
+                    )
+                  : Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 7.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _selectedTest!.color.withAlpha(25),
+                            borderRadius: BorderRadius.circular(4.r),
+                            border: Border.all(
+                              color: _selectedTest!.color.withAlpha(50),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Text(
+                            _selectedTest!.label,
+                            style: TextStyle(
+                              color: _selectedTest!.color,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        8.wGap,
+                        Expanded(
+                          child: Text(
+                            _selectedTest!.name,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
             if (_selectedTest != null)
               GestureDetector(
@@ -705,22 +693,21 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                             size: 20.sp,
                             color: Colors.grey[400],
                           ),
-                          suffixIcon:
-                              searchController.text.isNotEmpty
-                                  ? GestureDetector(
-                                    onTap: () {
-                                      searchController.clear();
-                                      setModalState(() {
-                                        filtered = List.from(allTests);
-                                      });
-                                    },
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 18.sp,
-                                      color: Colors.grey[400],
-                                    ),
-                                  )
-                                  : null,
+                          suffixIcon: searchController.text.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: () {
+                                    searchController.clear();
+                                    setModalState(() {
+                                      filtered = List.from(allTests);
+                                    });
+                                  },
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 18.sp,
+                                    color: Colors.grey[400],
+                                  ),
+                                )
+                              : null,
                           filled: true,
                           fillColor: Colors.grey[100],
                           border: OutlineInputBorder(
@@ -731,14 +718,13 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                         ),
                         onChanged: (query) {
                           setModalState(() {
-                            filtered =
-                                allTests
-                                    .where(
-                                      (t) => t.name.toLowerCase().contains(
-                                        query.toLowerCase(),
-                                      ),
-                                    )
-                                    .toList();
+                            filtered = allTests
+                                .where(
+                                  (t) => t.name.toLowerCase().contains(
+                                    query.toLowerCase(),
+                                  ),
+                                )
+                                .toList();
                           });
                         },
                       ),
@@ -746,112 +732,108 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                     Divider(height: 1, color: Colors.grey[200]),
                     // List
                     Expanded(
-                      child:
-                          filtered.isEmpty
-                              ? Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.search_off,
-                                      size: 40.sp,
-                                      color: Colors.grey[300],
+                      child: filtered.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 40.sp,
+                                    color: Colors.grey[300],
+                                  ),
+                                  12.hGap,
+                                  Text(
+                                    "No tests found",
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14.sp,
                                     ),
-                                    12.hGap,
-                                    Text(
-                                      "No tests found",
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 14.sp,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                              : ListView.separated(
-                                controller: scrollController,
-                                itemCount: filtered.length,
-                                padding: EdgeInsets.symmetric(vertical: 8.h),
-                                separatorBuilder:
-                                    (_, _) => Divider(
-                                      height: 1,
-                                      color: Colors.grey[100],
-                                      indent: 16.w,
-                                      endIndent: 16.w,
-                                    ),
-                                itemBuilder: (_, index) {
-                                  final test = filtered[index];
-                                  final isSelected =
-                                      _selectedTest?.id == test.id &&
-                                      _selectedTest?.type == test.type;
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() => _selectedTest = test);
-                                      Navigator.pop(ctx);
-                                    },
-                                    child: Container(
-                                      color:
-                                          isSelected
-                                              ? AppColors.primary.withAlpha(10)
-                                              : null,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16.w,
-                                        vertical: 12.h,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 8.w,
-                                              vertical: 3.h,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: test.color.withAlpha(20),
-                                              borderRadius:
-                                                  BorderRadius.circular(4.r),
-                                              border: Border.all(
-                                                color: test.color.withAlpha(50),
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              test.label,
-                                              style: TextStyle(
-                                                color: test.color,
-                                                fontSize: 10.sp,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          12.wGap,
-                                          Expanded(
-                                            child: Text(
-                                              test.name,
-                                              style: TextStyle(
-                                                fontSize: 13.sp,
-                                                fontWeight:
-                                                    isSelected
-                                                        ? FontWeight.w600
-                                                        : FontWeight.normal,
-                                                color:
-                                                    isSelected
-                                                        ? AppColors.primary
-                                                        : Colors.black87,
-                                              ),
-                                            ),
-                                          ),
-                                          if (isSelected)
-                                            Icon(
-                                              Icons.check_circle,
-                                              color: AppColors.primary,
-                                              size: 18.sp,
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
+                            )
+                          : ListView.separated(
+                              controller: scrollController,
+                              itemCount: filtered.length,
+                              padding: EdgeInsets.symmetric(vertical: 8.h),
+                              separatorBuilder: (_, _) => Divider(
+                                height: 1,
+                                color: Colors.grey[100],
+                                indent: 16.w,
+                                endIndent: 16.w,
+                              ),
+                              itemBuilder: (_, index) {
+                                final test = filtered[index];
+                                final isSelected =
+                                    _selectedTest?.id == test.id &&
+                                    _selectedTest?.type == test.type;
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() => _selectedTest = test);
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: Container(
+                                    color: isSelected
+                                        ? AppColors.primary.withAlpha(10)
+                                        : null,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16.w,
+                                      vertical: 12.h,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 8.w,
+                                            vertical: 3.h,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: test.color.withAlpha(20),
+                                            borderRadius: BorderRadius.circular(
+                                              4.r,
+                                            ),
+                                            border: Border.all(
+                                              color: test.color.withAlpha(50),
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            test.label,
+                                            style: TextStyle(
+                                              color: test.color,
+                                              fontSize: 10.sp,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        12.wGap,
+                                        Expanded(
+                                          child: Text(
+                                            test.name,
+                                            style: TextStyle(
+                                              fontSize: 13.sp,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w600
+                                                  : FontWeight.normal,
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                        if (isSelected)
+                                          Icon(
+                                            Icons.check_circle,
+                                            color: AppColors.primary,
+                                            size: 18.sp,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 );
@@ -902,7 +884,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                     letterSpacing: 0.5,
                   ),
                 ),
-                if (trailing != null) trailing,
+                ?trailing,
               ],
             ),
             12.hGap,
@@ -947,8 +929,9 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(vertical: 10.h),
           decoration: BoxDecoration(
-            color:
-                isSelected ? AppColors.primary.withAlpha(20) : Colors.grey[100],
+            color: isSelected
+                ? AppColors.primary.withAlpha(20)
+                : Colors.grey[100],
             borderRadius: BorderRadius.circular(10.r),
             border: Border.all(
               color: isSelected ? AppColors.primary : Colors.transparent,

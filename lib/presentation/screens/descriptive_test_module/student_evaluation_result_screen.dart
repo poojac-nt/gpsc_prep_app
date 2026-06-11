@@ -197,6 +197,23 @@ class _StudentEvaluationResultScreenState
             },
             backgroundColor: AppColors.primary,
           ),
+          16.hGap,
+          ActionButton(
+            text: 'View Model Answers',
+            icon: Icons.lightbulb_outline_rounded,
+            onTap: () {
+              context.push(
+                AppRoutes.descFullQuestions,
+                extra: DescFullQuestionsScreenArgs(
+                  testId: widget.args.testId ?? 0,
+                  testName: widget.args.testName ?? 'Test',
+                  courseId: widget.args.courseId,
+                  isSubmitted: true,
+                ),
+              );
+            },
+            backgroundColor: AppColors.primary,
+          ),
         ],
       ),
     );

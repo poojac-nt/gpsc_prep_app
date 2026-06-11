@@ -20,12 +20,14 @@ class DescFullQuestionsScreen extends StatefulWidget {
   final int testId;
   final String testName;
   final int? courseId;
+  final bool isSubmitted;
 
   const DescFullQuestionsScreen({
     super.key,
     required this.testId,
     required this.testName,
     this.courseId,
+    this.isSubmitted = false,
   });
 
   @override
@@ -68,10 +70,9 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
       ],
       child: BlocBuilder<QuestionBloc, QuestionState>(
         builder: (context, qState) {
-          final questions =
-              qState is DescQuestionLoaded
-                  ? qState.questionsModels
-                  : <DescQuestionModel>[];
+          final questions = qState is DescQuestionLoaded
+              ? qState.questionsModels
+              : <DescQuestionModel>[];
 
           final availableLanguages = <_Lang>[_Lang.en];
           if (questions.isNotEmpty) {
@@ -106,33 +107,31 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                     ),
                     tooltip: 'Switch Language',
                   ),
-                if (questions.isNotEmpty)
+                if (questions.isNotEmpty && widget.isSubmitted == false)
                   IconButton(
-                    onPressed:
-                        _isDownloadingFull
-                            ? null
-                            : () => _downloadFullPdf(questions),
-                    icon:
-                        _isDownloadingFull
-                            ? SizedBox(
-                              width: 20.w,
-                              height: 20.w,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primary,
-                              ),
-                            )
-                            : Icon(
-                              Icons.download_rounded,
+                    onPressed: _isDownloadingFull
+                        ? null
+                        : () => _downloadFullPdf(questions),
+                    icon: _isDownloadingFull
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
                               color: AppColors.primary,
                             ),
+                          )
+                        : Icon(
+                            Icons.download_rounded,
+                            color: AppColors.primary,
+                          ),
                     tooltip: 'Download Full Test PDF',
                   ),
                 SizedBox(width: 8.w),
               ],
             ),
             body: _buildBody(qState, questions),
-            bottomNavigationBar: _buildBottomBar(),
+            bottomNavigationBar: widget.isSubmitted ? null : _buildBottomBar(),
           );
         },
       ),
@@ -232,15 +231,43 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                 ],
               ),
             ),
+            if (widget.isSubmitted && langData.answerTxt.isNotEmpty) ...[
+              Divider(height: 32.h),
+              Text(
+                'Model Answer',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                  color: AppColors.primary,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              MarkdownWidget(
+                data: langData.answerTxt,
+                shrinkWrap: true,
+                config: MarkdownConfig(
+                  configs: [
+                    PConfig(
+                      textStyle: TextStyle(
+                        fontSize: 15.sp,
+                        height: 1.6,
+                        color: AppColors.gray900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             SizedBox(height: 12.h),
-            // Per-question PDF download
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: isDownloading ? null : () => _downloadPdf(q, index),
-                icon:
-                    isDownloading
-                        ? SizedBox(
+            if (!widget.isSubmitted)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: isDownloading
+                      ? null
+                      : () => _downloadPdf(q, index),
+                  icon: isDownloading
+                      ? SizedBox(
                           width: 14.w,
                           height: 14.w,
                           child: CircularProgressIndicator(
@@ -248,19 +275,19 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                             color: AppColors.primary,
                           ),
                         )
-                        : Icon(
+                      : Icon(
                           Icons.picture_as_pdf_outlined,
                           size: 16.sp,
                           color: AppColors.primary,
                         ),
-                label: Text(
-                  isDownloading
-                      ? 'Generating...'
-                      : 'Download (${q.pages ?? 1} pg${(q.pages ?? 1) > 1 ? "s" : ""})',
-                  style: TextStyle(fontSize: 12.sp, color: AppColors.primary),
+                  label: Text(
+                    isDownloading
+                        ? 'Generating...'
+                        : 'Download (${q.pages ?? 1} pg${(q.pages ?? 1) > 1 ? "s" : ""})',
+                    style: TextStyle(fontSize: 12.sp, color: AppColors.primary),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -338,32 +365,30 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        isSubmitting
-                            ? null
-                            : (_selectedFile == null ? _pickPDF : _submitTest),
-                    icon:
-                        isSubmitting
-                            ? SizedBox(
-                              width: 18.w,
-                              height: 18.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                            : Icon(
-                              _selectedFile == null
-                                  ? Icons.upload_file
-                                  : Icons.check_circle_outline,
-                              size: 20.sp,
+                    onPressed: isSubmitting
+                        ? null
+                        : (_selectedFile == null ? _pickPDF : _submitTest),
+                    icon: isSubmitting
+                        ? SizedBox(
+                            width: 18.w,
+                            height: 18.w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
+                          )
+                        : Icon(
+                            _selectedFile == null
+                                ? Icons.upload_file
+                                : Icons.check_circle_outline,
+                            size: 20.sp,
+                          ),
                     label: Text(
                       isSubmitting
                           ? 'Submitting...'
                           : (_selectedFile == null
-                              ? 'Select PDF'
-                              : 'Submit Test'),
+                                ? 'Select PDF'
+                                : 'Submit Test'),
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.bold,

@@ -532,6 +532,7 @@ final List<GoRoute> appRoutes = [
           testId: args.testId,
           testName: args.testName,
           courseId: args.courseId,
+          isSubmitted: args.isSubmitted,
         ),
         state,
       );

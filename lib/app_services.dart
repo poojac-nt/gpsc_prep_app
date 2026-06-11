@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
@@ -28,7 +27,6 @@ import 'package:gpsc_prep_app/presentation/blocs/dashboard/mentor/test_students_
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/detailed_analytics/detailed_analytics_bloc.dart';
-import 'package:gpsc_prep_app/presentation/blocs/notification/notification_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
@@ -38,6 +36,7 @@ import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_dashboard/mentor_dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_evaluation/mentor_evaluation_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/notification/notification_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/detailed_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
@@ -98,8 +97,12 @@ class AppServices {
     final supabase = getIt<SupabaseHelper>().supabase;
     supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
-      final currentLocation =
-          AppRouter.router.routerDelegate.currentConfiguration.uri.toString();
+      final currentLocation = AppRouter
+          .router
+          .routerDelegate
+          .currentConfiguration
+          .uri
+          .toString();
 
       if (event == AuthChangeEvent.signedOut) {
         AppRouter.router.go(AppRoutes.login);

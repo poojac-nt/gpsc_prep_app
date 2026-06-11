@@ -79,11 +79,13 @@ class TestModule extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                   constraints: const BoxConstraints(),
-                  onPressed: onShareTap ?? () {
-                    _handleShare(context, testType);
-                  },
+                  onPressed:
+                      onShareTap ??
+                      () {
+                        _handleShare(context, testType);
+                      },
                 ),
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
           if (subtitle != null && subtitle!.isNotEmpty) ...[
@@ -101,15 +103,13 @@ class TestModule extends StatelessWidget {
       final bool isDescriptiveType =
           testType == TestType.desc || testType == TestType.mains;
 
-      final id =
-          (isDescriptiveType && descTestModel != null)
-              ? descTestModel!.id
-              : testModel!.id;
+      final id = (isDescriptiveType && descTestModel != null)
+          ? descTestModel!.id
+          : testModel!.id;
 
-      final name =
-          (isDescriptiveType && descTestModel != null)
-              ? descTestModel!.name
-              : testModel!.name;
+      final name = (isDescriptiveType && descTestModel != null)
+          ? descTestModel!.name
+          : testModel!.name;
 
       final shareableUrl = DeepLinkGenerator.generateShareableUrl(
         testId: id,
