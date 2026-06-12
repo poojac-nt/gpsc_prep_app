@@ -368,10 +368,43 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         }
       }
 
-      statusWidget = _buildStatusBadge(
-        icon: statusIcon,
-        label: status,
-        color: statusColor,
+      statusWidget = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildStatusBadge(
+            icon: statusIcon,
+            label: status,
+            color: statusColor,
+          ),
+          10.hGap,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(20),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: AppColors.primary.withAlpha(50)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.visibility_rounded,
+                  size: 16.sp,
+                  color: AppColors.primary,
+                ),
+                8.wGap,
+                Text(
+                  "View Model Answer",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       );
     }
 
