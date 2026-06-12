@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 
 import '../../../core/router/args.dart';
 import '../../../utils/app_constants.dart';
@@ -69,7 +69,7 @@ class _StudentEvaluationResultScreenState
 
                   // ── Download Evaluated PDF Section ──
                   if (selectedReview.reviewedPdfUrl != null)
-                    _buildDownloadPdfSection(selectedReview),
+                    _buildDownloadPdfSection(result, selectedReview),
                   16.hGap,
 
                   // ── Total Score Section ──
@@ -160,7 +160,10 @@ class _StudentEvaluationResultScreenState
     );
   }
 
-  Widget _buildDownloadPdfSection(MentorReviewDetail selectedReview) {
+  Widget _buildDownloadPdfSection(
+    MainsTestReviewModel result,
+    MentorReviewDetail selectedReview,
+  ) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
@@ -186,16 +189,40 @@ class _StudentEvaluationResultScreenState
             style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
           ),
           20.hGap,
-          ActionButton(
-            text: 'Download Evaluated PDF',
-            icon: Icons.download_rounded,
-            onTap: () async {
-              final url = Uri.parse(selectedReview.reviewedPdfUrl!);
-              if (await canLaunchUrl(url)) {
-                await launchUrl(url, mode: LaunchMode.externalApplication);
-              }
+          BlocBuilder<DownLoadPdfBloc, DownLoadPdfState>(
+            builder: (context, downloadState) {
+              final isDownloading = downloadState is DownLoadPdfStarted;
+              return ActionButton(
+                text: 'Download Evaluated PDF',
+                icon: Icons.download_rounded,
+                isLoading: isDownloading,
+                onTap: () {
+                  String fileName =
+                      "${widget.args.testName ?? 'Test'}_Reviewed";
+
+                  if (result.mentorReviews.length > 1) {
+                    int reviewIndex =
+                        result.mentorReviews.indexWhere(
+                          (m) => m.mentorId == selectedReview.mentorId,
+                        ) +
+                        1;
+                    fileName +=
+                        "_by_${selectedReview.mentorName}_Review_$reviewIndex";
+                  }
+
+                  fileName += ".pdf";
+                  fileName = fileName.replaceAll(' ', '_');
+
+                  context.read<DownLoadPdfBloc>().add(
+                    DownloadStudyMaterial(
+                      url: selectedReview.reviewedPdfUrl!,
+                      filename: fileName,
+                    ),
+                  );
+                },
+                backgroundColor: AppColors.primary,
+              );
             },
-            backgroundColor: AppColors.primary,
           ),
           16.hGap,
           ActionButton(
@@ -280,66 +307,63 @@ class _StudentEvaluationResultScreenState
 
   Widget _buildQuestionBreakdown(MentorReviewDetail review) {
     final scores = [...review.questionScores]
-      ..sort(
-        (a, b) => (a.questionOrder ?? 0).compareTo(b.questionOrder ?? 0),
-      );
+      ..sort((a, b) => (a.questionOrder ?? 0).compareTo(b.questionOrder ?? 0));
 
     if (scores.isEmpty) {
       return const Text("Not reviewed yet");
     }
 
     return Column(
-      children:
-          scores.asMap().entries.map((entry) {
-            final index = entry.key;
-            final question = entry.value;
+      children: scores.asMap().entries.map((entry) {
+        final index = entry.key;
+        final question = entry.value;
 
-            final gained = question.gainedMarks ?? 0;
-            final total = question.totalMarks;
+        final gained = question.gainedMarks ?? 0;
+        final total = question.totalMarks;
 
-            return Container(
-              margin: EdgeInsets.only(bottom: 12.h),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
+        return Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Question ${index + 1}',
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Question ${index + 1}',
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$gained ',
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '$gained ',
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        TextSpan(
-                          text: '/ $total',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ],
+                    TextSpan(
+                      text: '/ $total',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: Colors.grey[400],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            );
-          }).toList(),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
