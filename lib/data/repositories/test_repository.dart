@@ -99,9 +99,6 @@ class TestRepository {
     return _supabase.fetchOptionMatrixForTest(testId: testId);
   }
 
-  Future<Either<Failure, List<TestModel>>> fetchPrelimsTests() async =>
-      await _supabase.fetchPrelimsTests();
-
   Future<Either<Failure, void>> updateUserTestStatus({
     required int testId,
     required String status,

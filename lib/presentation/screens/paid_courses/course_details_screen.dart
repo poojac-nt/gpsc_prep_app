@@ -232,55 +232,62 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Widget _buildAllTests() {
-    if (_hasNoTests()) return _buildEmptyState();
+    return BlocBuilder<FetchCourseDetailsBloc, FetchCourseDetailsState>(
+      builder: (context, detailsState) {
+        final tests = (detailsState is FetchCourseDetailsSuccess)
+            ? detailsState.courseDetails.tests
+            : widget.courseModel.tests;
 
-    return BlocBuilder<PurchaseBloc, PurchaseState>(
-      builder: (context, purchaseState) {
-        final int courseId = widget.courseModel.id;
-
-        final tests = widget.courseModel.tests;
-
-        final List<Widget> items = [];
-        final prelims = tests?.prelims ?? [];
-        for (int i = 0; i < prelims.length; i++) {
-          final test = prelims[i];
-
-          final bool isAccessible = purchaseState.isTestAccessible(
-            courseId,
-            test.id,
-          );
-          items.add(
-            Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
-              child: _buildTestItem(
-                test: test,
-                index: '${i + 1}',
-                isAccessible: isAccessible,
-              ),
-            ),
-          );
+        if (tests == null ||
+            ((tests.prelims == null || tests.prelims!.isEmpty) &&
+                (tests.descriptive == null || tests.descriptive!.isEmpty))) {
+          return _buildEmptyState();
         }
 
-        final descriptiveTests = tests?.descriptive ?? [];
-        if (descriptiveTests.isNotEmpty) {
-          final prelimCount = prelims.length;
+        return BlocBuilder<PurchaseBloc, PurchaseState>(
+          builder: (context, purchaseState) {
+            final int courseId = widget.courseModel.id;
 
-          items.add(
-            BlocBuilder<FetchCourseDetailsBloc, FetchCourseDetailsState>(
-              builder: (context, state) {
-                if (state is FetchCourseDetailsLoading) {
-                  return Center(
+            final List<Widget> items = [];
+            final prelims = tests.prelims ?? [];
+            for (int i = 0; i < prelims.length; i++) {
+              final test = prelims[i];
+
+              final bool isAccessible = purchaseState.isTestAccessible(
+                courseId,
+                test.id,
+              );
+              items.add(
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: _buildTestItem(
+                    test: test,
+                    index: '${i + 1}',
+                    isAccessible: isAccessible,
+                  ),
+                ),
+              );
+            }
+
+            final descriptiveTests = tests.descriptive ?? [];
+            if (descriptiveTests.isNotEmpty) {
+              final prelimCount = prelims.length;
+
+              if (detailsState is FetchCourseDetailsLoading) {
+                items.add(
+                  Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
-                  );
-                }
+                  ),
+                );
+              } else {
                 final List<Widget> descItems = [];
                 final Map<int, List<DescAnswerModel>> answersMap =
-                    (state is FetchCourseDetailsSuccess)
-                        ? state.answersMap
+                    (detailsState is FetchCourseDetailsSuccess)
+                        ? detailsState.answersMap
                         : {};
                 final Map<int, MainsTestReviewModel?> reviewModels =
-                    (state is FetchCourseDetailsSuccess)
-                        ? state.reviewsMap
+                    (detailsState is FetchCourseDetailsSuccess)
+                        ? detailsState.reviewsMap
                         : {};
 
                 for (int i = 0; i < descriptiveTests.length; i++) {
@@ -322,13 +329,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     ),
                   );
                 }
-                return Column(children: descItems);
-              },
-            ),
-          );
-        }
+                items.add(Column(children: descItems));
+              }
+            }
 
-        return Column(children: items);
+            return Column(children: items);
+          },
+        );
       },
     );
   }

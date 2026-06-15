@@ -536,27 +536,6 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<TestModel>>> fetchPrelimsTests() async {
-    try {
-      final response = await supabase
-          .from(SupabaseKeys.testsTable)
-          .select()
-          .inFilter('test_type', ['prelims'])
-          .isFilter('course_id', null)
-          .lte('available_at', DateTime.now().toUtc().toIso8601String())
-          .order('available_at', ascending: false);
-
-      final result = response.map((e) => TestModel.fromJson(e)).toList();
-
-      _log.i('Total test : ${result.length}');
-      return Right(result);
-    } catch (e, s) {
-      _snackBar.showError('Error fetching tests: ${e.toString()}');
-      _log.e('Error in fetching test: $e', s: s);
-      return Left(Failure("Error fetching test : ${e.toString()}"));
-    }
-  }
-
   Future<Either<Failure, List<TestResultModel>>> insertDailyMcqTestsResults(
     TestResultModel test,
   ) async {
