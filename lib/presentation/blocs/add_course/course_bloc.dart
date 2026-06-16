@@ -7,6 +7,7 @@ import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:meta/meta.dart';
 
 part 'course_event.dart';
+
 part 'course_state.dart';
 
 class CourseBloc extends Bloc<CourseEvent, CourseState> {
@@ -15,6 +16,7 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
   CourseBloc(this._courseRepository) : super(CourseInitial()) {
     on<AddCourseRequested>(_onAddCourseRequested);
     on<FetchCoursesRequested>(_onFetchCoursesRequested);
+    on<ToggleCourseStatusRequested>(_onToggleCourseStatusRequested);
     on<FetchProductsRequested>(_onFetchProductsRequested);
   }
 
@@ -62,6 +64,22 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     result.fold(
       (failure) => emit(FetchProductsFailure(failure.message)),
       (products) => emit(FetchProductsSuccess(products)),
+    );
+  }
+
+  Future<void> _onToggleCourseStatusRequested(
+    ToggleCourseStatusRequested event,
+    Emitter<CourseState> emit,
+  ) async {
+    emit(CourseStatusUpdateLoading());
+    final result = await _courseRepository.toggleCourseActive(
+      courseId: event.courseId,
+      isActive: event.isActive,
+    );
+
+    result.fold(
+      (failure) => emit(CourseStatusUpdateFailure(failure.message)),
+      (_) => emit(CourseStatusUpdateSuccess(event.courseId, event.isActive)),
     );
   }
 }

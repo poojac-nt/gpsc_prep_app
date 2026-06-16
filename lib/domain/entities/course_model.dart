@@ -22,6 +22,8 @@ class CourseModel {
   ProductModel? dualProduct;
   @JsonKey(name: "is_active")
   bool isActive;
+  @JsonKey(name: "full_course_purchase_count")
+  int? fullCoursePurchaseCount;
   @JsonKey(name: "tests")
   final CourseTestsModel? tests;
 
@@ -34,6 +36,7 @@ class CourseModel {
     required this.tests,
     this.dualProduct,
     required this.isActive,
+    this.fullCoursePurchaseCount,
   });
 
   CourseModel copyWith({

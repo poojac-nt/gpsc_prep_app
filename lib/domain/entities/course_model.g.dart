@@ -20,6 +20,8 @@ CourseModel _$CourseModelFromJson(Map<String, dynamic> json) => CourseModel(
           ? null
           : ProductModel.fromJson(json['dual_product'] as Map<String, dynamic>),
       isActive: json['is_active'] as bool,
+      fullCoursePurchaseCount:
+          (json['full_course_purchase_count'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
@@ -31,6 +33,7 @@ Map<String, dynamic> _$CourseModelToJson(CourseModel instance) =>
       'single_product': instance.singleProduct,
       'dual_product': instance.dualProduct,
       'is_active': instance.isActive,
+      'full_course_purchase_count': instance.fullCoursePurchaseCount,
       'tests': instance.tests,
     };
 

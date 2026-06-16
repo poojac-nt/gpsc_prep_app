@@ -454,6 +454,21 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      12.wGap,
+                      Icon(
+                        Icons.people_outline,
+                        color: AppColors.gray400,
+                        size: 14.sp,
+                      ),
+                      4.wGap,
+                      Text(
+                        '${course.fullCoursePurchaseCount ?? 0} Students',
+                        style: TextStyle(
+                          color: AppColors.gray500,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                   Row(

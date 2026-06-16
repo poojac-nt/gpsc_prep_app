@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -26,48 +26,19 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
     _isActive = widget.courseModel.isActive ?? false;
   }
 
-  Future<void> _toggleStatus() async {
+  void _toggleStatus() {
     setState(() {
       _isLoading = true;
     });
 
-    final helper = getIt<SupabaseHelper>();
     final newValue = !_isActive;
     
-    final result = await helper.toggleCourseActive(
-      courseId: widget.courseModel.id,
-      isActive: newValue,
+    context.read<CourseBloc>().add(
+      ToggleCourseStatusRequested(
+        courseId: widget.courseModel.id,
+        isActive: newValue,
+      ),
     );
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to update status: ${failure.message}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        },
-        (_) {
-          setState(() {
-            _isActive = newValue;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Course ${newValue ? "activated" : "deactivated"} successfully',
-              ),
-              backgroundColor: newValue ? Colors.green : Colors.orange,
-            ),
-          );
-        },
-      );
-    }
   }
 
   @override
@@ -91,9 +62,36 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
         backgroundColor: AppColors.scaffoldColor,
         surfaceTintColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-        child: Column(
+      body: BlocListener<CourseBloc, CourseState>(
+        listener: (context, state) {
+          if (state is CourseStatusUpdateSuccess) {
+            setState(() {
+              _isActive = state.isActive;
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Course ${state.isActive ? "activated" : "deactivated"} successfully',
+                ),
+                backgroundColor: state.isActive ? Colors.green : Colors.orange,
+              ),
+            );
+          } else if (state is CourseStatusUpdateFailure) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to update status: ${state.error}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Status Card
@@ -116,6 +114,7 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
             _buildCurriculumSection(prelims, descriptive),
           ],
         ),
+      ),
       ),
     );
   }
@@ -291,6 +290,12 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
           value: widget.courseModel.testType?.name.toUpperCase() ?? "PRELIMS",
           icon: Icons.category_rounded,
           color: Colors.teal,
+        ),
+        _buildMetadataCard(
+          title: "Total Students",
+          value: "${widget.courseModel.fullCoursePurchaseCount ?? 0}",
+          icon: Icons.people_alt_rounded,
+          color: Colors.indigo,
         ),
       ],
     );

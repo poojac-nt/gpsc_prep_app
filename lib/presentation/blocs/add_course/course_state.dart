@@ -42,3 +42,18 @@ class FetchProductsFailure extends CourseState {
 
   FetchProductsFailure(this.error);
 }
+
+class CourseStatusUpdateLoading extends CourseState {}
+
+class CourseStatusUpdateSuccess extends CourseState {
+  final int courseId;
+  final bool isActive;
+
+  CourseStatusUpdateSuccess(this.courseId, this.isActive);
+}
+
+class CourseStatusUpdateFailure extends CourseState {
+  final String error;
+
+  CourseStatusUpdateFailure(this.error);
+}
