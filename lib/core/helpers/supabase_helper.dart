@@ -409,11 +409,16 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
+  Future<Either<Failure, List<CourseModel>>> fetchCourses({
+    required bool isAdmin,
+  }) async {
     try {
       String? rpcError;
       final rpcResponse = await callRpc(
-        call: () => supabase.rpc(SupabaseKeys.getCoursesListWithTests),
+        call: () => supabase.rpc(
+          SupabaseKeys.getCoursesListWithTests,
+          params: {'is_admin': isAdmin},
+        ),
         onError: (msg) {
           rpcError = msg;
           _snackBar.showError(msg);

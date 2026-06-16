@@ -24,7 +24,7 @@ class PaidCourseListScreen extends StatefulWidget {
 class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
   @override
   void initState() {
-    context.read<CourseBloc>().add(FetchCoursesRequested());
+    context.read<CourseBloc>().add(FetchCoursesRequested(isAdmin: false));
     context.read<PurchaseBloc>().add(FetchPurchases());
     super.initState();
   }
@@ -43,8 +43,9 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
       body: BlocBuilder<CourseBloc, CourseState>(
         builder: (context, state) {
           final bool isLoading = state is CourseLoading;
-          final List<CourseModel> courses =
-              state is FetchCoursesSuccess ? state.courses : [];
+          final List<CourseModel> courses = state is FetchCoursesSuccess
+              ? state.courses
+              : [];
 
           if (state is FetchCoursesFailure) {
             return Center(child: Text(state.error));
@@ -56,15 +57,16 @@ class _PaidCourseListScreenState extends State<PaidCourseListScreen> {
 
           return BlocBuilder<PurchaseBloc, PurchaseState>(
             builder: (context, purchaseState) {
-              final enrolledCourseIds =
-                  purchaseState.purchases
-                      .where((p) => p.isActive)
-                      .map((p) => p.courseId)
-                      .toSet();
+              final enrolledCourseIds = purchaseState.purchases
+                  .where((p) => p.isActive)
+                  .map((p) => p.courseId)
+                  .toSet();
 
               return RefreshIndicator(
                 onRefresh: () async {
-                  context.read<CourseBloc>().add(FetchCoursesRequested());
+                  context.read<CourseBloc>().add(
+                    FetchCoursesRequested(isAdmin: false),
+                  );
                   context.read<PurchaseBloc>().add(FetchPurchases());
                 },
                 child: Skeletonizer(
@@ -134,10 +136,9 @@ class PaidCourseListCard extends StatelessWidget {
                       vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
-                      color:
-                          isPrelims
-                              ? AppColors.green100.withAlpha(150)
-                              : const Color(0xFFF3E8FF), // Purple 100
+                      color: isPrelims
+                          ? AppColors.green100.withAlpha(150)
+                          : const Color(0xFFF3E8FF), // Purple 100
                       borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Text(
@@ -145,10 +146,9 @@ class PaidCourseListCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
-                        color:
-                            isPrelims
-                                ? AppColors.green800.withAlpha(160)
-                                : const Color(0xFF7E22CE), // Purple 700
+                        color: isPrelims
+                            ? AppColors.green800.withAlpha(160)
+                            : const Color(0xFF7E22CE), // Purple 700
                       ),
                     ),
                   ),

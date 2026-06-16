@@ -44,7 +44,7 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     Emitter<CourseState> emit,
   ) async {
     emit(CourseLoading());
-    final result = await _courseRepository.fetchCourses();
+    final result = await _courseRepository.fetchCourses(isAdmin: event.isAdmin);
 
     result.fold(
       (failure) => emit(FetchCoursesFailure(failure.message)),

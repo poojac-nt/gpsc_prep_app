@@ -17,8 +17,10 @@ class CourseRepository {
     return await _supabaseHelper.createCourses(payload);
   }
 
-  Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
-    return await _supabaseHelper.fetchCourses();
+  Future<Either<Failure, List<CourseModel>>> fetchCourses({
+    required bool isAdmin,
+  }) async {
+    return await _supabaseHelper.fetchCourses(isAdmin: isAdmin);
   }
 
   Future<Either<Failure, CourseModel>> fetchCourseWithTests(

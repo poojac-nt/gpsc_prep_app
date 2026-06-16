@@ -2,9 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:gpsc_prep_app/data/repositories/course_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_test_upload.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_csv_service.dart';
-import 'package:gpsc_prep_app/domain/entities/product_model.dart';
 import 'package:gpsc_prep_app/utils/enums/course_test_type.dart';
 import 'package:meta/meta.dart';
 
@@ -141,7 +141,7 @@ class UploadQuestionsBloc
     Emitter<UploadQuestionsState> emit,
   ) async {
     emit(CoursesLoading());
-    final result = await _courseRepository.fetchCourses();
+    final result = await _courseRepository.fetchCourses(isAdmin: false);
     result.fold(
       (failure) => emit(CoursesLoadFailure(failure.message)),
       (courses) => emit(CoursesLoaded(courses)),

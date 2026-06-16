@@ -18,14 +18,14 @@ import 'package:gpsc_prep_app/presentation/screens/auth/mentor_registration_scre
 import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/add_product_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_course_list_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_course_details_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_course_list_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/notifications/create_notification_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_assign_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/mentor_list_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/notifications/create_notification_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/all_assigned_tests_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/free_test_review_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/mentor/test_students_list_screen.dart';
@@ -39,6 +39,7 @@ import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/mento
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/peer_review_answer_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/student_evaluation_result_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/error_screen/error_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/leaderboard/leaderboard_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/assessment_type_selection_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_details_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/paid_courses/course_list_screen.dart';
@@ -57,11 +58,12 @@ import 'package:gpsc_prep_app/presentation/screens/upload_questions/add_course_s
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/desc_review_questions_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/mcq_review_question_upload_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/upload_questions/upload_questions_screen.dart';
-import 'package:gpsc_prep_app/presentation/screens/leaderboard/leaderboard_screen.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 
 import '../../data/repositories/test_repository.dart';
+import '../../domain/entities/notification_model.dart';
 import '../../presentation/screens/dashboard/admin/assign_mentor_detail_screen.dart';
+import '../../presentation/screens/dashboard/admin/notifications/notification_history_screen.dart';
 import '../../presentation/screens/descriptive_test_module/answer_writing_screen.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test.dart';
 import '../../presentation/screens/descriptive_test_module/descriptive_test_instruction_screen.dart';
@@ -69,8 +71,6 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/test/mcq_test_screen.dart';
 import '../../utils/enums/user_role.dart';
 import '../cache_manager.dart';
-import '../../domain/entities/notification_model.dart';
-import '../../presentation/screens/dashboard/admin/notifications/notification_history_screen.dart';
 
 final List<GoRoute> appRoutes = [
   // Handle /openMaterial?id=21&language=en links
@@ -201,7 +201,7 @@ final List<GoRoute> appRoutes = [
         }
 
         final courseRepo = getIt<CourseRepository>();
-        final result = await courseRepo.fetchCourses();
+        final result = await courseRepo.fetchCourses(isAdmin: false);
         result.fold(
           (failure) => getIt<SnackBarHelper>().showError(
             "Failed to load course details",
@@ -229,19 +229,19 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.registrationScreen,
-    pageBuilder:
-        (context, state) => _slideTransition(RegistrationScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(RegistrationScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.mentorRegistration,
-    pageBuilder:
-        (context, state) => _slideTransition(MentorRegistrationScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(MentorRegistrationScreen(), state),
   ),
   GoRoute(
     // AppRoutes.studentDashboard is '/studentDashboard'
     path: AppRoutes.studentDashboard,
-    pageBuilder:
-        (context, state) => _slideTransition(StudentDashboardScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(StudentDashboardScreen(), state),
     routes: [
       // DESC Test Instruction Route
       GoRoute(
@@ -277,8 +277,8 @@ final List<GoRoute> appRoutes = [
       ),
       GoRoute(
         path: 'mcqTestScreen',
-        pageBuilder:
-            (context, state) => _slideTransition(MCQTestScreen(), state),
+        pageBuilder: (context, state) =>
+            _slideTransition(MCQTestScreen(), state),
         routes: [
           GoRoute(
             path: 'testInstructionScreen/:testId',
@@ -311,8 +311,8 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.mentorDashboard,
-    pageBuilder:
-        (context, state) => _slideTransition(MentorDashboardScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(MentorDashboardScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.mentorEvaluation,
@@ -323,13 +323,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.allAssignedTests,
-    pageBuilder:
-        (context, state) => _slideTransition(AllAssignedTestsScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(AllAssignedTestsScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.freeTestReview,
-    pageBuilder:
-        (context, state) => _slideTransition(FreeTestReviewScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(FreeTestReviewScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.testStudentsList,
@@ -349,8 +349,8 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.answerWriting,
-    pageBuilder:
-        (context, state) => _slideTransition(AnswerWritingScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(AnswerWritingScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.profile,
@@ -588,11 +588,10 @@ final List<GoRoute> appRoutes = [
       final params = state.extra as List<SubjectScore>;
       return _slideTransition(
         BlocProvider(
-          create:
-              (context) => DetailedAnalyticsBloc(
-                repository: getIt<AnalyticsRepository>(),
-                initialSubjects: params,
-              ),
+          create: (context) => DetailedAnalyticsBloc(
+            repository: getIt<AnalyticsRepository>(),
+            initialSubjects: params,
+          ),
           child: AllSubjectsAnalyticsScreen(subjectsData: params),
         ),
         state,
@@ -605,11 +604,10 @@ final List<GoRoute> appRoutes = [
       final params = state.extra as List<Difficulty>;
       return _slideTransition(
         BlocProvider(
-          create:
-              (context) => DetailedAnalyticsBloc(
-                repository: getIt<AnalyticsRepository>(),
-                initialDifficulty: params,
-              ),
+          create: (context) => DetailedAnalyticsBloc(
+            repository: getIt<AnalyticsRepository>(),
+            initialDifficulty: params,
+          ),
           child: AllDifficultyAnalyticsScreen(difficultyData: params),
         ),
         state,
@@ -622,11 +620,10 @@ final List<GoRoute> appRoutes = [
       final params = state.extra as List<Difficulty>;
       return _slideTransition(
         BlocProvider(
-          create:
-              (context) => DetailedAnalyticsBloc(
-                repository: getIt<AnalyticsRepository>(),
-                initialQuestionTypes: params,
-              ),
+          create: (context) => DetailedAnalyticsBloc(
+            repository: getIt<AnalyticsRepository>(),
+            initialQuestionTypes: params,
+          ),
           child: AllQuestionTypesAnalyticsScreen(questionTypesData: params),
         ),
         state,
@@ -665,8 +662,8 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.courseList,
-    pageBuilder:
-        (context, state) => _slideTransition(PaidCourseListScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(PaidCourseListScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.courseDetails,
@@ -680,13 +677,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.mentorAssign,
-    pageBuilder:
-        (context, state) => _slideTransition(const MentorAssignScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(const MentorAssignScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.mentorList,
-    pageBuilder:
-        (context, state) => _slideTransition(const MentorListScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(const MentorListScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.editMentor,
@@ -697,15 +694,13 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.adminDashboard,
-    pageBuilder:
-        (context, state) =>
-            _slideTransition(const AdminDashboardScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(const AdminDashboardScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.adminCourseList,
-    pageBuilder:
-        (context, state) =>
-            _slideTransition(const AdminCourseListScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(const AdminCourseListScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.adminCourseDetails,
@@ -741,9 +736,8 @@ final List<GoRoute> appRoutes = [
     pageBuilder: (context, state) {
       return _slideTransition(
         BlocProvider(
-          create:
-              (context) =>
-                  AllTestBloc(getIt<TestRepository>())..add(FetchAllTests()),
+          create: (context) =>
+              AllTestBloc(getIt<TestRepository>())..add(FetchAllTests()),
           child: const AllTestScreen(),
         ),
         state,
@@ -759,8 +753,8 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.addProduct,
-    pageBuilder:
-        (context, state) => _slideTransition(const AddProductScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(const AddProductScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.createNotification,
@@ -774,9 +768,8 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoutes.notificationHistory,
-    pageBuilder:
-        (context, state) =>
-            _slideTransition(const NotificationHistoryScreen(), state),
+    pageBuilder: (context, state) =>
+        _slideTransition(const NotificationHistoryScreen(), state),
   ),
   GoRoute(
     path: AppRoutes.leaderboardScreen,

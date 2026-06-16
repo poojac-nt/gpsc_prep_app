@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/domain/entities/course_model.dart';
-import 'package:gpsc_prep_app/core/router/args.dart';
 
 import '../../../../core/helpers/supabase_helper.dart';
 import '../../../blocs/add_course/course_bloc.dart';
@@ -32,22 +32,25 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
   }
 
   Future<void> _loadCourses() async {
-    context.read<CourseBloc>().add(FetchCoursesRequested());
+    context.read<CourseBloc>().add(FetchCoursesRequested(isAdmin: true));
   }
 
   void _applyFilters() {
     setState(() {
       _filteredCourses = _allCourses.where((course) {
-        final matchesSearch = course.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            course.description.toLowerCase().contains(_searchQuery.toLowerCase());
-        
+        final matchesSearch =
+            course.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            course.description.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            );
+
         bool matchesStatus = true;
         if (_selectedFilter == "Active") {
           matchesStatus = course.isActive == true;
         } else if (_selectedFilter == "Inactive") {
           matchesStatus = course.isActive == false || course.isActive == null;
         }
-        
+
         return matchesSearch && matchesStatus;
       }).toList();
     });
@@ -60,9 +63,9 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
       isActive: newValue,
     );
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
-      ),
+      (failure) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.message))),
       (_) {
         setState(() {
           final idx = _allCourses.indexWhere((c) => c.id == courseId);
@@ -73,7 +76,9 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Course ${newValue ? "activated" : "deactivated"} successfully'),
+            content: Text(
+              'Course ${newValue ? "activated" : "deactivated"} successfully',
+            ),
             backgroundColor: newValue ? Colors.green : Colors.orange,
           ),
         );
@@ -90,7 +95,10 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
           onPressed: () => context.pop(),
           icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
         ),
-        title: Text('Course List (Admin)', style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp)),
+        title: Text(
+          'Course List (Admin)',
+          style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
+        ),
         backgroundColor: AppColors.scaffoldColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -104,7 +112,7 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
         },
         builder: (context, state) {
           final isLoading = state is CourseLoading;
-          
+
           if (isLoading && _allCourses.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -114,7 +122,9 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
           }
 
           final int totalCount = _allCourses.length;
-          final int activeCount = _allCourses.where((c) => c.isActive == true).length;
+          final int activeCount = _allCourses
+              .where((c) => c.isActive == true)
+              .length;
           final int inactiveCount = totalCount - activeCount;
 
           return RefreshIndicator(
@@ -127,21 +137,26 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
               children: [
                 // Stats summary cards
                 _buildStatsSummary(totalCount, activeCount, inactiveCount),
-                
+
                 // Search Bar
                 _buildSearchBar(),
-                
+
                 // Filter Chips
                 _buildFilterChips(),
-                
+
                 12.hGap,
-                
+
                 // Course list
                 Expanded(
                   child: _filteredCourses.isEmpty
-                      ? const Center(child: Text('No courses found matching criteria'))
+                      ? const Center(
+                          child: Text('No courses found matching criteria'),
+                        )
                       : ListView.separated(
-                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 10.h,
+                          ),
                           itemCount: _filteredCourses.length,
                           separatorBuilder: (context, index) => 12.hGap,
                           itemBuilder: (context, index) {
@@ -257,7 +272,12 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 16.h, bottom: 12.h),
+      padding: EdgeInsets.only(
+        left: 20.w,
+        right: 20.w,
+        top: 16.h,
+        bottom: 12.h,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -278,7 +298,11 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
           decoration: InputDecoration(
             hintText: 'Search courses...',
             hintStyle: AppTexts.subTitle.copyWith(color: AppColors.gray400),
-            prefixIcon: Icon(Icons.search_rounded, color: AppColors.gray500, size: 20.sp),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: AppColors.gray500,
+              size: 20.sp,
+            ),
             border: InputBorder.none,
             contentPadding: EdgeInsets.symmetric(vertical: 14.h),
           ),
@@ -333,7 +357,7 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
   Widget _buildCourseCard(CourseModel course) {
     final isCourseActive = course.isActive ?? false;
     final typeLabel = course.testType?.name.toUpperCase() ?? "COURSE";
-    
+
     return ElevatedContainer(
       borderRadius: 20.r,
       padding: EdgeInsets.zero,
@@ -357,7 +381,10 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
                 children: [
                   // Test type badge
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withAlpha(20),
                       borderRadius: BorderRadius.circular(8.r),
@@ -371,47 +398,29 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
                       ),
                     ),
                   ),
-                  
-                  // Status badge + Switch
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: isCourseActive
-                              ? const Color(0xFFECFDF5)
-                              : const Color(0xFFFEE2E2),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          isCourseActive ? "ACTIVE" : "INACTIVE",
-                          style: TextStyle(
-                            color: isCourseActive
-                                ? const Color(0xFF065F46)
-                                : const Color(0xFF991B1B),
-                            fontSize: 9.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+
+                  // Status badge
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isCourseActive
+                          ? AppColors.green100
+                          : AppColors.red100,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      isCourseActive ? "ACTIVE" : "INACTIVE",
+                      style: TextStyle(
+                        color: isCourseActive
+                            ? AppColors.green800
+                            : AppColors.red800,
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.bold,
                       ),
-                      6.wGap,
-                      SizedBox(
-                        height: 24.h,
-                        width: 40.w,
-                        child: Transform.scale(
-                          scale: 0.75,
-                          child: Switch(
-                            value: isCourseActive,
-                            activeThumbColor: Colors.white,
-                            activeTrackColor: const Color(0xFF10B981),
-                            inactiveThumbColor: Colors.white,
-                            inactiveTrackColor: const Color(0xFFD1D5DB),
-                            onChanged: (val) => _toggleCourse(course.id, val),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -423,25 +432,19 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
                   fontSize: 16.sp,
                 ),
               ),
-              6.hGap,
-              Text(
-                course.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTexts.subTitle.copyWith(
-                  color: AppColors.gray500,
-                  fontSize: 12.sp,
-                ),
-              ),
               12.hGap,
-              const Divider(height: 1, color: Color(0xFFF3F4F6)),
+              Divider(height: 1, color: AppColors.gray100),
               12.hGap,
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.library_books_outlined, color: AppColors.gray400, size: 14.sp),
+                      Icon(
+                        Icons.library_books_outlined,
+                        color: AppColors.gray400,
+                        size: 14.sp,
+                      ),
                       4.wGap,
                       Text(
                         '${(course.tests?.prelims?.length ?? 0) + (course.tests?.descriptive?.length ?? 0)} Tests',

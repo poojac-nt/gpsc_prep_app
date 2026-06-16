@@ -18,11 +18,10 @@ class CourseModel {
   CourseTestType? testType;
   @JsonKey(name: "single_product")
   ProductModel singleProduct;
-  @JsonKey(name: "is_active")
-  bool? isActive;
   @JsonKey(name: "dual_product")
   ProductModel? dualProduct;
-
+  @JsonKey(name: "is_active")
+  bool isActive;
   @JsonKey(name: "tests")
   final CourseTestsModel? tests;
 
@@ -34,7 +33,7 @@ class CourseModel {
     required this.singleProduct,
     required this.tests,
     this.dualProduct,
-    this.isActive,
+    required this.isActive,
   });
 
   CourseModel copyWith({

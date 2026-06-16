@@ -417,7 +417,7 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
             8.hGap,
             ...prelims.map((test) => _buildTestItem(
                   name: test.name,
-                  info: "${test.timeLimit} Mins • ${test.totalMarks} Marks",
+                  info: "${test.duration} Mins • ${test.totalMarks} Marks",
                   icon: Icons.quiz_rounded,
                   iconColor: Colors.blue,
                 )),

@@ -19,6 +19,10 @@ class AddCourseRequested extends CourseEvent {
   });
 }
 
-class FetchCoursesRequested extends CourseEvent {}
+class FetchCoursesRequested extends CourseEvent {
+  final bool isAdmin;
+
+  FetchCoursesRequested({required this.isAdmin});
+}
 
 class FetchProductsRequested extends CourseEvent {}
