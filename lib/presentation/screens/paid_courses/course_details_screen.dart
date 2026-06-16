@@ -833,12 +833,21 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _handleEnrollment(BuildContext context) async {
     AssessmentType? selectedType;
     if (widget.courseModel.testType == CourseTestType.mains) {
-      selectedType = await context.push<AssessmentType>(
-        AppRoutes.assessmentTypeSelection,
-        extra: AssessmentTypeSelectionScreenArgs(
-          courseModel: widget.courseModel,
-        ),
-      );
+      final hasDualProduct = widget.courseModel.dualProduct != null &&
+          (widget.courseModel.dualProduct!.price) > 0;
+
+      if (hasDualProduct) {
+        // Has dual product — let user choose assessment type
+        selectedType = await context.push<AssessmentType>(
+          AppRoutes.assessmentTypeSelection,
+          extra: AssessmentTypeSelectionScreenArgs(
+            courseModel: widget.courseModel,
+          ),
+        );
+      } else {
+        // No dual product — skip selection, default to single
+        selectedType = AssessmentType.single;
+      }
     } else {
       selectedType = AssessmentType.single;
     }
@@ -888,15 +897,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     AssessmentType? selectedType;
 
     if (isDescriptive) {
-      selectedType = await context.push<AssessmentType>(
-        AppRoutes.assessmentTypeSelection,
-        extra: AssessmentTypeSelectionScreenArgs(
-          courseModel: widget.courseModel,
-          testSingleProduct: singleProduct,
-          testDualProduct: dualProduct,
-        ),
-      );
-      if (selectedType == null) return;
+      final hasDualProduct =
+          dualProduct != null && (dualProduct.price) > 0;
+
+      if (hasDualProduct) {
+        // Has dual product — let user choose assessment type
+        selectedType = await context.push<AssessmentType>(
+          AppRoutes.assessmentTypeSelection,
+          extra: AssessmentTypeSelectionScreenArgs(
+            courseModel: widget.courseModel,
+            testSingleProduct: singleProduct,
+            testDualProduct: dualProduct,
+          ),
+        );
+        if (selectedType == null) return;
+      } else {
+        // No dual product — default to single assessment
+        selectedType = AssessmentType.single;
+      }
     } else {
       selectedType = AssessmentType.single;
     }

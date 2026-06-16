@@ -477,12 +477,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                       );
                       return;
                     }
-                    if (isDescriptive && selectedDual == null) {
-                      getIt<SnackBarHelper>().showError(
-                        'Please select dual assessment price',
-                      );
-                      return;
-                    }
+                    // Dual assessment is optional — proceed even if null
                     Navigator.pop(context, {
                       'single': selectedSingle?.id,
                       'dual': selectedDual?.id,
