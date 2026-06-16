@@ -61,6 +61,7 @@ import 'rpc_helper.dart';
 class SupabaseHelper {
   final supabase = Supabase.instance.client;
   final LogHelper _log;
+
   final SnackBarHelper _snackBar;
   final CacheManager _cache;
 
@@ -370,6 +371,24 @@ class SupabaseHelper {
   /// COURSES
   /// ===========================================================================
 
+  // Toggle active status for a course
+  Future<Either<Failure, void>> toggleCourseActive({
+    required int courseId,
+    required bool isActive,
+  }) async {
+    try {
+      await supabase
+          .from(SupabaseKeys.courseTable)
+          .update({'is_active': isActive})
+          .eq('id', courseId);
+      return Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating course status: ${e.toString()}');
+      _log.e('[toggleCourseActive] Error: $e');
+      return Left(Failure('Error updating course status: ${e.toString()}'));
+    }
+  }
+
   Future<Either<Failure, CoursePayload>> createCourses(
     CoursePayload data,
   ) async {
@@ -628,6 +647,7 @@ class SupabaseHelper {
     }
   }
 
+  // Fetches a single MCQ test result for the current user
   Future<Either<Failure, TestResultModel?>> fetchResultForSingleMcqTest({
     required int testId,
   }) async {

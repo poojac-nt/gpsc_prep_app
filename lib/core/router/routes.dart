@@ -19,6 +19,8 @@ import 'package:gpsc_prep_app/presentation/screens/auth/request_reset_password_s
 import 'package:gpsc_prep_app/presentation/screens/auth/reset_password_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/add_product_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_dashboard_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_course_list_screen.dart';
+import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/admin_course_details_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/all_test_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/notifications/create_notification_screen.dart';
 import 'package:gpsc_prep_app/presentation/screens/dashboard/admin/edit_mentor_screen.dart';
@@ -698,6 +700,22 @@ final List<GoRoute> appRoutes = [
     pageBuilder:
         (context, state) =>
             _slideTransition(const AdminDashboardScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.adminCourseList,
+    pageBuilder:
+        (context, state) =>
+            _slideTransition(const AdminCourseListScreen(), state),
+  ),
+  GoRoute(
+    path: AppRoutes.adminCourseDetails,
+    pageBuilder: (context, state) {
+      final args = state.extra as AdminCourseDetailsScreenArgs;
+      return _slideTransition(
+        AdminCourseDetailsScreen(courseModel: args.courseModel),
+        state,
+      );
+    },
   ),
   GoRoute(
     path: AppRoutes.assignMentorDetail,

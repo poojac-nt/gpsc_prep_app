@@ -162,6 +162,12 @@ class CourseDetailsScreenArgs {
   CourseDetailsScreenArgs({required this.courseModel});
 }
 
+class AdminCourseDetailsScreenArgs {
+  final CourseModel courseModel;
+
+  AdminCourseDetailsScreenArgs({required this.courseModel});
+}
+
 class MentorEvaluationScreenArgs {
   final int? studentId;
   final int mentorAssignmentId;

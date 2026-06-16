@@ -248,6 +248,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         12.hGap,
         _buildManagementItem(
           context,
+          title: 'Course List',
+          subtitle: 'View all available courses',
+          icon: Icons.list_alt_rounded,
+          iconBgColor: const Color(0xffe0f2fe),
+          iconColor: const Color(0xff0284c7),
+          onTap: () => context.push(AppRoutes.adminCourseList),
+        ),
+        12.hGap,
+        _buildManagementItem(
+          context,
           title: 'Test Library',
           subtitle: 'Upload and configure exams',
           icon: Icons.library_add_outlined,

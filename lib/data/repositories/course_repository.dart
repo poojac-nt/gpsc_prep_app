@@ -27,6 +27,16 @@ class CourseRepository {
     return await _supabaseHelper.fetchCourseWithTests(courseId: courseId);
   }
 
+  Future<Either<Failure, void>> toggleCourseActive({
+    required int courseId,
+    required bool isActive,
+  }) async {
+    return await _supabaseHelper.toggleCourseActive(
+      courseId: courseId,
+      isActive: isActive,
+    );
+  }
+
   Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
     return await _supabaseHelper.fetchProducts();
   }

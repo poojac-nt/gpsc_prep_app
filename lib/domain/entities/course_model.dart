@@ -18,6 +18,8 @@ class CourseModel {
   CourseTestType? testType;
   @JsonKey(name: "single_product")
   ProductModel singleProduct;
+  @JsonKey(name: "is_active")
+  bool? isActive;
   @JsonKey(name: "dual_product")
   ProductModel? dualProduct;
 
@@ -32,7 +34,30 @@ class CourseModel {
     required this.singleProduct,
     required this.tests,
     this.dualProduct,
+    this.isActive,
   });
+
+  CourseModel copyWith({
+    int? id,
+    String? name,
+    String? description,
+    CourseTestType? testType,
+    ProductModel? singleProduct,
+    CourseTestsModel? tests,
+    ProductModel? dualProduct,
+    bool? isActive,
+  }) {
+    return CourseModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      testType: testType ?? this.testType,
+      singleProduct: singleProduct ?? this.singleProduct,
+      tests: tests ?? this.tests,
+      dualProduct: dualProduct ?? this.dualProduct,
+      isActive: isActive ?? this.isActive,
+    );
+  }
 
   factory CourseModel.fromJson(Map<String, dynamic> json) =>
       _$CourseModelFromJson(json);
