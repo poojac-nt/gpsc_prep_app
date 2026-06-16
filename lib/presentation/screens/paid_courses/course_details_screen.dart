@@ -618,7 +618,62 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final bool hasPrice = widget.courseModel.singleProduct.price > 0 || isFree;
     final bool isPrelims =
         widget.courseModel.testType == CourseTestType.prelims;
-    final bool showPrice = !isEnrolled && isPrelims && hasPrice;
+    final bool isCourseActive = widget.courseModel.isActive;
+    final bool showPrice = !isEnrolled && isPrelims && hasPrice && isCourseActive;
+
+    // If not enrolled and course is inactive, show "Enrollment Full" banner
+    if (!isEnrolled && !isCourseActive) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(20),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            decoration: BoxDecoration(
+              color: AppColors.orange100,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: AppColors.orange500.withAlpha(80),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.block_rounded,
+                  color: AppColors.orange800,
+                  size: 20.sp,
+                ),
+                10.wGap,
+                Text(
+                  "Enrollment for this course is full",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.orange800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),

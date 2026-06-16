@@ -20,7 +20,7 @@ class CourseModel {
   ProductModel singleProduct;
   @JsonKey(name: "dual_product")
   ProductModel? dualProduct;
-  @JsonKey(name: "is_active")
+  @JsonKey(name: "is_active", defaultValue: true)
   bool isActive;
   @JsonKey(name: "full_course_purchase_count")
   int? fullCoursePurchaseCount;

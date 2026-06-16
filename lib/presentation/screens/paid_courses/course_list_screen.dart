@@ -184,7 +184,38 @@ class PaidCourseListCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (courseModel.singleProduct.productId == 'price_tier_free')
+                  // Left side: price or enrollment full badge
+                  if (!isEnrolled && courseModel.isActive == false)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.orange100,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.block_rounded,
+                            size: 12.sp,
+                            color: AppColors.orange800,
+                          ),
+                          4.wGap,
+                          Text(
+                            "Enrollment Full",
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.orange800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (courseModel.singleProduct.productId == 'price_tier_free')
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 10.w,
@@ -227,17 +258,25 @@ class PaidCourseListCard extends StatelessWidget {
                     )
                   else
                     const SizedBox.shrink(),
+
+                  // Right side: action button
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: 16.w,
                       vertical: 8.h,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: isEnrolled
+                          ? AppColors.primary
+                          : (!courseModel.isActive
+                              ? AppColors.gray400
+                              : AppColors.primary),
                       borderRadius: BorderRadius.circular(10.r),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withAlpha(50),
+                          color: (isEnrolled || courseModel.isActive)
+                              ? AppColors.primary.withAlpha(50)
+                              : Colors.transparent,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -247,7 +286,7 @@ class PaidCourseListCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          isEnrolled ? "Enrolled" : "View Details",
+                          isEnrolled ? "Enrolled" : "View Course",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12.sp,
