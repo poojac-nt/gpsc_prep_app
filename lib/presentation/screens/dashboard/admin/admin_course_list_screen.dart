@@ -23,11 +23,18 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
   List<CourseModel> _filteredCourses = [];
   String _searchQuery = "";
   String _selectedFilter = "All"; // "All", "Active", "Inactive"
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _loadCourses();
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCourses() async {
@@ -121,17 +128,23 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
                       ? const Center(
                           child: Text('No courses found matching criteria'),
                         )
-                      : ListView.separated(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 10.h,
-                          ),
-                          itemCount: _filteredCourses.length,
-                          separatorBuilder: (context, index) => 12.hGap,
-                          itemBuilder: (context, index) {
-                            final course = _filteredCourses[index];
-                            return _buildCourseCard(course);
+                      : NotificationListener<ScrollStartNotification>(
+                          onNotification: (notification) {
+                            _searchFocusNode.unfocus();
+                            return false;
                           },
+                          child: ListView.separated(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 10.h,
+                            ),
+                            itemCount: _filteredCourses.length,
+                            separatorBuilder: (context, index) => 12.hGap,
+                            itemBuilder: (context, index) {
+                              final course = _filteredCourses[index];
+                              return _buildCourseCard(course);
+                            },
+                          ),
                         ),
                 ),
               ],
@@ -260,6 +273,7 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
           ],
         ),
         child: TextField(
+          focusNode: _searchFocusNode,
           onChanged: (value) {
             _searchQuery = value;
             _applyFilters();
