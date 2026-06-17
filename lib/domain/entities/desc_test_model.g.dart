@@ -13,14 +13,13 @@ DescTestModel _$DescTestModelFromJson(Map<String, dynamic> json) =>
       totalMarks: (json['total_marks'] as num).toInt(),
       noQuestions: (json['no_questions'] as num).toInt(),
       createdAt: json['created_at'] as String,
-      dualProduct: json['double_assessment_price'] == null
+      dualProduct: json['dual_product'] == null
+          ? null
+          : ProductModel.fromJson(json['dual_product'] as Map<String, dynamic>),
+      singleProduct: json['single_product'] == null
           ? null
           : ProductModel.fromJson(
-              json['double_assessment_price'] as Map<String, dynamic>),
-      singleProduct: json['single_assessment_price'] == null
-          ? null
-          : ProductModel.fromJson(
-              json['single_assessment_price'] as Map<String, dynamic>),
+              json['single_product'] as Map<String, dynamic>),
       totalAttempt: (json['total_attempts'] as num?)?.toInt(),
     );
 
@@ -32,6 +31,6 @@ Map<String, dynamic> _$DescTestModelToJson(DescTestModel instance) =>
       'total_marks': instance.totalMarks,
       'created_at': instance.createdAt,
       'total_attempts': instance.totalAttempt,
-      'single_assessment_price': instance.singleProduct,
-      'double_assessment_price': instance.dualProduct,
+      'single_product': instance.singleProduct,
+      'dual_product': instance.dualProduct,
     };

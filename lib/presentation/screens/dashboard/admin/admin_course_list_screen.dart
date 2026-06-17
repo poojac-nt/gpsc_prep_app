@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/widgets/elevated_container.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 
-import '../../../../core/helpers/supabase_helper.dart';
 import '../../../blocs/add_course/course_bloc.dart';
 
 class AdminCourseListScreen extends StatefulWidget {
@@ -48,42 +47,12 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
         if (_selectedFilter == "Active") {
           matchesStatus = course.isActive == true;
         } else if (_selectedFilter == "Inactive") {
-          matchesStatus = course.isActive == false || course.isActive == null;
+          matchesStatus = course.isActive == false;
         }
 
         return matchesSearch && matchesStatus;
       }).toList();
     });
-  }
-
-  Future<void> _toggleCourse(int courseId, bool newValue) async {
-    final helper = getIt<SupabaseHelper>();
-    final result = await helper.toggleCourseActive(
-      courseId: courseId,
-      isActive: newValue,
-    );
-    result.fold(
-      (failure) => ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(failure.message))),
-      (_) {
-        setState(() {
-          final idx = _allCourses.indexWhere((c) => c.id == courseId);
-          if (idx != -1) {
-            _allCourses[idx] = _allCourses[idx].copyWith(isActive: newValue);
-            _applyFilters();
-          }
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Course ${newValue ? "activated" : "deactivated"} successfully',
-            ),
-            backgroundColor: newValue ? Colors.green : Colors.orange,
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -355,7 +324,7 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
   }
 
   Widget _buildCourseCard(CourseModel course) {
-    final isCourseActive = course.isActive ?? false;
+    final isCourseActive = course.isActive;
     final typeLabel = course.testType?.name.toUpperCase() ?? "COURSE";
 
     return ElevatedContainer(
@@ -399,28 +368,43 @@ class _AdminCourseListScreenState extends State<AdminCourseListScreen> {
                     ),
                   ),
 
-                  // Status badge
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isCourseActive
-                          ? AppColors.green100
-                          : AppColors.red100,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      isCourseActive ? "ACTIVE" : "INACTIVE",
-                      style: TextStyle(
-                        color: isCourseActive
-                            ? AppColors.green800
-                            : AppColors.red800,
-                        fontSize: 9.sp,
-                        fontWeight: FontWeight.bold,
+                  // Status badge and Share button
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 4.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isCourseActive
+                              ? AppColors.green100
+                              : AppColors.red100,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          isCourseActive ? "ACTIVE" : "INACTIVE",
+                          style: TextStyle(
+                            color: isCourseActive
+                                ? AppColors.green800
+                                : AppColors.red800,
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
+                      8.wGap,
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          Icons.share_outlined,
+                          color: AppColors.primary,
+                          size: 20.sp,
+                        ),
+                        onPressed: () => ShareHelper.shareCourse(course),
+                      ),
+                    ],
                   ),
                 ],
               ),

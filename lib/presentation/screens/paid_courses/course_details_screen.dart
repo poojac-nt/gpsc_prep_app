@@ -165,10 +165,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                                 descriptionText,
                                 style: style,
                                 maxLines: _isExpanded ? null : 4,
-                                overflow:
-                                    _isExpanded
-                                        ? TextOverflow.visible
-                                        : TextOverflow.ellipsis,
+                                overflow: _isExpanded
+                                    ? TextOverflow.visible
+                                    : TextOverflow.ellipsis,
                               ),
                               if (isOverflowing) ...[
                                 4.hGap,
@@ -283,12 +282,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 final List<Widget> descItems = [];
                 final Map<int, List<DescAnswerModel>> answersMap =
                     (detailsState is FetchCourseDetailsSuccess)
-                        ? detailsState.answersMap
-                        : {};
+                    ? detailsState.answersMap
+                    : {};
                 final Map<int, MainsTestReviewModel?> reviewModels =
                     (detailsState is FetchCourseDetailsSuccess)
-                        ? detailsState.reviewsMap
-                        : {};
+                    ? detailsState.reviewsMap
+                    : {};
 
                 for (int i = 0; i < descriptiveTests.length; i++) {
                   final test = descriptiveTests[i];
@@ -302,16 +301,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   // Find the matching purchase to get assessmentType.
                   final purchase = purchaseState.purchases.firstWhere(
                     (p) => p.courseId == courseId && p.isTestUnlocked(test.id),
-                    orElse:
-                        () => UserPurchaseModel(
-                          id: 0,
-                          userId: 0,
-                          courseId: 0,
-                          testIds: '',
-                          assessmentType: AssessmentType.single,
-                          createdAt: '',
-                          isActive: true,
-                        ),
+                    orElse: () => UserPurchaseModel(
+                      id: 0,
+                      userId: 0,
+                      courseId: 0,
+                      testIds: '',
+                      assessmentType: AssessmentType.single,
+                      createdAt: '',
+                      isActive: true,
+                    ),
                   );
 
                   descItems.add(
@@ -322,8 +320,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         index: '${prelimCount + i + 1}',
                         hasAnswer: hasAnswer,
                         isAccessible: isAccessible,
-                        assessmentType:
-                            isAccessible ? purchase.assessmentType : null,
+                        assessmentType: isAccessible
+                            ? purchase.assessmentType
+                            : null,
                         reviewModel: reviewModels[test.id],
                       ),
                     ),
@@ -351,8 +350,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final bool isCourseFree =
         widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
     const Color badgeColor = Color(0xFF7C3AED);
-    final String badgeLabel =
-        assessmentType != null ? assessmentType.type : 'Descriptive';
+    final String badgeLabel = assessmentType != null
+        ? assessmentType.type
+        : 'Descriptive';
     final String details = "${test.noQuestions} Questions";
 
     Widget? statusWidget;
@@ -416,60 +416,46 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
 
     return InkWell(
-      onTap:
-          isAccessible
-              ? () async {
-                if (hasAnswer) {
-                  // No mentor assigned at all
-                  if (reviewModel == null ||
-                      reviewModel.mentorReviews.isEmpty) {
-                    getIt<SnackBarHelper>().showSuccess(
-                      "No mentor has been assigned yet. Please wait.",
-                    );
-                  } else {
-                    final reviews = reviewModel.mentorReviews;
-
-                    if (reviews.length == 1) {
-                      final mentor = reviews.first;
-                      final isCompleted =
-                          mentor.status.toLowerCase() == "completed";
-                      if (isCompleted) {
-                        await context.push(
-                          AppRoutes.studentEvaluationResult,
-                          extra: StudentEvaluationResultScreenArgs(
-                            testId: test.id,
-                            testName: test.name,
-                            studentName:
-                                getIt<CacheManager>().user?.name ?? 'Student',
-                            reviewModel: reviewModel,
-                            mentorId: mentor.mentorId,
-                            courseId: widget.courseModel.id,
-                          ),
-                        );
-                        return;
-                      } else {
-                        // Assigned but not yet reviewed
-                        getIt<SnackBarHelper>().showSuccess(
-                          "Your test is assigned to a mentor and is under review. Result will be available soon.",
-                        );
-                      }
-                    } else {
-                      // 2+ mentors — always show bottom sheet regardless of status
-                      _showMentorSelectionSheet(test, reviewModel);
-                      return;
-                    }
-                  }
-
-                  await context.push(
-                    AppRoutes.descFullQuestions,
-                    extra: DescFullQuestionsScreenArgs(
-                      testId: test.id,
-                      testName: test.name,
-                      courseId: widget.courseModel.id,
-                      isSubmitted: true,
-                    ),
+      onTap: isAccessible
+          ? () async {
+              if (hasAnswer) {
+                // No mentor assigned at all
+                if (reviewModel == null || reviewModel.mentorReviews.isEmpty) {
+                  getIt<SnackBarHelper>().showSuccess(
+                    "No mentor has been assigned yet. Please wait.",
                   );
-                  return;
+                } else {
+                  final reviews = reviewModel.mentorReviews;
+
+                  if (reviews.length == 1) {
+                    final mentor = reviews.first;
+                    final isCompleted =
+                        mentor.status.toLowerCase() == "completed";
+                    if (isCompleted) {
+                      await context.push(
+                        AppRoutes.studentEvaluationResult,
+                        extra: StudentEvaluationResultScreenArgs(
+                          testId: test.id,
+                          testName: test.name,
+                          studentName:
+                              getIt<CacheManager>().user?.name ?? 'Student',
+                          reviewModel: reviewModel,
+                          mentorId: mentor.mentorId,
+                          courseId: widget.courseModel.id,
+                        ),
+                      );
+                      return;
+                    } else {
+                      // Assigned but not yet reviewed
+                      getIt<SnackBarHelper>().showSuccess(
+                        "Your test is assigned to a mentor and is under review. Result will be available soon.",
+                      );
+                    }
+                  } else {
+                    // 2+ mentors — always show bottom sheet regardless of status
+                    _showMentorSelectionSheet(test, reviewModel);
+                    return;
+                  }
                 }
 
                 await context.push(
@@ -478,15 +464,27 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     testId: test.id,
                     testName: test.name,
                     courseId: widget.courseModel.id,
+                    isSubmitted: true,
                   ),
                 );
-
-                if (!mounted) return;
-                context.read<FetchCourseDetailsBloc>().add(
-                  FetchCourseTestsAndResults(widget.courseModel.id),
-                );
+                return;
               }
-              : null,
+
+              await context.push(
+                AppRoutes.descFullQuestions,
+                extra: DescFullQuestionsScreenArgs(
+                  testId: test.id,
+                  testName: test.name,
+                  courseId: widget.courseModel.id,
+                ),
+              );
+
+              if (!mounted) return;
+              context.read<FetchCourseDetailsBloc>().add(
+                FetchCourseTestsAndResults(widget.courseModel.id),
+              );
+            }
+          : null,
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(
         index: index,
@@ -496,8 +494,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         badgeColor: badgeColor,
         statusWidget: statusWidget,
         isLocked: !isAccessible,
-        price:
-            (!isAccessible && !isCourseFree) ? test.singleProduct?.price : null,
+        price: (!isAccessible && !isCourseFree)
+            ? test.singleProduct?.price
+            : null,
         onBuyTap: () {
           _handleTestPurchase(
             context,
@@ -598,13 +597,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
   }
 
-  bool _hasNoTests() {
-    final t = widget.courseModel.tests;
-    if (t == null) return true;
-    return (t.prelims == null || t.prelims!.isEmpty) &&
-        (t.descriptive == null || t.descriptive!.isEmpty);
-  }
-
   Future<void> _navigateToInstruction(TestModel test) async {
     await context.push(
       AppRoutes.prelimsInstructionsScreen,
@@ -619,7 +611,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final bool isPrelims =
         widget.courseModel.testType == CourseTestType.prelims;
     final bool isCourseActive = widget.courseModel.isActive;
-    final bool showPrice = !isEnrolled && isPrelims && hasPrice && isCourseActive;
+    final bool showPrice =
+        !isEnrolled && isPrelims && hasPrice && isCourseActive;
 
     // If not enrolled and course is inactive, show "Enrollment Full" banner
     if (!isEnrolled && !isCourseActive) {
@@ -693,10 +686,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       ),
       child: SafeArea(
         child: Row(
-          mainAxisAlignment:
-              showPrice
-                  ? MainAxisAlignment.spaceBetween
-                  : MainAxisAlignment.center,
+          mainAxisAlignment: showPrice
+              ? MainAxisAlignment.spaceBetween
+              : MainAxisAlignment.center,
           children: [
             if (showPrice)
               Column(
@@ -723,89 +715,56 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ),
             isEnrolled
                 ? Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFECFDF5),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: const Color(0xFF10B981),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.verified_rounded,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
                           color: const Color(0xFF10B981),
-                          size: 20.sp,
-                        ),
-                        10.wGap,
-                        Text(
-                          "Enrolled Successfully",
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF065F46),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                : (showPrice
-                    ? ElevatedButton(
-                      onPressed:
-                          isLoading ? null : () => _handleEnrollment(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 48.w,
-                          vertical: 14.h,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
+                          width: 1,
                         ),
                       ),
-                      child:
-                          isLoading
-                              ? SizedBox(
-                                height: 20.h,
-                                width: 20.w,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                              : Text(
-                                "Enroll Now",
-                                style: TextStyle(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                    )
-                    : Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            isLoading ? null : () => _handleEnrollment(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.verified_rounded,
+                            color: const Color(0xFF10B981),
+                            size: 20.sp,
                           ),
-                        ),
-                        child:
-                            isLoading
-                                ? SizedBox(
+                          10.wGap,
+                          Text(
+                            "Enrolled Successfully",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF065F46),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : (showPrice
+                      ? ElevatedButton(
+                          onPressed: isLoading
+                              ? null
+                              : () => _handleEnrollment(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 48.w,
+                              vertical: 14.h,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          child: isLoading
+                              ? SizedBox(
                                   height: 20.h,
                                   width: 20.w,
                                   child: CircularProgressIndicator(
@@ -815,15 +774,48 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                                     ),
                                   ),
                                 )
-                                : Text(
-                                  isFree ? "Enroll for Free" : "Enroll Now",
+                              : Text(
+                                  "Enroll Now",
                                   style: TextStyle(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                      ),
-                    )),
+                        )
+                      : Expanded(
+                          child: ElevatedButton(
+                            onPressed: isLoading
+                                ? null
+                                : () => _handleEnrollment(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                            ),
+                            child: isLoading
+                                ? SizedBox(
+                                    height: 20.h,
+                                    width: 20.w,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    isFree ? "Enroll for Free" : "Enroll Now",
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        )),
           ],
         ),
       ),
@@ -833,7 +825,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _handleEnrollment(BuildContext context) async {
     AssessmentType? selectedType;
     if (widget.courseModel.testType == CourseTestType.mains) {
-      final hasDualProduct = widget.courseModel.dualProduct != null &&
+      final hasDualProduct =
+          widget.courseModel.dualProduct != null &&
           (widget.courseModel.dualProduct!.price) > 0;
 
       if (hasDualProduct) {
@@ -866,10 +859,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     );
 
     // Select the product ID from the course model based on the assessment type.
-    final String? productId =
-        (selectedType == AssessmentType.double)
-            ? widget.courseModel.dualProduct?.productId
-            : widget.courseModel.singleProduct.productId;
+    final String? productId = (selectedType == AssessmentType.double)
+        ? widget.courseModel.dualProduct?.productId
+        : widget.courseModel.singleProduct.productId;
 
     payload.productId = productId ?? '';
     payload.assessmentType = selectedType;
@@ -897,8 +889,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     AssessmentType? selectedType;
 
     if (isDescriptive) {
-      final hasDualProduct =
-          dualProduct != null && (dualProduct.price) > 0;
+      final hasDualProduct = dualProduct != null && (dualProduct.price) > 0;
 
       if (hasDualProduct) {
         // Has dual product — let user choose assessment type
@@ -919,10 +910,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       selectedType = AssessmentType.single;
     }
 
-    final String? productId =
-        (selectedType == AssessmentType.double)
-            ? dualProduct?.productId
-            : singleProduct?.productId;
+    final String? productId = (selectedType == AssessmentType.double)
+        ? dualProduct?.productId
+        : singleProduct?.productId;
 
     final payload = UserPurchasePayload(
       userId: getIt<CacheManager>().user?.id ?? 0,
@@ -950,11 +940,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     required String index,
     required bool isAccessible,
   }) {
-    final bool isCourseFree =
-        widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
+    widget.courseModel.singleProduct.productId == ProductIds.freeCourse;
     final bool isPrelims = test.testType == TestType.prelims;
-    final Color badgeColor =
-        isPrelims ? const Color(0xFF059669) : AppColors.primary;
+    final Color badgeColor = isPrelims
+        ? const Color(0xFF059669)
+        : AppColors.primary;
     final String badgeLabel = 'Prelims';
     final String details =
         "${test.noQuestions} Questions • ${test.duration} Minutes";
@@ -998,30 +988,29 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
 
     return InkWell(
-      onTap:
-          isAccessible
-              ? () async {
-                if (isCompleted) {
-                  // Navigate to result screen
-                  await context.push(
-                    AppRoutes.resultScreen,
-                    extra: ResultScreenArgs(isFromTest: false, testModal: test),
-                  );
-                  _fetchAttemptStates();
-                } else if (hasAttempted && !attemptState.canRetry) {
-                  // In cooldown — show last result
-                  await context.push(
-                    AppRoutes.resultScreen,
-                    extra: ResultScreenArgs(isFromTest: false, testModal: test),
-                  );
-                  _fetchAttemptStates();
-                } else {
-                  await _navigateToInstruction(test);
-                  if (!mounted) return;
-                  _fetchAttemptStates();
-                }
+      onTap: isAccessible
+          ? () async {
+              if (isCompleted) {
+                // Navigate to result screen
+                await context.push(
+                  AppRoutes.resultScreen,
+                  extra: ResultScreenArgs(isFromTest: false, testModal: test),
+                );
+                _fetchAttemptStates();
+              } else if (hasAttempted && !attemptState.canRetry) {
+                // In cooldown — show last result
+                await context.push(
+                  AppRoutes.resultScreen,
+                  extra: ResultScreenArgs(isFromTest: false, testModal: test),
+                );
+                _fetchAttemptStates();
+              } else {
+                await _navigateToInstruction(test);
+                if (!mounted) return;
+                _fetchAttemptStates();
               }
-              : null,
+            }
+          : null,
       borderRadius: BorderRadius.circular(12.r),
       child: _testItemContainer(
         index: index,
@@ -1173,38 +1162,38 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           12.wGap,
           isLocked
               ? (price != null && price > 0
-                  ? InkWell(
-                    onTap: onBuyTap,
-                    borderRadius: BorderRadius.circular(8.r),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 6.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
+                    ? InkWell(
+                        onTap: onBuyTap,
                         borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        'Buy ₹$price',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            'Buy ₹$price',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )
-                  : Icon(
-                    Icons.lock_person_rounded,
-                    color: AppColors.gray400,
-                    size: 22.sp,
-                  ))
+                      )
+                    : Icon(
+                        Icons.lock_person_rounded,
+                        color: AppColors.gray400,
+                        size: 22.sp,
+                      ))
               : Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: AppColors.gray400,
-                size: 16.sp,
-              ),
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppColors.gray400,
+                  size: 16.sp,
+                ),
         ],
       ),
     );
@@ -1255,41 +1244,40 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     late OverlayEntry overlayEntry;
 
     overlayEntry = OverlayEntry(
-      builder:
-          (context) => Positioned(
-            bottom: 50.h,
-            left: 16.w,
-            right: 16.w,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+      builder: (context) => Positioned(
+        bottom: 50.h,
+        left: 16.w,
+        right: 16.w,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.white, size: 18.sp),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Text(
-                        message,
-                        style: TextStyle(color: Colors.white, fontSize: 13.sp),
-                      ),
-                    ),
-                  ],
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.white, size: 18.sp),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: TextStyle(color: Colors.white, fontSize: 13.sp),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
+        ),
+      ),
     );
 
     overlay.insert(overlayEntry);

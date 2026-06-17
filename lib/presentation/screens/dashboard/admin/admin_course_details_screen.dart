@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 
 class AdminCourseDetailsScreen extends StatefulWidget {
   const AdminCourseDetailsScreen({super.key, required this.courseModel});
@@ -13,7 +14,8 @@ class AdminCourseDetailsScreen extends StatefulWidget {
   final CourseModel courseModel;
 
   @override
-  State<AdminCourseDetailsScreen> createState() => _AdminCourseDetailsScreenState();
+  State<AdminCourseDetailsScreen> createState() =>
+      _AdminCourseDetailsScreenState();
 }
 
 class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
@@ -23,7 +25,7 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _isActive = widget.courseModel.isActive ?? false;
+    _isActive = widget.courseModel.isActive;
   }
 
   void _toggleStatus() {
@@ -32,7 +34,7 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
     });
 
     final newValue = !_isActive;
-    
+
     context.read<CourseBloc>().add(
       ToggleCourseStatusRequested(
         courseId: widget.courseModel.id,
@@ -58,6 +60,12 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
           "Course Details (Admin)",
           style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
         ),
+        actions: [
+          IconButton(
+            onPressed: () => ShareHelper.shareCourse(widget.courseModel),
+            icon: Icon(Icons.share_outlined, color: Colors.black, size: 24.sp),
+          ),
+        ],
         elevation: 0,
         backgroundColor: AppColors.scaffoldColor,
         surfaceTintColor: Colors.transparent,
@@ -92,29 +100,29 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Card
-            _buildStatusCard(),
-            16.hGap,
-            
-            // Course Info section
-            _buildCourseHeader(),
-            20.hGap,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Status Card
+              _buildStatusCard(),
+              16.hGap,
 
-            // Pricing Info Grid
-            _buildMetadataGrid(totalTests),
-            24.hGap,
+              // Course Info section
+              _buildCourseHeader(),
+              20.hGap,
 
-            // Action Button
-            _buildActionButton(),
-            28.hGap,
+              // Pricing Info Grid
+              _buildMetadataGrid(totalTests),
+              24.hGap,
 
-            // Curriculum/Tests lists
-            _buildCurriculumSection(prelims, descriptive),
-          ],
+              // Action Button
+              _buildActionButton(),
+              28.hGap,
+
+              // Curriculum/Tests lists
+              _buildCurriculumSection(prelims, descriptive),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -138,8 +146,9 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: (_isActive ? const Color(0xFF10B981) : const Color(0xFF6B7280))
-                .withAlpha(30),
+            color:
+                (_isActive ? const Color(0xFF10B981) : const Color(0xFF6B7280))
+                    .withAlpha(30),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -357,13 +366,17 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : _toggleStatus,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _isActive ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+          backgroundColor: _isActive
+              ? const Color(0xFFEF4444)
+              : const Color(0xFF10B981),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
           elevation: 4,
-          shadowColor: (_isActive ? const Color(0xFFEF4444) : const Color(0xFF10B981)).withAlpha(100),
+          shadowColor:
+              (_isActive ? const Color(0xFFEF4444) : const Color(0xFF10B981))
+                  .withAlpha(100),
         ),
         child: _isLoading
             ? SizedBox(
@@ -378,7 +391,9 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    _isActive ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                    _isActive
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
                     size: 20.sp,
                   ),
                   10.wGap,
@@ -395,13 +410,19 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
     );
   }
 
-  Widget _buildCurriculumSection(List<dynamic> prelims, List<dynamic> descriptive) {
+  Widget _buildCurriculumSection(
+    List<dynamic> prelims,
+    List<dynamic> descriptive,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Course Curriculum",
-          style: AppTexts.heading.copyWith(fontSize: 16.sp, color: AppColors.gray900),
+          style: AppTexts.heading.copyWith(
+            fontSize: 16.sp,
+            color: AppColors.gray900,
+          ),
         ),
         14.hGap,
         if (prelims.isEmpty && descriptive.isEmpty)
@@ -420,23 +441,27 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
           if (prelims.isNotEmpty) ...[
             _buildSectionHeader("Prelims Tests (${prelims.length})"),
             8.hGap,
-            ...prelims.map((test) => _buildTestItem(
-                  name: test.name,
-                  info: "${test.duration} Mins • ${test.totalMarks} Marks",
-                  icon: Icons.quiz_rounded,
-                  iconColor: Colors.blue,
-                )),
+            ...prelims.map(
+              (test) => _buildTestItem(
+                name: test.name,
+                info: "${test.duration} Mins • ${test.totalMarks} Marks",
+                icon: Icons.quiz_rounded,
+                iconColor: Colors.blue,
+              ),
+            ),
             16.hGap,
           ],
           if (descriptive.isNotEmpty) ...[
             _buildSectionHeader("Descriptive Tests (${descriptive.length})"),
             8.hGap,
-            ...descriptive.map((test) => _buildTestItem(
-                  name: test.name,
-                  info: "${test.noQuestions} Questions",
-                  icon: Icons.description_rounded,
-                  iconColor: Colors.purple,
-                )),
+            ...descriptive.map(
+              (test) => _buildTestItem(
+                name: test.name,
+                info: "${test.noQuestions} Questions",
+                icon: Icons.description_rounded,
+                iconColor: Colors.purple,
+              ),
+            ),
           ],
         ],
       ],

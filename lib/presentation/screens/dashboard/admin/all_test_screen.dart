@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/all_tests_model.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
@@ -10,7 +11,6 @@ import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
-import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 
 class AllTestScreen extends StatefulWidget {
   const AllTestScreen({super.key});
@@ -77,14 +77,7 @@ class _AllTestScreenState extends State<AllTestScreen> {
   }
 
   Widget _buildFilters() {
-    final filters = [
-      'All',
-      'Prelims',
-      'MCQ',
-      'Mains',
-      'Descriptive',
-      'Courses',
-    ];
+    final filters = ['All', 'Prelims', 'MCQ', 'Mains', 'Descriptive'];
     return Container(
       height: 60.h,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -145,33 +138,24 @@ class _AllTestScreenState extends State<AllTestScreen> {
         ),
       ];
     } else if (_selectedFilter == 'Prelims') {
-      tests =
-          allTests.prelims
-              .map((e) => _TestItemData(test: e, type: TestType.prelims))
-              .toList();
+      tests = allTests.prelims
+          .map((e) => _TestItemData(test: e, type: TestType.prelims))
+          .toList();
     } else if (_selectedFilter == 'MCQ') {
-      tests =
-          allTests.mcq
-              .map((e) => _TestItemData(test: e, type: TestType.mcq))
-              .toList();
+      tests = allTests.mcq
+          .map((e) => _TestItemData(test: e, type: TestType.mcq))
+          .toList();
     } else if (_selectedFilter == 'Descriptive') {
-      tests =
-          allTests.descriptive
-              .map((e) => _TestItemData(test: e, type: TestType.desc))
-              .toList();
+      tests = allTests.descriptive
+          .map((e) => _TestItemData(test: e, type: TestType.desc))
+          .toList();
     } else if (_selectedFilter == 'Mains') {
-      tests =
-          allTests.mains
-              .map((e) => _TestItemData(test: e, type: TestType.mains))
-              .toList();
-    } else if (_selectedFilter == 'Courses') {
-      tests =
-          allTests.courses?.map((e) => _TestItemData(test: e)).toList() ?? [];
+      tests = allTests.mains
+          .map((e) => _TestItemData(test: e, type: TestType.mains))
+          .toList();
     }
-
     if (tests.isEmpty) {
-      final message =
-          _selectedFilter == 'Courses' ? 'No courses found' : 'No tests found';
+      final message = 'No tests found';
       return Center(child: Text(message));
     }
 
@@ -213,10 +197,9 @@ class _AllTestScreenState extends State<AllTestScreen> {
 
     final dynamic test = data.test;
     final String name = test.name ?? "";
-    final int attempts =
-        (test is TestModel)
-            ? (test.totalAttempt ?? 0)
-            : (test is DescTestModel ? (test.totalAttempt ?? 0) : 0);
+    final int attempts = (test is TestModel)
+        ? (test.totalAttempt ?? 0)
+        : (test is DescTestModel ? (test.totalAttempt ?? 0) : 0);
 
     final bool showShare =
         data.type != TestType.prelims && data.type != TestType.mains;
