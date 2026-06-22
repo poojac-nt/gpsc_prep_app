@@ -21,13 +21,17 @@ TestModel _$TestModelFromJson(Map<String, dynamic> json) => TestModel(
           ? null
           : DateTime.parse(json['created_at'] as String),
       totalAttempt: (json['total_attempts'] as num?)?.toInt(),
-      singleProduct: json['single_product'] == null
+      singleProduct: json['single_assessment_price'] == null
           ? null
           : ProductModel.fromJson(
-              json['single_product'] as Map<String, dynamic>),
-      dualProduct: json['dual_product'] == null
+              json['single_assessment_price'] as Map<String, dynamic>),
+      dualProduct: json['double_assessment_price'] == null
           ? null
-          : ProductModel.fromJson(json['dual_product'] as Map<String, dynamic>),
+          : ProductModel.fromJson(
+              json['double_assessment_price'] as Map<String, dynamic>),
+      allowedLanguages: (json['allowed_languages'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
@@ -41,8 +45,9 @@ Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'available_at': instance.availableAt?.toIso8601String(),
       'created_at': instance.createdAt?.toIso8601String(),
       'total_attempts': instance.totalAttempt,
-      'single_product': instance.singleProduct,
-      'dual_product': instance.dualProduct,
+      'single_assessment_price': instance.singleProduct,
+      'double_assessment_price': instance.dualProduct,
+      'allowed_languages': instance.allowedLanguages,
     };
 
 const _$TestTypeEnumMap = {

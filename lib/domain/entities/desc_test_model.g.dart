@@ -21,6 +21,9 @@ DescTestModel _$DescTestModelFromJson(Map<String, dynamic> json) =>
           : ProductModel.fromJson(
               json['single_product'] as Map<String, dynamic>),
       totalAttempt: (json['total_attempts'] as num?)?.toInt(),
+      allowedLanguages: (json['allowed_languages'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$DescTestModelToJson(DescTestModel instance) =>
@@ -33,4 +36,5 @@ Map<String, dynamic> _$DescTestModelToJson(DescTestModel instance) =>
       'total_attempts': instance.totalAttempt,
       'single_product': instance.singleProduct,
       'dual_product': instance.dualProduct,
+      'allowed_languages': instance.allowedLanguages,
     };

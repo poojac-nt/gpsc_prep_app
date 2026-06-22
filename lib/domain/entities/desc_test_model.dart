@@ -21,6 +21,8 @@ class DescTestModel {
   ProductModel? singleProduct;
   @JsonKey(name: "dual_product")
   ProductModel? dualProduct;
+  @JsonKey(name: "allowed_languages")
+  List<String>? allowedLanguages;
 
   DescTestModel({
     required this.id,
@@ -31,6 +33,7 @@ class DescTestModel {
     this.dualProduct,
     this.singleProduct,
     this.totalAttempt,
+    this.allowedLanguages,
   });
 
   factory DescTestModel.fromJson(Map<String, dynamic> json) =>
