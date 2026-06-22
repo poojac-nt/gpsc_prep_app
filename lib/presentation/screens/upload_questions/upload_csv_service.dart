@@ -58,20 +58,19 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
     } else if (ext == 'xlsx') {
       final bytes = await File(filePath).readAsBytes();
       final excel = Excel.decodeBytes(bytes);
-      final sheet =
-          excel.tables.values.isNotEmpty ? excel.tables.values.first : null;
+      final sheet = excel.tables.values.isNotEmpty
+          ? excel.tables.values.first
+          : null;
 
       if (sheet == null || sheet.rows.isEmpty) {
         return Left(Failure('Excel file has no data.'));
       }
 
-      rows =
-          sheet.rows
-              .map(
-                (row) =>
-                    row.map((cell) => cell?.value?.toString() ?? '').toList(),
-              )
-              .toList();
+      rows = sheet.rows
+          .map(
+            (row) => row.map((cell) => cell?.value?.toString() ?? '').toList(),
+          )
+          .toList();
     } else {
       return Left(Failure('Unsupported file format.'));
     }
@@ -80,8 +79,9 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
       return Left(Failure('The file is empty.'));
     }
 
-    final headers =
-        rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
+    final headers = rows.first
+        .map((h) => h.toString().trim().toLowerCase())
+        .toList();
 
     final dataRows = rows.skip(1).toList();
 
@@ -127,18 +127,17 @@ Future<Either<Failure, List<Map<String, dynamic>>>> parseUploadFile({
         );
       }
 
-      final langData =
-          questionType == 'desc'
-              ? {"question_txt": rowMap['question_text']}
-              : {
-                "question_txt": rowMap['question_text'],
-                "opt_a": rowMap['option_a'],
-                "opt_b": rowMap['option_b'],
-                "opt_c": rowMap['option_c'],
-                "opt_d": rowMap['option_d'],
-                "correct_answer": rowMap['correct_answer'],
-                "explanation": rowMap['explanation'],
-              };
+      final langData = questionType == 'desc'
+          ? {"question_txt": rowMap['question_text']}
+          : {
+              "question_txt": rowMap['question_text'],
+              "opt_a": rowMap['option_a'],
+              "opt_b": rowMap['option_b'],
+              "opt_c": rowMap['option_c'],
+              "opt_d": rowMap['option_d'],
+              "correct_answer": rowMap['correct_answer'],
+              "explanation": rowMap['explanation'],
+            };
 
       grouped.putIfAbsent(srNo, () {
         return {
@@ -180,6 +179,7 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
   int? priceSingle,
   int? priceDual,
   CourseTestType? testType,
+  List<String>? allowedLanguages, // null = default to all languages on backend
 }) async {
   try {
     if (payload.isEmpty) {
@@ -190,11 +190,10 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
     if (!isTestUpload) {
       String? rpcError;
       final rpcResult = await callRpc(
-        call:
-            () => _supabase.rpc(
-              SupabaseKeys.insertBulkQuestions,
-              params: {'payload': payload},
-            ),
+        call: () => _supabase.rpc(
+          SupabaseKeys.insertBulkQuestions,
+          params: {'payload': payload},
+        ),
         onError: (msg) => rpcError = msg,
       );
 
@@ -223,35 +222,35 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
       "duration": firstItem['duration'],
       "available_at": availableAt?.toIso8601String(),
       "omr_link": firstItem['omr_link'],
+      if (allowedLanguages != null && allowedLanguages.isNotEmpty)
+        "allowed_languages": allowedLanguages,
     };
 
-    final questions =
-        payload.map((item) {
-          final question = Map<String, dynamic>.from(item);
+    final questions = payload.map((item) {
+      final question = Map<String, dynamic>.from(item);
 
-          question.remove('test_name');
-          question.remove('test_type');
-          question.remove('duration');
-          question.remove('omr_link');
+      question.remove('test_name');
+      question.remove('test_type');
+      question.remove('duration');
+      question.remove('omr_link');
 
-          return question;
-        }).toList();
+      return question;
+    }).toList();
 
     final structuredPayload = {"test": testObject, "questions": questions};
 
     String? rpcError;
     final rpcResult = await callRpc(
-      call:
-          () => _supabase.rpc(
-            SupabaseKeys.insertMcqWithTest,
-            params: {
-              'p_course_id': courseId,
-              'payload': structuredPayload,
-              'p_single_price_id': priceSingle,
-              'p_double_price_id': priceDual,
-              'p_course_type': testType?.name,
-            },
-          ),
+      call: () => _supabase.rpc(
+        SupabaseKeys.insertMcqWithTest,
+        params: {
+          'p_course_id': courseId,
+          'payload': structuredPayload,
+          'p_single_price_id': priceSingle,
+          'p_double_price_id': priceDual,
+          'p_course_type': testType?.name,
+        },
+      ),
       onError: (msg) => rpcError = msg,
     );
 

@@ -199,8 +199,15 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
   int? priceSingle,
   int? priceDual,
   CourseTestType? testType,
+  List<String>? allowedLanguages,
 }) async {
   try {
+    if (allowedLanguages != null && allowedLanguages.isNotEmpty) {
+      for (var item in payload) {
+        item['allowed_languages'] = allowedLanguages;
+      }
+    }
+
     String? rpcError;
     final rpcResult = await callRpc(
       call: () => _supabase.rpc(

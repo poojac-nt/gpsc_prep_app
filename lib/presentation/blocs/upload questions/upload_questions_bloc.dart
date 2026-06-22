@@ -72,6 +72,7 @@ class UploadQuestionsBloc
         priceSingle: event.priceSingle,
         priceDual: event.priceDual,
         testType: event.testType,
+        allowedLanguages: event.allowedLanguages,
       );
 
       result.fold(
@@ -125,6 +126,7 @@ class UploadQuestionsBloc
         priceSingle: event.priceSingle,
         priceDual: event.priceDual,
         testType: event.testType,
+        allowedLanguages: event.allowedLanguages,
       );
 
       result.fold(
