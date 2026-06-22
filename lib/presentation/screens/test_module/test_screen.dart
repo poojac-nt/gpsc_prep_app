@@ -141,20 +141,12 @@ class _TestScreenState extends State<TestScreen> {
                       return SizedBox.shrink();
                     }
 
-                    // Determine available languages from question models
-                    final availableLanguages = <String>[];
-                    if (questionState.questionModel.isNotEmpty) {
-                      final firstQuestion = questionState.questionModel.first;
-                      availableLanguages.add(
-                        'en',
-                      ); // English is always available
-                      if (firstQuestion.questionHi != null) {
-                        availableLanguages.add('hi');
-                      }
-                      if (firstQuestion.questionGj != null) {
-                        availableLanguages.add('gj');
-                      }
-                    }
+                    // Determine available languages from TestModel.allowedLanguages
+                    final List<String> allowed = widget.dailyTestModel.allowedLanguages ?? [];
+                    // Ensure English is always included and cannot be removed
+                    final Set<String> languageSet = { 'en' };
+                    languageSet.addAll(allowed);
+                    final List<String> availableLanguages = languageSet.toList();
 
                     // Only show if more than one language is available
                     if (availableLanguages.length <= 1) {
@@ -177,15 +169,10 @@ class _TestScreenState extends State<TestScreen> {
 
                     // Get next language in the cycle
                     void switchToNextLanguage() {
-                      final currentIndex = availableLanguages.indexOf(
-                        questionState.currentLanguage,
-                      );
-                      final nextIndex =
-                          (currentIndex + 1) % availableLanguages.length;
+                      final currentIndex = availableLanguages.indexOf(questionState.currentLanguage);
+                      final nextIndex = (currentIndex + 1) % availableLanguages.length;
                       final nextLanguage = availableLanguages[nextIndex];
-                      context.read<QuestionCubit>().switchLanguage(
-                        nextLanguage,
-                      );
+                      context.read<QuestionCubit>().switchLanguage(nextLanguage);
                     }
 
                     return IconButton(
@@ -197,19 +184,18 @@ class _TestScreenState extends State<TestScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      tooltip:
-                          'Switch Language (${availableLanguages.map((l) {
-                            switch (l) {
-                              case 'en':
-                                return 'English';
-                              case 'hi':
-                                return 'हिंदी';
-                              case 'gj':
-                                return 'ગુજરાતી';
-                              default:
-                                return '';
-                            }
-                          }).join(', ')})',
+                      tooltip: 'Switch Language (${availableLanguages.map((l) {
+                        switch (l) {
+                          case 'en':
+                            return 'English';
+                          case 'hi':
+                            return 'हिंदी';
+                          case 'gj':
+                            return 'ગુજરાતી';
+                          default:
+                            return '';
+                        }
+                      }).join(', ')})',
                     );
                   },
                 ),
