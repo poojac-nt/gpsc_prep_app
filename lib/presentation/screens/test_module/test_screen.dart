@@ -142,11 +142,13 @@ class _TestScreenState extends State<TestScreen> {
                     }
 
                     // Determine available languages from TestModel.allowedLanguages
-                    final List<String> allowed = widget.dailyTestModel.allowedLanguages ?? [];
+                    final List<String> allowed =
+                        widget.dailyTestModel.allowedLanguages ?? [];
                     // Ensure English is always included and cannot be removed
-                    final Set<String> languageSet = { 'en' };
+                    final Set<String> languageSet = {};
                     languageSet.addAll(allowed);
-                    final List<String> availableLanguages = languageSet.toList();
+                    final List<String> availableLanguages = languageSet
+                        .toList();
 
                     // Only show if more than one language is available
                     if (availableLanguages.length <= 1) {
@@ -169,10 +171,15 @@ class _TestScreenState extends State<TestScreen> {
 
                     // Get next language in the cycle
                     void switchToNextLanguage() {
-                      final currentIndex = availableLanguages.indexOf(questionState.currentLanguage);
-                      final nextIndex = (currentIndex + 1) % availableLanguages.length;
+                      final currentIndex = availableLanguages.indexOf(
+                        questionState.currentLanguage,
+                      );
+                      final nextIndex =
+                          (currentIndex + 1) % availableLanguages.length;
                       final nextLanguage = availableLanguages[nextIndex];
-                      context.read<QuestionCubit>().switchLanguage(nextLanguage);
+                      context.read<QuestionCubit>().switchLanguage(
+                        nextLanguage,
+                      );
                     }
 
                     return IconButton(
@@ -184,18 +191,19 @@ class _TestScreenState extends State<TestScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      tooltip: 'Switch Language (${availableLanguages.map((l) {
-                        switch (l) {
-                          case 'en':
-                            return 'English';
-                          case 'hi':
-                            return 'हिंदी';
-                          case 'gj':
-                            return 'ગુજરાતી';
-                          default:
-                            return '';
-                        }
-                      }).join(', ')})',
+                      tooltip:
+                          'Switch Language (${availableLanguages.map((l) {
+                            switch (l) {
+                              case 'en':
+                                return 'English';
+                              case 'hi':
+                                return 'हिंदी';
+                              case 'gj':
+                                return 'ગુજરાતી';
+                              default:
+                                return '';
+                            }
+                          }).join(', ')})',
                     );
                   },
                 ),
@@ -210,66 +218,66 @@ class _TestScreenState extends State<TestScreen> {
 
               widget.isFromResult
                   ? TextButton(
-                    onPressed: () {
-                      context.pop();
-                    },
-                    child: Text(
-                      "Back to Result",
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
+                      onPressed: () {
+                        context.pop();
+                      },
+                      child: Text(
+                        "Back to Result",
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                  )
+                    )
                   : Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 3.h,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(color: Colors.black),
-                    ),
-                    child: IntrinsicWidth(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.timer_outlined, size: 18.sp),
-                          5.wGap,
-                          BlocBuilder<TimerBloc, TimerState>(
-                            builder: (context, state) {
-                              if (state is TimerRunning) {
-                                return Text(
-                                  formatRemainingTime(
-                                    remainingMinutes: state.remainingMinutes,
-                                    remainingSeconds: state.remainingSeconds,
-                                  ),
-                                  style: TextStyle(
-                                    fontFeatures: const [
-                                      FontFeature.tabularFigures(),
-                                      // FIXED WIDTH DIGITS
-                                    ],
-                                  ),
-                                );
-                              }
-                              if (state is TimerStopped) {
-                                getIt<LogHelper>().w(
-                                  state.totalMins.toString(),
-                                );
-                                getIt<LogHelper>().w(
-                                  state.totalSecs.toString(),
-                                );
-                                return SizedBox.shrink();
-                              }
-                              return Text('00:00');
-                            },
-                          ),
-                        ],
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 3.h,
                       ),
-                    ),
-                  ).padSymmetric(horizontal: 10.w),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: IntrinsicWidth(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timer_outlined, size: 18.sp),
+                            5.wGap,
+                            BlocBuilder<TimerBloc, TimerState>(
+                              builder: (context, state) {
+                                if (state is TimerRunning) {
+                                  return Text(
+                                    formatRemainingTime(
+                                      remainingMinutes: state.remainingMinutes,
+                                      remainingSeconds: state.remainingSeconds,
+                                    ),
+                                    style: TextStyle(
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                        // FIXED WIDTH DIGITS
+                                      ],
+                                    ),
+                                  );
+                                }
+                                if (state is TimerStopped) {
+                                  getIt<LogHelper>().w(
+                                    state.totalMins.toString(),
+                                  );
+                                  getIt<LogHelper>().w(
+                                    state.totalSecs.toString(),
+                                  );
+                                  return SizedBox.shrink();
+                                }
+                                return Text('00:00');
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ).padSymmetric(horizontal: 10.w),
             ],
           ),
           body: BlocListener<TestCubit, TestCubitSubmitted>(
@@ -425,105 +433,99 @@ class _TestScreenState extends State<TestScreen> {
                                     state.isReview
                                         ? SizedBox.shrink()
                                         : Expanded(
-                                          child: Padding(
-                                            padding: EdgeInsets.only(
-                                              right: 25.w,
-                                            ),
-                                            child: ActionButton(
-                                              text: "Quit Test",
-                                              onTap: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder:
-                                                      (
-                                                        context,
-                                                      ) => CustomAlertdialog(
-                                                        title: "Confirm Exit",
-                                                        mainContent:
-                                                            "Do you really want to leave the test in between?",
-                                                        content:
-                                                            "Your answers so far won’t be saved, you won’t be able to resume this test later.",
-                                                        actions: [
-                                                          TextButton(
-                                                            child: Text(
-                                                              "Cancel",
-                                                              style: TextStyle(
-                                                                color:
-                                                                    Colors
-                                                                        .grey[700],
-                                                              ),
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                right: 25.w,
+                                              ),
+                                              child: ActionButton(
+                                                text: "Quit Test",
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) => CustomAlertdialog(
+                                                      title: "Confirm Exit",
+                                                      mainContent:
+                                                          "Do you really want to leave the test in between?",
+                                                      content:
+                                                          "Your answers so far won’t be saved, you won’t be able to resume this test later.",
+                                                      actions: [
+                                                        TextButton(
+                                                          child: Text(
+                                                            "Cancel",
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .grey[700],
                                                             ),
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                context,
-                                                              ).pop(); // Close dialog
-                                                            },
                                                           ),
-                                                          ElevatedButton(
-                                                            style: ElevatedButton.styleFrom(
-                                                              backgroundColor:
-                                                                  Colors
-                                                                      .redAccent,
-                                                              shape: RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      8,
-                                                                    ),
-                                                              ),
-                                                            ),
-                                                            child: Text(
-                                                              "Yes, Leave",
-                                                              style: AppTexts
-                                                                  .title
-                                                                  .copyWith(
-                                                                    color:
-                                                                        Colors
-                                                                            .white,
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop(); // Close dialog
+                                                          },
+                                                        ),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .redAccent,
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    8,
                                                                   ),
                                                             ),
-                                                            onPressed: () async {
-                                                              if (_isPrelimsTest()) {
-                                                                final testId =
-                                                                    widget
-                                                                        .dailyTestModel
-                                                                        .id;
-                                                                final userId =
-                                                                    getIt<
-                                                                          CacheManager
-                                                                        >()
-                                                                        .getUserId();
-                                                                await getIt<
-                                                                      PrelimsProgressRepository
-                                                                    >()
-                                                                    .deleteProgress(
-                                                                      userId,
-                                                                      testId,
-                                                                    );
-                                                                await getIt<
-                                                                      TestRepository
-                                                                    >()
-                                                                    .deleteUserTest(
-                                                                      testId:
-                                                                          testId,
-                                                                    );
-                                                              }
-                                                              if (!context
-                                                                  .mounted) {
-                                                                return;
-                                                              }
-                                                              context
-                                                                  .pop(); // Close dialog
-                                                              context
-                                                                  .pop(); // Close TestScreen and go back to Instructions/List
-                                                            },
                                                           ),
-                                                        ],
-                                                      ),
-                                                );
-                                              },
+                                                          child: Text(
+                                                            "Yes, Leave",
+                                                            style: AppTexts
+                                                                .title
+                                                                .copyWith(
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                          ),
+                                                          onPressed: () async {
+                                                            if (_isPrelimsTest()) {
+                                                              final testId = widget
+                                                                  .dailyTestModel
+                                                                  .id;
+                                                              final userId =
+                                                                  getIt<
+                                                                        CacheManager
+                                                                      >()
+                                                                      .getUserId();
+                                                              await getIt<
+                                                                    PrelimsProgressRepository
+                                                                  >()
+                                                                  .deleteProgress(
+                                                                    userId,
+                                                                    testId,
+                                                                  );
+                                                              await getIt<
+                                                                    TestRepository
+                                                                  >()
+                                                                  .deleteUserTest(
+                                                                    testId:
+                                                                        testId,
+                                                                  );
+                                                            }
+                                                            if (!context
+                                                                .mounted) {
+                                                              return;
+                                                            }
+                                                            context
+                                                                .pop(); // Close dialog
+                                                            context
+                                                                .pop(); // Close TestScreen and go back to Instructions/List
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
                                             ),
                                           ),
-                                        ),
                                     100.wGap,
                                     Expanded(
                                       child: Padding(
@@ -656,8 +658,8 @@ class _TestScreenState extends State<TestScreen> {
                                                   color: Colors.black87,
                                                   fontWeight:
                                                       isSelected || isCorrect
-                                                          ? FontWeight.w600
-                                                          : FontWeight.normal,
+                                                      ? FontWeight.w600
+                                                      : FontWeight.normal,
                                                 ),
                                               ),
                                             ),
@@ -677,8 +679,8 @@ class _TestScreenState extends State<TestScreen> {
                                         state.isReview
                                             ? null
                                             : context
-                                                .read<QuestionCubit>()
-                                                .answerQuestion(value);
+                                                  .read<QuestionCubit>()
+                                                  .answerQuestion(value);
                                       },
                                       child: BorderedContainer(
                                         borderColor: tileColor,
@@ -691,10 +693,9 @@ class _TestScreenState extends State<TestScreen> {
                                           title: Text(
                                             option,
                                             style: TextStyle(
-                                              color:
-                                                  state.isReview
-                                                      ? textColor
-                                                      : Colors.black,
+                                              color: state.isReview
+                                                  ? textColor
+                                                  : Colors.black,
                                             ),
                                           ),
                                         ),
@@ -710,10 +711,9 @@ class _TestScreenState extends State<TestScreen> {
                                     Expanded(
                                       flex: 1,
                                       child: ActionButton(
-                                        backgroundColor:
-                                            state.currentIndex == 0
-                                                ? Colors.grey
-                                                : AppColors.primary,
+                                        backgroundColor: state.currentIndex == 0
+                                            ? Colors.grey
+                                            : AppColors.primary,
                                         text: "Previous",
                                         onTap: () {
                                           if (state.currentIndex > 0) {
@@ -740,19 +740,16 @@ class _TestScreenState extends State<TestScreen> {
                                         child: ActionButton(
                                           text:
                                               state.currentIndex <
-                                                      state.questions.length - 1
-                                                  ? "Next"
-                                                  : "Finish",
-                                          backgroundColor:
-                                              state.isReview
-                                                  ? state.currentIndex <
-                                                          state
-                                                                  .questions
-                                                                  .length -
-                                                              1
-                                                      ? AppColors.primary
-                                                      : Colors.grey
-                                                  : AppColors.primary,
+                                                  state.questions.length - 1
+                                              ? "Next"
+                                              : "Finish",
+                                          backgroundColor: state.isReview
+                                              ? state.currentIndex <
+                                                        state.questions.length -
+                                                            1
+                                                    ? AppColors.primary
+                                                    : Colors.grey
+                                              : AppColors.primary,
                                           onTap: () {
                                             if (state.currentIndex <
                                                 state.questions.length - 1) {
@@ -790,88 +787,90 @@ class _TestScreenState extends State<TestScreen> {
                             20.hGap,
                             state.isReview
                                 ? Container(
-                                  padding: EdgeInsets.all(16.w),
-                                  margin: EdgeInsets.symmetric(vertical: 20.h),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade50.withValues(
-                                      alpha: 0.5,
+                                    padding: EdgeInsets.all(16.w),
+                                    margin: EdgeInsets.symmetric(
+                                      vertical: 20.h,
                                     ),
-                                    borderRadius: BorderRadius.circular(16.r),
-                                    border: Border.all(
-                                      color: Colors.blue.shade100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16.r),
+                                      border: Border.all(
+                                        color: Colors.blue.shade100,
+                                      ),
                                     ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.lightbulb_outline,
-                                            color: Colors.blue.shade700,
-                                            size: 22.sp,
-                                          ),
-                                          8.wGap,
-                                          Text(
-                                            "Explanation",
-                                            style: TextStyle(
-                                              fontSize: 18.sp,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue.shade900,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.lightbulb_outline,
+                                              color: Colors.blue.shade700,
+                                              size: 22.sp,
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      15.hGap,
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          _infoBadge(
-                                            Icons.subject,
-                                            "Subject: ",
-                                            subjects[state.currentIndex],
-                                          ),
-                                          8.hGap,
-                                          _infoBadge(
-                                            Icons.topic,
-                                            "Topic: ",
-                                            topics[state.currentIndex],
-                                          ),
-                                          8.hGap,
-                                          Row(
-                                            children: [
-                                              _infoBadge(
-                                                Icons.speed,
-                                                "Level: ",
-                                                difficultyLevel[state
-                                                        .currentIndex]
-                                                    .level,
+                                            8.wGap,
+                                            Text(
+                                              "Explanation",
+                                              style: TextStyle(
+                                                fontSize: 18.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.blue.shade900,
                                               ),
-                                              8.wGap,
-                                              state.timePerQuestion.length >
-                                                      state.currentIndex
-                                                  ? _infoBadge(
-                                                    Icons.timer,
-                                                    "Time: ",
-                                                    "${state.timePerQuestion[state.currentIndex]}s",
-                                                  )
-                                                  : SizedBox.shrink(),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      20.hGap,
-                                      Divider(color: Colors.blue.shade100),
-                                      15.hGap,
-                                      state
-                                          .questions[state.currentIndex]
-                                          .explanation
-                                          .toQuestionWidget(),
-                                    ],
-                                  ),
-                                )
+                                            ),
+                                          ],
+                                        ),
+                                        15.hGap,
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _infoBadge(
+                                              Icons.subject,
+                                              "Subject: ",
+                                              subjects[state.currentIndex],
+                                            ),
+                                            8.hGap,
+                                            _infoBadge(
+                                              Icons.topic,
+                                              "Topic: ",
+                                              topics[state.currentIndex],
+                                            ),
+                                            8.hGap,
+                                            Row(
+                                              children: [
+                                                _infoBadge(
+                                                  Icons.speed,
+                                                  "Level: ",
+                                                  difficultyLevel[state
+                                                          .currentIndex]
+                                                      .level,
+                                                ),
+                                                8.wGap,
+                                                state.timePerQuestion.length >
+                                                        state.currentIndex
+                                                    ? _infoBadge(
+                                                        Icons.timer,
+                                                        "Time: ",
+                                                        "${state.timePerQuestion[state.currentIndex]}s",
+                                                      )
+                                                    : SizedBox.shrink(),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        20.hGap,
+                                        Divider(color: Colors.blue.shade100),
+                                        15.hGap,
+                                        state
+                                            .questions[state.currentIndex]
+                                            .explanation
+                                            .toQuestionWidget(),
+                                      ],
+                                    ),
+                                  )
                                 : SizedBox.shrink(),
                             20.hGap,
                             if (state.isReview) ...[
@@ -890,10 +889,9 @@ class _TestScreenState extends State<TestScreen> {
                                       state.currentIndex >= 0 &&
                                       state.currentIndex <
                                           state.questions.length) {
-                                    final questionId =
-                                        state
-                                            .questionModel[state.currentIndex]
-                                            .questionId;
+                                    final questionId = state
+                                        .questionModel[state.currentIndex]
+                                        .questionId;
 
                                     final isNotAttempted =
                                         isQuestionNotAttempted(
@@ -943,11 +941,10 @@ class _TestScreenState extends State<TestScreen> {
 
                                             if (barState
                                                 is OptionMatrixSuccess) {
-                                              final questionId =
-                                                  state
-                                                      .questionModel[state
-                                                          .currentIndex]
-                                                      .questionId;
+                                              final questionId = state
+                                                  .questionModel[state
+                                                      .currentIndex]
+                                                  .questionId;
 
                                               return McqVerticalBarChart(
                                                 questionId: questionId,
@@ -974,72 +971,66 @@ class _TestScreenState extends State<TestScreen> {
                                 Wrap(
                                   spacing: 6.w,
                                   runSpacing: 6.h,
-                                  children:
-                                      visibleIndexes.map((index) {
-                                        return QuestionNavigatorButton(
-                                          text: '${index + 1}',
-                                          backgroundColor:
-                                              state.currentIndex == index
-                                                  ? Colors.grey
-                                                  : state.answeredStatus[index]
-                                                  ? state.isReview
-                                                      ? state.isCorrect![index] ==
-                                                              false
-                                                          ? Colors.red
-                                                          : Colors.green
-                                                      : Colors.black
-                                                  : Colors.white,
-                                          fontColor:
-                                              state.currentIndex == index
-                                                  ? Colors.black
-                                                  : state.answeredStatus[index]
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                          borderColor:
-                                              state.currentIndex == index
-                                                  ? Colors.grey
-                                                  : state.answeredStatus[index]
-                                                  ? state.isReview
-                                                      ? state.isCorrect![index] ==
-                                                              false
-                                                          ? Colors.red
-                                                          : Colors.green
-                                                      : Colors.black
-                                                  : Colors.black,
-                                          onTap: () {
-                                            scrollController.animateTo(
-                                              0.0,
-                                              duration: Duration(
-                                                milliseconds: 500,
-                                              ),
-                                              curve: Curves.easeOut,
-                                            );
-                                            context
-                                                .read<QuestionCubit>()
-                                                .jumpToQuestion(index);
-                                          },
+                                  children: visibleIndexes.map((index) {
+                                    return QuestionNavigatorButton(
+                                      text: '${index + 1}',
+                                      backgroundColor:
+                                          state.currentIndex == index
+                                          ? Colors.grey
+                                          : state.answeredStatus[index]
+                                          ? state.isReview
+                                                ? state.isCorrect![index] ==
+                                                          false
+                                                      ? Colors.red
+                                                      : Colors.green
+                                                : Colors.black
+                                          : Colors.white,
+                                      fontColor: state.currentIndex == index
+                                          ? Colors.black
+                                          : state.answeredStatus[index]
+                                          ? Colors.white
+                                          : Colors.black,
+                                      borderColor: state.currentIndex == index
+                                          ? Colors.grey
+                                          : state.answeredStatus[index]
+                                          ? state.isReview
+                                                ? state.isCorrect![index] ==
+                                                          false
+                                                      ? Colors.red
+                                                      : Colors.green
+                                                : Colors.black
+                                          : Colors.black,
+                                      onTap: () {
+                                        scrollController.animateTo(
+                                          0.0,
+                                          duration: Duration(milliseconds: 500),
+                                          curve: Curves.easeOut,
                                         );
-                                      }).toList(),
+                                        context
+                                            .read<QuestionCubit>()
+                                            .jumpToQuestion(index);
+                                      },
+                                    );
+                                  }).toList(),
                                 ),
                                 10.hGap,
                                 QuestionIndicator(
-                                  text:
-                                      state.isReview ? "Correct" : "Attempted",
-                                  borderColor:
-                                      state.isReview
-                                          ? Colors.green
-                                          : Colors.black,
-                                  fillColor:
-                                      state.isReview
-                                          ? Colors.green
-                                          : Colors.black,
+                                  text: state.isReview
+                                      ? "Correct"
+                                      : "Attempted",
+                                  borderColor: state.isReview
+                                      ? Colors.green
+                                      : Colors.black,
+                                  fillColor: state.isReview
+                                      ? Colors.green
+                                      : Colors.black,
                                 ),
                                 state.isReview
                                     ? QuestionIndicator(
-                                      text: "Incorrect",
-                                      borderColor: Colors.red,
-                                      fillColor: Colors.red,
-                                    )
+                                        text: "Incorrect",
+                                        borderColor: Colors.red,
+                                        fillColor: Colors.red,
+                                      )
                                     : SizedBox.shrink(),
                                 QuestionIndicator(
                                   text: "Not Attempted",
@@ -1291,23 +1282,22 @@ class _TestScreenState extends State<TestScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text("Test Paused"),
-            content: const Text(
-              "Progress saved. Resume from the test list.\n\n"
-              "Note: Progress expires in 24 hours.",
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  context.pop();
-                },
-                child: const Text("OK"),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: const Text("Test Paused"),
+        content: const Text(
+          "Progress saved. Resume from the test list.\n\n"
+          "Note: Progress expires in 24 hours.",
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.pop();
+            },
+            child: const Text("OK"),
           ),
+        ],
+      ),
     );
   }
 

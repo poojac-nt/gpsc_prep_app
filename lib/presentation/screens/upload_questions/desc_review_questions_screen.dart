@@ -66,7 +66,6 @@ class _DescReviewQuestionUploadScreenState
       'en': 'English',
       'hi': 'Hindi',
       'gj': 'Gujarati',
-      'gu': 'Gujarati',
     };
 
     final List<String> availableCodes = detectedCodes.toList();
@@ -95,11 +94,15 @@ class _DescReviewQuestionUploadScreenState
                     10.hGap,
                     Text(
                       'Choose which languages should be available to students for this test.',
-                      style: AppTexts.subTitle.copyWith(fontSize: 13.sp, color: AppColors.gray500),
+                      style: AppTexts.subTitle.copyWith(
+                        fontSize: 13.sp,
+                        color: AppColors.gray500,
+                      ),
                     ),
                     20.hGap,
                     ...availableCodes.map((code) {
-                      final displayName = langMap[code.toLowerCase()] ?? code.toUpperCase();
+                      final displayName =
+                          langMap[code.toLowerCase()] ?? code.toUpperCase();
                       return CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(displayName),
@@ -184,8 +187,9 @@ class _DescReviewQuestionUploadScreenState
           },
           builder: (context, state) {
             final isUploading = state is UploadFileInProgress;
-            final uploadResult =
-                state is UploadFileSuccess ? state.result : null;
+            final uploadResult = state is UploadFileSuccess
+                ? state.result
+                : null;
 
             return Column(
               children: [
@@ -292,7 +296,6 @@ class _DescReviewQuestionUploadScreenState
   }
 
   Widget _buildLabeledText(String label, String? value) {
-
     return Padding(
       padding: EdgeInsets.all(2.sp),
       child: RichText(
