@@ -92,6 +92,7 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
         event.question,
         event.index,
         event.testName,
+        event.langCodes,
       );
 
       if (result.isEmpty) {

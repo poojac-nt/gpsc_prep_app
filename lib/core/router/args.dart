@@ -100,12 +100,14 @@ class DescFullQuestionsScreenArgs {
   final String testName;
   final int? courseId;
   final bool isSubmitted;
+  final DescTestModel? descTestModel;
 
   DescFullQuestionsScreenArgs({
     required this.testId,
     required this.testName,
     this.courseId,
     this.isSubmitted = false,
+    this.descTestModel,
   });
 }
 
@@ -214,6 +216,7 @@ class StudentEvaluationResultScreenArgs {
   final int? mentorId;
   final MainsTestReviewModel? reviewModel;
   final int? courseId;
+  final DescTestModel? descTestModel;
 
   StudentEvaluationResultScreenArgs({
     this.testId,
@@ -222,6 +225,7 @@ class StudentEvaluationResultScreenArgs {
     this.mentorId,
     this.reviewModel,
     this.courseId,
+    this.descTestModel,
   });
 }
 

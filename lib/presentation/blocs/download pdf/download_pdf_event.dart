@@ -23,11 +23,13 @@ class DownloadDescTestPdf extends DownLoadPdfEvent {
   final DescQuestionModel question;
   final int index;
   final String testName;
+  final List<String> langCodes;
 
   DownloadDescTestPdf({
     required this.question,
     required this.index,
     required this.testName,
+    required this.langCodes,
   });
 }
 

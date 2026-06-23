@@ -18,6 +18,7 @@ Future<String> generateDescTestPdf(
   DescQuestionModel question,
   int index,
   String testName,
+  List<String> langCodes,
 ) async {
   final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
   final baseFont = pw.Font.ttf(base);
@@ -82,22 +83,24 @@ Future<String> generateDescTestPdf(
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
-                  ..._parseMarkdownToPdfWidgets(
-                    question.questionEn.questionTxt,
-                  ),
-                  if (question.questionHi?.questionTxt != null &&
-                      question.questionHi!.questionTxt.isNotEmpty) ...[
-                    pw.SizedBox(height: 10),
-                    ..._parseMarkdownToPdfWidgets(
-                      question.questionHi!.questionTxt,
-                    ),
-                  ],
-                  if (question.questionGj?.questionTxt != null &&
-                      question.questionGj!.questionTxt.isNotEmpty) ...[
-                    pw.SizedBox(height: 10),
-                    ..._parseMarkdownToPdfWidgets(
-                      question.questionGj!.questionTxt,
-                    ),
+                  for (int i = 0; i < langCodes.length; i++) ...[
+                    if (i > 0) pw.SizedBox(height: 10),
+                    if (langCodes[i] == 'en')
+                      ..._parseMarkdownToPdfWidgets(
+                        question.questionEn.questionTxt,
+                      ),
+                    if (langCodes[i] == 'hi' &&
+                        question.questionHi?.questionTxt != null &&
+                        question.questionHi!.questionTxt.isNotEmpty)
+                      ..._parseMarkdownToPdfWidgets(
+                        question.questionHi!.questionTxt,
+                      ),
+                    if (langCodes[i] == 'gj' &&
+                        question.questionGj?.questionTxt != null &&
+                        question.questionGj!.questionTxt.isNotEmpty)
+                      ..._parseMarkdownToPdfWidgets(
+                        question.questionGj!.questionTxt,
+                      ),
                   ],
                 ],
               ),
@@ -383,6 +386,7 @@ Future<String> generateDescTestPdf(
 Future<String> generateFullDescTestPdf(
   List<DescQuestionModel> questions,
   String testName,
+  List<String> langCodes,
 ) async {
   final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
   final baseFont = pw.Font.ttf(base);
@@ -528,20 +532,16 @@ Future<String> generateFullDescTestPdf(
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                    ..._parseMarkdownToPdfWidgets(
-                      question.questionEn.questionTxt,
-                    ),
-                    if (question.questionHi?.questionTxt != null &&
-                        question.questionHi!.questionTxt.isNotEmpty) ...[
-                      pw.SizedBox(height: 10),
-                      ..._parseMarkdownToPdfWidgets(
+                    // Add question text based on selected languages
+                    for (int k = 0; k < langCodes.length; k++) ...[
+                      if (k > 0) pw.SizedBox(height: 10),
+                      if (langCodes[k] == 'en') ..._parseMarkdownToPdfWidgets(
+                        question.questionEn.questionTxt,
+                      ),
+                      if (langCodes[k] == 'hi' && question.questionHi?.questionTxt != null && question.questionHi!.questionTxt.isNotEmpty) ..._parseMarkdownToPdfWidgets(
                         question.questionHi!.questionTxt,
                       ),
-                    ],
-                    if (question.questionGj?.questionTxt != null &&
-                        question.questionGj!.questionTxt.isNotEmpty) ...[
-                      pw.SizedBox(height: 10),
-                      ..._parseMarkdownToPdfWidgets(
+                      if (langCodes[k] == 'gj' && question.questionGj?.questionTxt != null && question.questionGj!.questionTxt.isNotEmpty) ..._parseMarkdownToPdfWidgets(
                         question.questionGj!.questionTxt,
                       ),
                     ],

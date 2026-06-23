@@ -442,6 +442,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           reviewModel: reviewModel,
                           mentorId: mentor.mentorId,
                           courseId: widget.courseModel.id,
+                          descTestModel: test,
                         ),
                       );
                       return;
@@ -465,6 +466,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     testName: test.name,
                     courseId: widget.courseModel.id,
                     isSubmitted: true,
+                    descTestModel: test,
                   ),
                 );
                 return;
@@ -476,6 +478,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   testId: test.id,
                   testName: test.name,
                   courseId: widget.courseModel.id,
+                  descTestModel: test,
                 ),
               );
 
@@ -564,6 +567,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                           reviewModel: reviewModel,
                           mentorId: m.mentorId,
                           courseId: widget.courseModel.id,
+                          descTestModel: test,
                         ),
                       );
                     },

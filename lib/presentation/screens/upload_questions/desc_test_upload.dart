@@ -226,7 +226,12 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
         Failure(rpcError ?? 'Upload failed (DESC): No response received.'),
       );
     }
-
+    if (response['success'] == false) {
+      _log.e('❌ RPC failed: ${response['error']}');
+      return Left(
+        Failure(response['error']?.toString() ?? 'RPC returned failure.'),
+      );
+    }
     return Right(
       UploadResult(
         successCount: response['inserted_questions'] ?? 0,

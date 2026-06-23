@@ -127,10 +127,24 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                 final question = questions[currentIndex];
                 final answer = _answers[question.id];
                 final selectedFile = answer?.files;
-                final List<String> allowedLangs =
-                    (widget.descTestModel.allowedLanguages?.isNotEmpty == true)
-                    ? widget.descTestModel.allowedLanguages!
-                    : ['en', 'hi', 'gj'];
+                final List<String> present = [];
+                if (question.questionEn.questionTxt.trim().isNotEmpty) {
+                  present.add('en');
+                }
+                if (question.questionHi != null &&
+                    question.questionHi!.questionTxt.trim().isNotEmpty) {
+                  present.add('hi');
+                }
+                if (question.questionGj != null &&
+                    question.questionGj!.questionTxt.trim().isNotEmpty) {
+                  present.add('gj');
+                }
+
+                final modelAllowed =
+                    widget.descTestModel.allowedLanguages ?? [];
+                final List<String> allowedLangs = modelAllowed.isNotEmpty
+                    ? modelAllowed.where((l) => present.contains(l)).toList()
+                    : present;
                 return SingleChildScrollView(
                   controller: _scrollController,
                   child: Column(
@@ -192,6 +206,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                         question: question,
                                         index: (currentIndex + 1),
                                         testName: widget.descTestModel.name,
+                                        langCodes: allowedLangs,
                                       ),
                                     );
                                   },

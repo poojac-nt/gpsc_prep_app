@@ -9,6 +9,7 @@ import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
@@ -21,6 +22,7 @@ class DescFullQuestionsScreen extends StatefulWidget {
   final String testName;
   final int? courseId;
   final bool isSubmitted;
+  final DescTestModel? descTestModel;
 
   const DescFullQuestionsScreen({
     super.key,
@@ -28,6 +30,7 @@ class DescFullQuestionsScreen extends StatefulWidget {
     required this.testName,
     this.courseId,
     this.isSubmitted = false,
+    this.descTestModel,
   });
 
   @override
@@ -39,6 +42,22 @@ enum _Lang { en, hi, gj }
 
 class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   _Lang _lang = _Lang.en;
+  // Helper to map language code string to enum
+  _Lang _langFromCode(String code) {
+    switch (code) {
+      case 'en':
+        return _Lang.en;
+      case 'hi':
+        return _Lang.hi;
+      case 'gj':
+        return _Lang.gj;
+      default:
+        return _Lang.en;
+    }
+  }
+
+  String _currentLangCode = '';
+  List<String> _availableLangs = [];
   File? _selectedFile;
   final Set<int> _downloadingIndices = {};
   bool _isDownloadingFull = false;
@@ -46,6 +65,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   @override
   void initState() {
     super.initState();
+    // Initial language will be set after model is fetched
     context.read<QuestionBloc>().add(LoadDescQuestion(widget.testId, 'en'));
     context.read<DailyDescTestBloc>().add(
       FetchAllTests(courseId: widget.courseId),
@@ -74,28 +94,55 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
               ? qState.questionsModels
               : <DescQuestionModel>[];
 
-          final availableLanguages = <_Lang>[_Lang.en];
+          // Determine language options based on question data
           if (questions.isNotEmpty) {
+            final List<String> present = [];
             final q = questions.first;
-            if (q.questionHi != null && q.questionHi!.questionTxt.isNotEmpty) {
-              availableLanguages.add(_Lang.hi);
+            if (q.questionEn.questionTxt.trim().isNotEmpty) {
+              present.add('en');
             }
-            if (q.questionGj != null && q.questionGj!.questionTxt.isNotEmpty) {
-              availableLanguages.add(_Lang.gj);
+            if (q.questionHi != null &&
+                q.questionHi!.questionTxt.trim().isNotEmpty) {
+              present.add('hi');
             }
+            if (q.questionGj != null &&
+                q.questionGj!.questionTxt.trim().isNotEmpty) {
+              present.add('gj');
+            }
+
+            final modelAllowed = widget.descTestModel?.allowedLanguages ?? [];
+
+            // Prioritize model's allowed languages, but filter by what is actually present in question data.
+            // If model doesn't specify allowed languages, fallback to all present languages.
+            _availableLangs = modelAllowed.isNotEmpty
+                ? modelAllowed.where((l) => present.contains(l)).toList()
+                : present;
+
+            if (_availableLangs.isNotEmpty &&
+                !_availableLangs.contains(_currentLangCode)) {
+              _currentLangCode = _availableLangs.first;
+              _lang = _langFromCode(_currentLangCode);
+            }
+          } else {
+            _availableLangs = [];
           }
 
           return Scaffold(
             appBar: AppBar(
               title: Text(widget.testName, style: AppTexts.titleTextStyle),
               actions: [
-                if (availableLanguages.length > 1)
+                // Language toggle button based on available languages
+                if (_availableLangs.length > 1)
                   IconButton(
                     onPressed: () {
-                      final currentIndex = availableLanguages.indexOf(_lang);
-                      final nextIndex =
-                          (currentIndex + 1) % availableLanguages.length;
-                      setState(() => _lang = availableLanguages[nextIndex]);
+                      final currentIdx = _availableLangs.indexOf(
+                        _currentLangCode,
+                      );
+                      final nextIdx = (currentIdx + 1) % _availableLangs.length;
+                      setState(() {
+                        _currentLangCode = _availableLangs[nextIdx];
+                        _lang = _langFromCode(_currentLangCode);
+                      });
                     },
                     icon: Text(
                       _getLanguageChar(_lang),
@@ -450,7 +497,12 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   Future<void> _downloadPdf(DescQuestionModel question, int index) async {
     setState(() => _downloadingIndices.add(index));
     try {
-      await generateDescTestPdf(question, index, widget.testName);
+      await generateDescTestPdf(
+        question,
+        index,
+        widget.testName,
+        _availableLangs,
+      );
       if (mounted) {
         getIt<SnackBarHelper>().showSuccess('PDF downloaded successfully');
       }
@@ -468,7 +520,11 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   Future<void> _downloadFullPdf(List<DescQuestionModel> questions) async {
     setState(() => _isDownloadingFull = true);
     try {
-      await generateFullDescTestPdf(questions, widget.testName);
+      await generateFullDescTestPdf(
+        questions,
+        widget.testName,
+        _availableLangs,
+      );
       if (mounted) {
         getIt<SnackBarHelper>().showSuccess(
           'Full Test PDF downloaded successfully',
