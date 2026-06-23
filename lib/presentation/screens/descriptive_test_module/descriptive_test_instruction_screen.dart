@@ -120,10 +120,31 @@ class _DescriptiveTestInstructionScreenState
     return ListView.separated(
       padding: EdgeInsets.symmetric(vertical: 20),
       itemBuilder: (context, index) {
-        final q = state.questionsModels[index].questionEn;
+        final questionModel = state.questionsModels[index];
+        final List<String> allowedLangs = model.allowedLanguages ?? [];
+        final List<String> availableLangs = [];
+        if (questionModel.questionEn.questionTxt.isNotEmpty) availableLangs.add('en');
+        if (questionModel.questionHi?.questionTxt.isNotEmpty == true) availableLangs.add('hi');
+        if (questionModel.questionGj?.questionTxt.isNotEmpty == true) availableLangs.add('gj');
+        final List<String> intersect = allowedLangs.where((lang) => availableLangs.contains(lang)).toList();
+        final String selectedLang = intersect.isNotEmpty ? intersect.first : (availableLangs.isNotEmpty ? availableLangs.first : 'en');
+        String? questionText;
+        switch (selectedLang) {
+          case 'en':
+            questionText = questionModel.questionEn.questionTxt;
+            break;
+          case 'hi':
+            questionText = questionModel.questionHi?.questionTxt;
+            break;
+          case 'gj':
+            questionText = questionModel.questionGj?.questionTxt;
+            break;
+        }
+        questionText ??= '';
+
         return QuestionTile(
           index: index,
-          questionText: q.questionTxt,
+          questionText: questionText,
           onTap: () {
             if (isFromId && hasAnswer) {
               getIt<SnackBarHelper>().showSuccess(

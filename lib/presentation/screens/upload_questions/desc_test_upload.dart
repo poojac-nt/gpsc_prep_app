@@ -52,19 +52,18 @@ parseDescUploadFile() async {
     else if (ext == 'xlsx') {
       final bytes = await File(filePath).readAsBytes();
       final excel = Excel.decodeBytes(bytes);
-      final sheet =
-          excel.tables.values.isNotEmpty ? excel.tables.values.first : null;
+      final sheet = excel.tables.values.isNotEmpty
+          ? excel.tables.values.first
+          : null;
       if (sheet == null || sheet.rows.isEmpty) {
         _log.e("❌ Excel file has no data.");
         return Left(Failure('Excel file has no data.'));
       }
-      rows =
-          sheet.rows
-              .map(
-                (row) =>
-                    row.map((cell) => cell?.value?.toString() ?? '').toList(),
-              )
-              .toList();
+      rows = sheet.rows
+          .map(
+            (row) => row.map((cell) => cell?.value?.toString() ?? '').toList(),
+          )
+          .toList();
     } else {
       _log.e("❌ Unsupported file format: $ext");
       return Left(Failure('Unsupported file format'));
@@ -76,8 +75,9 @@ parseDescUploadFile() async {
     }
 
     // --- Headers ---
-    final headers =
-        rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
+    final headers = rows.first
+        .map((h) => h.toString().trim().toLowerCase())
+        .toList();
     final dataRows = rows.skip(1).toList();
 
     if (dataRows.isEmpty) {
@@ -202,12 +202,6 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
   List<String>? allowedLanguages,
 }) async {
   try {
-    if (allowedLanguages != null && allowedLanguages.isNotEmpty) {
-      for (var item in payload) {
-        item['allowed_languages'] = allowedLanguages;
-      }
-    }
-
     String? rpcError;
     final rpcResult = await callRpc(
       call: () => _supabase.rpc(
@@ -219,6 +213,7 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
           'p_single_price_id': priceSingle,
           'p_double_price_id': priceDual,
           'p_course_type': testType?.name,
+          'p_allowed_languages': allowedLanguages,
         },
       ),
       onError: (msg) => rpcError = msg,
@@ -227,7 +222,9 @@ Future<Either<Failure, UploadResult>> submitDescTestToSupabase({
     final response = rpcResult as Map<String, dynamic>?;
 
     if (response == null) {
-      return Left(Failure(rpcError ?? 'Upload failed (DESC): No response received.'));
+      return Left(
+        Failure(rpcError ?? 'Upload failed (DESC): No response received.'),
+      );
     }
 
     return Right(
