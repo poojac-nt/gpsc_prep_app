@@ -20,12 +20,64 @@ class DescriptiveAnswersScreen extends StatefulWidget {
 }
 
 class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
+  late String _selectedLanguage;
+
+  /// The languages allowed for this test, normalised to lowercase.
+  List<String> get _allowedLanguages =>
+      widget.args.languages.map((e) => e.toLowerCase()).toList();
+
   @override
   void initState() {
     super.initState();
+    // Default to the first allowed language (or 'en' if the list is empty).
+    _selectedLanguage =
+        _allowedLanguages.isNotEmpty ? _allowedLanguages.first : 'en';
+    _loadQuestions(_selectedLanguage);
+  }
+
+  void _loadQuestions(String language) {
     context.read<QuestionBloc>().add(
-      LoadDescQuestion(widget.args.descTestModel.id, widget.args.language),
+      LoadDescQuestion(widget.args.descTestModel.id, language),
     );
+  }
+
+  /// Cycles to the next allowed language and reloads questions.
+  void _switchLanguage() {
+    final langs = _allowedLanguages;
+    if (langs.length <= 1) return;
+    final nextIndex =
+        (langs.indexOf(_selectedLanguage) + 1) % langs.length;
+    setState(() => _selectedLanguage = langs[nextIndex]);
+    _loadQuestions(_selectedLanguage);
+  }
+
+  /// Returns the display character for the AppBar language button.
+  String _langChar(String lang) {
+    switch (lang) {
+      case 'hi':
+        return 'अ';
+      case 'gj':
+        return 'અ';
+      case 'en':
+      default:
+        return 'A';
+    }
+  }
+
+  /// Resolves the question text for the currently selected language,
+  /// falling back to English if the translation is missing.
+  String _resolveQuestionText(dynamic question) {
+    switch (_selectedLanguage) {
+      case 'hi':
+        return question.questionHi?.questionTxt ??
+            question.questionEn.questionTxt;
+      case 'gj':
+        return question.questionGj?.questionTxt ??
+            question.questionEn.questionTxt;
+      case 'en':
+      default:
+        return question.questionEn.questionTxt;
+    }
   }
 
   @override
@@ -38,6 +90,39 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
           style: AppTexts.titleTextStyle,
         ),
         centerTitle: true,
+        actions: [
+          // Show the toggle button only when multiple languages are available.
+          if (_allowedLanguages.length > 1)
+            Padding(
+              padding: EdgeInsets.only(right: 8.w),
+              child: TextButton(
+                onPressed: _switchLanguage,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _langChar(_selectedLanguage),
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Icon(
+                      Icons.swap_horiz_rounded,
+                      size: 16.sp,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
       body: BlocBuilder<QuestionBloc, QuestionState>(
         builder: (context, state) {
@@ -51,30 +136,17 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
               separatorBuilder: (context, index) => 12.hGap,
               itemBuilder: (context, index) {
                 final question = questions[index];
-                String resolveQuestionText() {
-                  final language = widget.args.language;
-                  switch (language) {
-                    case 'hi':
-                      return question.questionHi?.questionTxt ??
-                          question.questionEn.questionTxt;
-                    case 'gj':
-                      return question.questionGj?.questionTxt ??
-                          question.questionEn.questionTxt;
-                    case 'en':
-                    default:
-                      return question.questionEn.questionTxt;
-                  }
-                }
-
                 return QuestionTile(
                   index: index,
-                  questionText: resolveQuestionText(),
+                  questionText: _resolveQuestionText(question),
                   onTap: () {
                     context.push(
                       AppRoutes.descAnswerDetail,
                       extra: DescriptiveAnswerDetailScreenArgs(
                         question: question,
                         index: index,
+                        // Pass only the allowed languages so the detail screen
+                        // also restricts its toggle to the same set.
                         language:
                             widget.args.descTestModel.allowedLanguages ?? [],
                         testId: widget.args.descTestModel.id,

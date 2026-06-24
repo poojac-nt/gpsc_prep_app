@@ -137,9 +137,9 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                           descTestModel: test,
                           isUnlocked: isAnswerUnlocked(test.createdAt),
                           showPeerReview: true,
-                          language: (test.allowedLanguages?.isNotEmpty == true
-                              ? test.allowedLanguages!.first
-                              : 'en'),
+                          languages: test.allowedLanguages?.isNotEmpty == true
+                              ? test.allowedLanguages!
+                              : ['en'],
                         ),
                       );
                     },

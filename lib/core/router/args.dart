@@ -236,13 +236,13 @@ class DescriptiveAnswersScreenArgs {
   final DescTestModel descTestModel;
   final bool isUnlocked;
   final bool showPeerReview;
-  final String language;
+  final List<String> languages;
 
   DescriptiveAnswersScreenArgs({
     required this.descTestModel,
     this.isUnlocked = false,
     required this.showPeerReview,
-    this.language = "en",
+    this.languages = const ['en'],
   });
 }
 

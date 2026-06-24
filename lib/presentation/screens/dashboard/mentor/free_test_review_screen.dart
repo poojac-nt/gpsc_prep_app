@@ -280,13 +280,11 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                                         descTestModel: test,
                                         isUnlocked: true,
                                         showPeerReview: true,
-                                        language:
-                                            (test
-                                                    .allowedLanguages
-                                                    ?.isNotEmpty ==
-                                                true
-                                            ? test.allowedLanguages!.first
-                                            : 'en'),
+                                        languages:
+                                            test.allowedLanguages?.isNotEmpty ==
+                                                    true
+                                                ? test.allowedLanguages!
+                                                : ['en'],
                                       ),
                                     );
                                   },
