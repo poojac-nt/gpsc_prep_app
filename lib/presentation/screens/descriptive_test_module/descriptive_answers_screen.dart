@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
+import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class DescriptiveAnswersScreen extends StatefulWidget {
@@ -22,10 +22,10 @@ class DescriptiveAnswersScreen extends StatefulWidget {
 class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
   @override
   void initState() {
-    context.read<QuestionBloc>().add(
-      LoadDescQuestion(widget.args.descTestModel.id, "en"),
-    );
     super.initState();
+    context.read<QuestionBloc>().add(
+      LoadDescQuestion(widget.args.descTestModel.id, widget.args.language),
+    );
   }
 
   @override
@@ -51,15 +51,32 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
               separatorBuilder: (context, index) => 12.hGap,
               itemBuilder: (context, index) {
                 final question = questions[index];
+                String resolveQuestionText() {
+                  final language = widget.args.language;
+                  switch (language) {
+                    case 'hi':
+                      return question.questionHi?.questionTxt ??
+                          question.questionEn.questionTxt;
+                    case 'gj':
+                      return question.questionGj?.questionTxt ??
+                          question.questionEn.questionTxt;
+                    case 'en':
+                    default:
+                      return question.questionEn.questionTxt;
+                  }
+                }
+
                 return QuestionTile(
                   index: index,
-                  questionText: question.questionEn.questionTxt,
+                  questionText: resolveQuestionText(),
                   onTap: () {
                     context.push(
                       AppRoutes.descAnswerDetail,
                       extra: DescriptiveAnswerDetailScreenArgs(
                         question: question,
                         index: index,
+                        language:
+                            widget.args.descTestModel.allowedLanguages ?? [],
                         testId: widget.args.descTestModel.id,
                         isUnlocked: widget.args.isUnlocked,
                         showPeerReview: widget.args.showPeerReview,
@@ -87,14 +104,13 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
         padding: EdgeInsets.all(AppPaddings.defaultPadding),
         itemCount: 5,
         separatorBuilder: (context, index) => 12.hGap,
-        itemBuilder:
-            (context, index) => Container(
-              height: 80.h,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: AppBorders.borderRadius,
-              ),
-            ),
+        itemBuilder: (context, index) => Container(
+          height: 80.h,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: AppBorders.borderRadius,
+          ),
+        ),
       ),
     );
   }

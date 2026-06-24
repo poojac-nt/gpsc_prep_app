@@ -105,10 +105,9 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                           vertical: 12.h,
                         ),
                       ),
-                      onPressed:
-                          () => context.read<FreeTestReviewBloc>().add(
-                            FetchFreeTestReviews(),
-                          ),
+                      onPressed: () => context.read<FreeTestReviewBloc>().add(
+                        FetchFreeTestReviews(),
+                      ),
                       child: const Text(
                         'Try Again',
                         style: TextStyle(
@@ -281,6 +280,13 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
                                         descTestModel: test,
                                         isUnlocked: true,
                                         showPeerReview: true,
+                                        language:
+                                            (test
+                                                    .allowedLanguages
+                                                    ?.isNotEmpty ==
+                                                true
+                                            ? test.allowedLanguages!.first
+                                            : 'en'),
                                       ),
                                     );
                                   },
@@ -346,23 +352,18 @@ class _FreeTestReviewScreenState extends State<FreeTestReviewScreen> {
         decoration: BoxDecoration(
           color: isPrimary ? AppColors.primary : Colors.white,
           borderRadius: BorderRadius.circular(14.r),
-          border:
-              isPrimary
-                  ? null
-                  : Border.all(
-                    color: AppColors.primary.withAlpha(100),
-                    width: 1.5,
+          border: isPrimary
+              ? null
+              : Border.all(color: AppColors.primary.withAlpha(100), width: 1.5),
+          boxShadow: isPrimary
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(60),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-          boxShadow:
-              isPrimary
-                  ? [
-                    BoxShadow(
-                      color: AppColors.primary.withAlpha(60),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                  : null,
+                ]
+              : null,
         ),
         child: Center(
           child: Text(

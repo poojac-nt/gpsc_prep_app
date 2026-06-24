@@ -123,11 +123,21 @@ class _DescriptiveTestInstructionScreenState
         final questionModel = state.questionsModels[index];
         final List<String> allowedLangs = model.allowedLanguages ?? [];
         final List<String> availableLangs = [];
-        if (questionModel.questionEn.questionTxt.isNotEmpty) availableLangs.add('en');
-        if (questionModel.questionHi?.questionTxt.isNotEmpty == true) availableLangs.add('hi');
-        if (questionModel.questionGj?.questionTxt.isNotEmpty == true) availableLangs.add('gj');
-        final List<String> intersect = allowedLangs.where((lang) => availableLangs.contains(lang)).toList();
-        final String selectedLang = intersect.isNotEmpty ? intersect.first : (availableLangs.isNotEmpty ? availableLangs.first : 'en');
+        if (questionModel.questionEn.questionTxt.isNotEmpty) {
+          availableLangs.add('en');
+        }
+        if (questionModel.questionHi?.questionTxt.isNotEmpty == true) {
+          availableLangs.add('hi');
+        }
+        if (questionModel.questionGj?.questionTxt.isNotEmpty == true) {
+          availableLangs.add('gj');
+        }
+        final List<String> intersect = allowedLangs
+            .where((lang) => availableLangs.contains(lang))
+            .toList();
+        final String selectedLang = intersect.isNotEmpty
+            ? intersect.first
+            : (availableLangs.isNotEmpty ? availableLangs.first : 'en');
         String? questionText;
         switch (selectedLang) {
           case 'en':

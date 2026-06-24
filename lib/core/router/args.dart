@@ -206,6 +206,7 @@ class AssessmentTypeSelectionScreenArgs {
 
 class EditMentorScreenArgs {
   final MentorModel mentor;
+
   EditMentorScreenArgs({required this.mentor});
 }
 
@@ -233,11 +234,13 @@ class DescriptiveAnswersScreenArgs {
   final DescTestModel descTestModel;
   final bool isUnlocked;
   final bool showPeerReview;
+  final String language;
 
   DescriptiveAnswersScreenArgs({
     required this.descTestModel,
     this.isUnlocked = false,
     required this.showPeerReview,
+    this.language = "en",
   });
 }
 
@@ -247,11 +250,13 @@ class DescriptiveAnswerDetailScreenArgs {
   final int testId;
   final bool isUnlocked;
   final bool showPeerReview;
+  final List<String> language;
 
   DescriptiveAnswerDetailScreenArgs({
     required this.question,
     required this.index,
     required this.testId,
+    required this.language,
     this.isUnlocked = false,
     this.showPeerReview = false,
   });
