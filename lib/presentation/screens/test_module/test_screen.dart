@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/config/environment.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
-import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/data/repositories/prelims_progress_repository.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
@@ -61,9 +60,14 @@ class _TestScreenState extends State<TestScreen> {
   late QuestionLanguageData question;
   bool _initialized = false;
   ScrollController scrollController = ScrollController();
+  late List<String> _availableLanguages;
 
   @override
   void initState() {
+    _availableLanguages = (widget.dailyTestModel.allowedLanguages ?? [])
+        .map((e) => e.toLowerCase())
+        .toList();
+
     final bloc = context.read<TimerBloc>();
     if (widget.isFromResult) {
       bloc.add(TimerStop());
@@ -138,21 +142,12 @@ class _TestScreenState extends State<TestScreen> {
                 BlocBuilder<QuestionCubit, QuestionCubitState>(
                   builder: (context, questionState) {
                     if (questionState is! McqQuestionCubitLoaded) {
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     }
 
-                    // Determine available languages from TestModel.allowedLanguages
-                    final List<String> allowed =
-                        widget.dailyTestModel.allowedLanguages ?? [];
-                    // Ensure English is always included and cannot be removed
-                    final Set<String> languageSet = {};
-                    languageSet.addAll(allowed);
-                    final List<String> availableLanguages = languageSet
-                        .toList();
-
                     // Only show if more than one language is available
-                    if (availableLanguages.length <= 1) {
-                      return SizedBox.shrink();
+                    if (_availableLanguages.length <= 1) {
+                      return const SizedBox.shrink();
                     }
 
                     // Get current language character
@@ -171,12 +166,12 @@ class _TestScreenState extends State<TestScreen> {
 
                     // Get next language in the cycle
                     void switchToNextLanguage() {
-                      final currentIndex = availableLanguages.indexOf(
+                      final currentIndex = _availableLanguages.indexOf(
                         questionState.currentLanguage,
                       );
                       final nextIndex =
-                          (currentIndex + 1) % availableLanguages.length;
-                      final nextLanguage = availableLanguages[nextIndex];
+                          (currentIndex + 1) % _availableLanguages.length;
+                      final nextLanguage = _availableLanguages[nextIndex];
                       context.read<QuestionCubit>().switchLanguage(
                         nextLanguage,
                       );
@@ -192,7 +187,7 @@ class _TestScreenState extends State<TestScreen> {
                         ),
                       ),
                       tooltip:
-                          'Switch Language (${availableLanguages.map((l) {
+                          'Switch Language (${_availableLanguages.map((l) {
                             switch (l) {
                               case 'en':
                                 return 'English';
@@ -257,21 +252,14 @@ class _TestScreenState extends State<TestScreen> {
                                     style: TextStyle(
                                       fontFeatures: const [
                                         FontFeature.tabularFigures(),
-                                        // FIXED WIDTH DIGITS
                                       ],
                                     ),
                                   );
                                 }
                                 if (state is TimerStopped) {
-                                  getIt<LogHelper>().w(
-                                    state.totalMins.toString(),
-                                  );
-                                  getIt<LogHelper>().w(
-                                    state.totalSecs.toString(),
-                                  );
-                                  return SizedBox.shrink();
+                                  return const SizedBox.shrink();
                                 }
-                                return Text('00:00');
+                                return const Text('00:00');
                               },
                             ),
                           ],
@@ -403,7 +391,7 @@ class _TestScreenState extends State<TestScreen> {
                   return BlocBuilder<QuestionCubit, QuestionCubitState>(
                     builder: (context, state) {
                       if (state is! McqQuestionCubitLoaded) {
-                        return SizedBox.shrink();
+                        return const SizedBox.shrink();
                       }
                       final currentIndex = state.currentIndex;
                       final question = state.questions[currentIndex];
@@ -431,7 +419,7 @@ class _TestScreenState extends State<TestScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     state.isReview
-                                        ? SizedBox.shrink()
+                                        ? const SizedBox.shrink()
                                         : Expanded(
                                             child: Padding(
                                               padding: EdgeInsets.only(
@@ -447,7 +435,7 @@ class _TestScreenState extends State<TestScreen> {
                                                       mainContent:
                                                           "Do you really want to leave the test in between?",
                                                       content:
-                                                          "Your answers so far won’t be saved, you won’t be able to resume this test later.",
+                                                          "Your answers so far won't be saved, you won't be able to resume this test later.",
                                                       actions: [
                                                         TextButton(
                                                           child: Text(
@@ -460,7 +448,7 @@ class _TestScreenState extends State<TestScreen> {
                                                           onPressed: () {
                                                             Navigator.of(
                                                               context,
-                                                            ).pop(); // Close dialog
+                                                            ).pop();
                                                           },
                                                         ),
                                                         ElevatedButton(
@@ -513,10 +501,8 @@ class _TestScreenState extends State<TestScreen> {
                                                                 .mounted) {
                                                               return;
                                                             }
-                                                            context
-                                                                .pop(); // Close dialog
-                                                            context
-                                                                .pop(); // Close TestScreen and go back to Instructions/List
+                                                            context.pop();
+                                                            context.pop();
                                                           },
                                                         ),
                                                       ],
@@ -557,11 +543,10 @@ class _TestScreenState extends State<TestScreen> {
                                 ListView.builder(
                                   itemCount: state.options.length,
                                   shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
+                                  physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     final option = state.options[index];
 
-                                    // Convert stored identifier to actual option text
                                     String? selectedOptionText;
                                     if (selectedAnswer != null) {
                                       switch (selectedAnswer.toUpperCase()) {
@@ -588,7 +573,6 @@ class _TestScreenState extends State<TestScreen> {
                                     final correctAnswer =
                                         question.correctAnswer;
 
-                                    // Redesigned Review Mode Option Card
                                     if (state.isReview) {
                                       final isCorrect = option == correctAnswer;
                                       final isWrongSelection =
@@ -644,7 +628,7 @@ class _TestScreenState extends State<TestScreen> {
                                                   alpha: 0.1,
                                                 ),
                                                 blurRadius: 4,
-                                                offset: Offset(0, 2),
+                                                offset: const Offset(0, 2),
                                               ),
                                           ],
                                         ),
@@ -672,7 +656,6 @@ class _TestScreenState extends State<TestScreen> {
                                       );
                                     }
 
-                                    // Standard mode (RadioGroup remains for selection)
                                     return RadioGroup<String>(
                                       groupValue: selectedOptionText,
                                       onChanged: (value) {
@@ -722,7 +705,7 @@ class _TestScreenState extends State<TestScreen> {
                                                 .prevQuestion();
                                             scrollController.animateTo(
                                               0.0,
-                                              duration: Duration(
+                                              duration: const Duration(
                                                 milliseconds: 500,
                                               ),
                                               curve: Curves.easeOut,
@@ -758,7 +741,7 @@ class _TestScreenState extends State<TestScreen> {
                                                   .nextQuestion();
                                               scrollController.animateTo(
                                                 0.0,
-                                                duration: Duration(
+                                                duration: const Duration(
                                                   milliseconds: 500,
                                                 ),
                                                 curve: Curves.easeOut,
@@ -856,7 +839,7 @@ class _TestScreenState extends State<TestScreen> {
                                                         "Time: ",
                                                         "${state.timePerQuestion[state.currentIndex]}s",
                                                       )
-                                                    : SizedBox.shrink(),
+                                                    : const SizedBox.shrink(),
                                               ],
                                             ),
                                           ],
@@ -871,7 +854,7 @@ class _TestScreenState extends State<TestScreen> {
                                       ],
                                     ),
                                   )
-                                : SizedBox.shrink(),
+                                : const SizedBox.shrink(),
                             20.hGap,
                             if (state.isReview) ...[
                               BlocBuilder<PieChartBloc, PieChartState>(
@@ -908,7 +891,6 @@ class _TestScreenState extends State<TestScreen> {
                                         ),
                                       );
                                     }
-                                    // ✅ Otherwise → show pie chart
                                     return Column(
                                       children: [
                                         _buildPieCharts(
@@ -923,7 +905,7 @@ class _TestScreenState extends State<TestScreen> {
                                           builder: (context, barState) {
                                             if (barState
                                                 is OptionMatrixLoading) {
-                                              return const SizedBox.shrink(); // or skeleton
+                                              return const SizedBox.shrink();
                                             }
 
                                             if (barState
@@ -1003,7 +985,9 @@ class _TestScreenState extends State<TestScreen> {
                                       onTap: () {
                                         scrollController.animateTo(
                                           0.0,
-                                          duration: Duration(milliseconds: 500),
+                                          duration: const Duration(
+                                            milliseconds: 500,
+                                          ),
                                           curve: Curves.easeOut,
                                         );
                                         context
@@ -1031,7 +1015,7 @@ class _TestScreenState extends State<TestScreen> {
                                         borderColor: Colors.red,
                                         fillColor: Colors.red,
                                       )
-                                    : SizedBox.shrink(),
+                                    : const SizedBox.shrink(),
                                 QuestionIndicator(
                                   text: "Not Attempted",
                                   fillColor: Colors.white,
@@ -1044,7 +1028,7 @@ class _TestScreenState extends State<TestScreen> {
                     },
                   );
                 }
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               },
             ),
           ),
@@ -1081,21 +1065,17 @@ class _TestScreenState extends State<TestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Fake progress bar
             CustomProgressBar(
               titleText: "Question 1 of 10",
               value: 0.1,
               labelText: "0 Answered",
             ),
             20.hGap,
-            // Question Title
             TestModule(
               title: "Question 1",
               cards: [
-                // Fake question
-                Text("This is a sample question text."),
+                const Text("This is a sample question text."),
                 10.hGap,
-                // Fake options
                 RadioGroup<String>(
                   groupValue: "",
                   onChanged: (value) {},
@@ -1140,7 +1120,7 @@ class _TestScreenState extends State<TestScreen> {
             TextButton(
               child: Text("Cancel", style: TextStyle(color: Colors.grey[700])),
               onPressed: () {
-                Navigator.of(context).pop(); // close dialog
+                Navigator.of(context).pop();
               },
             ),
             ElevatedButton(
@@ -1155,7 +1135,7 @@ class _TestScreenState extends State<TestScreen> {
                 style: AppTexts.title.copyWith(color: Colors.white),
               ),
               onPressed: () {
-                context.pop(); // close dialog
+                context.pop();
                 context.read<TimerBloc>().add(TimerStop());
               },
             ),
@@ -1190,7 +1170,7 @@ class _TestScreenState extends State<TestScreen> {
                 style: AppTexts.title.copyWith(color: Colors.white),
               ),
               onPressed: () {
-                context.pop(); // close dialog
+                context.pop();
                 context.pushReplacement(
                   AppRoutes.resultScreen,
                   extra: ResultScreenArgs(
@@ -1250,12 +1230,10 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  // Helper method to identify Prelims test
   bool _isPrelimsTest() {
     return widget.dailyTestModel.testType == TestType.prelims;
   }
 
-  // Handle test pause
   Future<void> _handlePause(BuildContext context) async {
     final timerBloc = context.read<TimerBloc>();
     final questionCubit = context.read<QuestionCubit>();
