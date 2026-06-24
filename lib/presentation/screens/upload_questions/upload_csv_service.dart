@@ -265,7 +265,12 @@ Future<Either<Failure, UploadResult>> submitParsedDataToSupabase({
     if (response == null) {
       return Left(Failure(rpcError ?? 'Upload failed: No response.'));
     }
-
+    if (response['success'] == false) {
+      _log.e('❌ RPC failed: ${response['error']}');
+      return Left(
+        Failure(response['error']?.toString() ?? 'RPC returned failure.'),
+      );
+    }
     return Right(
       UploadResult(
         successCount: response['inserted_questions'] ?? 0,
