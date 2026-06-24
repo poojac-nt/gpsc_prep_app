@@ -9,6 +9,7 @@ class ExportQuestionsToPdfEvent extends DownLoadPdfEvent {
   final TestResultWithTopScoreModel? performanceSummary;
   final TestType? testType;
   final List<DetailedTestResult>? detailedResults;
+  final String language;
 
   ExportQuestionsToPdfEvent(
     this.questions,
@@ -16,6 +17,7 @@ class ExportQuestionsToPdfEvent extends DownLoadPdfEvent {
     this.performanceSummary,
     this.testType,
     this.detailedResults,
+    this.language = 'en',
   });
 }
 

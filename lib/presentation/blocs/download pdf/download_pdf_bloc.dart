@@ -53,6 +53,7 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
         performanceSummary: event.performanceSummary,
         testType: event.testType,
         detailedResults: event.detailedResults,
+        language: event.language,
       );
       if (result.isEmpty) {
         _log.e("Failed to generate PDF");
