@@ -137,71 +137,74 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ),
             actions: [
-              // Language selector (only show during active test, not in review mode)
-              if (!widget.isFromResult)
-                BlocBuilder<QuestionCubit, QuestionCubitState>(
-                  builder: (context, questionState) {
-                    if (questionState is! McqQuestionCubitLoaded) {
-                      return const SizedBox.shrink();
-                    }
+              // Language selector — shown in both active test AND review mode.
+              // switchLanguage() operates client-side on the already-loaded
+              // questionModel, so no backend call is needed in review mode.
+              // _availableLanguages is restricted to allowedLanguages from the
+              // test model, so only permitted languages are ever shown.
+              BlocBuilder<QuestionCubit, QuestionCubitState>(
+                builder: (context, questionState) {
+                  if (questionState is! McqQuestionCubitLoaded) {
+                    return const SizedBox.shrink();
+                  }
 
-                    // Only show if more than one language is available
-                    if (_availableLanguages.length <= 1) {
-                      return const SizedBox.shrink();
-                    }
+                  // Only show if more than one language is available
+                  if (_availableLanguages.length <= 1) {
+                    return const SizedBox.shrink();
+                  }
 
-                    // Get current language character
-                    String getLanguageChar(String lang) {
-                      switch (lang) {
-                        case 'en':
-                          return 'A';
-                        case 'hi':
-                          return 'अ';
-                        case 'gj':
-                          return 'અ';
-                        default:
-                          return 'A';
-                      }
+                  // Get current language character
+                  String getLanguageChar(String lang) {
+                    switch (lang) {
+                      case 'en':
+                        return 'A';
+                      case 'hi':
+                        return 'अ';
+                      case 'gj':
+                        return 'અ';
+                      default:
+                        return 'A';
                     }
+                  }
 
-                    // Get next language in the cycle
-                    void switchToNextLanguage() {
-                      final currentIndex = _availableLanguages.indexOf(
-                        questionState.currentLanguage,
-                      );
-                      final nextIndex =
-                          (currentIndex + 1) % _availableLanguages.length;
-                      final nextLanguage = _availableLanguages[nextIndex];
-                      context.read<QuestionCubit>().switchLanguage(
-                        nextLanguage,
-                      );
-                    }
-
-                    return IconButton(
-                      onPressed: switchToNextLanguage,
-                      icon: Text(
-                        getLanguageChar(questionState.currentLanguage),
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      tooltip:
-                          'Switch Language (${_availableLanguages.map((l) {
-                            switch (l) {
-                              case 'en':
-                                return 'English';
-                              case 'hi':
-                                return 'हिंदी';
-                              case 'gj':
-                                return 'ગુજરાતી';
-                              default:
-                                return '';
-                            }
-                          }).join(', ')})',
+                  // Get next language in the cycle
+                  void switchToNextLanguage() {
+                    final currentIndex = _availableLanguages.indexOf(
+                      questionState.currentLanguage,
                     );
-                  },
-                ),
+                    final nextIndex =
+                        (currentIndex + 1) % _availableLanguages.length;
+                    final nextLanguage = _availableLanguages[nextIndex];
+                    context.read<QuestionCubit>().switchLanguage(
+                      nextLanguage,
+                    );
+                  }
+
+                  return IconButton(
+                    onPressed: switchToNextLanguage,
+                    icon: Text(
+                      getLanguageChar(questionState.currentLanguage),
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    tooltip:
+                        'Switch Language (${_availableLanguages.map((l) {
+                          switch (l) {
+                            case 'en':
+                              return 'English';
+                            case 'hi':
+                              return 'हिंदी';
+                            case 'gj':
+                              return 'ગુજરાતી';
+                            default:
+                              return '';
+                          }
+                        }).join(', ')})',
+                  );
+                },
+              ),
 
               // Show pause button ONLY for Prelims tests
               if (!widget.isFromResult && _isPrelimsTest())
@@ -324,7 +327,9 @@ class _TestScreenState extends State<TestScreen> {
                     context.read<QuestionCubit>().initialize(
                       state.questions,
                       state.questionsModels,
-                      widget.language!,
+                      widget.language ?? 'en',
+                      allowedLanguages:
+                          widget.dailyTestModel.allowedLanguages ?? [],
                     );
                   } else {
                     context.read<QuestionCubit>()
@@ -333,6 +338,8 @@ class _TestScreenState extends State<TestScreen> {
                         state.questions,
                         state.questionsModels,
                         widget.language!,
+                        allowedLanguages:
+                            widget.dailyTestModel.allowedLanguages ?? [],
                       );
 
                     // If this a Prelims test with saved progress, load it
