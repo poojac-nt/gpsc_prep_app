@@ -101,6 +101,7 @@ class DescFullQuestionsScreenArgs {
   final int? courseId;
   final bool isSubmitted;
   final DescTestModel? descTestModel;
+  final String? language;
 
   DescFullQuestionsScreenArgs({
     required this.testId,
@@ -108,6 +109,7 @@ class DescFullQuestionsScreenArgs {
     this.courseId,
     this.isSubmitted = false,
     this.descTestModel,
+    this.language,
   });
 }
 

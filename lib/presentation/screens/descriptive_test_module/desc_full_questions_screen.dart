@@ -7,9 +7,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_question_model.dart';
-import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test/daily_descriptive_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/descriptive_test_module/desc_pdf_download.dart';
@@ -18,45 +18,18 @@ import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 class DescFullQuestionsScreen extends StatefulWidget {
-  final int testId;
-  final String testName;
-  final int? courseId;
-  final bool isSubmitted;
-  final DescTestModel? descTestModel;
+  final DescFullQuestionsScreenArgs args;
 
-  const DescFullQuestionsScreen({
-    super.key,
-    required this.testId,
-    required this.testName,
-    this.courseId,
-    this.isSubmitted = false,
-    this.descTestModel,
-  });
+  const DescFullQuestionsScreen({super.key, required this.args});
 
   @override
   State<DescFullQuestionsScreen> createState() =>
       _DescFullQuestionsScreenState();
 }
 
-enum _Lang { en, hi, gj }
-
 class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
-  _Lang _lang = _Lang.en;
   // Helper to map language code string to enum
-  _Lang _langFromCode(String code) {
-    switch (code) {
-      case 'en':
-        return _Lang.en;
-      case 'hi':
-        return _Lang.hi;
-      case 'gj':
-        return _Lang.gj;
-      default:
-        return _Lang.en;
-    }
-  }
-
-  String _currentLangCode = '';
+  late String _currentLangCode = '';
   List<String> _availableLangs = [];
   File? _selectedFile;
   final Set<int> _downloadingIndices = {};
@@ -65,10 +38,14 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   @override
   void initState() {
     super.initState();
-    // Initial language will be set after model is fetched
-    context.read<QuestionBloc>().add(LoadDescQuestion(widget.testId, 'en'));
+    _currentLangCode = widget.args.descTestModel?.allowedLanguages != null
+        ? widget.args.descTestModel!.allowedLanguages!.first
+        : widget.args.language ?? 'en';
+    context.read<QuestionBloc>().add(
+      LoadDescQuestion(widget.args.testId, _currentLangCode),
+    );
     context.read<DailyDescTestBloc>().add(
-      FetchAllTests(courseId: widget.courseId),
+      FetchAllTests(courseId: widget.args.courseId),
     );
   }
 
@@ -110,7 +87,8 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
               present.add('gj');
             }
 
-            final modelAllowed = widget.descTestModel?.allowedLanguages ?? [];
+            final modelAllowed =
+                widget.args.descTestModel?.allowedLanguages ?? [];
 
             // Prioritize model's allowed languages, but filter by what is actually present in question data.
             // If model doesn't specify allowed languages, fallback to all present languages.
@@ -121,7 +99,6 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
             if (_availableLangs.isNotEmpty &&
                 !_availableLangs.contains(_currentLangCode)) {
               _currentLangCode = _availableLangs.first;
-              _lang = _langFromCode(_currentLangCode);
             }
           } else {
             _availableLangs = [];
@@ -129,7 +106,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(widget.testName, style: AppTexts.titleTextStyle),
+              title: Text(widget.args.testName, style: AppTexts.titleTextStyle),
               actions: [
                 // Language toggle button based on available languages
                 if (_availableLangs.length > 1)
@@ -141,11 +118,10 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                       final nextIdx = (currentIdx + 1) % _availableLangs.length;
                       setState(() {
                         _currentLangCode = _availableLangs[nextIdx];
-                        _lang = _langFromCode(_currentLangCode);
                       });
                     },
                     icon: Text(
-                      _getLanguageChar(_lang),
+                      _getLanguageChar(_currentLangCode),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -154,7 +130,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                     ),
                     tooltip: 'Switch Language',
                   ),
-                if (questions.isNotEmpty && widget.isSubmitted == false)
+                if (questions.isNotEmpty && widget.args.isSubmitted == false)
                   IconButton(
                     onPressed: _isDownloadingFull
                         ? null
@@ -178,21 +154,23 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
               ],
             ),
             body: _buildBody(qState, questions),
-            bottomNavigationBar: widget.isSubmitted ? null : _buildBottomBar(),
+            bottomNavigationBar: widget.args.isSubmitted
+                ? null
+                : _buildBottomBar(),
           );
         },
       ),
     );
   }
 
-  String _getLanguageChar(_Lang lang) {
+  String _getLanguageChar(String lang) {
     switch (lang) {
-      case _Lang.en:
-        return 'A';
-      case _Lang.hi:
+      case 'hi':
         return 'अ';
-      case _Lang.gj:
+      case 'gj':
         return 'અ';
+      default:
+        return 'A';
     }
   }
 
@@ -278,7 +256,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                 ],
               ),
             ),
-            if (widget.isSubmitted && langData.answerTxt.isNotEmpty) ...[
+            if (widget.args.isSubmitted && langData.answerTxt.isNotEmpty) ...[
               Divider(height: 32.h),
               Text(
                 'Model Answer',
@@ -306,7 +284,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
               ),
             ],
             SizedBox(height: 12.h),
-            if (!widget.isSubmitted)
+            if (!widget.args.isSubmitted)
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
@@ -464,10 +442,10 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   DescQuestionLanguageData _getLangData(DescQuestionModel q) {
-    switch (_lang) {
-      case _Lang.hi:
+    switch (_currentLangCode) {
+      case 'hi':
         return q.questionHi ?? q.questionEn;
-      case _Lang.gj:
+      case 'gj':
         return q.questionGj ?? q.questionEn;
       default:
         return q.questionEn;
@@ -488,7 +466,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
     if (_selectedFile == null) return;
     context.read<DailyDescTestBloc>().add(
       SubmitDescriptiveTestSinglePdf(
-        testId: widget.testId,
+        testId: widget.args.testId,
         file: _selectedFile!,
       ),
     );
@@ -500,7 +478,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
       await generateDescTestPdf(
         question,
         index,
-        widget.testName,
+        widget.args.testName,
         _availableLangs,
       );
       if (mounted) {
@@ -522,7 +500,7 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
     try {
       await generateFullDescTestPdf(
         questions,
-        widget.testName,
+        widget.args.testName,
         _availableLangs,
       );
       if (mounted) {

@@ -236,6 +236,7 @@ class _StudentEvaluationResultScreenState
                   testName: widget.args.testName ?? 'Test',
                   courseId: widget.args.courseId,
                   isSubmitted: true,
+                  descTestModel: widget.args.descTestModel,
                 ),
               );
             },

@@ -529,16 +529,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutes.descFullQuestions,
     pageBuilder: (context, state) {
       final args = state.extra as DescFullQuestionsScreenArgs;
-      return _slideTransition(
-        DescFullQuestionsScreen(
-          testId: args.testId,
-          testName: args.testName,
-          courseId: args.courseId,
-          isSubmitted: args.isSubmitted,
-          descTestModel: args.descTestModel,
-        ),
-        state,
-      );
+      return _slideTransition(DescFullQuestionsScreen(args: args), state);
     },
   ),
   GoRoute(
