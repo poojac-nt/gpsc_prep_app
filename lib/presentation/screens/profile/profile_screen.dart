@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/data/models/payloads/user_payload.dart';
+import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/authentication/auth_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
@@ -35,15 +36,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final TextEditingController number;
   final _formKey = GlobalKey<FormState>();
 
+  UserModel? _originalUser;
+  bool _isEdited = false;
+
   @override
   void initState() {
     super.initState();
     email = TextEditingController();
     password = TextEditingController();
-    name = TextEditingController();
-    address = TextEditingController();
-    number = TextEditingController();
+    name = TextEditingController()..addListener(_checkIfEdited);
+    address = TextEditingController()..addListener(_checkIfEdited);
+    number = TextEditingController()..addListener(_checkIfEdited);
     context.read<EditProfileBloc>().add(LoadInitialProfile());
+  }
+
+  void _checkIfEdited() {
+    if (_originalUser == null) return;
+
+    final currentName = name.text.trim();
+    final currentAddress = address.text.trim();
+    final currentNumber = number.text.trim();
+
+    final originalNumber = _originalUser!.number.toString();
+    final originalAddress = _originalUser!.address ?? '';
+
+    final hasChanges =
+        currentName != _originalUser!.name ||
+        currentAddress != originalAddress ||
+        currentNumber != originalNumber;
+
+    if (_isEdited != hasChanges) {
+      setState(() {
+        _isEdited = hasChanges;
+      });
+    }
   }
 
   @override
@@ -71,36 +97,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('My Profile', style: AppTexts.titleTextStyle)),
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is DeleteUserSuccess) {
-            getIt<CacheManager>().clearUser();
-            context.pushReplacement(AppRoutes.login);
-          }
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is DeleteUserSuccess) {
+                getIt<CacheManager>().clearUser();
+                context.pushReplacement(AppRoutes.login);
+              }
+            },
+          ),
+          BlocListener<EditProfileBloc, EditProfileState>(
+            listener: (context, state) {
+              if (state is EditProfileLoaded ||
+                  state is EditProfileSuccess ||
+                  state is EditImageUploaded) {
+                final user = state is EditProfileLoaded
+                    ? state.user
+                    : state is EditProfileSuccess
+                    ? state.user
+                    : (state as EditImageUploaded).user;
+
+                _originalUser = user;
+                if (email.text != user.email) email.text = user.email;
+                if (name.text != user.name) name.text = user.name;
+                if (number.text != user.number.toString()) {
+                  number.text = user.number.toString();
+                }
+                if (address.text != (user.address ?? '')) {
+                  address.text = user.address ?? '';
+                }
+
+                _checkIfEdited();
+              }
+            },
+          ),
+        ],
         child: BlocBuilder<EditProfileBloc, EditProfileState>(
           builder: (context, state) {
             if (state is EditProfileLoading ||
                 state is EditProfileInitial ||
                 state is EditImagePicking ||
-                state is EditImageUploading) {
+                state is EditImageUploading ||
+                state is EditProfileSaving) {
               return _buildWhenLoading(context);
             }
 
             if (state is EditProfileLoaded ||
                 state is EditProfileSuccess ||
                 state is EditImageUploaded) {
-              final user =
-                  state is EditProfileLoaded
-                      ? state.user
-                      : state is EditProfileSuccess
-                      ? state.user
-                      : (state as EditImageUploaded).user;
+              final user = _originalUser;
+              if (user == null) return const SizedBox.shrink();
 
-              email.text = user.email;
-              name.text = user.name;
-              number.text = user.number.toString();
-              address.text = user.address!;
               return SingleChildScrollView(
                 child: Column(
                   children: [
@@ -129,17 +177,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           color: Colors.white,
                                           width: 2,
                                         ),
-                                        gradient:
-                                            user.profilePicture == null
-                                                ? LinearGradient(
-                                                  colors: [
-                                                    Colors.grey.shade400,
-                                                    Colors.grey.shade600,
-                                                  ],
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                )
-                                                : null,
+                                        gradient: user.profilePicture == null
+                                            ? LinearGradient(
+                                                colors: [
+                                                  Colors.grey.shade400,
+                                                  Colors.grey.shade600,
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              )
+                                            : null,
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.black12,
@@ -151,22 +198,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       child: ClipOval(
                                         child:
                                             user.profilePicture != null &&
-                                                    user
-                                                        .profilePicture!
-                                                        .isNotEmpty
-                                                ? CachedNetworkImage(
-                                                  imageUrl:
-                                                      user.profilePicture!,
-                                                  fit: BoxFit.cover,
-                                                  errorWidget:
-                                                      (context, url, error) =>
-                                                          Icon(Icons.error),
-                                                )
-                                                : Icon(
-                                                  Icons.person,
-                                                  size: 35.sp,
-                                                  color: Colors.white,
-                                                ),
+                                                user.profilePicture!.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: user.profilePicture!,
+                                                fit: BoxFit.cover,
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Icon(Icons.error),
+                                              )
+                                            : Icon(
+                                                Icons.person,
+                                                size: 35.sp,
+                                                color: Colors.white,
+                                              ),
                                       ),
                                     ),
                                   ),
@@ -232,18 +276,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             cards: [
                               QuickStats(
                                 text: "Test Taken",
-                                num:
-                                    state.dashboardAnalytics.testsAttempted
-                                        .toString(),
+                                num: state.dashboardAnalytics.testsAttempted
+                                    .toString(),
                               ),
                               10.hGap,
                               QuickStats(
                                 text: "Average Score",
-                                num:
-                                    state
-                                        .dashboardAnalytics
-                                        .averageTestAccuracyPercent
-                                        .toString(),
+                                num: state
+                                    .dashboardAnalytics
+                                    .averageTestAccuracyPercent
+                                    .toString(),
                               ),
                               // 10.hGap,
                               // QuickStats(text: "Study Strike", num: "12 days"),
@@ -288,22 +330,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           10.hGap,
                           ActionButton(
                             text: 'Update Information',
-                            onTap: () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                context.read<EditProfileBloc>().add(
-                                  SaveProfileRequested(
-                                    UserPayload(
-                                      authID: user.authID,
-                                      email: user.email,
-                                      name: name.text.trim(),
-                                      address: address.text.trim(),
-                                      number: int.parse(number.text.trim()),
-                                      profilePicture: user.profilePicture,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
+                            backgroundColor: _isEdited
+                                ? AppColors.primary
+                                : Colors.grey,
+                            onTap: _isEdited
+                                ? () {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      context.read<EditProfileBloc>().add(
+                                        SaveProfileRequested(
+                                          UserPayload(
+                                            authID: user.authID,
+                                            email: user.email,
+                                            name: name.text.trim(),
+                                            address: address.text.trim(),
+                                            number: int.parse(
+                                              number.text.trim(),
+                                            ),
+                                            profilePicture: user.profilePicture,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                : null,
                           ),
                         ],
                       ),
@@ -355,9 +405,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: "Account Actions",
                       cards: [
                         GestureDetector(
-                          onTap:
-                              () =>
-                                  showDeleteAccountDialog(context, user.authID),
+                          onTap: () =>
+                              showDeleteAccountDialog(context, user.authID),
                           child: BorderedContainer(
                             borderColor: Colors.red,
                             padding: EdgeInsets.symmetric(

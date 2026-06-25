@@ -3,17 +3,19 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
-import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
-import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../../domain/entities/detailed_test_result_model.dart';
 import '../../../domain/entities/question_language_model.dart';

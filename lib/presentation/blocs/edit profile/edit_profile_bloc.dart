@@ -62,12 +62,23 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
     try {
       final result = await _authRepository.updateUserInfo(event.updatedUser);
       result.fold(
-        (failure) => emit(EditProfileFailure(Failure(failure.message))),
+        (failure) {
+          emit(EditProfileFailure(Failure(failure.message)));
+          emit(EditProfileLoaded(_currentUser!));
+        },
         (user) {
-          _cache.setUser(user);
+          // Merge payload data to prevent stale data issues if Supabase select returns old data immediately after RPC
+          final latestUser = user.copyWith(
+            name: event.updatedUser.name,
+            address: event.updatedUser.address,
+            number: event.updatedUser.number,
+            profilePicture: event.updatedUser.profilePicture ?? user.profilePicture,
+          );
+          _cache.setUser(latestUser);
+          _currentUser = latestUser;
           _snackBarHelper.showSuccess('Information Updated Successfully');
-          emit(EditProfileSuccess(user));
-          emit(EditProfileLoaded(user));
+          emit(EditProfileSuccess(latestUser));
+          emit(EditProfileLoaded(latestUser));
         },
       );
     } catch (e) {

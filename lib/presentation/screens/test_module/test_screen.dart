@@ -137,18 +137,12 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ),
             actions: [
-              // Language selector — shown in both active test AND review mode.
-              // switchLanguage() operates client-side on the already-loaded
-              // questionModel, so no backend call is needed in review mode.
-              // _availableLanguages is restricted to allowedLanguages from the
-              // test model, so only permitted languages are ever shown.
               BlocBuilder<QuestionCubit, QuestionCubitState>(
                 builder: (context, questionState) {
                   if (questionState is! McqQuestionCubitLoaded) {
                     return const SizedBox.shrink();
                   }
 
-                  // Only show if more than one language is available
                   if (_availableLanguages.length <= 1) {
                     return const SizedBox.shrink();
                   }
@@ -175,9 +169,7 @@ class _TestScreenState extends State<TestScreen> {
                     final nextIndex =
                         (currentIndex + 1) % _availableLanguages.length;
                     final nextLanguage = _availableLanguages[nextIndex];
-                    context.read<QuestionCubit>().switchLanguage(
-                      nextLanguage,
-                    );
+                    context.read<QuestionCubit>().switchLanguage(nextLanguage);
                   }
 
                   return IconButton(
@@ -327,9 +319,7 @@ class _TestScreenState extends State<TestScreen> {
                     context.read<QuestionCubit>().initialize(
                       state.questions,
                       state.questionsModels,
-                      widget.language ?? 'en',
-                      allowedLanguages:
-                          widget.dailyTestModel.allowedLanguages ?? [],
+                      widget.language!,
                     );
                   } else {
                     context.read<QuestionCubit>()
@@ -338,8 +328,6 @@ class _TestScreenState extends State<TestScreen> {
                         state.questions,
                         state.questionsModels,
                         widget.language!,
-                        allowedLanguages:
-                            widget.dailyTestModel.allowedLanguages ?? [],
                       );
 
                     // If this a Prelims test with saved progress, load it
