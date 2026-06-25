@@ -67,18 +67,17 @@ class EditProfileBloc extends Bloc<EditProfileEvent, EditProfileState> {
           emit(EditProfileLoaded(_currentUser!));
         },
         (user) {
-          // Merge payload data to prevent stale data issues if Supabase select returns old data immediately after RPC
           final latestUser = user.copyWith(
             name: event.updatedUser.name,
             address: event.updatedUser.address,
             number: event.updatedUser.number,
-            profilePicture: event.updatedUser.profilePicture ?? user.profilePicture,
+            profilePicture:
+                event.updatedUser.profilePicture ?? user.profilePicture,
           );
           _cache.setUser(latestUser);
           _currentUser = latestUser;
           _snackBarHelper.showSuccess('Information Updated Successfully');
           emit(EditProfileSuccess(latestUser));
-          emit(EditProfileLoaded(latestUser));
         },
       );
     } catch (e) {

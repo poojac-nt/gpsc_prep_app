@@ -279,8 +279,8 @@ class SupabaseHelper {
         },
       );
 
-      if (response == null) {
-        return Left(Failure(rpcError ?? 'Error Updating User Info'));
+      if (rpcError != null) {
+        return Left(Failure(rpcError!));
       }
 
       // ✅ Recommended: refetch updated user

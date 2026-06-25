@@ -146,8 +146,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (state is EditProfileLoaded ||
                 state is EditProfileSuccess ||
                 state is EditImageUploaded) {
-              final user = _originalUser;
-              if (user == null) return const SizedBox.shrink();
+              final user = state is EditProfileLoaded
+                  ? state.user
+                  : state is EditProfileSuccess
+                  ? state.user
+                  : (state as EditImageUploaded).user;
 
               return SingleChildScrollView(
                 child: Column(
@@ -535,7 +538,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             /// Personal Info Form Placeholder
             Form(
-              key: _formKey,
               child: TestModule(
                 title: 'Personal Information',
                 prefixIcon: Icons.person_outline,
