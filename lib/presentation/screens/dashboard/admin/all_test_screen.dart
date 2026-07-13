@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/all_tests_model.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/domain/entities/desc_test_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/admin/all_test/all_test_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/test_module.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
@@ -204,6 +209,8 @@ class _AllTestScreenState extends State<AllTestScreen> {
     final bool showShare =
         data.type != TestType.prelims && data.type != TestType.mains;
 
+    final bool showDownload = data.type == TestType.desc;
+
     final bool showTag = _selectedFilter == 'All';
 
     return TestModule(
@@ -214,6 +221,19 @@ class _AllTestScreenState extends State<AllTestScreen> {
       showShareButton: showShare,
       testModel: test is TestModel ? test : null,
       descTestModel: test is DescTestModel ? test : null,
+      trailing: showDownload
+          ? IconButton(
+              icon: Icon(
+                Icons.download_for_offline_rounded,
+                color: AppColors.primary,
+                size: 24.sp,
+              ),
+              onPressed: () => _showDownloadOptions(
+                test,
+                isDescriptive: data.type == TestType.desc,
+              ),
+            )
+          : null,
       cards: [
         showShare ? 4.hGap : 8.hGap,
         _buildInfoTag(
@@ -279,6 +299,111 @@ class _AllTestScreenState extends State<AllTestScreen> {
         ),
       ),
     );
+  }
+
+  void _showDownloadOptions(dynamic test, {required bool isDescriptive}) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Text(
+                  "Download Options",
+                  style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: const Text("Question Paper"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleDownload(test, isDescriptive, showAnswers: false);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.assignment_turned_in_outlined),
+                title: const Text("Model Answer"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleDownload(test, isDescriptive, showAnswers: true);
+                },
+              ),
+              20.hGap,
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleDownload(
+    dynamic test,
+    bool isDescriptive, {
+    required bool showAnswers,
+  }) async {
+    final downloadBloc = context.read<DownLoadPdfBloc>();
+    final testRepo = getIt<TestRepository>();
+
+    try {
+      if (isDescriptive) {
+        final result = await testRepo.fetchDescTestQuestions(test.id);
+        result.fold(
+          (failure) {
+            getIt<LogHelper>().e(failure.message);
+            getIt<SnackBarHelper>().showError(failure.message);
+          },
+          (questions) {
+            downloadBloc.add(
+              DownloadFullDescTestPdf(
+                questions: questions,
+                testName: test.name,
+                langCodes: test.allowedLanguages ?? ['en'],
+                showAnswers: showAnswers,
+              ),
+            );
+          },
+        );
+      } else {
+        if (!showAnswers && test.omrLink != null && test.omrLink.isNotEmpty) {
+          downloadBloc.add(
+            DownloadPrelimsOmr(
+              url: test.omrLink,
+              filename: "${test.name.replaceAll(' ', '_')}_QuestionPaper.pdf",
+            ),
+          );
+        } else {
+          final result = await testRepo.fetchMcqTestQuestions(test.id);
+          result.fold(
+            (failure) {
+              getIt<LogHelper>().e(failure.message);
+              getIt<SnackBarHelper>().showError(failure.message);
+            },
+            (questions) {
+              downloadBloc.add(
+                ExportQuestionsToPdfEvent(
+                  questions,
+                  test.name,
+                  testType: TestType.prelims,
+                  showAnswers: showAnswers,
+                  language: 'en',
+                  languages: test.allowedLanguages ?? ['en'],
+                ),
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      getIt<LogHelper>().e("An error occurred: $e");
+      getIt<SnackBarHelper>().showError("An error occurred: $e");
+    }
   }
 }
 

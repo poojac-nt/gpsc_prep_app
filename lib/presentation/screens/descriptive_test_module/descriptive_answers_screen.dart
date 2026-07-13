@@ -116,12 +116,6 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
                         color: AppColors.primary,
                       ),
                     ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.swap_horiz_rounded,
-                      size: 16.sp,
-                      color: AppColors.primary,
-                    ),
                   ],
                 ),
               ),
