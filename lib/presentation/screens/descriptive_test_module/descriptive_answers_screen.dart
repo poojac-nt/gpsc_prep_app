@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/desc_question_tile.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
@@ -30,8 +34,9 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
   void initState() {
     super.initState();
     // Default to the first allowed language (or 'en' if the list is empty).
-    _selectedLanguage =
-        _allowedLanguages.isNotEmpty ? _allowedLanguages.first : 'en';
+    _selectedLanguage = _allowedLanguages.isNotEmpty
+        ? _allowedLanguages.first
+        : 'en';
     _loadQuestions(_selectedLanguage);
   }
 
@@ -45,8 +50,7 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
   void _switchLanguage() {
     final langs = _allowedLanguages;
     if (langs.length <= 1) return;
-    final nextIndex =
-        (langs.indexOf(_selectedLanguage) + 1) % langs.length;
+    final nextIndex = (langs.indexOf(_selectedLanguage) + 1) % langs.length;
     setState(() => _selectedLanguage = langs[nextIndex]);
     _loadQuestions(_selectedLanguage);
   }
@@ -122,6 +126,26 @@ class _DescriptiveAnswersScreenState extends State<DescriptiveAnswersScreen> {
                 ),
               ),
             ),
+          IconButton(
+            onPressed: () async {
+              final result = await getIt<TestRepository>()
+                  .fetchDescTestQuestions(widget.args.descTestModel.id);
+              result.fold(
+                (failure) => getIt<SnackBarHelper>().showError(failure.message),
+                (questions) {
+                  getIt<DownLoadPdfBloc>().add(
+                    DownloadFullDescTestPdf(
+                      questions: questions,
+                      testName: widget.args.descTestModel.name,
+                      langCodes: widget.args.languages,
+                      showAnswers: true,
+                    ),
+                  );
+                },
+              );
+            },
+            icon: Icon(Icons.arrow_circle_down, color: AppColors.primary),
+          ),
         ],
       ),
       body: BlocBuilder<QuestionBloc, QuestionState>(

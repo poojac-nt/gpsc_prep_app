@@ -1159,7 +1159,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     ),
                   ],
                 ),
-                if (statusWidget != null) statusWidget,
+                ?statusWidget,
               ],
             ),
           ),

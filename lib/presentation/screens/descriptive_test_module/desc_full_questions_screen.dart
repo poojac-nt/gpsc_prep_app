@@ -473,49 +473,101 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   }
 
   Future<void> _downloadPdf(DescQuestionModel question, int index) async {
-    setState(() => _downloadingIndices.add(index));
-    try {
-      await generateDescTestPdf(
-        question,
-        index,
-        widget.args.testName,
-        _availableLangs,
-      );
-      if (mounted) {
-        getIt<SnackBarHelper>().showSuccess('PDF downloaded successfully');
-      }
-    } catch (e) {
-      if (mounted) {
-        getIt<SnackBarHelper>().showError('Failed to generate PDF');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _downloadingIndices.remove(index));
-      }
-    }
+    _showDownloadOptions(
+      onSelected: (showAnswers) async {
+        setState(() => _downloadingIndices.add(index));
+        try {
+          await generateDescTestPdf(
+            question,
+            index,
+            widget.args.testName,
+            _availableLangs,
+            showAnswers: showAnswers,
+          );
+          if (mounted) {
+            getIt<SnackBarHelper>().showSuccess('PDF downloaded successfully');
+          }
+        } catch (e) {
+          if (mounted) {
+            getIt<SnackBarHelper>().showError('Failed to generate PDF');
+          }
+        } finally {
+          if (mounted) {
+            setState(() => _downloadingIndices.remove(index));
+          }
+        }
+      },
+    );
   }
 
   Future<void> _downloadFullPdf(List<DescQuestionModel> questions) async {
-    setState(() => _isDownloadingFull = true);
-    try {
-      await generateFullDescTestPdf(
-        questions,
-        widget.args.testName,
-        _availableLangs,
-      );
-      if (mounted) {
-        getIt<SnackBarHelper>().showSuccess(
-          'Full Test PDF downloaded successfully',
+    _showDownloadOptions(
+      onSelected: (showAnswers) async {
+        setState(() => _isDownloadingFull = true);
+        try {
+          await generateFullDescTestPdf(
+            questions,
+            widget.args.testName,
+            _availableLangs,
+            showAnswers: showAnswers,
+          );
+          if (mounted) {
+            getIt<SnackBarHelper>().showSuccess(
+              'Full Test PDF downloaded successfully',
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            getIt<SnackBarHelper>().showError('Failed to generate full PDF');
+          }
+        } finally {
+          if (mounted) {
+            setState(() => _isDownloadingFull = false);
+          }
+        }
+      },
+    );
+  }
+
+  void _showDownloadOptions({required Function(bool) onSelected}) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Text(
+                  "Download Options",
+                  style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: const Text("Question Paper"),
+                onTap: () {
+                  Navigator.pop(context);
+                  onSelected(false);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.assignment_turned_in_outlined),
+                title: const Text("Model Answer"),
+                onTap: () {
+                  Navigator.pop(context);
+                  onSelected(true);
+                },
+              ),
+              20.hGap,
+            ],
+          ),
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        getIt<SnackBarHelper>().showError('Failed to generate full PDF');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isDownloadingFull = false);
-      }
-    }
+      },
+    );
   }
 }

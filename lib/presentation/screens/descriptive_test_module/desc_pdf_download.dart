@@ -18,8 +18,9 @@ Future<String> generateDescTestPdf(
   DescQuestionModel question,
   int index,
   String testName,
-  List<String> langCodes,
-) async {
+  List<String> langCodes, {
+  bool showAnswers = true,
+}) async {
   final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
   final baseFont = pw.Font.ttf(base);
 
@@ -76,31 +77,93 @@ Future<String> generateDescTestPdf(
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text(
-                    "Question $index",
-                    style: pw.TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        "Question $index",
+                        style: pw.TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.Text(
+                        showAnswers ? "Model Answer" : "Question Paper",
+                        style: pw.TextStyle(
+                          fontSize: 10.sp,
+                          color: PdfColors.grey700,
+                          fontStyle: pw.FontStyle.italic,
+                        ),
+                      ),
+                    ],
                   ),
+                  pw.SizedBox(height: 8),
                   for (int i = 0; i < langCodes.length; i++) ...[
                     if (i > 0) pw.SizedBox(height: 10),
-                    if (langCodes[i] == 'en')
+                    if (langCodes[i] == 'en') ...[
+                      pw.Text(
+                        "Question (EN):",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
                       ..._parseMarkdownToPdfWidgets(
                         question.questionEn.questionTxt,
                       ),
+                      if (showAnswers &&
+                          question.questionEn.answerTxt.isNotEmpty) ...[
+                        pw.SizedBox(height: 10),
+                        pw.Text(
+                          "Model Answer (EN):",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        ..._parseMarkdownToPdfWidgets(
+                          question.questionEn.answerTxt,
+                        ),
+                      ],
+                    ],
                     if (langCodes[i] == 'hi' &&
                         question.questionHi?.questionTxt != null &&
-                        question.questionHi!.questionTxt.isNotEmpty)
+                        question.questionHi!.questionTxt.isNotEmpty) ...[
+                      pw.Text(
+                        "Question (HI):",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
                       ..._parseMarkdownToPdfWidgets(
                         question.questionHi!.questionTxt,
                       ),
+                      if (showAnswers &&
+                          question.questionHi!.answerTxt.isNotEmpty) ...[
+                        pw.SizedBox(height: 10),
+                        pw.Text(
+                          "Model Answer (HI):",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        ..._parseMarkdownToPdfWidgets(
+                          question.questionHi!.answerTxt,
+                        ),
+                      ],
+                    ],
                     if (langCodes[i] == 'gj' &&
                         question.questionGj?.questionTxt != null &&
-                        question.questionGj!.questionTxt.isNotEmpty)
+                        question.questionGj!.questionTxt.isNotEmpty) ...[
+                      pw.Text(
+                        "Question (GJ):",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
                       ..._parseMarkdownToPdfWidgets(
                         question.questionGj!.questionTxt,
                       ),
+                      if (showAnswers &&
+                          question.questionGj!.answerTxt.isNotEmpty) ...[
+                        pw.SizedBox(height: 10),
+                        pw.Text(
+                          "Model Answer (GJ):",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        ..._parseMarkdownToPdfWidgets(
+                          question.questionGj!.answerTxt,
+                        ),
+                      ],
+                    ],
                   ],
                 ],
               ),
@@ -187,106 +250,110 @@ Future<String> generateDescTestPdf(
   );
 
   // --- Extra pages ---
-  for (int i = 1; i < (question.pages ?? 1); i++) {
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          return borderedPage(
-            pw.Stack(
-              children: [
-                pw.Center(
-                  child: pw.Opacity(
-                    opacity: 0.1,
-                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
-                  ),
-                ),
-                // Footer reused
-                pw.Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: pw.Container(
-                    alignment: pw.Alignment.center,
-                    margin: const pw.EdgeInsets.only(top: 10),
-                    child: pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-                      children: [
-                        pw.Text(
-                          'Click here to Join us:',
-                          style: pw.TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.Row(
-                          children: [
-                            pw.Image(telegramLogo, width: 10, height: 10),
-                            pw.SizedBox(width: 4),
-                            pw.UrlLink(
-                              destination: 'https://t.me/starics_prep',
-                              child: pw.Text(
-                                '@starics_prep',
-                                style: pw.TextStyle(
-                                  color: PdfColors.blue,
-                                  decoration: pw.TextDecoration.underline,
-                                  fontSize: 9.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
-                        pw.Row(
-                          children: [
-                            pw.Image(gmailLogo, width: 10, height: 10),
-                            pw.SizedBox(width: 4),
-                            pw.UrlLink(
-                              destination: 'mailto:star.ics89@gmail.com',
-                              child: pw.Text(
-                                'star.ics89@gmail.com',
-                                style: pw.TextStyle(
-                                  color: PdfColors.blue,
-                                  decoration: pw.TextDecoration.underline,
-                                  fontSize: 9.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
-                        pw.Row(
-                          children: [
-                            pw.Image(xLogo, width: 10, height: 10),
-                            pw.SizedBox(width: 4),
-                            pw.UrlLink(
-                              destination: 'https://x.com/star_ics89',
-                              child: pw.Text(
-                                '@star_ics89',
-                                style: pw.TextStyle(
-                                  color: PdfColors.blue,
-                                  decoration: pw.TextDecoration.underline,
-                                  fontSize: 9.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+  if (!showAnswers) {
+    for (int i = 1; i < (question.pages ?? 1); i++) {
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return borderedPage(
+              pw.Stack(
+                children: [
+                  pw.Center(
+                    child: pw.Opacity(
+                      opacity: 0.1,
+                      child: pw.Image(logoImage, fit: pw.BoxFit.contain),
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+                  // Footer reused
+                  pw.Positioned(
+                    bottom: 20,
+                    left: 0,
+                    right: 0,
+                    child: pw.Container(
+                      alignment: pw.Alignment.center,
+                      margin: const pw.EdgeInsets.only(top: 10),
+                      child: pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                        children: [
+                          pw.Text(
+                            'Click here to Join us:',
+                            style: pw.TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Row(
+                            children: [
+                              pw.Image(telegramLogo, width: 10, height: 10),
+                              pw.SizedBox(width: 4),
+                              pw.UrlLink(
+                                destination: 'https://t.me/starics_prep',
+                                child: pw.Text(
+                                  '@starics_prep',
+                                  style: pw.TextStyle(
+                                    color: PdfColors.blue,
+                                    decoration: pw.TextDecoration.underline,
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                          pw.Row(
+                            children: [
+                              pw.Image(gmailLogo, width: 10, height: 10),
+                              pw.SizedBox(width: 4),
+                              pw.UrlLink(
+                                destination: 'mailto:star.ics89@gmail.com',
+                                child: pw.Text(
+                                  'star.ics89@gmail.com',
+                                  style: pw.TextStyle(
+                                    color: PdfColors.blue,
+                                    decoration: pw.TextDecoration.underline,
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+                          pw.Row(
+                            children: [
+                              pw.Image(xLogo, width: 10, height: 10),
+                              pw.SizedBox(width: 4),
+                              pw.UrlLink(
+                                destination: 'https://x.com/star_ics89',
+                                child: pw.Text(
+                                  '@star_ics89',
+                                  style: pw.TextStyle(
+                                    color: PdfColors.blue,
+                                    decoration: pw.TextDecoration.underline,
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    }
   }
 
   // --- Save PDF ---
   final bytes = await pdf.save();
-  final safeFileName = "${testName.toSafeFileName()}_Question$index.pdf";
+  final suffix = showAnswers ? "ModelAnswer" : "QuestionPaper";
+  final safeFileName =
+      "${testName.toSafeFileName()}_Question${index}_$suffix.pdf";
   String filePath;
 
   try {
@@ -386,8 +453,9 @@ Future<String> generateDescTestPdf(
 Future<String> generateFullDescTestPdf(
   List<DescQuestionModel> questions,
   String testName,
-  List<String> langCodes,
-) async {
+  List<String> langCodes, {
+  bool showAnswers = true,
+}) async {
   final base = await rootBundle.load("assets/fonts/ArialUnicodeMs.otf");
   final baseFont = pw.Font.ttf(base);
 
@@ -525,25 +593,94 @@ Future<String> generateFullDescTestPdf(
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(
-                      "Question $index",
-                      style: pw.TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(
+                          "Question $index",
+                          style: pw.TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.Text(
+                          showAnswers ? "Model Answer" : "Question Paper",
+                          style: pw.TextStyle(
+                            fontSize: 10.sp,
+                            color: PdfColors.grey700,
+                            fontStyle: pw.FontStyle.italic,
+                          ),
+                        ),
+                      ],
                     ),
+                    pw.SizedBox(height: 8),
                     // Add question text based on selected languages
                     for (int k = 0; k < langCodes.length; k++) ...[
                       if (k > 0) pw.SizedBox(height: 10),
-                      if (langCodes[k] == 'en') ..._parseMarkdownToPdfWidgets(
-                        question.questionEn.questionTxt,
-                      ),
-                      if (langCodes[k] == 'hi' && question.questionHi?.questionTxt != null && question.questionHi!.questionTxt.isNotEmpty) ..._parseMarkdownToPdfWidgets(
-                        question.questionHi!.questionTxt,
-                      ),
-                      if (langCodes[k] == 'gj' && question.questionGj?.questionTxt != null && question.questionGj!.questionTxt.isNotEmpty) ..._parseMarkdownToPdfWidgets(
-                        question.questionGj!.questionTxt,
-                      ),
+                      if (langCodes[k] == 'en') ...[
+                        pw.Text(
+                          "Question (EN):",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        ..._parseMarkdownToPdfWidgets(
+                          question.questionEn.questionTxt,
+                        ),
+                        if (showAnswers &&
+                            question.questionEn.answerTxt.isNotEmpty) ...[
+                          pw.SizedBox(height: 10),
+                          pw.Text(
+                            "Model Answer (EN):",
+                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                          ),
+                          ..._parseMarkdownToPdfWidgets(
+                            question.questionEn.answerTxt,
+                          ),
+                        ],
+                      ],
+                      if (langCodes[k] == 'hi' &&
+                          question.questionHi?.questionTxt != null &&
+                          question.questionHi!.questionTxt.isNotEmpty) ...[
+                        pw.Text(
+                          "Question (HI):",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        ..._parseMarkdownToPdfWidgets(
+                          question.questionHi!.questionTxt,
+                        ),
+                        if (showAnswers &&
+                            question.questionHi!.answerTxt.isNotEmpty) ...[
+                          pw.SizedBox(height: 10),
+                          pw.Text(
+                            "Model Answer (HI):",
+                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                          ),
+                          ..._parseMarkdownToPdfWidgets(
+                            question.questionHi!.answerTxt,
+                          ),
+                        ],
+                      ],
+                      if (langCodes[k] == 'gj' &&
+                          question.questionGj?.questionTxt != null &&
+                          question.questionGj!.questionTxt.isNotEmpty) ...[
+                        pw.Text(
+                          "Question (GJ):",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        ..._parseMarkdownToPdfWidgets(
+                          question.questionGj!.questionTxt,
+                        ),
+                        if (showAnswers &&
+                            question.questionGj!.answerTxt.isNotEmpty) ...[
+                          pw.SizedBox(height: 10),
+                          pw.Text(
+                            "Model Answer (GJ):",
+                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                          ),
+                          ..._parseMarkdownToPdfWidgets(
+                            question.questionGj!.answerTxt,
+                          ),
+                        ],
+                      ],
                     ],
                   ],
                 ),
@@ -556,33 +693,36 @@ Future<String> generateFullDescTestPdf(
     );
 
     // --- Extra pages ---
-    for (int j = 1; j < (question.pages ?? 1); j++) {
-      pdf.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          build: (context) {
-            return borderedPage(
-              pw.Stack(
-                children: [
-                  pw.Center(
-                    child: pw.Opacity(
-                      opacity: 0.1,
-                      child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+    if (!showAnswers) {
+      for (int j = 1; j < (question.pages ?? 1); j++) {
+        pdf.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            build: (context) {
+              return borderedPage(
+                pw.Stack(
+                  children: [
+                    pw.Center(
+                      child: pw.Opacity(
+                        opacity: 0.1,
+                        child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                      ),
                     ),
-                  ),
-                  buildFooter(),
-                ],
-              ),
-            );
-          },
-        ),
-      );
+                    buildFooter(),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      }
     }
   }
 
   // --- Save PDF ---
   final bytes = await pdf.save();
-  final safeFileName = "${testName.toSafeFileName()}_FullTest.pdf";
+  final suffix = showAnswers ? "ModelAnswer" : "QuestionPaper";
+  final safeFileName = "${testName.toSafeFileName()}_FullTest_$suffix.pdf";
   String filePath;
 
   try {
@@ -717,18 +857,16 @@ List<pw.Widget> _parseMarkdownToPdfWidgets(String markdownText) {
 }
 
 pw.Widget _buildPdfTableFromMarkdown(List<String> tableLines) {
-  List<List<String>> rows =
-      tableLines
-          .map(
-            (line) =>
-                line
-                    .trim()
-                    .split('|')
-                    .map((cell) => cell.trim())
-                    .where((cell) => cell.isNotEmpty)
-                    .toList(),
-          )
-          .toList();
+  List<List<String>> rows = tableLines
+      .map(
+        (line) => line
+            .trim()
+            .split('|')
+            .map((cell) => cell.trim())
+            .where((cell) => cell.isNotEmpty)
+            .toList(),
+      )
+      .toList();
 
   if (rows.length < 2) return pw.SizedBox();
   final header = rows[0];
@@ -769,10 +907,9 @@ List<pw.Widget> _markdownNodeToPdfWidget(md.Node node) {
         return [
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children:
-                node.children!
-                    .expand((li) => _markdownNodeToPdfWidget(li))
-                    .toList(),
+            children: node.children!
+                .expand((li) => _markdownNodeToPdfWidget(li))
+                .toList(),
           ),
         ];
       case 'ol':
@@ -780,23 +917,22 @@ List<pw.Widget> _markdownNodeToPdfWidget(md.Node node) {
         return [
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children:
-                node.children!
-                    .map(
-                      (li) => pw.Row(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text('$i. '),
-                          pw.Expanded(
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: _markdownNodeToPdfWidget(li),
-                            ),
-                          ),
-                        ],
+            children: node.children!
+                .map(
+                  (li) => pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('$i. '),
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: _markdownNodeToPdfWidget(li),
+                        ),
                       ),
-                    )
-                    .toList(),
+                    ],
+                  ),
+                )
+                .toList(),
           ),
         ];
       case 'li':
@@ -825,38 +961,36 @@ List<pw.Widget> _markdownNodeToPdfWidget(md.Node node) {
 pw.Widget _spanFromMarkdownInline(List<md.Node> nodes) {
   return pw.RichText(
     text: pw.TextSpan(
-      children:
-          nodes.map((node) {
-            if (node is md.Text) {
-              return pw.TextSpan(text: node.text);
-            } else if (node is md.Element) {
-              final baseStyle = pw.TextStyle();
-              if (node.tag == 'strong' || node.tag == 'b') {
-                return pw.TextSpan(
-                  text: node.textContent,
-                  style: baseStyle.copyWith(fontWeight: pw.FontWeight.bold),
-                );
+      children: nodes.map((node) {
+        if (node is md.Text) {
+          return pw.TextSpan(text: node.text);
+        } else if (node is md.Element) {
+          final baseStyle = pw.TextStyle();
+          if (node.tag == 'strong' || node.tag == 'b') {
+            return pw.TextSpan(
+              text: node.textContent,
+              style: baseStyle.copyWith(fontWeight: pw.FontWeight.bold),
+            );
+          }
+          if (node.tag == 'em' || node.tag == 'i') {
+            return pw.TextSpan(
+              text: node.textContent,
+              style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
+            );
+          }
+          return pw.TextSpan(
+            children: node.children?.map((e) {
+              if (e is md.Text) {
+                return pw.TextSpan(text: e.text);
+              } else if (e is md.Element) {
+                return pw.TextSpan(text: e.textContent);
               }
-              if (node.tag == 'em' || node.tag == 'i') {
-                return pw.TextSpan(
-                  text: node.textContent,
-                  style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
-                );
-              }
-              return pw.TextSpan(
-                children:
-                    node.children?.map((e) {
-                      if (e is md.Text) {
-                        return pw.TextSpan(text: e.text);
-                      } else if (e is md.Element) {
-                        return pw.TextSpan(text: e.textContent);
-                      }
-                      return pw.TextSpan();
-                    }).toList(),
-              );
-            }
-            return pw.TextSpan();
-          }).toList(),
+              return pw.TextSpan();
+            }).toList(),
+          );
+        }
+        return pw.TextSpan();
+      }).toList(),
     ),
   );
 }

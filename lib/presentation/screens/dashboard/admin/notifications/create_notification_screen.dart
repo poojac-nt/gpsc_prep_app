@@ -884,7 +884,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                     letterSpacing: 0.5,
                   ),
                 ),
-                if (trailing != null) trailing,
+                ?trailing,
               ],
             ),
             12.hGap,

@@ -85,7 +85,7 @@ class TestModule extends StatelessWidget {
                         _handleShare(context, testType);
                       },
                 ),
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
           if (subtitle != null && subtitle!.isNotEmpty) ...[

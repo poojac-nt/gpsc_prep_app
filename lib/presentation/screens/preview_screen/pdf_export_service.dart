@@ -3,19 +3,17 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-
-import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
-import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../../domain/entities/detailed_test_result_model.dart';
 import '../../../domain/entities/question_language_model.dart';
@@ -28,6 +26,8 @@ class PdfExportService {
     TestType? testType,
     List<DetailedTestResult>? detailedResults,
     String language = 'en',
+    bool showAnswers = true,
+    required List<String> languages,
   }) async {
     final log = getIt<LogHelper>();
     final mcqPdfHeader = pw.MemoryImage(
@@ -167,12 +167,26 @@ class PdfExportService {
                         ),
                         pw.Padding(
                           padding: pw.EdgeInsets.symmetric(vertical: 10),
-                          child: pw.Text(
-                            testName,
-                            style: pw.TextStyle(
-                              fontSize: 16,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                testName,
+                                style: pw.TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                showAnswers ? "Model Answer" : "Question Paper",
+                                style: pw.TextStyle(
+                                  fontSize: 12,
+                                  color: PdfColors.grey700,
+                                  fontStyle: pw.FontStyle.italic,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         pw.Divider(
@@ -190,135 +204,149 @@ class PdfExportService {
           ),
           if (testType == TestType.prelims && performanceSummary != null)
             _buildPerformanceSummary(performanceSummary),
-          ...questions.asMap().entries.map((entry) {
+          ...questions.asMap().entries.expand((entry) {
             final index = entry.key + 1;
-            final ln = language;
-            QuestionLanguageData getLangData(QuestionModel q) {
-              switch (ln) {
-                case 'hi':
-                  return q.questionHi ?? q.questionEn;
-                case 'gj':
-                  return q.questionGj ?? q.questionEn;
-                case 'en':
-                default:
-                  return q.questionEn;
-              }
-            }
-
             final q = entry.value;
-            final qLang = getLangData(q);
 
-            return pw.Padding(
-              padding: pw.EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    "Question $index:",
-                    style: pw.TextStyle(
-                      fontSize: 14,
-                      fontWeight: pw.FontWeight.bold,
+            final actualLanguages = languages.isEmpty ? ['en'] : languages;
+
+            return actualLanguages.map((ln) {
+              QuestionLanguageData getLangData(QuestionModel q) {
+                switch (ln) {
+                  case 'hi':
+                    return q.questionHi ?? q.questionEn;
+                  case 'gj':
+                    return q.questionGj ?? q.questionEn;
+                  case 'en':
+                  default:
+                    return q.questionEn;
+                }
+              }
+
+              final qLang = getLangData(q);
+              String langIndicator = actualLanguages.length > 1 ? " [${ln.toUpperCase()}]" : "";
+
+              return pw.Padding(
+                padding: pw.EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "Question $index$langIndicator:",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  pw.SizedBox(height: 5),
-                  ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
-                  pw.SizedBox(height: 5),
-                  pw.Bullet(text: qLang.optA),
-                  pw.Bullet(text: qLang.optB),
-                  pw.Bullet(text: qLang.optC),
-                  pw.Bullet(text: qLang.optD),
-                  pw.SizedBox(height: 5),
-                  pw.Container(
-                    padding: pw.EdgeInsets.all(10),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('#e1d2c8'),
-                      border: pw.Border.all(color: PdfColors.black, width: 1),
-                    ),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.RichText(
-                          text: pw.TextSpan(
-                            text: "Answer: ",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                            children: [
-                              pw.TextSpan(
-                                text: qLang.correctAnswer,
+                    pw.SizedBox(height: 5),
+                    ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
+                    pw.SizedBox(height: 5),
+                    pw.Bullet(text: qLang.optA),
+                    pw.Bullet(text: qLang.optB),
+                    pw.Bullet(text: qLang.optC),
+                    pw.Bullet(text: qLang.optD),
+                    if (showAnswers) ...[
+                      pw.SizedBox(height: 5),
+                      pw.Container(
+                        padding: pw.EdgeInsets.all(10),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColor.fromHex('#e1d2c8'),
+                          border: pw.Border.all(color: PdfColors.black, width: 1),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                text: "Answer: ",
                                 style: pw.TextStyle(
                                   fontWeight: pw.FontWeight.bold,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (detailedResults != null) ...[
-                          () {
-                            final userResult = detailedResults.firstWhere(
-                              (r) => r.questionId == q.questionId,
-                              orElse: () => DetailedTestResult(
-                                userId: 0,
-                                testId: 0,
-                                questionId: 0,
-                                isCorrect: false,
-                                attemptNo: 0,
-                                timeSpent: 0,
-                                selectedOption: null,
-                              ),
-                            );
-                            if (userResult.selectedOption != null &&
-                                userResult.selectedOption!.isNotEmpty) {
-                              return pw.RichText(
-                                text: pw.TextSpan(
-                                  text: "Your answer: ",
-                                  style: pw.TextStyle(
-                                    fontWeight: pw.FontWeight.bold,
-                                  ),
-                                  children: [
-                                    pw.TextSpan(
-                                      text: userResult.selectedOption!,
+                                children: [
+                                  pw.TextSpan(
+                                    text: qLang.correctAnswer,
+                                    style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold,
                                     ),
-                                  ],
-                                ),
-                              );
-                            }
-                            return pw.SizedBox();
-                          }(),
-                        ],
-                        pw.RichText(
-                          text: pw.TextSpan(
-                            text: "Difficulty Level: ",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                            children: [
-                              pw.TextSpan(text: q.difficultyLevel.level),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (detailedResults != null) ...[
+                              () {
+                                final userResult = detailedResults.firstWhere(
+                                  (r) => r.questionId == q.questionId,
+                                  orElse: () => DetailedTestResult(
+                                    userId: 0,
+                                    testId: 0,
+                                    questionId: 0,
+                                    isCorrect: false,
+                                    attemptNo: 0,
+                                    timeSpent: 0,
+                                    selectedOption: null,
+                                  ),
+                                );
+                                if (userResult.selectedOption != null &&
+                                    userResult.selectedOption!.isNotEmpty) {
+                                  return pw.RichText(
+                                    text: pw.TextSpan(
+                                      text: "Your answer: ",
+                                      style: pw.TextStyle(
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                      children: [
+                                        pw.TextSpan(
+                                          text: userResult.selectedOption!,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return pw.SizedBox();
+                              }(),
                             ],
-                          ),
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                text: "Difficulty Level: ",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                                children: [
+                                  pw.TextSpan(text: q.difficultyLevel.level),
+                                ],
+                              ),
+                            ),
+                            pw.RichText(
+                              text: pw.TextSpan(
+                                text: "Subject: ",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                                children: [pw.TextSpan(text: q.subjectName)],
+                              ),
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Text(
+                              "Explanation:",
+                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                            ),
+                            ..._parseMarkdownToPdfWidgets(qLang.explanation),
+                          ],
                         ),
-                        pw.RichText(
-                          text: pw.TextSpan(
-                            text: "Subject: ",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                            children: [pw.TextSpan(text: q.subjectName)],
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          "Explanation:",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        ),
-                        ..._parseMarkdownToPdfWidgets(qLang.explanation),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList();
           }),
         ],
       ),
     );
 
     final pdfBytes = await pdf.save();
-    final filename = "${testName.toSafeFileName()}.pdf";
+    final suffix = showAnswers ? "ModelAnswer" : "QuestionPaper";
+    final filename = "${testName.toSafeFileName()}_$suffix.pdf";
 
     try {
       if (Platform.isAndroid) {

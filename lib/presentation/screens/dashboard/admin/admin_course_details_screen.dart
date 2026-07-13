@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/download pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 class AdminCourseDetailsScreen extends StatefulWidget {
   const AdminCourseDetailsScreen({super.key, required this.courseModel});
@@ -21,6 +27,7 @@ class AdminCourseDetailsScreen extends StatefulWidget {
 class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
   late bool _isActive;
   bool _isLoading = false;
+  bool _isDownloadingPdf = false;
 
   @override
   void initState() {
@@ -49,79 +56,121 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
     final descriptive = widget.courseModel.tests?.descriptive ?? [];
     final totalTests = prelims.length + descriptive.length;
 
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldColor,
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
-        ),
-        title: Text(
-          "Course Details (Admin)",
-          style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () => ShareHelper.shareCourse(widget.courseModel),
-            icon: Icon(Icons.share_outlined, color: Colors.black, size: 24.sp),
-          ),
-        ],
-        elevation: 0,
-        backgroundColor: AppColors.scaffoldColor,
-        surfaceTintColor: Colors.transparent,
-      ),
-      body: BlocListener<CourseBloc, CourseState>(
-        listener: (context, state) {
-          if (state is CourseStatusUpdateSuccess) {
-            setState(() {
-              _isActive = state.isActive;
-              _isLoading = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Course ${state.isActive ? "activated" : "deactivated"} successfully',
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<CourseBloc, CourseState>(
+          listener: (context, state) {
+            if (state is CourseStatusUpdateSuccess) {
+              setState(() {
+                _isActive = state.isActive;
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Course ${state.isActive ? "activated" : "deactivated"} successfully',
+                  ),
+                  backgroundColor: state.isActive
+                      ? Colors.green
+                      : Colors.orange,
                 ),
-                backgroundColor: state.isActive ? Colors.green : Colors.orange,
-              ),
-            );
-          } else if (state is CourseStatusUpdateFailure) {
-            setState(() {
-              _isLoading = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to update status: ${state.error}'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Status Card
-              _buildStatusCard(),
-              16.hGap,
-
-              // Course Info section
-              _buildCourseHeader(),
-              20.hGap,
-
-              // Pricing Info Grid
-              _buildMetadataGrid(totalTests),
-              24.hGap,
-
-              // Action Button
-              _buildActionButton(),
-              28.hGap,
-
-              // Curriculum/Tests lists
-              _buildCurriculumSection(prelims, descriptive),
-            ],
+              );
+            } else if (state is CourseStatusUpdateFailure) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to update status: ${state.error}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        ),
+        BlocListener<DownLoadPdfBloc, DownLoadPdfState>(
+          listener: (context, state) {
+            if (state is DownLoadPdfStarted) {
+              setState(() {
+                _isDownloadingPdf = true;
+              });
+            } else if (state is PdfDownloadSuccess) {
+              setState(() {
+                _isDownloadingPdf = false;
+              });
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              getIt<SnackBarHelper>().showSuccess("Download successful");
+            } else if (state is PdfDownloadFailure) {
+              setState(() {
+                _isDownloadingPdf = false;
+              });
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              getIt<SnackBarHelper>().showError(state.failure.message);
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: AppColors.scaffoldColor,
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => context.pop(),
+            icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
           ),
+          title: Text(
+            "Course Details (Admin)",
+            style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () => ShareHelper.shareCourse(widget.courseModel),
+              icon: Icon(
+                Icons.share_outlined,
+                color: Colors.black,
+                size: 24.sp,
+              ),
+            ),
+          ],
+          elevation: 0,
+          backgroundColor: AppColors.scaffoldColor,
+          surfaceTintColor: Colors.transparent,
+        ),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Status Card
+                  _buildStatusCard(),
+                  16.hGap,
+                  
+                  // Course Info section
+                  _buildCourseHeader(),
+                  20.hGap,
+                  
+                  // Pricing Info Grid
+                  _buildMetadataGrid(totalTests),
+                  24.hGap,
+                  
+                  // Action Button
+                  _buildActionButton(),
+                  28.hGap,
+                  
+                  // Curriculum/Tests lists
+                  _buildCurriculumSection(prelims, descriptive),
+                ],
+              ),
+            ),
+            if (_isDownloadingPdf)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -447,6 +496,8 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
                 info: "${test.duration} Mins • ${test.totalMarks} Marks",
                 icon: Icons.quiz_rounded,
                 iconColor: Colors.blue,
+                onDownload: () =>
+                    _showDownloadOptions(test, isDescriptive: false),
               ),
             ),
             16.hGap,
@@ -460,12 +511,119 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
                 info: "${test.noQuestions} Questions",
                 icon: Icons.description_rounded,
                 iconColor: Colors.purple,
+                onDownload: () =>
+                    _showDownloadOptions(test, isDescriptive: true),
               ),
             ),
           ],
         ],
       ],
     );
+  }
+
+  void _showDownloadOptions(dynamic test, {required bool isDescriptive}) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Text(
+                  "Download Options",
+                  style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: const Text("Question Paper"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleDownload(test, isDescriptive, showAnswers: false);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.assignment_turned_in_outlined),
+                title: const Text("Model Answer"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleDownload(test, isDescriptive, showAnswers: true);
+                },
+              ),
+              20.hGap,
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleDownload(
+    dynamic test,
+    bool isDescriptive, {
+    required bool showAnswers,
+  }) async {
+    final downloadBloc = context.read<DownLoadPdfBloc>();
+    final testRepo = getIt<TestRepository>();
+
+    try {
+      if (isDescriptive) {
+        final result = await testRepo.fetchDescTestQuestions(test.id);
+        result.fold(
+          (failure) {
+            getIt<LogHelper>().e(failure.message);
+            getIt<SnackBarHelper>().showError(failure.message);
+          },
+          (questions) {
+            downloadBloc.add(
+              DownloadFullDescTestPdf(
+                questions: questions,
+                testName: test.name,
+                langCodes: test.allowedLanguages ?? ['en'],
+                showAnswers: showAnswers,
+              ),
+            );
+          },
+        );
+      } else {
+        if (!showAnswers && test.omrLink != null && test.omrLink.isNotEmpty) {
+          downloadBloc.add(
+            DownloadPrelimsOmr(
+              url: test.omrLink,
+              filename: "${test.name.replaceAll(' ', '_')}_QuestionPaper.pdf",
+            ),
+          );
+        } else {
+          final result = await testRepo.fetchMcqTestQuestions(test.id);
+          result.fold(
+            (failure) {
+              getIt<LogHelper>().e(failure.message);
+              getIt<SnackBarHelper>().showError(failure.message);
+            },
+            (questions) {
+              downloadBloc.add(
+                ExportQuestionsToPdfEvent(
+                  questions,
+                  test.name,
+                  testType: TestType.prelims,
+                  showAnswers: showAnswers,
+                  language: 'en',
+                  languages: test.allowedLanguages ?? ['en'],
+                ),
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      getIt<LogHelper>().e("An error occurred: $e");
+      getIt<SnackBarHelper>().showError("An error occurred: $e");
+    }
   }
 
   Widget _buildSectionHeader(String title) {
@@ -486,6 +644,7 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
     required String info,
     required IconData icon,
     required Color iconColor,
+    VoidCallback? onDownload,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
@@ -534,6 +693,15 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
               ],
             ),
           ),
+          if (onDownload != null)
+            IconButton(
+              onPressed: onDownload,
+              icon: Icon(
+                Icons.download_for_offline_rounded,
+                color: AppColors.primary,
+                size: 24.sp,
+              ),
+            ),
         ],
       ),
     );
