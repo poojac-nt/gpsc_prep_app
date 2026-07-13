@@ -31,7 +31,7 @@ class _StudentEvaluationResultScreenState
   @override
   void initState() {
     context.read<MainsTestReviewBloc>().add(
-      FetchMainsTestReview(widget.args.testId!),
+      FetchMainsTestReview(widget.args.testId),
     );
     super.initState();
   }

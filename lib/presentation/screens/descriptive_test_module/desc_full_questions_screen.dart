@@ -130,11 +130,14 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
                     ),
                     tooltip: 'Switch Language',
                   ),
-                if (questions.isNotEmpty && widget.args.isSubmitted == false)
+                if (questions.isNotEmpty)
                   IconButton(
                     onPressed: _isDownloadingFull
                         ? null
-                        : () => _downloadFullPdf(questions),
+                        : () => _downloadFullPdf(
+                            questions,
+                            isAnswer: widget.args.isSubmitted,
+                          ),
                     icon: _isDownloadingFull
                         ? SizedBox(
                             width: 20.w,
@@ -496,14 +499,17 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
     }
   }
 
-  Future<void> _downloadFullPdf(List<DescQuestionModel> questions) async {
+  Future<void> _downloadFullPdf(
+    List<DescQuestionModel> questions, {
+    required bool isAnswer,
+  }) async {
     setState(() => _isDownloadingFull = true);
     try {
       await generateFullDescTestPdf(
         questions,
         widget.args.testName,
         _availableLangs,
-        showAnswers: false,
+        showAnswers: isAnswer,
       );
       if (mounted) {
         getIt<SnackBarHelper>().showSuccess(
