@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
@@ -223,6 +227,36 @@ class _StudentEvaluationResultScreenState
                 backgroundColor: AppColors.primary,
               );
             },
+          ),
+          16.hGap,
+          ActionButton(
+            text: 'Download Model Answers',
+            icon: Icons.download_rounded,
+            onTap: () async {
+              final downloadBloc = context.read<DownLoadPdfBloc>();
+              final testRepo = getIt<TestRepository>();
+              final result = await testRepo.fetchDescTestQuestions(
+                widget.args.descTestModel.id,
+              );
+              result.fold(
+                (failure) {
+                  getIt<LogHelper>().e(failure.message);
+                  getIt<SnackBarHelper>().showError(failure.message);
+                },
+                (questions) {
+                  downloadBloc.add(
+                    DownloadFullDescTestPdf(
+                      questions: questions,
+                      testName: widget.args.descTestModel.name,
+                      langCodes:
+                          widget.args.descTestModel.allowedLanguages ?? ['en'],
+                      showAnswers: true,
+                    ),
+                  );
+                },
+              );
+            },
+            backgroundColor: AppColors.primary,
           ),
           16.hGap,
           ActionButton(

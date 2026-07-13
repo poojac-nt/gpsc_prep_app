@@ -213,22 +213,22 @@ class EditMentorScreenArgs {
 }
 
 class StudentEvaluationResultScreenArgs {
-  final int? testId;
-  final String? testName;
+  final int testId;
+  final String testName;
   final String? studentName;
-  final int? mentorId;
-  final MainsTestReviewModel? reviewModel;
-  final int? courseId;
-  final DescTestModel? descTestModel;
+  final int mentorId;
+  final MainsTestReviewModel reviewModel;
+  final int courseId;
+  final DescTestModel descTestModel;
 
   StudentEvaluationResultScreenArgs({
-    this.testId,
-    this.testName,
+    required this.testId,
+    required this.testName,
     this.studentName,
-    this.mentorId,
-    this.reviewModel,
-    this.courseId,
-    this.descTestModel,
+    required this.mentorId,
+    required this.reviewModel,
+    required this.courseId,
+    required this.descTestModel,
   });
 }
 
