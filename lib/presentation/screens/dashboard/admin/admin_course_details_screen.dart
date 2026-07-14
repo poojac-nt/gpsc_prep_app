@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,11 +11,15 @@ import 'package:gpsc_prep_app/core/helpers/share_helper.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
 import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
+import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_course/course_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/course_purchased_users/course_purchased_users_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AdminCourseDetailsScreen extends StatefulWidget {
   const AdminCourseDetailsScreen({super.key, required this.courseModel});
@@ -33,6 +40,32 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
   void initState() {
     super.initState();
     _isActive = widget.courseModel.isActive;
+    context.read<CoursePurchasedUsersBloc>().add(
+      FetchCoursePurchasedUsers(widget.courseModel.id),
+    );
+  }
+
+  Future<void> _exportCsv(List<UserModel> users) async {
+    List<List<dynamic>> rows = [];
+    rows.add(["Name", "Email", "Number"]);
+
+    for (var user in users) {
+      rows.add([user.name, user.email, user.number ?? ""]);
+    }
+
+    String csv = const ListToCsvConverter().convert(rows);
+
+    final directory = await getApplicationDocumentsDirectory();
+    final path = "${directory.path}/course_${widget.courseModel.id}_users.csv";
+    final file = File(path);
+    await file.writeAsString(csv);
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(path)],
+        text: 'Exported Users for ${widget.courseModel.name}',
+      ),
+    );
   }
 
   void _toggleStatus() {
@@ -122,6 +155,22 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
             style: AppTexts.titleTextStyle.copyWith(fontSize: 18.sp),
           ),
           actions: [
+            BlocBuilder<CoursePurchasedUsersBloc, CoursePurchasedUsersState>(
+              builder: (context, state) {
+                if (state is CoursePurchasedUsersLoaded &&
+                    state.users.isNotEmpty) {
+                  return IconButton(
+                    onPressed: () => _exportCsv(state.users),
+                    icon: Icon(
+                      Icons.file_download_outlined,
+                      color: Colors.black,
+                      size: 24.sp,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             IconButton(
               onPressed: () => ShareHelper.shareCourse(widget.courseModel),
               icon: Icon(
@@ -145,19 +194,19 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
                   // Status Card
                   _buildStatusCard(),
                   16.hGap,
-                  
+
                   // Course Info section
                   _buildCourseHeader(),
                   20.hGap,
-                  
+
                   // Pricing Info Grid
                   _buildMetadataGrid(totalTests),
                   24.hGap,
-                  
+
                   // Action Button
                   _buildActionButton(),
                   28.hGap,
-                  
+
                   // Curriculum/Tests lists
                   _buildCurriculumSection(prelims, descriptive),
                 ],
@@ -166,9 +215,7 @@ class _AdminCourseDetailsScreenState extends State<AdminCourseDetailsScreen> {
             if (_isDownloadingPdf)
               Container(
                 color: Colors.black.withValues(alpha: 0.3),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               ),
           ],
         ),

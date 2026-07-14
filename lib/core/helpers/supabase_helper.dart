@@ -2422,6 +2422,38 @@ class SupabaseHelper {
     }
   }
 
+  Future<Either<Failure, List<UserModel>>> fetchCoursePurchasedUsers({
+    required int courseId,
+  }) async {
+    try {
+      String? rpcError;
+      final response = await callRpc(
+        call: () => supabase.rpc(
+          SupabaseKeys.getCoursePurchasedUsers,
+          params: {'p_course_id': courseId},
+        ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching tests'));
+      }
+
+      final users = (response as List).map((e) => UserModel.fromJson(e)).toList();
+
+      _log.i('Fetched users successfully');
+
+      return Right(users);
+    } catch (e) {
+      _log.e('Error fetching tests: $e', error: e);
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      return Left(Failure('Error fetching tests: ${e.toString()}'));
+    }
+  }
+
   /// ===========================================================================
   /// NOTIFICATIONS
   /// ===========================================================================

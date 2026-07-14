@@ -54,6 +54,7 @@ abstract class SupabaseKeys {
   static final String descTestWithoutCourse = 'test_without_course_desc';
   static final String getCourseWithTests = 'get_course_with_tests';
   static final String getTop3Scorers = 'get_top_3_scorers';
+  static final String getCoursePurchasedUsers = 'get_course_purchased_users';
 
   ///table
   static final String usersTable = 'users';

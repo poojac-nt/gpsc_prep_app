@@ -4,6 +4,7 @@ import 'package:gpsc_prep_app/core/helpers/supabase_helper.dart';
 import 'package:gpsc_prep_app/data/models/payloads/course_payload.dart';
 import 'package:gpsc_prep_app/domain/entities/course_model.dart';
 
+import 'package:gpsc_prep_app/domain/entities/user_model.dart';
 import '../../domain/entities/product_model.dart';
 
 class CourseRepository {
@@ -41,5 +42,9 @@ class CourseRepository {
 
   Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
     return await _supabaseHelper.fetchProducts();
+  }
+
+  Future<Either<Failure, List<UserModel>>> fetchCoursePurchasedUsers(int courseId) async {
+    return await _supabaseHelper.fetchCoursePurchasedUsers(courseId: courseId);
   }
 }
