@@ -456,6 +456,46 @@ class _DescFullQuestionsScreenState extends State<DescFullQuestionsScreen> {
   }
 
   Future<void> _pickPDF() async {
+    final bool? shouldProceed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'Instructions',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp,
+            color: AppColors.primary,
+          ),
+        ),
+        content: Text(
+          'Please select a single PDF containing answers for all the questions in this test.',
+          style: TextStyle(fontSize: 14.sp, color: AppColors.gray700),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: AppColors.gray500)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            child: const Text('Upload'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldProceed != true) return;
+
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
