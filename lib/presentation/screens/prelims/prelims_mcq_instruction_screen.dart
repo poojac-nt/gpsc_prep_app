@@ -292,41 +292,61 @@ class _PrelimsMcqInstructionScreenState
                 15.hGap,
 
                 // Secondary Actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildOutlinedButton(
-                        "Download",
-                        Icons.download,
-                        () {
-                          context.read<DownLoadPdfBloc>().add(
-                            DownloadPrelimsOmr(
-                              url: testModel.omrLink ?? '',
-                              filename:
-                                  'OMR_${testModel.name.replaceAll(' ', '_')}',
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "For Offline Test Submission :",
+                        style: AppTexts.labelTextStyle,
+                      ),
+                      10.hGap,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildOutlinedButton(
+                              "Download Paper",
+                              Icons.download,
+                              () {
+                                context.read<DownLoadPdfBloc>().add(
+                                  DownloadPrelimsOmr(
+                                    url: testModel.omrLink ?? '',
+                                    filename:
+                                        'OMR_${testModel.name.replaceAll(' ', '_')}',
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                          ),
+                          15.wGap,
+                          Expanded(
+                            child: _buildOutlinedButton(
+                              "Submit OMR",
+                              color: _hasProgress
+                                  ? Colors.grey
+                                  : Colors.black87,
+                              Icons.upload_file,
+                              () {
+                                if (_hasProgress) {
+                                  getIt<SnackBarHelper>().showError(
+                                    "You have an active test session. Please finish or discard it before submitting an OMR.",
+                                  );
+                                  return;
+                                }
+                                _handleOmrSubmit(testModel);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    15.wGap,
-                    Expanded(
-                      child: _buildOutlinedButton(
-                        "Submit OMR",
-                        color: _hasProgress ? Colors.grey : Colors.black87,
-                        Icons.upload_file,
-                        () {
-                          if (_hasProgress) {
-                            getIt<SnackBarHelper>().showError(
-                              "You have an active test session. Please finish or discard it before submitting an OMR.",
-                            );
-                            return;
-                          }
-                          _handleOmrSubmit(testModel);
-                        },
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 30.hGap,
               ],
