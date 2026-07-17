@@ -485,238 +485,226 @@ Future<String> generateFullDescTestPdf(
     (await rootBundle.load('assets/images/x_logo.png')).buffer.asUint8List(),
   );
 
-  pw.Widget borderedPage(pw.Widget child) {
+  final pageTheme = pw.PageTheme(
+    pageFormat: PdfPageFormat.a4,
+    margin: const pw.EdgeInsets.only(left: 32, top: 32, right: 32, bottom: 40),
+    buildBackground: (context) {
+      return pw.FullPage(
+        ignoreMargins: true,
+        child: pw.Container(
+          margin: const pw.EdgeInsets.all(16),
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.black, width: 1),
+          ),
+          child: pw.Center(
+            child: pw.Opacity(
+              opacity: 0.1,
+              child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  pw.Widget buildFooter(pw.Context context) {
     return pw.Container(
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.black, width: 1),
+      alignment: pw.Alignment.center,
+      margin: const pw.EdgeInsets.only(top: 10, bottom: 10),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+        children: [
+          pw.Text(
+            'Click here to Join us:',
+            style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Row(
+            children: [
+              pw.Image(telegramLogo, width: 10, height: 10),
+              pw.SizedBox(width: 4),
+              pw.UrlLink(
+                destination: 'https://t.me/starics_prep',
+                child: pw.Text(
+                  '@starics_prep',
+                  style: pw.TextStyle(
+                    color: PdfColors.blue,
+                    decoration: pw.TextDecoration.underline,
+                    fontSize: 9.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+          pw.Row(
+            children: [
+              pw.Image(gmailLogo, width: 10, height: 10),
+              pw.SizedBox(width: 4),
+              pw.UrlLink(
+                destination: 'mailto:star.ics89@gmail.com',
+                child: pw.Text(
+                  'star.ics89@gmail.com',
+                  style: pw.TextStyle(
+                    color: PdfColors.blue,
+                    decoration: pw.TextDecoration.underline,
+                    fontSize: 9.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+          pw.Row(
+            children: [
+              pw.Image(xLogo, width: 10, height: 10),
+              pw.SizedBox(width: 4),
+              pw.UrlLink(
+                destination: 'https://x.com/star_ics89',
+                child: pw.Text(
+                  '@star_ics89',
+                  style: pw.TextStyle(
+                    color: PdfColors.blue,
+                    decoration: pw.TextDecoration.underline,
+                    fontSize: 9.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      padding: const pw.EdgeInsets.all(16),
-      child: child,
     );
   }
 
-  pw.Widget buildFooter() {
-    return pw.Positioned(
-      bottom: 20,
-      left: 0,
-      right: 0,
-      child: pw.Container(
-        alignment: pw.Alignment.center,
-        margin: const pw.EdgeInsets.only(top: 10),
-        child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-          children: [
-            pw.Text(
-              'Click here to Join us:',
-              style: pw.TextStyle(
-                fontSize: 9.5,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            pw.Row(
-              children: [
-                pw.Image(telegramLogo, width: 10, height: 10),
-                pw.SizedBox(width: 4),
-                pw.UrlLink(
-                  destination: 'https://t.me/starics_prep',
-                  child: pw.Text(
-                    '@starics_prep',
-                    style: pw.TextStyle(
-                      color: PdfColors.blue,
-                      decoration: pw.TextDecoration.underline,
-                      fontSize: 9.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
-            pw.Row(
-              children: [
-                pw.Image(gmailLogo, width: 10, height: 10),
-                pw.SizedBox(width: 4),
-                pw.UrlLink(
-                  destination: 'mailto:star.ics89@gmail.com',
-                  child: pw.Text(
-                    'star.ics89@gmail.com',
-                    style: pw.TextStyle(
-                      color: PdfColors.blue,
-                      decoration: pw.TextDecoration.underline,
-                      fontSize: 9.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
-            pw.Row(
-              children: [
-                pw.Image(xLogo, width: 10, height: 10),
-                pw.SizedBox(width: 4),
-                pw.UrlLink(
-                  destination: 'https://x.com/star_ics89',
-                  child: pw.Text(
-                    '@star_ics89',
-                    style: pw.TextStyle(
-                      color: PdfColors.blue,
-                      decoration: pw.TextDecoration.underline,
-                      fontSize: 9.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  List<pw.Widget> currentWidgets = [];
 
   for (int i = 0; i < questions.length; i++) {
     final question = questions[i];
     final index = i + 1;
 
-    // --- Page 1 ---
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          return borderedPage(
-            pw.Stack(
-              children: [
-                pw.Center(
-                  child: pw.Opacity(
-                    opacity: 0.1,
-                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
-                  ),
-                ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          "Question $index",
-                          style: pw.TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.Text(
-                          showAnswers ? "Model Answer" : "Question Paper",
-                          style: pw.TextStyle(
-                            fontSize: 10.sp,
-                            color: PdfColors.grey700,
-                            fontStyle: pw.FontStyle.italic,
-                          ),
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: 8),
-                    // Add question text based on selected languages
-                    for (int k = 0; k < langCodes.length; k++) ...[
-                      if (k > 0) pw.SizedBox(height: 10),
-                      if (langCodes[k] == 'en') ...[
-                        pw.Text(
-                          "Question (EN):",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        ),
-                        ..._parseMarkdownToPdfWidgets(
-                          question.questionEn.questionTxt,
-                        ),
-                        if (showAnswers &&
-                            question.questionEn.answerTxt.isNotEmpty) ...[
-                          pw.SizedBox(height: 10),
-                          pw.Text(
-                            "Model Answer (EN):",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          ..._parseMarkdownToPdfWidgets(
-                            question.questionEn.answerTxt,
-                          ),
-                        ],
-                      ],
-                      if (langCodes[k] == 'hi' &&
-                          question.questionHi?.questionTxt != null &&
-                          question.questionHi!.questionTxt.isNotEmpty) ...[
-                        pw.Text(
-                          "Question (HI):",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        ),
-                        ..._parseMarkdownToPdfWidgets(
-                          question.questionHi!.questionTxt,
-                        ),
-                        if (showAnswers &&
-                            question.questionHi!.answerTxt.isNotEmpty) ...[
-                          pw.SizedBox(height: 10),
-                          pw.Text(
-                            "Model Answer (HI):",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          ..._parseMarkdownToPdfWidgets(
-                            question.questionHi!.answerTxt,
-                          ),
-                        ],
-                      ],
-                      if (langCodes[k] == 'gj' &&
-                          question.questionGj?.questionTxt != null &&
-                          question.questionGj!.questionTxt.isNotEmpty) ...[
-                        pw.Text(
-                          "Question (GJ):",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        ),
-                        ..._parseMarkdownToPdfWidgets(
-                          question.questionGj!.questionTxt,
-                        ),
-                        if (showAnswers &&
-                            question.questionGj!.answerTxt.isNotEmpty) ...[
-                          pw.SizedBox(height: 10),
-                          pw.Text(
-                            "Model Answer (GJ):",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          ..._parseMarkdownToPdfWidgets(
-                            question.questionGj!.answerTxt,
-                          ),
-                        ],
-                      ],
-                    ],
-                  ],
-                ),
-                buildFooter(),
-              ],
+    currentWidgets.addAll([
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            "Question $index",
+            style: pw.TextStyle(
+              fontSize: 12.sp,
+              fontWeight: pw.FontWeight.bold,
             ),
-          );
-        },
+          ),
+          pw.Text(
+            showAnswers ? "Model Answer" : "Question Paper",
+            style: pw.TextStyle(
+              fontSize: 10.sp,
+              color: PdfColors.grey700,
+              fontStyle: pw.FontStyle.italic,
+            ),
+          ),
+        ],
       ),
-    );
+      pw.SizedBox(height: 8),
+      // Add question text based on selected languages
+      for (int k = 0; k < langCodes.length; k++) ...[
+        if (k > 0) pw.SizedBox(height: 10),
+        if (langCodes[k] == 'en') ...[
+          pw.Text(
+            "Question (EN):",
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          ..._parseMarkdownToPdfWidgets(question.questionEn.questionTxt),
+          if (showAnswers &&
+              question.questionEn.answerTxt.isNotEmpty) ...[
+            pw.SizedBox(height: 10),
+            pw.Text(
+              "Model Answer (EN):",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            ..._parseMarkdownToPdfWidgets(question.questionEn.answerTxt),
+          ],
+        ],
+        if (langCodes[k] == 'hi' &&
+            question.questionHi?.questionTxt != null &&
+            question.questionHi!.questionTxt.isNotEmpty) ...[
+          pw.Text(
+            "Question (HI):",
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          ..._parseMarkdownToPdfWidgets(question.questionHi!.questionTxt),
+          if (showAnswers &&
+              question.questionHi!.answerTxt.isNotEmpty) ...[
+            pw.SizedBox(height: 10),
+            pw.Text(
+              "Model Answer (HI):",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            ..._parseMarkdownToPdfWidgets(question.questionHi!.answerTxt),
+          ],
+        ],
+        if (langCodes[k] == 'gj' &&
+            question.questionGj?.questionTxt != null &&
+            question.questionGj!.questionTxt.isNotEmpty) ...[
+          pw.Text(
+            "Question (GJ):",
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          ..._parseMarkdownToPdfWidgets(question.questionGj!.questionTxt),
+          if (showAnswers &&
+              question.questionGj!.answerTxt.isNotEmpty) ...[
+            pw.SizedBox(height: 10),
+            pw.Text(
+              "Model Answer (GJ):",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            ..._parseMarkdownToPdfWidgets(question.questionGj!.answerTxt),
+          ],
+        ],
+      ],
+      pw.SizedBox(height: 30), // Spacing after question/answer
+    ]);
 
-    // --- Extra pages ---
-    if (!showAnswers) {
+    // --- Extra pages (Question Paper mode only) ---
+    if (!showAnswers && (question.pages ?? 1) > 1) {
+      // Dump the accumulated widgets so far into a MultiPage
+      pdf.addPage(
+        pw.MultiPage(
+          pageTheme: pageTheme,
+          footer: buildFooter,
+          build: (context) => currentWidgets,
+        ),
+      );
+      // Reset the list for the next set of questions
+      currentWidgets = [];
+
+      // Add the requested blank pages for the user to write their answer
       for (int j = 1; j < (question.pages ?? 1); j++) {
         pdf.addPage(
           pw.Page(
-            pageFormat: PdfPageFormat.a4,
+            pageTheme: pageTheme,
             build: (context) {
-              return borderedPage(
-                pw.Stack(
-                  children: [
-                    pw.Center(
-                      child: pw.Opacity(
-                        opacity: 0.1,
-                        child: pw.Image(logoImage, fit: pw.BoxFit.contain),
-                      ),
-                    ),
-                    buildFooter(),
-                  ],
-                ),
+              return pw.Column(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Expanded(child: pw.SizedBox()),
+                  buildFooter(context),
+                ],
               );
             },
           ),
         );
       }
     }
+  }
+
+  // If there are any remaining widgets, output them as the final MultiPage
+  if (currentWidgets.isNotEmpty) {
+    pdf.addPage(
+      pw.MultiPage(
+        pageTheme: pageTheme,
+        footer: buildFooter,
+        build: (context) => currentWidgets,
+      ),
+    );
   }
 
   // --- Save PDF ---
