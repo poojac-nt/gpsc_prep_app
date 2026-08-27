@@ -31,6 +31,7 @@ import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_blo
 import 'package:gpsc_prep_app/presentation/blocs/edit%20profile/edit_profile_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/edit_mentor/edit_mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_course_details/fetch_course_details_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/course_purchased_users/course_purchased_users_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor/mentor_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/mentor_assignment/mentor_assignment_bloc.dart';
@@ -183,6 +184,9 @@ class AppServices {
     ),
     BlocProvider<FetchCourseDetailsBloc>(
       create: (_) => getIt<FetchCourseDetailsBloc>(),
+    ),
+    BlocProvider<CoursePurchasedUsersBloc>(
+      create: (_) => getIt<CoursePurchasedUsersBloc>(),
     ),
     BlocProvider<AddProductBloc>(create: (_) => getIt<AddProductBloc>()),
     BlocProvider<NotificationBloc>(create: (_) => getIt<NotificationBloc>()),

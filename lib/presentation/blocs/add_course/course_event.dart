@@ -19,6 +19,17 @@ class AddCourseRequested extends CourseEvent {
   });
 }
 
-class FetchCoursesRequested extends CourseEvent {}
+class ToggleCourseStatusRequested extends CourseEvent {
+  final int courseId;
+  final bool isActive;
+
+  ToggleCourseStatusRequested({required this.courseId, required this.isActive});
+}
+
+class FetchCoursesRequested extends CourseEvent {
+  final bool isAdmin;
+
+  FetchCoursesRequested({required this.isAdmin});
+}
 
 class FetchProductsRequested extends CourseEvent {}

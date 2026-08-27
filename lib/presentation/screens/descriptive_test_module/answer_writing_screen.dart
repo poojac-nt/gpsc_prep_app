@@ -102,10 +102,9 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 controller: _scrollController,
                 padding: EdgeInsets.all(AppPaddings.appPaddingInt),
-                itemCount:
-                    state.hasReachedMax
-                        ? descTests.length
-                        : descTests.length + 1,
+                itemCount: state.hasReachedMax
+                    ? descTests.length
+                    : descTests.length + 1,
                 itemBuilder: (context, index) {
                   if (index >= descTests.length) {
                     return const Center(
@@ -121,17 +120,16 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                     descTestModel: test,
                     isUnlocked: isAnswerUnlocked(test.createdAt),
                     isAttempted: hasAnswer,
-                    onStartTestTap:
-                        hasAnswer
-                            ? () {}
-                            : () {
-                              context.push(
-                                AppRoutes.descriptiveTestInstructionScreen,
-                                extra: DescTestInstructionScreenArgs(
-                                  dailyTestModel: test,
-                                ),
-                              );
-                            },
+                    onStartTestTap: hasAnswer
+                        ? () {}
+                        : () {
+                            context.push(
+                              AppRoutes.descriptiveTestInstructionScreen,
+                              extra: DescTestInstructionScreenArgs(
+                                dailyTestModel: test,
+                              ),
+                            );
+                          },
                     onReviewTap: () {
                       context.push(
                         AppRoutes.descAnswerScreen,
@@ -139,6 +137,9 @@ class _AnswerWritingScreenState extends State<AnswerWritingScreen> {
                           descTestModel: test,
                           isUnlocked: isAnswerUnlocked(test.createdAt),
                           showPeerReview: true,
+                          languages: test.allowedLanguages?.isNotEmpty == true
+                              ? test.allowedLanguages!
+                              : ['en'],
                         ),
                       );
                     },

@@ -127,6 +127,24 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                 final question = questions[currentIndex];
                 final answer = _answers[question.id];
                 final selectedFile = answer?.files;
+                final List<String> present = [];
+                if (question.questionEn.questionTxt.trim().isNotEmpty) {
+                  present.add('en');
+                }
+                if (question.questionHi != null &&
+                    question.questionHi!.questionTxt.trim().isNotEmpty) {
+                  present.add('hi');
+                }
+                if (question.questionGj != null &&
+                    question.questionGj!.questionTxt.trim().isNotEmpty) {
+                  present.add('gj');
+                }
+
+                final modelAllowed =
+                    widget.descTestModel.allowedLanguages ?? [];
+                final List<String> allowedLangs = modelAllowed.isNotEmpty
+                    ? modelAllowed.where((l) => present.contains(l)).toList()
+                    : present;
                 return SingleChildScrollView(
                   controller: _scrollController,
                   child: Column(
@@ -188,6 +206,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                                         question: question,
                                         index: (currentIndex + 1),
                                         testName: widget.descTestModel.name,
+                                        langCodes: allowedLangs,
                                       ),
                                     );
                                   },
@@ -195,20 +214,24 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                               ],
                             ),
                             15.hGap,
-                            Text(
-                              question.questionEn.questionTxt,
-                              style: AppTexts.labelTextStyle,
-                            ),
-                            if (question.questionHi?.questionTxt.isNotEmpty ??
-                                false) ...[
+                            if (allowedLangs.contains('en')) ...[
+                              Text(
+                                question.questionEn.questionTxt,
+                                style: AppTexts.labelTextStyle,
+                              ),
+                            ],
+                            if (allowedLangs.contains('hi') &&
+                                (question.questionHi?.questionTxt.isNotEmpty ??
+                                    false)) ...[
                               10.hGap,
                               Text(
                                 question.questionHi!.questionTxt,
                                 style: AppTexts.labelTextStyle,
                               ),
                             ],
-                            if (question.questionGj?.questionTxt.isNotEmpty ??
-                                false) ...[
+                            if (allowedLangs.contains('gj') &&
+                                (question.questionGj?.questionTxt.isNotEmpty ??
+                                    false)) ...[
                               10.hGap,
                               Text(
                                 question.questionGj!.questionTxt,
@@ -312,18 +335,17 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                               _answers[question.id]!.files.isNotEmpty) {
                             final shouldOverwrite = await showDialog<bool>(
                               context: context,
-                              builder:
-                                  (context) => ConfirmationDialog(
-                                    title: "Replace existing files?",
-                                    description:
-                                        "You have already picked some files. If you select new ones, the old ones will be removed. Do you want to do this?",
-                                    primaryButtonText: "Replace",
-                                    onPrimaryPressed:
-                                        () => Navigator.of(context).pop(true),
-                                    secondaryButtonText: "Cancel",
-                                    onSecondaryPressed:
-                                        () => Navigator.of(context).pop(false),
-                                  ),
+                              builder: (context) => ConfirmationDialog(
+                                title: "Replace existing files?",
+                                description:
+                                    "You have already picked some files. If you select new ones, the old ones will be removed. Do you want to do this?",
+                                primaryButtonText: "Replace",
+                                onPrimaryPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                secondaryButtonText: "Cancel",
+                                onSecondaryPressed: () =>
+                                    Navigator.of(context).pop(false),
+                              ),
                             );
 
                             // If user cancels, just return without opening file picker
@@ -338,11 +360,10 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                           );
 
                           if (result != null) {
-                            final files =
-                                result.paths
-                                    .where((path) => path != null)
-                                    .map((path) => File(path!))
-                                    .toList();
+                            final files = result.paths
+                                .where((path) => path != null)
+                                .map((path) => File(path!))
+                                .toList();
 
                             if (files.isNotEmpty) {
                               setState(() {
@@ -374,21 +395,20 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                               backgroundColor: AppColors.primary,
                               text: "Previous",
                               isLoading: (currentIndex == 0),
-                              onTap:
-                                  currentIndex == 0
-                                      ? () {}
-                                      : () {
-                                        focusNode.unfocus();
-                                        setState(() {
-                                          currentIndex--;
-                                          _restoreAnswerForCurrentQuestion(
-                                            state
-                                                .questionsModels[currentIndex]
-                                                .id,
-                                          );
-                                        });
-                                        goTop();
-                                      },
+                              onTap: currentIndex == 0
+                                  ? () {}
+                                  : () {
+                                      focusNode.unfocus();
+                                      setState(() {
+                                        currentIndex--;
+                                        _restoreAnswerForCurrentQuestion(
+                                          state
+                                              .questionsModels[currentIndex]
+                                              .id,
+                                        );
+                                      });
+                                      goTop();
+                                    },
                               fontColor: Colors.white,
                             ),
                           ),
@@ -563,7 +583,7 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                 Text(
                   hasAnswers
                       ? "You are leaving the test without submitting answers.\n"
-                          "Are you sure you want to discard your answers?"
+                            "Are you sure you want to discard your answers?"
                       : "Do you want to leave without writing the test ?",
                   style: AppTexts.labelTextStyle.copyWith(
                     color: Colors.grey[700],
@@ -587,19 +607,19 @@ class _DescriptiveTestScreenState extends State<DescriptiveTestScreen> {
                     ),
                     hasAnswers
                         ? IntrinsicWidth(
-                          child: ActionButton(
-                            text: "Submit Test",
-                            onTap: () {
-                              Navigator.of(
-                                context,
-                              ).pop(false); // don’t pop screen
-                              context.read<DailyDescTestBloc>().add(
-                                SubmitDescTest(widget.descTestModel.id),
-                              );
-                            },
-                            backgroundColor: Colors.green,
-                          ),
-                        )
+                            child: ActionButton(
+                              text: "Submit Test",
+                              onTap: () {
+                                Navigator.of(
+                                  context,
+                                ).pop(false); // don’t pop screen
+                                context.read<DailyDescTestBloc>().add(
+                                  SubmitDescTest(widget.descTestModel.id),
+                                );
+                              },
+                              backgroundColor: Colors.green,
+                            ),
+                          )
                         : SizedBox.shrink(),
                     // Leave
                     IntrinsicWidth(

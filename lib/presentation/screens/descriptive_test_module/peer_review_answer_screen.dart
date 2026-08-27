@@ -183,34 +183,33 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder:
-            (context) => Scaffold(
-              backgroundColor: Colors.black,
-              appBar: AppBar(
-                backgroundColor: Colors.black,
-                iconTheme: const IconThemeData(color: Colors.white),
-                elevation: 0,
-              ),
-              body: Center(
-                child: InteractiveViewer(
-                  panEnabled: true,
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    width: double.infinity,
-                    height: double.infinity,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    },
-                  ),
-                ),
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            elevation: 0,
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              panEnabled: true,
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                },
               ),
             ),
+          ),
+        ),
       ),
     );
   }
@@ -218,9 +217,8 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
   void _handlePdfTap(BuildContext context, String pdfUrl) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) =>
-                PdfViewerScreen(pdfUrl: pdfUrl, title: 'Submitted Answer'),
+        builder: (context) =>
+            PdfViewerScreen(pdfUrl: pdfUrl, title: 'Submitted Answer'),
       ),
     );
   }
@@ -461,14 +459,12 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
   Widget _buildCommentTile(Comment comment) {
     // Generate initials from reviewer name
     final parts = comment.reviewerName.trim().split(RegExp(r'\s+'));
-    final initials =
-        parts.length >= 2
-            ? (parts[0][0] + parts[1][0]).toUpperCase()
-            : parts[0][0].toUpperCase();
+    final initials = parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : parts[0][0].toUpperCase();
 
     final colors = [
       const Color(0xFF1E293B),
-
       const Color(0xFF8B5CF6),
       const Color(0xFF0F172A),
       const Color(0xFFF43F5E),
@@ -627,8 +623,8 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
                             final comment = _feedbackController.text.trim();
                             if (comment.isEmpty || _wordCount > 100) return;
 
-                            final reviewerId =
-                                getIt<CacheManager>().getUserId();
+                            final reviewerId = getIt<CacheManager>()
+                                .getUserId();
                             context.read<SubmitPeerReviewBloc>().add(
                               SubmitPeerReview(
                                 answerId: detail.answerId,
@@ -646,8 +642,9 @@ class _PeerReviewAnswerScreenState extends State<PeerReviewAnswerScreen> {
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(10.r),
-                          icon:
-                              isSubmitting ? Icons.hourglass_empty : Icons.send,
+                          icon: isSubmitting
+                              ? Icons.hourglass_empty
+                              : Icons.send,
                           fontColor: Colors.white,
                         ),
                       ],

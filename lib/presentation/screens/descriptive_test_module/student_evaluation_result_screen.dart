@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
+import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/mains_test_review_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/descriptive_test_result/mains_test_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
@@ -24,18 +28,40 @@ class StudentEvaluationResultScreen extends StatefulWidget {
 
 class _StudentEvaluationResultScreenState
     extends State<StudentEvaluationResultScreen> {
+  bool _isDownloadingPdf = false;
+
   @override
   void initState() {
     context.read<MainsTestReviewBloc>().add(
-      FetchMainsTestReview(widget.args.testId!),
+      FetchMainsTestReview(widget.args.testId),
     );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
+    return BlocListener<DownLoadPdfBloc, DownLoadPdfState>(
+      listener: (context, state) {
+        if (state is DownLoadPdfStarted) {
+          setState(() {
+            _isDownloadingPdf = true;
+          });
+        } else if (state is PdfDownloadSuccess) {
+          setState(() {
+            _isDownloadingPdf = false;
+          });
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          getIt<SnackBarHelper>().showSuccess("Download successful");
+        } else if (state is PdfDownloadFailure) {
+          setState(() {
+            _isDownloadingPdf = false;
+          });
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          getIt<SnackBarHelper>().showError(state.failure.message);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -44,7 +70,9 @@ class _StudentEvaluationResultScreenState
         title: Text('Evaluation Result', style: AppTexts.titleTextStyle),
         centerTitle: false,
       ),
-      body: BlocBuilder<MainsTestReviewBloc, MainsTestReviewState>(
+      body: Stack(
+        children: [
+          BlocBuilder<MainsTestReviewBloc, MainsTestReviewState>(
         builder: (context, state) {
           if (state is MainsTestReviewLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -97,6 +125,14 @@ class _StudentEvaluationResultScreenState
           }
           return const SizedBox.shrink();
         },
+      ),
+          if (_isDownloadingPdf)
+            Container(
+              color: Colors.black.withValues(alpha: 0.3),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
+      ),
       ),
     );
   }
@@ -226,6 +262,42 @@ class _StudentEvaluationResultScreenState
           ),
           16.hGap,
           ActionButton(
+            text: 'Download Model Answers',
+            icon: Icons.download_rounded,
+            onTap: () async {
+              setState(() {
+                _isDownloadingPdf = true;
+              });
+              final downloadBloc = context.read<DownLoadPdfBloc>();
+              final testRepo = getIt<TestRepository>();
+              final result = await testRepo.fetchDescTestQuestions(
+                widget.args.descTestModel.id,
+              );
+              result.fold(
+                (failure) {
+                  setState(() {
+                    _isDownloadingPdf = false;
+                  });
+                  getIt<LogHelper>().e(failure.message);
+                  getIt<SnackBarHelper>().showError(failure.message);
+                },
+                (questions) {
+                  downloadBloc.add(
+                    DownloadFullDescTestPdf(
+                      questions: questions,
+                      testName: widget.args.descTestModel.name,
+                      langCodes:
+                          widget.args.descTestModel.allowedLanguages ?? ['en'],
+                      showAnswers: true,
+                    ),
+                  );
+                },
+              );
+            },
+            backgroundColor: AppColors.primary,
+          ),
+          16.hGap,
+          ActionButton(
             text: 'View Model Answers',
             icon: Icons.lightbulb_outline_rounded,
             onTap: () {
@@ -236,6 +308,7 @@ class _StudentEvaluationResultScreenState
                   testName: widget.args.testName ?? 'Test',
                   courseId: widget.args.courseId,
                   isSubmitted: true,
+                  descTestModel: widget.args.descTestModel,
                 ),
               );
             },

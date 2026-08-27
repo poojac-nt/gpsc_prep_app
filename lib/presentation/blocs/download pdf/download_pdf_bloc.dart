@@ -30,6 +30,7 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
     on<ExportQuestionsToPdfEvent>(_onExportQuestionsToPdf);
     on<DownloadStudyMaterial>(_downloadStudyMaterial);
     on<DownloadDescTestPdf>(_downloadDescTestPdf);
+    on<DownloadFullDescTestPdf>(_onDownloadFullDescTestPdf);
     on<DownloadPrelimsOmr>(_downloadPrelimsOmr);
   }
 
@@ -53,6 +54,8 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
         performanceSummary: event.performanceSummary,
         testType: event.testType,
         detailedResults: event.detailedResults,
+        languages: event.languages,
+        showAnswers: event.showAnswers,
       );
       if (result.isEmpty) {
         _log.e("Failed to generate PDF");
@@ -92,6 +95,8 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
         event.question,
         event.index,
         event.testName,
+        event.langCodes,
+        showAnswers: event.showAnswers,
       );
 
       if (result.isEmpty) {
@@ -106,6 +111,32 @@ class DownLoadPdfBloc extends Bloc<DownLoadPdfEvent, DownLoadPdfState> {
       );
     } catch (e) {
       _log.e("Error downloading PDF: $e");
+      emit(PdfDownloadFailure(Failure(e.toString())));
+    }
+  }
+
+  Future<void> _onDownloadFullDescTestPdf(
+    DownloadFullDescTestPdf event,
+    Emitter<DownLoadPdfState> emit,
+  ) async {
+    try {
+      emit(DownLoadPdfStarted());
+      final result = await generateFullDescTestPdf(
+        event.questions,
+        event.testName,
+        event.langCodes,
+        showAnswers: event.showAnswers,
+      );
+
+      if (result.isEmpty) {
+        _log.e("Failed to generate PDF for test ${event.testName}");
+        emit(PdfDownloadFailure(Failure("Failed to generate PDF")));
+        return;
+      }
+      _log.i("Full test PDF generated successfully: $result");
+      emit(PdfDownloadSuccess(result));
+    } catch (e) {
+      _log.e("Error downloading full test PDF: $e");
       emit(PdfDownloadFailure(Failure(e.toString())));
     }
   }

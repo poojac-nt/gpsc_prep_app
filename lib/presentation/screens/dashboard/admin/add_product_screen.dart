@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
+import 'package:gpsc_prep_app/data/models/payloads/product_payload.dart';
 import 'package:gpsc_prep_app/presentation/blocs/add_product/add_product_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/action_button.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
-import 'package:gpsc_prep_app/data/models/payloads/product_payload.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -134,11 +134,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       label: 'Product Title',
                       hint: 'e.g., GPSC Premium Pass',
                       icon: Icons.label_important_outline_rounded,
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Please enter a title'
-                                  : null,
+                      validator: (val) => val == null || val.isEmpty
+                          ? 'Please enter a title'
+                          : null,
                     ),
                     24.hGap,
                     _buildTextField(
@@ -147,11 +145,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       label: 'Store Product ID',
                       hint: 'e.g., premium_subscription_yearly',
                       icon: Icons.token_outlined,
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Product ID is required'
-                                  : null,
+                      validator: (val) => val == null || val.isEmpty
+                          ? 'Product ID is required'
+                          : null,
                     ),
                     24.hGap,
                     _buildTextField(
@@ -179,11 +175,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       hint: 'Describe what this product offers to students...',
                       icon: Icons.description_outlined,
                       maxLines: 4,
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Description is required'
-                                  : null,
+                      validator: (val) => val == null || val.isEmpty
+                          ? 'Description is required'
+                          : null,
                     ),
                     // 32.hGap,
                     // _buildStatusToggle(),
@@ -208,61 +202,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildStatusToggle() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.gray100),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color:
-                  _isActive ? const Color(0xffecfdf5) : const Color(0xfffef2f2),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(
-              _isActive
-                  ? Icons.check_circle_outline_rounded
-                  : Icons.highlight_off_rounded,
-              color:
-                  _isActive ? const Color(0xff059669) : const Color(0xffdc2626),
-              size: 20.sp,
-            ),
-          ),
-          12.wGap,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Active Status',
-                  style: AppTexts.labelTextStyle.copyWith(fontSize: 14.sp),
-                ),
-                Text(
-                  _isActive ? 'Visible to students' : 'Hidden from store',
-                  style: AppTexts.subTitle.copyWith(
-                    fontSize: 12.sp,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: _isActive,
-            onChanged: (val) => setState(() => _isActive = val),
-            activeColor: const Color(0xff3b82f6),
-          ),
-        ],
       ),
     );
   }

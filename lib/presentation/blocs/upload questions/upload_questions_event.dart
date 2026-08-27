@@ -31,6 +31,7 @@ class McqUploadParsedQuestions extends UploadQuestionsEvent {
   final int? priceSingle;
   final int? priceDual;
   final CourseTestType? testType;
+  final List<String>? allowedLanguages;
 
   McqUploadParsedQuestions({
     required this.payload,
@@ -40,6 +41,7 @@ class McqUploadParsedQuestions extends UploadQuestionsEvent {
     this.priceSingle,
     this.priceDual,
     this.testType,
+    this.allowedLanguages,
   });
 }
 
@@ -65,6 +67,7 @@ class DescUploadParsedQuestions extends UploadQuestionsEvent {
   final int? priceSingle;
   final int? priceDual;
   final CourseTestType? testType;
+  final List<String>? allowedLanguages;
 
   DescUploadParsedQuestions({
     required this.payload,
@@ -73,6 +76,7 @@ class DescUploadParsedQuestions extends UploadQuestionsEvent {
     this.priceSingle,
     this.priceDual,
     this.testType,
+    this.allowedLanguages,
   });
 }
 

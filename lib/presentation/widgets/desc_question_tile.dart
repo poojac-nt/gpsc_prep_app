@@ -82,22 +82,21 @@ class QuestionTile extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 1),
       duration: const Duration(milliseconds: 500),
-      builder:
-          (context, value, child) => Transform.translate(
-            offset: Offset(4 * value, 0),
-            child: Icon(
-              Icons.arrow_forward_ios,
-              size: 20,
-              color: AppColors.primary,
-              shadows: [
-                Shadow(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      builder: (context, value, child) => Transform.translate(
+        offset: Offset(4 * value, 0),
+        child: Icon(
+          Icons.arrow_forward_ios,
+          size: 20,
+          color: AppColors.primary,
+          shadows: [
+            Shadow(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              blurRadius: 3,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 }

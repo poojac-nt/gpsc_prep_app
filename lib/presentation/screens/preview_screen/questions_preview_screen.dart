@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/core/cache_manager.dart';
-import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/snack_bar_helper.dart';
+import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/domain/entities/question_language_model.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
-import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart'; // NEW
-import 'package:gpsc_prep_app/domain/entities/test_model.dart'; // NEW
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/domain/entities/test_model.dart';
 import 'package:gpsc_prep_app/presentation/blocs/download%20pdf/download_pdf_bloc.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-import 'package:gpsc_prep_app/utils/services/test_link_generator.dart'; // NEW
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 import '../../../domain/entities/detailed_test_result_model.dart';
 import '../../../utils/extensions/padding.dart';
 
-class QuestionPreviewScreen extends StatelessWidget {
+class QuestionPreviewScreen extends StatefulWidget {
   const QuestionPreviewScreen({
     super.key,
     required this.questions,
@@ -33,8 +32,151 @@ class QuestionPreviewScreen extends StatelessWidget {
   final List<DetailedTestResult>? detailedResults;
 
   @override
+  State<QuestionPreviewScreen> createState() => _QuestionPreviewScreenState();
+}
+
+class _QuestionPreviewScreenState extends State<QuestionPreviewScreen> {
+  late String _selectedLanguage;
+  late List<String> _availableLanguages;
+
+  @override
+  void initState() {
+    super.initState();
+    // Restrict to test's allowedLanguages; fall back to English-only.
+    _availableLanguages =
+        (widget.testModel?.allowedLanguages ?? [])
+            .map((e) => e.toLowerCase())
+            .where((e) => ['en', 'hi', 'gj'].contains(e))
+            .toList();
+    if (_availableLanguages.isEmpty) _availableLanguages = ['en'];
+
+    // Default to the first allowed language.
+    _selectedLanguage = _availableLanguages.first;
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  QuestionLanguageData _getLangData(QuestionModel q) {
+    switch (_selectedLanguage) {
+      case 'hi':
+        return q.questionHi ?? q.questionEn;
+      case 'gj':
+        return q.questionGj ?? q.questionEn;
+      case 'en':
+      default:
+        return q.questionEn;
+    }
+  }
+
+  String _languageLabel(String code) {
+    switch (code) {
+      case 'hi':
+        return 'हिंदी';
+      case 'gj':
+        return 'ગુજ';
+      case 'en':
+      default:
+        return 'Eng';
+    }
+  }
+
+  String _languageChar(String code) {
+    switch (code) {
+      case 'hi':
+        return 'अ';
+      case 'gj':
+        return 'અ';
+      case 'en':
+      default:
+        return 'A';
+    }
+  }
+
+  // ── Language picker bottom-sheet ───────────────────────────────────────────
+
+  void _showLanguagePicker({required VoidCallback onSelected}) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Text(
+                  'Select Language',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              ..._availableLanguages.map((lang) {
+                final isSelected = lang == _selectedLanguage;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor:
+                        isSelected ? AppColors.primary : Colors.grey.shade200,
+                    child: Text(
+                      _languageChar(lang),
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    _languageLabel(lang),
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  trailing:
+                      isSelected
+                          ? Icon(Icons.check, color: AppColors.primary)
+                          : null,
+                  onTap: () {
+                    setState(() => _selectedLanguage = lang);
+                    Navigator.pop(ctx);
+                    onSelected();
+                  },
+                );
+              }),
+              SizedBox(height: 8.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Export ─────────────────────────────────────────────────────────────────
+
+  void _exportPdf() {
+    if (widget.questions.isEmpty) return;
+    context.read<DownLoadPdfBloc>().add(
+      ExportQuestionsToPdfEvent(
+        widget.questions,
+        widget.testName,
+        performanceSummary: widget.performanceSummary,
+        testType: widget.testModel?.testType,
+        detailedResults: widget.detailedResults,
+        language: _selectedLanguage,
+      ),
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
+  @override
   Widget build(BuildContext context) {
-    if (questions.isEmpty) {
+    if (widget.questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(
           title: Text('Preview Questions', style: AppTexts.titleTextStyle),
@@ -46,6 +188,22 @@ class QuestionPreviewScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Preview Questions', style: AppTexts.titleTextStyle),
+        actions: [
+          // Language toggle — only visible when multiple languages are allowed.
+          if (_availableLanguages.length > 1)
+            IconButton(
+              tooltip:
+                  'Language: ${_languageLabel(_selectedLanguage)}\nTap to switch',
+              onPressed: () => _showLanguagePicker(onSelected: () {}),
+              icon: Text(
+                _languageChar(_selectedLanguage),
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
       ),
       body: BlocListener<DownLoadPdfBloc, DownLoadPdfState>(
         listener: (context, state) {
@@ -59,62 +217,66 @@ class QuestionPreviewScreen extends StatelessWidget {
         child: ListView.builder(
           padding: const EdgeInsets.all(12),
           itemCount:
-              questions.length +
-              (testModel?.testType == TestType.prelims &&
-                      performanceSummary != null
+              widget.questions.length +
+              (widget.testModel?.testType == TestType.prelims &&
+                      widget.performanceSummary != null
                   ? 1
                   : 0),
           itemBuilder: (context, index) {
-            if (testModel?.testType == TestType.prelims &&
-                performanceSummary != null) {
-              if (index == 0) {
-                return _buildPerformanceSummary();
-              }
-              index--; // Adjust index for questions
+            if (widget.testModel?.testType == TestType.prelims &&
+                widget.performanceSummary != null) {
+              if (index == 0) return _buildPerformanceSummary();
+              index--;
             }
-            final ln =
-                getIt<CacheManager>()
-                    .userSelectedLanguage(); // e.g., "en", "hi", "gj"
-            QuestionLanguageData getLangData(QuestionModel q) {
-              switch (ln) {
-                case 'hi':
-                  return q.questionHi ?? q.questionEn;
-                case 'gj':
-                  return q.questionGj ?? q.questionEn;
-                case 'en':
-                default:
-                  return q.questionEn;
-              }
-            }
-
-            final q = getLangData(questions[index]);
+            final q = _getLangData(widget.questions[index]);
             return _buildQuestionCard(q, index);
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.picture_as_pdf),
-        label: const Text('Export PDF'),
-        onPressed: () {
-          questions.isNotEmpty
-              ? context.read<DownLoadPdfBloc>().add(
-                ExportQuestionsToPdfEvent(
-                  questions,
-                  testName,
-                  performanceSummary: performanceSummary,
-                  testType: testModel?.testType,
-                  detailedResults: detailedResults,
-                ),
-              )
-              : null;
+      floatingActionButton: BlocBuilder<DownLoadPdfBloc, DownLoadPdfState>(
+        builder: (context, pdfState) {
+          final isLoading = pdfState is DownLoadPdfStarted;
+          return FloatingActionButton.extended(
+            backgroundColor: AppColors.primary,
+            icon:
+                isLoading
+                    ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                    : const Icon(Icons.picture_as_pdf, color: Colors.white),
+            label: Text(
+              isLoading
+                  ? 'Generating…'
+                  : 'Export PDF  (${_languageLabel(_selectedLanguage)})',
+              style: const TextStyle(color: Colors.white),
+            ),
+            onPressed:
+                isLoading
+                    ? null
+                    : () {
+                      if (_availableLanguages.length > 1) {
+                        // Ask user to confirm / change language before export.
+                        _showLanguagePicker(onSelected: _exportPdf);
+                      } else {
+                        _exportPdf();
+                      }
+                    },
+          );
         },
       ),
     );
   }
 
+  // ── Widgets ────────────────────────────────────────────────────────────────
+
   Widget _buildPerformanceSummary() {
-    if (performanceSummary == null) return const SizedBox.shrink();
-    final p = performanceSummary!;
+    if (widget.performanceSummary == null) return const SizedBox.shrink();
+    final p = widget.performanceSummary!;
 
     return Padding(
       padding: const EdgeInsets.all(4),
@@ -222,10 +384,10 @@ class QuestionPreviewScreen extends StatelessWidget {
                   color: Colors.green,
                 ),
               ),
-              if (detailedResults != null) ...[
+              if (widget.detailedResults != null) ...[
                 () {
-                  final userResult = detailedResults!.firstWhere(
-                    (r) => r.questionId == questions[index].questionId,
+                  final userResult = widget.detailedResults!.firstWhere(
+                    (r) => r.questionId == widget.questions[index].questionId,
                     orElse:
                         () => DetailedTestResult(
                           userId: 0,
@@ -245,8 +407,7 @@ class QuestionPreviewScreen extends StatelessWidget {
                         'Your answer: ${userResult.selectedOption}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color:
-                              userResult.isCorrect ? Colors.blue : Colors.red,
+                          color: userResult.isCorrect ? Colors.blue : Colors.red,
                         ),
                       ),
                     );
@@ -299,6 +460,7 @@ class QuestionPreviewScreen extends StatelessWidget {
 
 class _TableHeaderCell extends StatelessWidget {
   final String label;
+
   const _TableHeaderCell(this.label);
 
   @override
@@ -317,6 +479,7 @@ class _TableHeaderCell extends StatelessWidget {
 
 class _TableCell extends StatelessWidget {
   final String value;
+
   const _TableCell(this.value);
 
   @override

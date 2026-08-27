@@ -6,11 +6,10 @@ import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/router/args.dart';
 import 'package:gpsc_prep_app/presentation/blocs/peer_review/peer_review_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/peer_submission_tile.dart';
 import 'package:gpsc_prep_app/presentation/widgets/question_detail_card.dart';
 import 'package:gpsc_prep_app/utils/app_constants.dart';
-
-import 'package:gpsc_prep_app/presentation/blocs/peer_review/submit_peer_review_bloc.dart';
 
 class DescriptiveAnswerDetailScreen extends StatefulWidget {
   final DescriptiveAnswerDetailScreenArgs args;
@@ -24,11 +23,14 @@ class DescriptiveAnswerDetailScreen extends StatefulWidget {
 
 class _DescriptiveAnswerDetailScreenState
     extends State<DescriptiveAnswerDetailScreen> {
-  String _currentLanguage = 'en';
+  late String _currentLanguage;
 
   @override
   void initState() {
     super.initState();
+    _currentLanguage = widget.args.language.isNotEmpty
+        ? widget.args.language.first
+        : 'en';
     if (widget.args.showPeerReview) {
       context.read<PeerReviewBloc>().add(
         FetchPeerReviews(
@@ -40,10 +42,7 @@ class _DescriptiveAnswerDetailScreenState
   }
 
   List<String> get _availableLanguages {
-    final langs = <String>['en'];
-    if (widget.args.question.questionHi != null) langs.add('hi');
-    if (widget.args.question.questionGj != null) langs.add('gj');
-    return langs;
+    return (widget.args.language).map((e) => e.toLowerCase()).toList();
   }
 
   String _getLanguageChar(String lang) {
@@ -92,17 +91,18 @@ class _DescriptiveAnswerDetailScreenState
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: _switchToNextLanguage,
-            child: Text(
-              _getLanguageChar(_currentLanguage),
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
+          if (_availableLanguages.length > 1)
+            TextButton(
+              onPressed: _switchToNextLanguage,
+              child: Text(
+                _getLanguageChar(_currentLanguage),
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
         ],
         centerTitle: true,
       ),

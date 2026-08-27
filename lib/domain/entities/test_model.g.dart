@@ -29,6 +29,9 @@ TestModel _$TestModelFromJson(Map<String, dynamic> json) => TestModel(
           ? null
           : ProductModel.fromJson(
               json['double_assessment_price'] as Map<String, dynamic>),
+      allowedLanguages: (json['allowed_languages'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
@@ -44,6 +47,7 @@ Map<String, dynamic> _$TestModelToJson(TestModel instance) => <String, dynamic>{
       'total_attempts': instance.totalAttempt,
       'single_assessment_price': instance.singleProduct,
       'double_assessment_price': instance.dualProduct,
+      'allowed_languages': instance.allowedLanguages,
     };
 
 const _$TestTypeEnumMap = {

@@ -100,12 +100,16 @@ class DescFullQuestionsScreenArgs {
   final String testName;
   final int? courseId;
   final bool isSubmitted;
+  final DescTestModel? descTestModel;
+  final String? language;
 
   DescFullQuestionsScreenArgs({
     required this.testId,
     required this.testName,
     this.courseId,
     this.isSubmitted = false,
+    this.descTestModel,
+    this.language,
   });
 }
 
@@ -162,6 +166,12 @@ class CourseDetailsScreenArgs {
   CourseDetailsScreenArgs({required this.courseModel});
 }
 
+class AdminCourseDetailsScreenArgs {
+  final CourseModel courseModel;
+
+  AdminCourseDetailsScreenArgs({required this.courseModel});
+}
+
 class MentorEvaluationScreenArgs {
   final int? studentId;
   final int mentorAssignmentId;
@@ -198,24 +208,27 @@ class AssessmentTypeSelectionScreenArgs {
 
 class EditMentorScreenArgs {
   final MentorModel mentor;
+
   EditMentorScreenArgs({required this.mentor});
 }
 
 class StudentEvaluationResultScreenArgs {
-  final int? testId;
-  final String? testName;
+  final int testId;
+  final String testName;
   final String? studentName;
-  final int? mentorId;
-  final MainsTestReviewModel? reviewModel;
-  final int? courseId;
+  final int mentorId;
+  final MainsTestReviewModel reviewModel;
+  final int courseId;
+  final DescTestModel descTestModel;
 
   StudentEvaluationResultScreenArgs({
-    this.testId,
-    this.testName,
+    required this.testId,
+    required this.testName,
     this.studentName,
-    this.mentorId,
-    this.reviewModel,
-    this.courseId,
+    required this.mentorId,
+    required this.reviewModel,
+    required this.courseId,
+    required this.descTestModel,
   });
 }
 
@@ -223,11 +236,13 @@ class DescriptiveAnswersScreenArgs {
   final DescTestModel descTestModel;
   final bool isUnlocked;
   final bool showPeerReview;
+  final List<String> languages;
 
   DescriptiveAnswersScreenArgs({
     required this.descTestModel,
     this.isUnlocked = false,
     required this.showPeerReview,
+    this.languages = const ['en'],
   });
 }
 
@@ -237,11 +252,13 @@ class DescriptiveAnswerDetailScreenArgs {
   final int testId;
   final bool isUnlocked;
   final bool showPeerReview;
+  final List<String> language;
 
   DescriptiveAnswerDetailScreenArgs({
     required this.question,
     required this.index,
     required this.testId,
+    required this.language,
     this.isUnlocked = false,
     this.showPeerReview = false,
   });

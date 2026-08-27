@@ -30,6 +30,8 @@ class TestModel {
   ProductModel? singleProduct;
   @JsonKey(name: "double_assessment_price")
   ProductModel? dualProduct;
+  @JsonKey(name: "allowed_languages")
+  List<String>? allowedLanguages;
 
   TestModel({
     required this.id,
@@ -44,6 +46,7 @@ class TestModel {
     this.totalAttempt,
     this.singleProduct,
     this.dualProduct,
+    this.allowedLanguages,
   });
 
   factory TestModel.fromJson(Map<String, dynamic> json) =>

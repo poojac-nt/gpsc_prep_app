@@ -24,6 +24,7 @@ class UploadQuestions extends StatefulWidget {
 class _UploadQuestionsState extends State<UploadQuestions> {
   late UploadQuestionsBloc uploadQuestionsBloc;
   List<ProductModel> _products = [];
+  CourseModel? _selectedCourse;
 
   @override
   void initState() {
@@ -364,13 +365,12 @@ class _UploadQuestionsState extends State<UploadQuestions> {
     ProductModel? selectedSingle;
     ProductModel? selectedDual;
 
-    final freeProduct =
-        isFreeCourse
-            ? _products.cast<ProductModel?>().firstWhere(
-              (p) => p?.productId == 'price_tier_free',
-              orElse: () => null,
-            )
-            : null;
+    final freeProduct = isFreeCourse
+        ? _products.cast<ProductModel?>().firstWhere(
+            (p) => p?.productId == 'price_tier_free',
+            orElse: () => null,
+          )
+        : null;
 
     if (isFreeCourse && freeProduct != null) {
       selectedSingle = freeProduct;
@@ -406,24 +406,22 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                     ),
-                    items:
-                        filteredProducts.map((p) {
-                          return DropdownMenuItem(
-                            value: p,
-                            child: Text('${p.title} (₹${p.price})'),
-                          );
-                        }).toList(),
-                    onChanged:
-                        isFreeCourse
-                            ? null
-                            : (val) {
-                              setDialogState(() {
-                                selectedSingle = val;
-                                if (selectedDual == val) {
-                                  selectedDual = null;
-                                }
-                              });
-                            },
+                    items: filteredProducts.map((p) {
+                      return DropdownMenuItem(
+                        value: p,
+                        child: Text('${p.title} (₹${p.price})'),
+                      );
+                    }).toList(),
+                    onChanged: isFreeCourse
+                        ? null
+                        : (val) {
+                            setDialogState(() {
+                              selectedSingle = val;
+                              if (selectedDual == val) {
+                                selectedDual = null;
+                              }
+                            });
+                          },
                   ),
                   if (isDescriptive) ...[
                     16.hGap,
@@ -436,24 +434,24 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
-                      items:
-                          filteredProducts
-                              .where((p) => p.id != selectedSingle?.id || isFreeCourse)
-                              .map((p) {
-                                return DropdownMenuItem(
-                                  value: p,
-                                  child: Text('${p.title} (₹${p.price})'),
-                                );
-                              })
-                              .toList(),
-                      onChanged:
-                          isFreeCourse
-                              ? null
-                              : (val) {
-                                setDialogState(() {
-                                  selectedDual = val;
-                                });
-                              },
+                      items: filteredProducts
+                          .where(
+                            (p) => p.id != selectedSingle?.id || isFreeCourse,
+                          )
+                          .map((p) {
+                            return DropdownMenuItem(
+                              value: p,
+                              child: Text('${p.title} (₹${p.price})'),
+                            );
+                          })
+                          .toList(),
+                      onChanged: isFreeCourse
+                          ? null
+                          : (val) {
+                              setDialogState(() {
+                                selectedDual = val;
+                              });
+                            },
                     ),
                   ],
                 ],
@@ -477,12 +475,7 @@ class _UploadQuestionsState extends State<UploadQuestions> {
                       );
                       return;
                     }
-                    if (isDescriptive && selectedDual == null) {
-                      getIt<SnackBarHelper>().showError(
-                        'Please select dual assessment price',
-                      );
-                      return;
-                    }
+                    // Dual assessment is optional — proceed even if null
                     Navigator.pop(context, {
                       'single': selectedSingle?.id,
                       'dual': selectedDual?.id,
@@ -573,6 +566,4 @@ class _UploadQuestionsState extends State<UploadQuestions> {
       ),
     );
   }
-
-  CourseModel? _selectedCourse;
 }

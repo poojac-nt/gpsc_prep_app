@@ -57,6 +57,7 @@ import 'package:gpsc_prep_app/presentation/blocs/test/test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/test_wise_submissions/test_wise_submissions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/timer/timer_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/notification/notification_bloc.dart';
+import 'package:gpsc_prep_app/presentation/blocs/course_purchased_users/course_purchased_users_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/upload%20questions/upload_questions_bloc.dart';
 import 'package:gpsc_prep_app/presentation/screens/test_module/cubit/test/test_cubit.dart';
 import 'package:gpsc_prep_app/utils/services/fcm_service.dart';
@@ -272,6 +273,9 @@ void setupBlocs() {
   );
   getIt.registerFactory<LeaderboardBloc>(
     () => LeaderboardBloc(getIt<AnalyticsRepository>()),
+  );
+  getIt.registerFactory<CoursePurchasedUsersBloc>(
+    () => CoursePurchasedUsersBloc(getIt<CourseRepository>()),
   );
 }
 

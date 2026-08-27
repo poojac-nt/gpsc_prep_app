@@ -17,12 +17,12 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
     emit(QuestionCubitInitial());
   }
 
-  /// Call this after Bloc loads questions
   void initialize(
     List<QuestionLanguageData> questions,
     List<QuestionModel> questionModel,
-    String language,
-  ) {
+    String language, {
+    List<String> allowedLanguages = const [],
+  }) {
     if (state is McqQuestionCubitLoaded) return;
     _currentNavigatorPage = 0;
     emit(
@@ -36,38 +36,38 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
         isQuitTest: _isQuitTest,
         currentLanguage: language,
+        allowedLanguages: allowedLanguages,
       ),
     );
   }
 
-  /// Switch language while preserving user progress
   void switchLanguage(String newLanguage) {
     if (state is! McqQuestionCubitLoaded) return;
     final currentState = state as McqQuestionCubitLoaded;
+
+    final allowed = currentState.allowedLanguages;
+    if (allowed.isNotEmpty && !allowed.contains(newLanguage)) return;
 
     // Extract questions in the new language
     List<QuestionLanguageData> localizedQuestions;
     switch (newLanguage) {
       case 'hi':
-        localizedQuestions =
-            currentState.questionModel
-                .map((e) => e.questionHi)
-                .whereType<QuestionLanguageData>()
-                .toList();
+        localizedQuestions = currentState.questionModel
+            .map((e) => e.questionHi)
+            .whereType<QuestionLanguageData>()
+            .toList();
         break;
       case 'en':
-        localizedQuestions =
-            currentState.questionModel
-                .map((e) => e.questionEn)
-                .whereType<QuestionLanguageData>()
-                .toList();
+        localizedQuestions = currentState.questionModel
+            .map((e) => e.questionEn)
+            .whereType<QuestionLanguageData>()
+            .toList();
         break;
       case 'gj':
-        localizedQuestions =
-            currentState.questionModel
-                .map((e) => e.questionGj)
-                .whereType<QuestionLanguageData>()
-                .toList();
+        localizedQuestions = currentState.questionModel
+            .map((e) => e.questionGj)
+            .whereType<QuestionLanguageData>()
+            .toList();
         break;
       default:
         return;
@@ -75,7 +75,6 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
 
     if (localizedQuestions.isEmpty) return;
 
-    // Update state with new language questions while preserving progress
     emit(
       currentState.copyWith(
         questions: localizedQuestions,
@@ -310,8 +309,6 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
 
     // Update navigator page based on restored index
     _currentNavigatorPage = progress.currentQuestionIndex ~/ navigatorPageSize;
-
-    // Restore state from saved progress
     emit(
       McqQuestionCubitLoaded(
         questionModel: currentState.questionModel,
@@ -322,6 +319,7 @@ class QuestionCubit extends Cubit<QuestionCubitState> {
         timePerQuestion: progress.timePerQuestion,
         currentQuestionStartTime: DateTime.now().millisecondsSinceEpoch,
         currentLanguage: progress.languageCode,
+        allowedLanguages: currentState.allowedLanguages,
         isReview: false,
       ),
     );

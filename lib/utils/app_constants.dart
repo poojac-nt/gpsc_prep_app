@@ -149,7 +149,9 @@ abstract class AppRoutes {
   static const String prelimsInstructionsScreen = '/prelimsInstructionsScreen';
   static const String addCourse = '/addCourse';
   static const String courseList = '/courseList';
+  static const String adminCourseList = '/adminCourseList';
   static const String courseDetails = '/courseDetails';
+  static const String adminCourseDetails = '/adminCourseDetails';
   static const String mentorRegistration = '/mentorRegistration';
   static const String mentorList = '/mentorList';
   static const String editMentor = '/editMentor';

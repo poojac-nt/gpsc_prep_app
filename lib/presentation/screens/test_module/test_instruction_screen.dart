@@ -12,7 +12,7 @@ import 'package:gpsc_prep_app/data/repositories/test_repository.dart';
 import 'package:gpsc_prep_app/domain/entities/prelims_test_progress.dart';
 import 'package:gpsc_prep_app/domain/entities/result_model.dart';
 import 'package:gpsc_prep_app/domain/entities/test_model.dart';
-import 'package:gpsc_prep_app/domain/usecases/get_available_language_usecase.dart';
+import 'package:gpsc_prep_app/presentation/blocs/question/question_bloc.dart'; // Added for language load
 import 'package:gpsc_prep_app/presentation/blocs/daily_test/daily_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/blocs/fetch_single_test/fetch_single_test_bloc.dart';
 import 'package:gpsc_prep_app/presentation/widgets/bordered_container.dart';
@@ -21,6 +21,7 @@ import 'package:gpsc_prep_app/utils/extensions/hour_extension.dart';
 import 'package:gpsc_prep_app/utils/extensions/padding.dart';
 import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
+import '../../../domain/usecases/get_available_language_usecase.dart';
 import '../../../utils/app_constants.dart';
 import '../../../utils/enums/user_role.dart';
 import '../../widgets/action_button.dart';
@@ -66,13 +67,16 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       context.read<FetchSingleTestBloc>().add(
         FetchSingleTestFromId(widget.testId!),
       );
+    } else if (widget.dailyTestModel != null) {
+      final model = widget.dailyTestModel!;
+      _fetchedTestModel = model;
+      final List<String> langs = (model.allowedLanguages ?? [])
+          .map((e) => e.toLowerCase())
+          .toList();
+      selectedLanguage = langs.isNotEmpty ? langs.first : '';
+      availableLanguagesButton = Set.from(langs);
     }
     _checkProgress();
-    fetchAvailableLanguages();
-    selectedLanguage =
-        availableLanguagesButton.contains('en')
-            ? 'en'
-            : availableLanguagesButton.first;
   }
 
   Future<void> fetchAvailableLanguages() async {
@@ -105,7 +109,24 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     return BlocListener<FetchSingleTestBloc, FetchSingleTestState>(
       listener: (context, state) {
         if (state is SingleTestFetched) {
-          setState(() => _fetchedTestModel = state.dailyTestModel);
+          final model = state.dailyTestModel;
+          setState(() {
+            _fetchedTestModel = model;
+            // Prepare allowed languages, normalize to lowercase
+            final List<String> rawAllowed = (model.allowedLanguages ?? [])
+                .map((e) => e.toLowerCase())
+                .toList();
+            // Use the list as-is; no forced English
+            final List<String> langs = List.from(rawAllowed);
+            // Select the first language if available, otherwise empty
+            selectedLanguage = langs.isNotEmpty ? langs.first : '';
+            // Store for UI rendering
+            availableLanguagesButton = Set.from(langs);
+          });
+          final testId = widget.testId ?? model.id;
+          context.read<QuestionBloc>().add(
+            LoadMcqQuestion(testId, selectedLanguage),
+          );
         } else if (state is SingleTestFetchingFailed) {
           setState(() => _noTestDetected = true);
         }
@@ -199,15 +220,26 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
               ),
             ),
             15.hGap,
-            Text("Choose Language", style: AppTexts.labelTextStyle),
-            10.hGap,
+            // Show language selection only if more than one language is allowed
+            // Show language selection only if more than one language is allowed
+            if (availableLanguagesButton.length > 1) ...[
+              Text("Choose Language", style: AppTexts.labelTextStyle),
+              10.hGap,
+            ] else if (availableLanguagesButton.length == 1) ...[
+              // Show a message indicating the single available language
+              Text(
+                "This test is only available in this language.",
+                style: AppTexts.labelTextStyle,
+                textAlign: TextAlign.center,
+              ),
+              10.hGap,
+            ],
             Wrap(
               spacing: 8,
-              children:
-                  availableLanguagesButton
-                      .where((code) => _languageLabels.containsKey(code))
-                      .map((code) => _languageButton(code))
-                      .toList(),
+              children: availableLanguagesButton
+                  .where((code) => _languageLabels.containsKey(code))
+                  .map((code) => _languageButton(code))
+                  .toList(),
             ),
             15.hGap,
             ActionButton(
@@ -256,6 +288,7 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
 
   Widget _languageButton(String code) {
     final bool isSelected = selectedLanguage == code;
+    final bool disable = availableLanguagesButton.length == 1;
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
         backgroundColor: isSelected ? Colors.blue.shade100 : null,
@@ -264,7 +297,21 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
           width: 2,
         ),
       ),
-      onPressed: () => setState(() => selectedLanguage = code),
+      onPressed: disable
+          ? null
+          : () {
+              setState(() => selectedLanguage = code);
+              // Reload MCQ questions for the new language.
+              final testId =
+                  widget.testId ??
+                  _fetchedTestModel?.id ??
+                  widget.dailyTestModel?.id;
+              if (testId != null) {
+                context.read<QuestionBloc>().add(
+                  LoadMcqQuestion(testId, selectedLanguage),
+                );
+              }
+            },
       child: Text(
         _languageLabels[code]!,
         style: TextStyle(
@@ -341,10 +388,9 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
       builder: (BuildContext context) {
         return TestStatusDialog(
           title: isLimitReached ? "Attempts Completed" : "Test Cooldown",
-          message:
-              isLimitReached
-                  ? "You have completed both of your attempts for this test."
-                  : "You have already attempted this test once.",
+          message: isLimitReached
+              ? "You have completed both of your attempts for this test."
+              : "You have already attempted this test once.",
           lastAttemptDate: formattedDate,
           hoursRemaining: isLimitReached ? null : hoursRemaining,
           isLimitReached: isLimitReached,
@@ -373,45 +419,39 @@ class _MCQTestInstructionScreenState extends State<MCQTestInstructionScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Resume Test?"),
-            content: Text(
-              "You have an incomplete test:\n\n"
-              "• Answered: $answered/${progress.totalQuestions}\n"
-              "• Question: ${progress.currentQuestionIndex + 1}\n"
-              "• Time left: ${mins}m ${secs}s\n\n"
-              "Resume or start fresh?",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  final userId = getIt<CacheManager>().getUserId();
-                  await getIt<PrelimsProgressRepository>().deleteProgress(
-                    userId,
-                    test.id,
-                  );
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  _startTest(test);
-                },
-                child: const Text("Start Fresh"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _resumeTest(test, progress);
-                },
-                child: const Text(
-                  "Resume",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text("Resume Test?"),
+        content: Text(
+          "You have an incomplete test:\n\n"
+          "• Answered: $answered/${progress.totalQuestions}\n"
+          "• Question: ${progress.currentQuestionIndex + 1}\n"
+          "• Time left: ${mins}m ${secs}s\n\n"
+          "Resume or start fresh?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final userId = getIt<CacheManager>().getUserId();
+              await getIt<PrelimsProgressRepository>().deleteProgress(
+                userId,
+                test.id,
+              );
+              if (!context.mounted) return;
+              Navigator.pop(context);
+              _startTest(test);
+            },
+            child: const Text("Start Fresh"),
           ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              Navigator.pop(context);
+              _resumeTest(test, progress);
+            },
+            child: const Text("Resume", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 

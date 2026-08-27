@@ -55,7 +55,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           priceSingle: _selectedSingleProduct?.id,
           priceDual:
               _selectedTestType == CourseTestType.mains
-                  ? _selectedDualProduct?.id
+                  ? _selectedDualProduct?.id  // optional — may be null
                   : null,
         ),
       );
@@ -251,10 +251,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                           })
                                           .toList(),
                               validator: (value) {
-                                if (_selectedTestType == CourseTestType.mains &&
-                                    value == null) {
-                                  return 'Please select a product';
-                                }
+                                // Dual assessment is optional
                                 return null;
                               },
                             ),

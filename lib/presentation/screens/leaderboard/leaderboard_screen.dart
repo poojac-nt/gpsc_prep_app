@@ -157,7 +157,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         ],
       ),
       child: Column(
-        crossAxisAlignment: .start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             firstTopper.testName,

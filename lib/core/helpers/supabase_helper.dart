@@ -61,6 +61,7 @@ import 'rpc_helper.dart';
 class SupabaseHelper {
   final supabase = Supabase.instance.client;
   final LogHelper _log;
+
   final SnackBarHelper _snackBar;
   final CacheManager _cache;
 
@@ -278,8 +279,8 @@ class SupabaseHelper {
         },
       );
 
-      if (response == null) {
-        return Left(Failure(rpcError ?? 'Error Updating User Info'));
+      if (rpcError != null) {
+        return Left(Failure(rpcError!));
       }
 
       // ✅ Recommended: refetch updated user
@@ -370,6 +371,24 @@ class SupabaseHelper {
   /// COURSES
   /// ===========================================================================
 
+  // Toggle active status for a course
+  Future<Either<Failure, void>> toggleCourseActive({
+    required int courseId,
+    required bool isActive,
+  }) async {
+    try {
+      await supabase
+          .from(SupabaseKeys.courseTable)
+          .update({'is_active': isActive})
+          .eq('id', courseId);
+      return Right(null);
+    } catch (e) {
+      _snackBar.showError('Error updating course status: ${e.toString()}');
+      _log.e('[toggleCourseActive] Error: $e');
+      return Left(Failure('Error updating course status: ${e.toString()}'));
+    }
+  }
+
   Future<Either<Failure, CoursePayload>> createCourses(
     CoursePayload data,
   ) async {
@@ -390,11 +409,16 @@ class SupabaseHelper {
     }
   }
 
-  Future<Either<Failure, List<CourseModel>>> fetchCourses() async {
+  Future<Either<Failure, List<CourseModel>>> fetchCourses({
+    required bool isAdmin,
+  }) async {
     try {
       String? rpcError;
       final rpcResponse = await callRpc(
-        call: () => supabase.rpc(SupabaseKeys.getCoursesListWithTests),
+        call: () => supabase.rpc(
+          SupabaseKeys.getCoursesListWithTests,
+          params: {'is_admin': isAdmin},
+        ),
         onError: (msg) {
           rpcError = msg;
           _snackBar.showError(msg);
@@ -628,6 +652,7 @@ class SupabaseHelper {
     }
   }
 
+  // Fetches a single MCQ test result for the current user
   Future<Either<Failure, TestResultModel?>> fetchResultForSingleMcqTest({
     required int testId,
   }) async {
@@ -2390,6 +2415,38 @@ class SupabaseHelper {
       _log.i('Fetched tests successfully');
 
       return Right(allTests);
+    } catch (e) {
+      _log.e('Error fetching tests: $e', error: e);
+      _snackBar.showError('Error fetching tests: ${e.toString()}');
+      return Left(Failure('Error fetching tests: ${e.toString()}'));
+    }
+  }
+
+  Future<Either<Failure, List<UserModel>>> fetchCoursePurchasedUsers({
+    required int courseId,
+  }) async {
+    try {
+      String? rpcError;
+      final response = await callRpc(
+        call: () => supabase.rpc(
+          SupabaseKeys.getCoursePurchasedUsers,
+          params: {'p_course_id': courseId},
+        ),
+        onError: (msg) {
+          rpcError = msg;
+          _snackBar.showError(msg);
+        },
+      );
+
+      if (response == null) {
+        return Left(Failure(rpcError ?? 'Error fetching tests'));
+      }
+
+      final users = (response as List).map((e) => UserModel.fromJson(e)).toList();
+
+      _log.i('Fetched users successfully');
+
+      return Right(users);
     } catch (e) {
       _log.e('Error fetching tests: $e', error: e);
       _snackBar.showError('Error fetching tests: ${e.toString()}');

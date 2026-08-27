@@ -3,19 +3,17 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gpsc_prep_app/core/cache_manager.dart';
 import 'package:gpsc_prep_app/core/di/di.dart';
 import 'package:gpsc_prep_app/core/helpers/log_helper.dart';
 import 'package:gpsc_prep_app/domain/entities/question_model.dart';
+import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
+import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-
-import 'package:gpsc_prep_app/domain/entities/result_with_top_score_model.dart';
-import 'package:gpsc_prep_app/utils/services/test_link_generator.dart';
 
 import '../../../domain/entities/detailed_test_result_model.dart';
 import '../../../domain/entities/question_language_model.dart';
@@ -27,6 +25,9 @@ class PdfExportService {
     TestResultWithTopScoreModel? performanceSummary,
     TestType? testType,
     List<DetailedTestResult>? detailedResults,
+    String language = 'en',
+    bool showAnswers = true,
+    required List<String> languages,
   }) async {
     final log = getIt<LogHelper>();
     final mcqPdfHeader = pw.MemoryImage(
@@ -52,10 +53,9 @@ class PdfExportService {
 
     final imageProvider = PdfImage.file(
       pw.Document().document,
-      bytes:
-          (await rootBundle.load(
-            'assets/images/mcq_pdf_header.jpeg',
-          )).buffer.asUint8List(),
+      bytes: (await rootBundle.load(
+        'assets/images/mcq_pdf_header.jpeg',
+      )).buffer.asUint8List(),
     );
     final imageHeight = imageProvider.height.toDouble();
     final imageWidth = imageProvider.width.toDouble();
@@ -75,172 +75,183 @@ class PdfExportService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
-        footer:
-            (context) => pw.Container(
-              alignment: pw.Alignment.center,
-              margin: const pw.EdgeInsets.only(top: 10),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          margin: const pw.EdgeInsets.only(top: 10),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+            children: [
+              pw.Text(
+                'Click here to Join us:',
+                style: pw.TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.Row(
                 children: [
-                  pw.Text(
-                    'Click here to Join us:',
-                    style: pw.TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: pw.FontWeight.bold,
+                  pw.Image(telegramLogo, width: 10, height: 10),
+                  pw.SizedBox(width: 4),
+                  pw.UrlLink(
+                    destination: 'https://t.me/starics_prep',
+                    child: pw.Text(
+                      '@starics_prep',
+                      style: pw.TextStyle(
+                        color: PdfColors.blue,
+                        decoration: pw.TextDecoration.underline,
+                        fontSize: 9.5,
+                      ),
                     ),
-                  ),
-                  pw.Row(
-                    children: [
-                      pw.Image(telegramLogo, width: 10, height: 10),
-                      pw.SizedBox(width: 4),
-                      pw.UrlLink(
-                        destination: 'https://t.me/starics_prep',
-                        child: pw.Text(
-                          '@starics_prep',
-                          style: pw.TextStyle(
-                            color: PdfColors.blue,
-                            decoration: pw.TextDecoration.underline,
-                            fontSize: 9.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
-                  pw.Row(
-                    children: [
-                      pw.Image(gmailLogo, width: 10, height: 10),
-                      pw.SizedBox(width: 4),
-                      pw.UrlLink(
-                        destination: 'mailto:star.ics89@gmail.com',
-                        child: pw.Text(
-                          'star.ics89@gmail.com',
-                          style: pw.TextStyle(
-                            color: PdfColors.blue,
-                            decoration: pw.TextDecoration.underline,
-                            fontSize: 9.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
-                  pw.Row(
-                    children: [
-                      pw.Image(xLogo, width: 10, height: 10),
-                      pw.SizedBox(width: 4),
-                      pw.UrlLink(
-                        destination: 'https://x.com/star_ics89',
-                        child: pw.Text(
-                          '@star_ics89',
-                          style: pw.TextStyle(
-                            color: PdfColors.blue,
-                            decoration: pw.TextDecoration.underline,
-                            fontSize: 9.5,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
-        build:
-            (context) => [
-              pw.Container(
-                height: scaledHeight,
-                child: pw.Stack(
-                  fit: pw.StackFit.expand,
-                  children: [
-                    pw.Image(mcqPdfHeader, fit: pw.BoxFit.cover),
-                    pw.Positioned(
-                      left: 40,
-                      top: scaledHeight * 0.5 - 10,
-                      child: pw.Container(
-                        width: 250,
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Divider(
-                              indent: 0,
-                              color: PdfColor.fromHex('#d8b7b2'),
-                              thickness: 5,
-                              height: 5,
-                            ),
-                            pw.Padding(
-                              padding: pw.EdgeInsets.symmetric(vertical: 10),
-                              child: pw.Text(
+              pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+              pw.Row(
+                children: [
+                  pw.Image(gmailLogo, width: 10, height: 10),
+                  pw.SizedBox(width: 4),
+                  pw.UrlLink(
+                    destination: 'mailto:star.ics89@gmail.com',
+                    child: pw.Text(
+                      'star.ics89@gmail.com',
+                      style: pw.TextStyle(
+                        color: PdfColors.blue,
+                        decoration: pw.TextDecoration.underline,
+                        fontSize: 9.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              pw.Text('|', style: pw.TextStyle(fontSize: 9.5)),
+              pw.Row(
+                children: [
+                  pw.Image(xLogo, width: 10, height: 10),
+                  pw.SizedBox(width: 4),
+                  pw.UrlLink(
+                    destination: 'https://x.com/star_ics89',
+                    child: pw.Text(
+                      '@star_ics89',
+                      style: pw.TextStyle(
+                        color: PdfColors.blue,
+                        decoration: pw.TextDecoration.underline,
+                        fontSize: 9.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        build: (context) => [
+          pw.Container(
+            height: scaledHeight,
+            child: pw.Stack(
+              fit: pw.StackFit.expand,
+              children: [
+                pw.Image(mcqPdfHeader, fit: pw.BoxFit.cover),
+                pw.Positioned(
+                  left: 40,
+                  top: scaledHeight * 0.5 - 10,
+                  child: pw.Container(
+                    width: 250,
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Divider(
+                          indent: 0,
+                          color: PdfColor.fromHex('#d8b7b2'),
+                          thickness: 5,
+                          height: 5,
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.symmetric(vertical: 10),
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
                                 testName,
                                 style: pw.TextStyle(
                                   fontSize: 16,
                                   fontWeight: pw.FontWeight.bold,
                                 ),
                               ),
-                            ),
-                            pw.Divider(
-                              indent: 0,
-                              color: PdfColor.fromHex('#d8b7b2'),
-                              thickness: 5,
-                              height: 5,
-                            ),
-                          ],
+                              pw.SizedBox(height: 4),
+                              pw.Text(
+                                showAnswers ? "Model Answer" : "Question Paper",
+                                style: pw.TextStyle(
+                                  fontSize: 12,
+                                  color: PdfColors.grey700,
+                                  fontStyle: pw.FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        pw.Divider(
+                          indent: 0,
+                          color: PdfColor.fromHex('#d8b7b2'),
+                          thickness: 5,
+                          height: 5,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (testType == TestType.prelims && performanceSummary != null)
+            _buildPerformanceSummary(performanceSummary),
+          ...questions.asMap().entries.expand((entry) {
+            final index = entry.key + 1;
+            final q = entry.value;
+
+            final actualLanguages = languages.isEmpty ? ['en'] : languages;
+
+            return actualLanguages.map((ln) {
+              QuestionLanguageData getLangData(QuestionModel q) {
+                switch (ln) {
+                  case 'hi':
+                    return q.questionHi ?? q.questionEn;
+                  case 'gj':
+                    return q.questionGj ?? q.questionEn;
+                  case 'en':
+                  default:
+                    return q.questionEn;
+                }
+              }
+
+              final qLang = getLangData(q);
+              String langIndicator = actualLanguages.length > 1 ? " [${ln.toUpperCase()}]" : "";
+
+              return pw.Padding(
+                padding: pw.EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "Question $index$langIndicator:",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              if (testType == TestType.prelims && performanceSummary != null)
-                _buildPerformanceSummary(performanceSummary),
-              ...questions.asMap().entries.map((entry) {
-                final index = entry.key + 1;
-                final ln = getIt<CacheManager>().userSelectedLanguage();
-                QuestionLanguageData getLangData(QuestionModel q) {
-                  switch (ln) {
-                    case 'hi':
-                      return q.questionHi ?? q.questionEn;
-                    case 'gj':
-                      return q.questionGj ?? q.questionEn;
-                    case 'en':
-                    default:
-                      return q.questionEn;
-                  }
-                }
-
-                final q = entry.value;
-                final qLang = getLangData(q);
-
-                return pw.Padding(
-                  padding: pw.EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 20,
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        "Question $index:",
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                      pw.SizedBox(height: 5),
-                      ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
-                      pw.SizedBox(height: 5),
-                      pw.Bullet(text: qLang.optA),
-                      pw.Bullet(text: qLang.optB),
-                      pw.Bullet(text: qLang.optC),
-                      pw.Bullet(text: qLang.optD),
+                    pw.SizedBox(height: 5),
+                    ..._parseMarkdownToPdfWidgets(qLang.questionTxt),
+                    pw.SizedBox(height: 5),
+                    pw.Bullet(text: qLang.optA),
+                    pw.Bullet(text: qLang.optB),
+                    pw.Bullet(text: qLang.optC),
+                    pw.Bullet(text: qLang.optD),
+                    if (showAnswers) ...[
                       pw.SizedBox(height: 5),
                       pw.Container(
                         padding: pw.EdgeInsets.all(10),
                         decoration: pw.BoxDecoration(
                           color: PdfColor.fromHex('#e1d2c8'),
-                          border: pw.Border.all(
-                            color: PdfColors.black,
-                            width: 1,
-                          ),
+                          border: pw.Border.all(color: PdfColors.black, width: 1),
                         ),
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -265,16 +276,15 @@ class PdfExportService {
                               () {
                                 final userResult = detailedResults.firstWhere(
                                   (r) => r.questionId == q.questionId,
-                                  orElse:
-                                      () => DetailedTestResult(
-                                        userId: 0,
-                                        testId: 0,
-                                        questionId: 0,
-                                        isCorrect: false,
-                                        attemptNo: 0,
-                                        timeSpent: 0,
-                                        selectedOption: null,
-                                      ),
+                                  orElse: () => DetailedTestResult(
+                                    userId: 0,
+                                    testId: 0,
+                                    questionId: 0,
+                                    isCorrect: false,
+                                    attemptNo: 0,
+                                    timeSpent: 0,
+                                    selectedOption: null,
+                                  ),
                                 );
                                 if (userResult.selectedOption != null &&
                                     userResult.selectedOption!.isNotEmpty) {
@@ -318,24 +328,25 @@ class PdfExportService {
                             pw.SizedBox(height: 4),
                             pw.Text(
                               "Explanation:",
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                              ),
+                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                             ),
                             ..._parseMarkdownToPdfWidgets(qLang.explanation),
                           ],
                         ),
                       ),
                     ],
-                  ),
-                );
-              }),
-            ],
+                  ],
+                ),
+              );
+            }).toList();
+          }),
+        ],
       ),
     );
 
     final pdfBytes = await pdf.save();
-    final filename = "${testName.toSafeFileName()}.pdf";
+    final suffix = showAnswers ? "ModelAnswer" : "QuestionPaper";
+    final filename = "${testName.toSafeFileName()}_$suffix.pdf";
 
     try {
       if (Platform.isAndroid) {
@@ -446,18 +457,16 @@ class PdfExportService {
   }
 
   pw.Widget _buildPdfTableFromMarkdown(List<String> tableLines) {
-    List<List<String>> rows =
-        tableLines
-            .map(
-              (line) =>
-                  line
-                      .trim()
-                      .split('|')
-                      .map((cell) => cell.trim())
-                      .where((cell) => cell.isNotEmpty)
-                      .toList(),
-            )
-            .toList();
+    List<List<String>> rows = tableLines
+        .map(
+          (line) => line
+              .trim()
+              .split('|')
+              .map((cell) => cell.trim())
+              .where((cell) => cell.isNotEmpty)
+              .toList(),
+        )
+        .toList();
 
     if (rows.length < 2) return pw.SizedBox();
 
@@ -499,10 +508,9 @@ class PdfExportService {
           return [
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children:
-                  node.children!
-                      .expand((li) => _markdownNodeToPdfWidget(li))
-                      .toList(),
+              children: node.children!
+                  .expand((li) => _markdownNodeToPdfWidget(li))
+                  .toList(),
             ),
           ];
         case 'ol':
@@ -510,23 +518,22 @@ class PdfExportService {
           return [
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children:
-                  node.children!
-                      .map(
-                        (li) => pw.Row(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text('${i++}. '),
-                            pw.Expanded(
-                              child: pw.Column(
-                                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                                children: _markdownNodeToPdfWidget(li),
-                              ),
-                            ),
-                          ],
+              children: node.children!
+                  .map(
+                    (li) => pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('${i++}. '),
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: _markdownNodeToPdfWidget(li),
+                          ),
                         ),
-                      )
-                      .toList(),
+                      ],
+                    ),
+                  )
+                  .toList(),
             ),
           ];
         case 'li':
@@ -555,38 +562,36 @@ class PdfExportService {
   pw.Widget _spanFromMarkdownInline(List<md.Node> nodes) {
     return pw.RichText(
       text: pw.TextSpan(
-        children:
-            nodes.map((node) {
-              if (node is md.Text) {
-                return pw.TextSpan(text: node.text);
-              } else if (node is md.Element) {
-                final baseStyle = pw.TextStyle();
-                if (node.tag == 'strong' || node.tag == 'b') {
-                  return pw.TextSpan(
-                    text: node.textContent,
-                    style: baseStyle.copyWith(fontWeight: pw.FontWeight.bold),
-                  );
+        children: nodes.map((node) {
+          if (node is md.Text) {
+            return pw.TextSpan(text: node.text);
+          } else if (node is md.Element) {
+            final baseStyle = pw.TextStyle();
+            if (node.tag == 'strong' || node.tag == 'b') {
+              return pw.TextSpan(
+                text: node.textContent,
+                style: baseStyle.copyWith(fontWeight: pw.FontWeight.bold),
+              );
+            }
+            if (node.tag == 'em' || node.tag == 'i') {
+              return pw.TextSpan(
+                text: node.textContent,
+                style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
+              );
+            }
+            return pw.TextSpan(
+              children: node.children?.map((e) {
+                if (e is md.Text) {
+                  return pw.TextSpan(text: e.text);
+                } else if (e is md.Element) {
+                  return pw.TextSpan(text: e.textContent);
                 }
-                if (node.tag == 'em' || node.tag == 'i') {
-                  return pw.TextSpan(
-                    text: node.textContent,
-                    style: baseStyle.copyWith(fontStyle: pw.FontStyle.italic),
-                  );
-                }
-                return pw.TextSpan(
-                  children:
-                      node.children?.map((e) {
-                        if (e is md.Text) {
-                          return pw.TextSpan(text: e.text);
-                        } else if (e is md.Element) {
-                          return pw.TextSpan(text: e.textContent);
-                        }
-                        return pw.TextSpan();
-                      }).toList(),
-                );
-              }
-              return pw.TextSpan();
-            }).toList(),
+                return pw.TextSpan();
+              }).toList(),
+            );
+          }
+          return pw.TextSpan();
+        }).toList(),
       ),
     );
   }

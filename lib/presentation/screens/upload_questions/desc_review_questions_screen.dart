@@ -49,6 +49,116 @@ class _DescReviewQuestionUploadScreenState
     super.dispose();
   }
 
+  void _showLanguageSelectionBottomSheet(BuildContext context) {
+    final Set<String> detectedCodes = {};
+    for (final q in widget.payload) {
+      if (q['languages'] is Map) {
+        detectedCodes.addAll((q['languages'] as Map).keys.cast<String>());
+      }
+    }
+
+    if (detectedCodes.isEmpty) {
+      _dispatchUpload([]);
+      return;
+    }
+
+    final Map<String, String> langMap = {
+      'en': 'English',
+      'hi': 'Hindi',
+      'gj': 'Gujarati',
+    };
+
+    final List<String> availableCodes = detectedCodes.toList();
+    List<String> selectedCodes = List.from(availableCodes);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(20.sp),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Select Display Languages',
+                      style: AppTexts.heading.copyWith(fontSize: 18.sp),
+                    ),
+                    10.hGap,
+                    Text(
+                      'Choose which languages should be available to students for this test.',
+                      style: AppTexts.subTitle.copyWith(
+                        fontSize: 13.sp,
+                        color: AppColors.gray500,
+                      ),
+                    ),
+                    20.hGap,
+                    ...availableCodes.map((code) {
+                      final displayName =
+                          langMap[code.toLowerCase()] ?? code.toUpperCase();
+                      return CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(displayName),
+                        value: selectedCodes.contains(code),
+                        activeColor: AppColors.primary,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            if (value == true) {
+                              selectedCodes.add(code);
+                            } else {
+                              selectedCodes.remove(code);
+                            }
+                          });
+                        },
+                      );
+                    }),
+                    20.hGap,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ActionButton(
+                        text: 'Confirm Selection & Upload',
+                        isLoading: false,
+                        onTap: selectedCodes.isEmpty
+                            ? () {}
+                            : () {
+                                Navigator.pop(sheetContext);
+                                _dispatchUpload(selectedCodes);
+                              },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _dispatchUpload(List<String> allowedLanguages) {
+    final availableAt = _timingController.availableAt;
+
+    context.read<UploadQuestionsBloc>().add(
+      DescUploadParsedQuestions(
+        payload: widget.payload,
+        courseId: widget.courseId,
+        availableAt: availableAt,
+        priceSingle: widget.priceSingle,
+        priceDual: widget.priceDual,
+        testType: widget.testType,
+        allowedLanguages: allowedLanguages,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
@@ -77,8 +187,9 @@ class _DescReviewQuestionUploadScreenState
           },
           builder: (context, state) {
             final isUploading = state is UploadFileInProgress;
-            final uploadResult =
-                state is UploadFileSuccess ? state.result : null;
+            final uploadResult = state is UploadFileSuccess
+                ? state.result
+                : null;
 
             return Column(
               children: [
@@ -168,20 +279,9 @@ class _DescReviewQuestionUploadScreenState
                         child: ActionButton(
                           isLoading: isUploading,
                           onTap: () {
-                            final availableAt = _timingController.availableAt;
-
-                            context.read<UploadQuestionsBloc>().add(
-                              DescUploadParsedQuestions(
-                                payload: widget.payload,
-                                courseId: widget.courseId,
-                                availableAt: availableAt,
-                                priceSingle: widget.priceSingle,
-                                priceDual: widget.priceDual,
-                                testType: widget.testType,
-                              ),
-                            );
+                            _showLanguageSelectionBottomSheet(context);
                           },
-                          text: 'Confirm & Upload',
+                          text: 'Select Languages & Upload',
                         ),
                       ),
                     ],
@@ -196,7 +296,6 @@ class _DescReviewQuestionUploadScreenState
   }
 
   Widget _buildLabeledText(String label, String? value) {
-
     return Padding(
       padding: EdgeInsets.all(2.sp),
       child: RichText(
